@@ -111,6 +111,56 @@ extension View {
     }
 }
 
+/// 收藏馆、徽章墙的顶栏：回主页、标题、右侧等级和积分。和主页成长卡一样放在糖果卡片上
+struct GrowthPageHeader<Trailing: View>: View {
+    let icon: String
+    let title: String
+    var subtitle: String?
+    let onClose: () -> Void
+    @ViewBuilder var trailing: () -> Trailing
+
+    var body: some View {
+        HStack(spacing: 16) {
+            Button(action: onClose) {
+                CandyButtonLabel(title: "回主页", icon: "←", fill: GrowthColors.surface, edge: GrowthColors.cardEdge, foreground: Theme.ink,
+                                 font: .system(size: 22, weight: .heavy, design: .rounded), height: 52)
+                    .overlay(Capsule().stroke(GrowthColors.cardEdge, lineWidth: 2))
+            }
+            .buttonStyle(PressableStyle())
+            Spacer(minLength: 8)
+            PictureView(emoji: icon, size: 40)
+            Text(title).font(.system(size: 36, weight: .heavy, design: .rounded)).foregroundStyle(Theme.ink)
+            if let subtitle {
+                Text(subtitle)
+                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                    .foregroundStyle(GrowthColors.orangeDark)
+                    .padding(.horizontal, 12).padding(.vertical, 4)
+                    .background(Capsule().fill(GrowthColors.gold.opacity(0.25)))
+            }
+            Spacer(minLength: 8)
+            trailing()
+        }
+        .padding(.horizontal, 18)
+        .padding(.vertical, 12)
+        .candyCard()
+    }
+}
+
+/// 分类标签、单元按钮一类的糖果块：米白底、浅金描边、厚底；选中时换成主色
+struct CandyTileBackground: View {
+    var selected = false
+    var selectedFill: Color = Theme.accent
+    var selectedEdge: Color = GrowthColors.orangeDeep
+    var radius: CGFloat = 22
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: radius)
+            .fill(selected ? selectedFill : GrowthColors.surface)
+            .shadow(color: selected ? selectedEdge : GrowthColors.cardEdge, radius: 0, x: 0, y: selected ? 5 : 4)
+            .overlay(RoundedRectangle(cornerRadius: radius).stroke(selected ? selectedEdge : GrowthColors.cardEdge, lineWidth: 2))
+    }
+}
+
 /// 金色积分硬币。系统的 🪙 是银色的，这里自己画，保证积分到处都是金色
 struct CoinIcon: View {
     var size: CGFloat = 28
@@ -157,6 +207,8 @@ struct CandyButtonLabel: View {
     var foreground: Color = .white
     var font: Font = .system(size: 24, weight: .heavy, design: .rounded)
     var height: CGFloat = 64
+    /// 收藏馆一排卡片较多时传 0，让按钮跟着卡片变窄
+    var minWidth: CGFloat = 120
 
     var body: some View {
         HStack(spacing: 6) {
@@ -168,7 +220,7 @@ struct CandyButtonLabel: View {
         .foregroundStyle(foreground)
         .padding(.horizontal, height < 56 ? 12 : 26)
         .frame(height: height)
-        .frame(minWidth: 120)
+        .frame(minWidth: minWidth)
         .background(Capsule().fill(fill).shadow(color: edge, radius: 0, x: 0, y: 5))
     }
 }

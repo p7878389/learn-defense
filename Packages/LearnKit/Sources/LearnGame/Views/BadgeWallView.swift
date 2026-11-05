@@ -35,23 +35,15 @@ struct BadgeWallView: View {
     }
 
     private func topBar(level: Int, earned: Int, total: Int) -> some View {
-        HStack(spacing: 16) {
-            Button(action: onClose) {
-                CandyButtonLabel(title: "回主页", icon: "←", fill: GrowthColors.surface, edge: GrowthColors.cardEdge, foreground: Theme.ink,
-                                 font: .system(size: 22, weight: .heavy, design: .rounded), height: 56)
-            }
-            .buttonStyle(PressableStyle())
-            Spacer()
-            PictureView(emoji: "🏅", size: 44)
-            Text("我的徽章墙").font(.system(size: 40, weight: .heavy, design: .rounded)).foregroundStyle(Theme.ink)
-            Spacer()
+        GrowthPageHeader(icon: "🏅", title: "我的徽章墙", onClose: onClose) {
             LevelPill(level: level)
             VStack(alignment: .leading, spacing: 6) {
                 Text("已收集 \(earned) / \(total)").font(.system(size: 18, weight: .heavy, design: .rounded)).foregroundStyle(GrowthColors.orangeDark)
                 MiniBar(value: Double(earned), total: Double(max(1, total)), tint: GrowthColors.gold).frame(width: 150)
             }
-            .padding(.horizontal, 16).frame(height: 56)
-            .background(RoundedRectangle(cornerRadius: 18).fill(GrowthColors.surface))
+            .padding(.horizontal, 16).frame(height: 52)
+            .background(RoundedRectangle(cornerRadius: 18).fill(GrowthColors.gold.opacity(0.15)))
+            .overlay(RoundedRectangle(cornerRadius: 18).stroke(GrowthColors.cardEdge, lineWidth: 2))
         }
     }
 
@@ -86,7 +78,8 @@ struct BadgeWallView: View {
         .padding(.vertical, 10)
         .frame(maxWidth: .infinity, minHeight: 168)
         .background(RoundedRectangle(cornerRadius: 22).fill(earned || close ? GrowthColors.surface : Theme.muted.opacity(0.08)))
-        .overlay(RoundedRectangle(cornerRadius: 22).stroke(selected ? Theme.accent : (close ? GrowthColors.gold : .clear), lineWidth: selected ? 4 : 2))
+        .overlay(RoundedRectangle(cornerRadius: 22)
+            .stroke(selected ? Theme.accent : (close ? GrowthColors.gold : (earned ? GrowthColors.cardEdge : .clear)), lineWidth: selected ? 4 : 2))
         .overlay(alignment: .top) {
             if close {
                 Text("还差 \(progress.target - progress.value)！")

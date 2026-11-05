@@ -97,6 +97,19 @@ struct BattlefieldTests {
         #expect(card.xScale == 1 && card.yScale == 1, "答对弹出单词卡时不放大画面")
     }
 
+    @Test func wordCardStaysBelowTopOverlays() throws {
+        let scene = GameScene(tuning: GameTuning.make(grade: .g3, difficulty: .normal), theme: .academy)
+        scene.didMove(to: SKView(frame: CGRect(origin: .zero, size: scene.size)))
+        // 最上面一路的怪物：卡片本来会弹到画面顶上，被卡牌栏、状态栏挡住
+        let card = WordCard(picture: "🌸", text: "春眠不觉晓", pinyin: "chūn mián bù jué xiǎo",
+                            detail: "出自唐代孟浩然《春晓》，春天睡得香，不知不觉天就亮了")
+        WordCardEffect(card: card).play(at: CGPoint(x: 900, y: 470), in: scene)
+        let node = try #require(scene.childNode(withName: WordCardEffect.nodeName))
+        let frame = node.calculateAccumulatedFrame()
+        #expect(frame.maxY <= scene.size.height - WordCardEffect.topOverlayInset, "单词卡不能钻到顶部卡牌栏、状态栏下面")
+        #expect(frame.minY >= 0)
+    }
+
     @Test func plantPreviewShowsTargetCell() throws {
         let scene = GameScene(tuning: GameTuning.make(grade: .g3, difficulty: .normal), theme: .academy)
         scene.didMove(to: SKView(frame: CGRect(origin: .zero, size: scene.size)))
