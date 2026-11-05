@@ -14,15 +14,49 @@ public final class AppModel: ObservableObject {
     private let profileStore: ProfileStore
     private var progressStores: [UUID: ProgressStore] = [:]
     private var growthStores: [UUID: GrowthStore] = [:]
+    /// 本地数据库；打不开时为 nil，档案和记录只留在内存里，并在主页提示
+    let database: LearnDatabase?
+    private var databaseIssues: [String] = []
 
     public init() {
-        profileStore = ProfileStore(url: AppPaths.profilesFile)
+        let database: LearnDatabase?
+        var issues: [String] = []
+        do {
+            database = try LearnDatabase(url: AppPaths.databaseFile)
+        } catch {
+            database = nil
+            issues.append("本地数据库打开失败，本次的档案、成长和学习记录不会保存：\(error.localizedDescription)")
+        }
+        self.database = database
+        databaseIssues = issues
+        profileStore = ProfileStore(database: database, legacyFile: AppPaths.profilesFile)
         profiles = profileStore.profiles
         library = ContentLibrary.load(userDirectory: AppPaths.userPacksDirectory)
+        syncContent()
+        syncConfig()
     }
 
     func reloadLibrary() {
         library = ContentLibrary.load(userDirectory: AppPaths.userPacksDirectory)
+        syncContent()
+    }
+
+    /// 把题库同步进数据库，供查询用；失败不影响出题
+    private func syncContent() {
+        do {
+            try database?.syncContent(library.packs)
+        } catch {
+            print("题库同步到数据库失败：\(error)")
+        }
+    }
+
+    /// 把系统配置同步进数据库，供查询用；运行时仍用 growthCatalog
+    private func syncConfig() {
+        do {
+            try database?.syncConfig(growthCatalog)
+        } catch {
+            print("系统配置同步到数据库失败：\(error)")
+        }
     }
 
     func save(_ profile: Profile) {
@@ -30,19 +64,30 @@ public final class AppModel: ObservableObject {
         profiles = profileStore.profiles
     }
 
-    /// 删除档案和它的学习记录（界面上会先确认）
+    /// 删除档案和它的成长档案、学习记录（界面上会先确认）
     func delete(_ profile: Profile) {
         profileStore.delete(id: profile.id)
         profiles = profileStore.profiles
         progressStores[profile.id] = nil
         growthStores[profile.id] = nil
-        try? FileManager.default.removeItem(at: AppPaths.progressFile(for: profile.id))
-        try? FileManager.default.removeItem(at: AppPaths.growthFile(for: profile.id))
+        do {
+            try database?.deletePersonalData(profileID: profile.id)
+        } catch {
+            print("删除个人数据失败：\(error)")
+        }
+        for legacy in [AppPaths.progressFile(for: profile.id), AppPaths.growthFile(for: profile.id)] {
+            try? FileManager.default.removeItem(at: legacy)
+            try? FileManager.default.removeItem(at: AppPaths.migratedBackup(for: legacy))
+        }
     }
 
     func progress(for profileID: UUID) -> ProgressStore {
         if let store = progressStores[profileID] { return store }
-        let store = ProgressStore(url: AppPaths.progressFile(for: profileID))
+        let store = ProgressStore(
+            profileID: profileID,
+            database: database,
+            legacyFile: AppPaths.progressFile(for: profileID)
+        )
         progressStores[profileID] = store
         return store
     }
@@ -50,11 +95,27 @@ public final class AppModel: ObservableObject {
     /// 成长档案。老档案第一次打开时按学习记录里的答对次数补发经验和积分
     func growth(for profileID: UUID) -> GrowthStore {
         if let store = growthStores[profileID] { return store }
-        let store = GrowthStore(url: AppPaths.growthFile(for: profileID), catalog: growthCatalog) { [unowned self] in
+        let store = GrowthStore(
+            profileID: profileID,
+            database: database,
+            legacyFile: AppPaths.growthFile(for: profileID),
+            catalog: growthCatalog
+        ) { [unowned self] in
             progress(for: profileID).stats.values.reduce(0) { $0 + $1.correct }
         }
         growthStores[profileID] = store
         return store
+    }
+
+    /// 一局的对局记录器：答题明细先记在内存里，结束或中途退出时写进数据库
+    func recorder(for config: GameConfig) -> GameRecorder {
+        GameRecorder(
+            database: database,
+            profileID: config.profileID,
+            grade: config.grade,
+            difficulty: config.difficulty,
+            packIDs: config.packIDs,
+            selection: config.selection)
     }
 
     /// 用积分买外观；成功后刷新界面
@@ -75,7 +136,7 @@ public final class AppModel: ObservableObject {
     }
 
     /// 题库和成长配置里的问题，显示在主页
-    var issues: [String] { library.issues + growthCatalog.issues }
+    var issues: [String] { databaseIssues + library.issues + growthCatalog.issues }
 }
 
 /// 开一局游戏需要的信息

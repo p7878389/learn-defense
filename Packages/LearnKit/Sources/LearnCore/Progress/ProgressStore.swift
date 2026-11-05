@@ -18,19 +18,49 @@ public struct ItemStats: Codable, Sendable {
     public var needsReview: Bool { wrong > 0 && streak < 2 }
 }
 
-/// 一个孩子的学习记录，存成一个 JSON 文件。
+/// 一个孩子的学习记录，存在本地数据库（LearnDatabase）里。
 public final class ProgressStore {
     public private(set) var stats: [String: ItemStats]
-    private let url: URL?
+    private let profileID: UUID
+    private let database: LearnDatabase?
+    /// 上次 save 之后改过的知识点
+    private var dirty: Set<String> = []
 
-    /// url 为 nil 时只在内存里记录（测试用）
-    public init(url: URL?) {
-        self.url = url
-        if let url, let data = try? Data(contentsOf: url),
-           let saved = try? JSONDecoder().decode([String: ItemStats].self, from: data) {
-            stats = saved
-        } else {
+    /// legacyFile 是旧版的 progress/<id>.json：数据库里还没有这个孩子的记录时导入一次，
+    /// 导入成功后改名为 .json.migrated 留作备份。
+    /// database 为 nil 时只在内存里记录（测试用，或数据库打不开时），此时只读取 legacyFile、不改动它。
+    public init(profileID: UUID = UUID(), database: LearnDatabase? = nil, legacyFile: URL? = nil) {
+        self.profileID = profileID
+        self.database = database
+        guard let database else {
+            stats = legacyFile.flatMap(Self.readLegacy) ?? [:]
+            return
+        }
+        do {
+            stats = try database.stats(profileID: profileID)
+        } catch {
+            print("读取学习记录失败：\(error)")
             stats = [:]
+            return
+        }
+        if stats.isEmpty, let legacyFile { migrate(from: legacyFile) }
+    }
+
+    private static func readLegacy(_ file: URL) -> [String: ItemStats]? {
+        guard let data = try? Data(contentsOf: file) else { return nil }
+        return try? JSONDecoder().decode([String: ItemStats].self, from: data)
+    }
+
+    private func migrate(from file: URL) {
+        guard let saved = Self.readLegacy(file) else { return }
+        do {
+            try database?.saveStats(saved, profileID: profileID)
+            stats = saved
+            AppPaths.markMigrated(file)
+        } catch {
+            print("迁移学习记录失败：\(error)")
+            stats = saved
+            dirty = Set(saved.keys)
         }
     }
 
@@ -49,6 +79,7 @@ public final class ProgressStore {
             s.lastWrong = date
         }
         stats[item.key] = s
+        dirty.insert(item.key)
     }
 
     public var reviewKeys: Set<String> {
@@ -56,12 +87,11 @@ public final class ProgressStore {
     }
 
     public func save() {
-        guard let url else { return }
+        guard let database, !dirty.isEmpty else { return }
+        let changes = stats.filter { dirty.contains($0.key) }
         do {
-            try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-            try encoder.encode(stats).write(to: url, options: .atomic)
+            try database.saveStats(changes, profileID: profileID)
+            dirty.removeAll()
         } catch {
             print("保存学习记录失败：\(error)")
         }

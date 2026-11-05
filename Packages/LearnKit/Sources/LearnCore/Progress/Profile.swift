@@ -20,18 +20,42 @@ public struct Profile: Codable, Identifiable, Hashable, Sendable {
     public static let avatars = ["🐯", "🐼", "🦊", "🐰", "🐨", "🦁", "🐸", "🐧", "🦄", "🐳"]
 }
 
+/// 孩子档案列表，存在本地数据库（LearnDatabase）里。
 public final class ProfileStore {
     public private(set) var profiles: [Profile]
-    private let url: URL?
+    private let database: LearnDatabase?
 
-    public init(url: URL?) {
-        self.url = url
-        if let url, let data = try? Data(contentsOf: url),
-           let saved = try? JSONDecoder().decode([Profile].self, from: data) {
-            profiles = saved
-        } else {
-            profiles = []
+    /// legacyFile 是旧版的 profiles.json：数据库里还没有档案时导入一次，导入成功后改名为 .json.migrated。
+    /// database 为 nil 时只在内存里（测试用，或数据库打不开时），此时只读取 legacyFile、不改动它。
+    public init(database: LearnDatabase?, legacyFile: URL? = nil) {
+        self.database = database
+        let legacy = legacyFile.flatMap(Self.readLegacy)
+        guard let database else {
+            profiles = legacy ?? []
+            return
         }
+        do {
+            profiles = try database.profiles()
+        } catch {
+            print("读取孩子档案失败：\(error)")
+            profiles = []
+            return
+        }
+        if profiles.isEmpty, let legacyFile, let legacy {
+            do {
+                try database.saveProfiles(legacy)
+                profiles = legacy
+                AppPaths.markMigrated(legacyFile)
+            } catch {
+                print("迁移孩子档案失败：\(error)")
+                profiles = legacy
+            }
+        }
+    }
+
+    private static func readLegacy(_ file: URL) -> [Profile]? {
+        guard let data = try? Data(contentsOf: file) else { return nil }
+        return try? JSONDecoder().decode([Profile].self, from: data)
     }
 
     public func upsert(_ profile: Profile) {
@@ -49,10 +73,9 @@ public final class ProfileStore {
     }
 
     private func save() {
-        guard let url else { return }
+        guard let database else { return }
         do {
-            try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
-            try JSONEncoder().encode(profiles).write(to: url, options: .atomic)
+            try database.saveProfiles(profiles)
         } catch {
             print("保存孩子档案失败：\(error)")
         }
@@ -61,20 +84,37 @@ public final class ProfileStore {
 
 /// 本地存储位置
 public enum AppPaths {
-    /// 档案和学习记录
+    /// 本地数据库和旧版 JSON 所在目录
     public static var dataDirectory: URL {
         FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("LearnDefense", isDirectory: true)
     }
 
+    /// 本地数据库（SwiftData）：档案、成长档案、学习记录，以及题库和系统配置的副本
+    public static var databaseFile: URL { dataDirectory.appendingPathComponent("learn.store") }
+
+    /// 旧版 JSON 导入数据库后改名成的备份文件（xxx.json.migrated）
+    public static func migratedBackup(for legacyFile: URL) -> URL {
+        legacyFile.appendingPathExtension("migrated")
+    }
+
+    /// 旧版 JSON 已导入数据库：改名留作备份，以后不再读取
+    static func markMigrated(_ legacyFile: URL) {
+        let backup = migratedBackup(for: legacyFile)
+        try? FileManager.default.removeItem(at: backup)
+        try? FileManager.default.moveItem(at: legacyFile, to: backup)
+    }
+
+    /// 旧版档案列表 JSON，只用于迁移到数据库
     public static var profilesFile: URL { dataDirectory.appendingPathComponent("profiles.json") }
 
+    /// 旧版学习记录 JSON，只用于迁移到数据库
     public static func progressFile(for id: UUID) -> URL {
         dataDirectory.appendingPathComponent("progress", isDirectory: true)
             .appendingPathComponent("\(id.uuidString).json")
     }
 
-    /// 成长档案（等级、积分、徽章、外观），和学习记录分开存
+    /// 旧版成长档案 JSON，只用于迁移到数据库
     public static func growthFile(for id: UUID) -> URL {
         dataDirectory.appendingPathComponent("growth", isDirectory: true)
             .appendingPathComponent("\(id.uuidString).json")

@@ -22,7 +22,8 @@ struct GameView: View {
             library: model.library,
             progress: model.progress(for: config.profileID),
             speech: model.speech,
-            growth: model.growth(for: config.profileID)))
+            growth: model.growth(for: config.profileID),
+            recorder: model.recorder(for: config)))
         self.onReplay = onReplay
         self.onExit = onExit
         self.onOpenCollection = onOpenCollection

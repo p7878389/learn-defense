@@ -13,7 +13,7 @@ struct IceCombatTests {
     @Test func cosmeticEquipsWithoutChangingCombatRulesAndCanBeRemoved() throws {
         let catalog = GrowthCatalog.bundled
         let ice = try #require(catalog.cosmetic(id: "projectile.iceCrystal"))
-        let store = GrowthStore(url: nil, catalog: catalog)
+        let store = GrowthStore(catalog: catalog)
         #expect(store.equip(ice))
         #expect(store.loadout.projectile(for: .inkling).shape == .gem)
         #expect(store.loadout.projectile(for: .inkling).color == .sky)
