@@ -37,12 +37,23 @@ struct ShotAttack: AttackStrategy {
             bullet.zPosition = 50
             bullet.alpha = 0
             layer.addChild(bullet)
+            let trail = IceCombatEffects.supports(projectile) ? IceCombatEffects.trail(on: bullet, in: layer) : nil
             bullet.run(.sequence([
                 .wait(forDuration: interval * TimeInterval(i)),
+                .run { [weak bullet, weak layer] in
+                    if let trail, let bullet, let layer {
+                        trail.particleBirthRate = 45
+                        IceCombatEffects.launch(at: bullet.position, in: layer)
+                    }
+                },
                 .fadeIn(withDuration: 0.02),
                 .move(to: target, duration: duration),
+                .run { [weak layer] in
+                    if let trail, let layer { IceCombatEffects.finish(trail, in: layer) }
+                },
                 .removeFromParent(),
-            ])) {
+            ])) { [weak layer] in
+                if trail != nil, let layer { IceCombatEffects.impact(at: target, in: layer) }
                 onImpact(i == n - 1)
             }
         }
