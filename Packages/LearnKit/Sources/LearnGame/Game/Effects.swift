@@ -235,6 +235,9 @@ struct SnowfallEffect: VisualEffect {
 /// 单词卡：3D 图片 + 字词 + 拼音。答对后在怪物上方弹出，停一会儿再飘走，同一时间只留一张
 struct WordCardEffect: VisualEffect {
     static let nodeName = "wordCard"
+    /// 画面顶部被 SwiftUI 卡牌栏、状态栏盖住的高度（场景坐标）。卡牌栏连边距约 88pt，
+    /// 战场铺满宽度时 1pt 约等于 1 个场景单位，小一点的 iPad 上略大，这里留足 100
+    static let topOverlayInset: CGFloat = 100
     let card: WordCard
 
     func play(at point: CGPoint, in layer: SKNode) {
@@ -292,12 +295,12 @@ struct WordCardEffect: VisualEffect {
         node.addChild(content)
         node.zPosition = 80
 
-        // 放在怪物上方，不超出画面
+        // 放在怪物上方，不超出画面，也不钻到顶部的卡牌栏、状态栏底下
         let bounds = layer.scene?.size ?? CGSize(width: 1200, height: 520)
         let halfW = cardSize.width / 2 + 8, halfH = cardSize.height / 2 + 8
         node.position = CGPoint(
             x: min(max(point.x, halfW), bounds.width - halfW),
-            y: min(max(point.y + 100, halfH), bounds.height - halfH))
+            y: min(max(point.y + 100, halfH), bounds.height - Self.topOverlayInset - halfH))
         // 直接淡入，不做由小到大的缩放，免得画面一下被放大
         node.alpha = 0
         layer.addChild(node)

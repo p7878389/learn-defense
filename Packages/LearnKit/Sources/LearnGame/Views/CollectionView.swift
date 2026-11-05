@@ -36,16 +36,7 @@ struct CollectionView: View {
     // MARK: 顶部和分类
 
     private func topBar(level: Int) -> some View {
-        HStack(spacing: 16) {
-            Button(action: onClose) {
-                CandyButtonLabel(title: "回主页", icon: "←", fill: GrowthColors.surface, edge: GrowthColors.cardEdge, foreground: Theme.ink,
-                                 font: .system(size: 22, weight: .heavy, design: .rounded), height: 56)
-            }
-            .buttonStyle(PressableStyle())
-            Spacer()
-            PictureView(emoji: "🎁", size: 44)
-            Text("收藏馆").font(.system(size: 40, weight: .heavy, design: .rounded)).foregroundStyle(Theme.ink)
-            Spacer()
+        GrowthPageHeader(icon: "🎁", title: "收藏馆", subtitle: "外观与特效", onClose: onClose) {
             LevelPill(level: level)
             CoinPill(coins: growth.state.coins, size: 24)
         }
@@ -66,13 +57,7 @@ struct CollectionView: View {
                     .foregroundStyle(slot == s ? .white : Theme.ink)
                     .padding(.horizontal, 20)
                     .frame(height: 64)
-                    .background(
-                        Capsule()
-                            .fill(slot == s ? Theme.accent : Theme.paper.opacity(0.72))
-                            .shadow(color: slot == s ? GrowthColors.orangeDeep : GrowthColors.cardEdge.opacity(0.55),
-                                    radius: 0, x: 0, y: slot == s ? 5 : 2))
-                    .overlay(Capsule().stroke(slot == s ? GrowthColors.orangeDeep : GrowthColors.cardEdge,
-                                              lineWidth: slot == s ? 0 : 2))
+                    .background(CandyTileBackground(selected: slot == s))
                 }
                 .buttonStyle(PressableStyle())
             }
@@ -81,13 +66,16 @@ struct CollectionView: View {
                 Text("命中特效").font(.system(size: 18, weight: .bold, design: .rounded))
                 Spacer()
                 Text("待开放").font(.system(size: 13, weight: .bold, design: .rounded))
+                    .padding(.horizontal, 8).padding(.vertical, 2)
+                    .background(Capsule().fill(Theme.muted.opacity(0.12)))
             }
             .foregroundStyle(Theme.muted)
             .padding(.horizontal, 20)
             .frame(height: 54)
-            .background(Capsule().fill(Theme.muted.opacity(0.12)))
+            .background(RoundedRectangle(cornerRadius: 22).fill(Theme.muted.opacity(0.06)))
+            .overlay(RoundedRectangle(cornerRadius: 22).stroke(Theme.muted.opacity(0.35), style: StrokeStyle(lineWidth: 2, dash: [6, 5])))
         }
-        .frame(width: 230)
+        .frame(width: 210)
     }
 
     // MARK: 预览舞台
@@ -102,8 +90,9 @@ struct CollectionView: View {
         let item = previewItem
         return ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: 26)
-                .fill(LinearGradient(colors: [Color(red: 0.87, green: 0.95, blue: 1), Color(red: 0.86, green: 0.95, blue: 0.82)],
+                .fill(LinearGradient(colors: [GrowthColors.sky, Color(red: 0.86, green: 0.95, blue: 0.82)],
                                      startPoint: .top, endPoint: .bottom))
+                .shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 5)
             VStack(spacing: 0) {
                 Spacer(minLength: 0)
                 stageContent(item)
@@ -178,7 +167,8 @@ struct CollectionView: View {
 
     private func cards(level: Int) -> some View {
         let items = growth.catalog.cosmetics(in: slot)
-        return HStack(alignment: .top, spacing: 14) {
+        // 子弹外观有 6 件：右侧约 900pt 要放下 6 张卡，卡片和按钮都不能有超过 140pt 的最小宽度，否则整页被撑宽、两边被裁掉
+        return HStack(alignment: .top, spacing: 12) {
             ForEach(items, id: \.id) { card($0, level: level) }
         }
         .padding(.horizontal, slot == .itemSkin ? 70 : 0)
@@ -203,20 +193,29 @@ struct CollectionView: View {
                 .foregroundStyle(locked ? Theme.muted : Theme.ink)
                 .lineLimit(1).minimumScaleFactor(0.7)
             Text(item.summary).font(.system(size: 14, weight: .bold, design: .rounded)).foregroundStyle(Theme.muted)
-                .lineLimit(2).multilineTextAlignment(.center).frame(minHeight: 36)
+                .lineLimit(3).minimumScaleFactor(0.85).multilineTextAlignment(.center).frame(minHeight: 36)
             if let skin = item.itemSkin, let base = UnitCatalog.item(id: skin.item) {
                 Text("原来是 \(base.icon) \(base.name)").font(.system(size: 13, weight: .bold, design: .rounded)).foregroundStyle(Theme.muted)
             }
             Spacer(minLength: 0)
             cardAction(item, status: status, level: level)
         }
-        .padding(14)
+        .padding(10)
         .frame(maxWidth: .infinity, minHeight: 330)
         .background(
             RoundedRectangle(cornerRadius: 26)
                 .fill(status == .equipped ? GrowthColors.gold.opacity(0.12) : GrowthColors.surface)
                 .shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 5))
-        .overlay(RoundedRectangle(cornerRadius: 26).stroke(status == .equipped ? GrowthColors.gold : .clear, lineWidth: 4))
+        // 和主页卡片同一套描边：装扮中金色粗边，还没解锁的虚线，其余浅金细边
+        .overlay {
+            if status == .equipped {
+                RoundedRectangle(cornerRadius: 26).stroke(GrowthColors.gold, lineWidth: 4)
+            } else if locked {
+                RoundedRectangle(cornerRadius: 26).stroke(GrowthColors.cardEdge, style: StrokeStyle(lineWidth: 2, dash: [7, 5]))
+            } else {
+                RoundedRectangle(cornerRadius: 26).stroke(GrowthColors.cardEdge, lineWidth: 2)
+            }
+        }
         .overlay(alignment: .topTrailing) {
             if status == .equipped { cornerTag("✨ 装扮中", fill: GrowthColors.gold, text: Color(red: 0.36, green: 0.25, blue: 0)) }
         }
@@ -238,10 +237,12 @@ struct CollectionView: View {
     @ViewBuilder
     private func cardAction(_ item: CosmeticKind, status: GrowthState.CosmeticStatus, level: Int) -> some View {
         let actionFont = Font.system(size: 18, weight: .heavy, design: .rounded)
+        let hintFont = Font.system(size: 13, weight: .heavy, design: .rounded)
         switch status {
         case .equipped:
             VStack(spacing: 4) {
-                CandyButtonLabel(title: "使用中 ✓", fill: Theme.jade, edge: GrowthColors.jadeDark, font: actionFont, height: 50)
+                CandyButtonLabel(title: "使用中 ✓", fill: Theme.jade, edge: GrowthColors.jadeDark, font: actionFont, height: 50, minWidth: 0)
+                    .frame(maxWidth: .infinity)
                 if !item.isOriginal {
                     Button("换回原版") { model.unequip(key: item.equipKey, for: profileID) }
                         .font(.system(size: 15, weight: .bold, design: .rounded))
@@ -251,7 +252,9 @@ struct CollectionView: View {
         case .owned:
             Button { model.equip(item, for: profileID) } label: {
                 CandyButtonLabel(title: "装备", fill: GrowthColors.surface, edge: GrowthColors.jadeDark, foreground: GrowthColors.jadeDark,
-                                 font: actionFont, height: 50)
+                                 font: actionFont, height: 50, minWidth: 0)
+                    .frame(maxWidth: .infinity)
+                    .overlay(Capsule().stroke(GrowthColors.jadeDark.opacity(0.6), lineWidth: 2))
             }
             .buttonStyle(PressableStyle())
         case let .forSale(price):
@@ -262,24 +265,29 @@ struct CollectionView: View {
                     confirming = item
                 } label: {
                     CandyButtonLabel(title: "\(price) 购买", coin: true, fill: Theme.accent, edge: GrowthColors.orangeDark,
-                                     font: actionFont, height: 50)
+                                     font: actionFont, height: 50, minWidth: 0)
+                        .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(PressableStyle())
             } else {
                 VStack(spacing: 4) {
                     Text("再玩 \(max(1, Int((Double(short) / 40).rounded(.up)))) 局左右就够啦")
-                        .font(.system(size: 13, weight: .heavy, design: .rounded)).foregroundStyle(Theme.wrong)
+                        .font(hintFont).foregroundStyle(Theme.wrong)
+                        .lineLimit(1).minimumScaleFactor(0.7)
                     CandyButtonLabel(title: "\(price) 还差 \(short)", coin: true, fill: Color(white: 0.88), edge: Color(white: 0.75),
-                                     foreground: Theme.muted, font: actionFont, height: 50)
+                                     foreground: Theme.muted, font: actionFont, height: 50, minWidth: 0)
+                        .frame(maxWidth: .infinity)
                 }
             }
         case let .locked(unlock):
             VStack(spacing: 6) {
                 Text("🔒 Lv.\(unlock) 解锁").font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(Theme.muted)
-                Text("还差 \(unlock - level) 级就能拿到！").font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(Theme.accent)
+                Text("还差 \(unlock - level) 级就能拿到！").font(hintFont).foregroundStyle(Theme.accent)
+                    .lineLimit(1).minimumScaleFactor(0.7)
                 MiniBar(value: Double(level), total: Double(unlock), tint: Theme.accent)
                 CandyButtonLabel(title: "还没解锁", fill: Color(white: 0.9), edge: Color(white: 0.78), foreground: Theme.muted,
-                                 font: actionFont, height: 46)
+                                 font: actionFont, height: 46, minWidth: 0)
+                    .frame(maxWidth: .infinity)
             }
         }
     }
