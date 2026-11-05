@@ -51,9 +51,15 @@ extension LearnDatabase {
         try context.save()
     }
 
-    /// 删除一个孩子在数据库里的全部个人数据：档案、成长档案、学习记录
+    /// 删除一个孩子在数据库里的全部个人数据：档案、成长档案、学习记录、对局和答题明细
     public func deletePersonalData(profileID: UUID) throws {
         let pid = profileID.uuidString
+        for row in try context.fetch(FetchDescriptor<StoredAnswer>(predicate: #Predicate { $0.profileID == pid })) {
+            context.delete(row)
+        }
+        for row in try context.fetch(FetchDescriptor<StoredGame>(predicate: #Predicate { $0.profileID == pid })) {
+            context.delete(row)
+        }
         for row in try context.fetch(FetchDescriptor<StoredGrowth>(predicate: #Predicate { $0.profileID == pid })) {
             context.delete(row)
         }

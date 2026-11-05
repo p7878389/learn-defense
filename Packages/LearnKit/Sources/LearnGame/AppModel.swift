@@ -107,6 +107,17 @@ public final class AppModel: ObservableObject {
         return store
     }
 
+    /// 一局的对局记录器：答题明细先记在内存里，结束或中途退出时写进数据库
+    func recorder(for config: GameConfig) -> GameRecorder {
+        GameRecorder(
+            database: database,
+            profileID: config.profileID,
+            grade: config.grade,
+            difficulty: config.difficulty,
+            packIDs: config.packIDs,
+            selection: config.selection)
+    }
+
     /// 用积分买外观；成功后刷新界面
     func purchase(_ item: CosmeticKind, for profileID: UUID) -> GrowthState.PurchaseResult {
         let result = growth(for: profileID).purchase(item)

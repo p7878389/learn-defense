@@ -4,10 +4,12 @@ import SwiftData
 /// 本地数据库（SwiftData，底层是 SQLite）。
 /// - 题库、系统配置：JSON 仍是来源，每次加载后整份同步过来，用来查询
 /// - 孩子档案、成长档案、学习记录：数据库是唯一存储，旧版 JSON 第一次读取时迁移进来
+/// - 对局记录、答题明细：每局结束（或中途退出）时写入
 public final class LearnDatabase {
     public static let schema = Schema([
         StoredPack.self, StoredItem.self, StoredItemStats.self,
         StoredProfile.self, StoredGrowth.self,
+        StoredGame.self, StoredAnswer.self,
         StoredConfigFile.self, StoredBadge.self, StoredCosmetic.self,
     ])
 

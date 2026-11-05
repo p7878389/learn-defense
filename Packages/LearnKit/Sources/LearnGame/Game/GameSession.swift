@@ -66,6 +66,11 @@ final class GameSession: ObservableObject {
     private let progress: ProgressStore
     private let speech: Speech
     private let growth: GrowthStore?
+    /// 对局记录和答题明细；为 nil 时不记录
+    private let recorder: GameRecorder?
+    /// 每个怪物当前这道题第一次成为瞄准目标的时间，算作答用时
+    private var shownAt: [Int: Date] = [:]
+    private var ultimateShownAt: Date?
     /// 本局装备的外观（子弹、退场特效、道具皮肤）
     let loadout: Loadout
 
@@ -80,7 +85,8 @@ final class GameSession: ObservableObject {
     private var targetID: Int?
     private var ultimateItem: LearningItem?
 
-    init(config: GameConfig, library: ContentLibrary, progress: ProgressStore, speech: Speech, growth: GrowthStore? = nil) {
+    init(config: GameConfig, library: ContentLibrary, progress: ProgressStore, speech: Speech, growth: GrowthStore? = nil,
+         recorder: GameRecorder? = nil) {
         let packs = config.packIDs.compactMap(library.pack(id:))
         let pool = ItemPool(packs: packs, selection: config.selection)
         let pacing = growth?.catalog.pacing ?? GrowthCatalog.bundled.pacing
@@ -90,6 +96,7 @@ final class GameSession: ObservableObject {
         self.progress = progress
         self.speech = speech
         self.growth = growth
+        self.recorder = recorder
         loadout = growth?.loadout ?? .standard
         generator = QuestionGenerator(pool: pool, settings: tuning.generator)
         hearts = tuning.hearts
@@ -163,6 +170,7 @@ final class GameSession: ObservableObject {
                 energy = min(energy + 1, tuning.ultimateEnergy)
                 tuner.record(correct: true)
                 progress.record(entry.item, correct: true)
+                recorder?.recordAnswer(question, chosenIndex: index, shownAt: shownAt[id])
             } else {
                 score += 2
             }
@@ -170,11 +178,13 @@ final class GameSession: ObservableObject {
             if let card = question.card { scene.showCard(card, near: id) }
             enemyQuestions[id] = nil
             enemyWrongPicks[id] = nil
+            shownAt[id] = nil
             // 打败时场景会马上瞄准下一个怪物，并回调 targetChanged
             if scene.fire(at: id) == false {
                 // 还没打倒（血量多的怪物）：换一道题继续打它
                 if let next = makeQuestion() {
                     enemyQuestions[id] = next
+                    shownAt[id] = Date()
                     scene.setSign(id, next.question.signText)
                     current = next.question
                     wrongPicks = []
@@ -191,6 +201,7 @@ final class GameSession: ObservableObject {
                 progress.record(entry.item, correct: false)
                 progress.save()
                 mistakes.append(Mistake(question: question, missed: false))
+                recorder?.recordAnswer(question, chosenIndex: index, shownAt: shownAt[id])
             }
             picks.insert(index)
             enemyWrongPicks[id] = picks
@@ -212,6 +223,7 @@ final class GameSession: ObservableObject {
         ultimateItem = pair.0
         ultimate = pair.1
         ultimateWrongPicks = []
+        ultimateShownAt = Date()
         scene.setGamePaused(true)
         speech.speak(pair.1.promptSpeech, interrupt: true)
     }
@@ -220,7 +232,10 @@ final class GameSession: ObservableObject {
         guard let question = ultimate, let item = ultimateItem else { return }
         if index == question.answerIndex {
             let firstTry = ultimateWrongPicks.isEmpty
-            if firstTry { progress.record(item, correct: true) }
+            if firstTry {
+                progress.record(item, correct: true)
+                recorder?.recordAnswer(question, chosenIndex: index, ultimate: true, shownAt: ultimateShownAt)
+            }
             speech.speak(question.answerSpeech, interrupt: true)
             ultimate = nil
             ultimateItem = nil
@@ -239,6 +254,7 @@ final class GameSession: ObservableObject {
                 progress.record(item, correct: false)
                 progress.save()
                 mistakes.append(Mistake(question: question, missed: false))
+                recorder?.recordAnswer(question, chosenIndex: index, ultimate: true, shownAt: ultimateShownAt)
             }
             ultimateWrongPicks.insert(index)
             speech.speak(question.answerSpeech, interrupt: true)
@@ -321,6 +337,8 @@ final class GameSession: ObservableObject {
         scene.setGamePaused(true)
         speech.stop()
         progress.save()
+        // 开始闯关后中途退出：只记对局，不结算成长
+        if phase == .playing || phase == .paused { recordGame(.quit) }
     }
 
     private func checkFinished() {
@@ -338,6 +356,27 @@ final class GameSession: ObservableObject {
         playSeconds = battleStartedAt.map { Int(Date().timeIntervalSince($0)) } ?? 0
         speech.speak(won ? "太棒了，书本守住了！" : "没关系，再来一次吧！", interrupt: false)
         settleGrowth()
+        recordGame(won ? .won : .lost)
+    }
+
+    /// 把这一局和答题明细写进数据库（每局只写一次）
+    private func recordGame(_ outcome: GameOutcome) {
+        guard let recorder, !isEmpty else { return }
+        let seconds = outcome == .quit
+            ? battleStartedAt.map { Int(Date().timeIntervalSince($0)) } ?? 0
+            : playSeconds
+        recorder.finish(outcome, summary: GameSummary(
+            questions: attempted,
+            firstTryCorrect: firstTryCorrect,
+            stars: stars,
+            score: score,
+            enemiesDefeated: defeated,
+            bossesDefeated: bossesDefeated,
+            itemsUsed: itemsUsed,
+            ultimatesCast: ultimatesCast,
+            seconds: seconds,
+            xp: growthResult?.xp,
+            coins: growthResult?.totalCoins))
     }
 
     /// 通关或失败才结算成长奖励；中途退出（end）不结算，免得反复开局刷积分
@@ -393,6 +432,7 @@ extension GameSession: GameSceneDelegate {
     func targetChanged(to id: Int?) {
         targetID = id
         current = id.flatMap { enemyQuestions[$0]?.question }
+        if let id, current != nil, shownAt[id] == nil { shownAt[id] = Date() }
         wrongPicks = id.flatMap { enemyWrongPicks[$0] } ?? []
         speech.speak(current?.promptSpeech, interrupt: false)
     }
@@ -401,9 +441,14 @@ extension GameSession: GameSceneDelegate {
         guard let hearts else { return false }
         if let entry = enemyQuestions[id] {
             mistakes.append(Mistake(question: entry.question, missed: true))
+            // 已经答错过的那次作答已记录；一次都没答的记为没来得及答
+            if (enemyWrongPicks[id] ?? []).isEmpty {
+                recorder?.recordAnswer(entry.question, chosenIndex: nil, shownAt: shownAt[id])
+            }
         }
         enemyQuestions[id] = nil
         enemyWrongPicks[id] = nil
+        shownAt[id] = nil
         enemyKinds[id] = nil
         resolved += 1
         self.hearts = hearts - 1
