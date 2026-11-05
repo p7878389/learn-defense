@@ -162,6 +162,9 @@ struct UnitTests {
         #expect(Set(UnitCatalog.defenders.map(\.id)).count == UnitCatalog.defenders.count)
         #expect(UnitCatalog.enemy(id: "king") == .king)
         #expect(UnitCatalog.defender(id: "frost") == .frost)
+        #expect(Set(UnitCatalog.enemies.map(\.hp)) == [1, 2, 3])
+        #expect(UnitCatalog.enemies.allSatisfy { $0.sunReward == $0.hp * 25 })
+        #expect(UnitCatalog.defenders.allSatisfy { $0.sunCost >= 50 })
     }
 
     /// 不管哪种走法，平均速度都要等于设定值，否则「多少秒走到书架」的难度就不准了
@@ -197,22 +200,30 @@ struct UnitTests {
         #expect(AttackStyle.single(damage: 1).totalDamage == 1)
         #expect(AttackStyle.volley(count: 2, damage: 1).totalDamage == 2)
         var health = Health(max: EnemyKind.armored.hp)
-        let firstHit = health.take(DefenderKind.inkling.attack.totalDamage)
+        let firstHit = health.take(1)
         #expect(!firstHit && health.current == 1)
         let secondHit = health.take(1)
         #expect(secondHit && health.isDefeated)
-        // 连珠灵一次打两下，铁头墨一题就倒
-        var tough = Health(max: EnemyKind.armored.hp)
-        let volley = tough.take(DefenderKind.twin.attack.totalDamage)
-        #expect(volley)
+        // 每次答对只推进一次攻击，首领必须完成三道题
+        var boss = Health(max: EnemyKind.king.hp)
+        #expect(!boss.take(1) && boss.current == 2)
+        #expect(!boss.take(1) && boss.current == 1)
+        let finalHit = boss.take(1)
+        #expect(finalHit)
     }
 
     @Test func wavePlan() {
         var rng = SeededRNG(state: 3)
         for grade in Grade.allCases {
+            let startingSuns = Difficulty.allCases.map {
+                GameTuning.make(grade: grade, difficulty: $0).startingSun
+            }
+            #expect(startingSuns == startingSuns.sorted(), "难度越高，初始阳光不应减少")
+            #expect(Set(startingSuns).count > 1, "不同难度应配置不同初始阳光")
             for difficulty in Difficulty.allCases {
                 let tuning = GameTuning.make(grade: grade, difficulty: difficulty)
                 #expect(tuning.lineup.count == tuning.lanes)
+                #expect(tuning.startingSun >= tuning.lanes * DefenderKind.inkling.sunCost)
                 let kinds = tuning.waves.kinds(count: tuning.enemyCount, using: &rng)
                 #expect(kinds.count == tuning.enemyCount)
                 #expect(kinds.prefix(tuning.waves.warmup).allSatisfy { $0 == tuning.waves.basic })

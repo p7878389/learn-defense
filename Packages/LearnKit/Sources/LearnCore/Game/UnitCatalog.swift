@@ -38,29 +38,29 @@ public extension EnemyKind {
 
 public extension DefenderKind {
     static let inkling = DefenderKind(
-        id: "inkling", name: "豌豆射手", attack: .single(damage: 1),
+        id: "inkling", name: "豌豆射手", sunCost: 50, attack: .single(damage: 1),
         look: DefenderLook(body: .round, color: .jade, accessory: .brush),
         projectile: ProjectileLook(shape: .orb, color: .gold))
 
     static let twin = DefenderKind(
-        id: "twin", name: "双发射手", attack: .volley(count: 2, damage: 1),
+        id: "twin", name: "双发射手", sunCost: 100, attack: .volley(count: 2, damage: 1),
         look: DefenderLook(body: .drop, color: .coral, accessory: .bow),
         projectile: ProjectileLook(shape: .orb, color: .coral, size: 8))
 
     static let frost = DefenderKind(
-        id: "frost", name: "寒冰射手", attack: .single(damage: 1),
+        id: "frost", name: "寒冰射手", sunCost: 100, attack: .single(damage: 1),
         effects: [.slowLane(factor: 0.5, seconds: 3)],
         look: DefenderLook(body: .round, color: .sky, accessory: .scholarHat),
         projectile: ProjectileLook(shape: .snowflake, color: .sky, size: 13))
 
     static let stroke = DefenderKind(
-        id: "stroke", name: "大喷菇", attack: .beam(damage: 1),
+        id: "stroke", name: "大喷菇", sunCost: 125, attack: .beam(damage: 1),
         effects: [.knockback(distance: 70)],
         look: DefenderLook(body: .seal, color: .gold, accessory: .brush),
         projectile: ProjectileLook(shape: .petal, color: .gold))
 
     static let starling = DefenderKind(
-        id: "starling", name: "杨桃", attack: .single(damage: 1),
+        id: "starling", name: "杨桃", sunCost: 125, attack: .single(damage: 1),
         look: DefenderLook(body: .round, color: .moss, accessory: .leaf),
         projectile: ProjectileLook(shape: .star, color: .gold, size: 14))
 }

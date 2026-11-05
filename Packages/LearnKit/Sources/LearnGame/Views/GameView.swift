@@ -4,6 +4,8 @@ import SwiftUI
 
 struct GameView: View {
     @StateObject private var session: GameSession
+    @State private var battlefieldFrame: CGRect = .zero
+    @State private var activeDrag: PlantDrag?
     let onReplay: () -> Void
     let onExit: () -> Void
 
@@ -18,16 +20,12 @@ struct GameView: View {
     }
 
     private var debugOptions: SpriteView.DebugOptions {
-        #if DEBUG
-        [.showsFPS, .showsNodeCount]
-        #else
         []
-        #endif
     }
 
     var body: some View {
         ZStack {
-            Theme.paper.ignoresSafeArea()
+            Color(red: 0.24, green: 0.31, blue: 0.12).ignoresSafeArea()
 
             if session.isEmpty {
                 VStack(spacing: 20) {
@@ -35,19 +33,67 @@ struct GameView: View {
                     Button("返回", action: onExit).font(.title2)
                 }
             } else {
-                VStack(spacing: 12) {
+                VStack(spacing: 8) {
                     GameHUD(session: session, onExit: onExit)
-                    SpriteView(scene: session.scene, preferredFramesPerSecond: 120, debugOptions: debugOptions)
-                        .aspectRatio(GameScene.designSize.width / GameScene.designSize.height, contentMode: .fit)
-                        .clipShape(RoundedRectangle(cornerRadius: 18))
-                    AnswerPanel(
-                        question: session.current,
-                        wrongPicks: session.wrongPicks,
-                        onAnswer: session.answer,
-                        onReplay: session.replayPrompt)
+                        .padding(.vertical, 8)
+                        .background(Color(red: 0.91, green: 0.80, blue: 0.53), in: RoundedRectangle(cornerRadius: 8))
+                    SeedPacketStrip(
+                        kinds: session.tuning.lineup,
+                        sun: session.sun,
+                        enabled: session.canUseShop,
+                        draggingID: activeDrag?.kind.id,
+                        onDragChanged: { kind, location in
+                            activeDrag = PlantDrag(kind: kind, location: location)
+                        },
+                        onDragEnded: { kind, location in
+                            // 只点一下卡牌、或拖回卡牌栏松手，都当作取消，不提示种错
+                            if battlefieldFrame.contains(location) {
+                                let localPoint = CGPoint(
+                                    x: location.x - battlefieldFrame.minX,
+                                    y: location.y - battlefieldFrame.minY)
+                                _ = session.dropSeed(id: kind.id, at: scenePoint(from: localPoint, in: battlefieldFrame.size))
+                            }
+                            activeDrag = nil
+                        })
+                    BattlefieldView(session: session, debugOptions: debugOptions)
+                        .background(
+                            // 直接记下战场位置；用 PreferenceKey 传到外层时真机上一直是 .zero
+                            GeometryReader { proxy in
+                                Color.clear.onChange(of: proxy.frame(in: .named("gameLayout")), initial: true) { _, frame in
+                                    battlefieldFrame = frame
+                                }
+                            })
+                        .overlay {
+                            if let drag = activeDrag, battlefieldFrame.contains(drag.location) {
+                                RoundedRectangle(cornerRadius: 6)
+                                    .stroke(Theme.jade, lineWidth: 5)
+                                    .padding(4)
+                                    .allowsHitTesting(false)
+                            }
+                        }
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                        .layoutPriority(-1)
+                    if session.phase == .preparing {
+                        PreparationPanel(session: session)
+                    } else {
+                        AnswerPanel(
+                            question: session.current,
+                            wrongPicks: session.wrongPicks,
+                            onAnswer: session.answer,
+                            onReplay: session.replayPrompt)
+                            .padding(12)
+                            .background(Color(red: 0.98, green: 0.94, blue: 0.80), in: RoundedRectangle(cornerRadius: 12))
+                    }
                     Spacer(minLength: 0)
                 }
-                .padding(16)
+                .padding(10)
+            }
+
+            if let drag = activeDrag {
+                PlantDragGhost(kind: drag.kind)
+                    .position(drag.location)
+                    .allowsHitTesting(false)
+                    .zIndex(20)
             }
 
             if let question = session.ultimate {
@@ -67,11 +113,68 @@ struct GameView: View {
                 ResultView(session: session, onReplay: onReplay, onExit: onExit)
             }
         }
+        .coordinateSpace(name: "gameLayout")
         .onDisappear { session.end() }
         #if os(iOS)
         .statusBarHidden()
         .persistentSystemOverlays(.hidden)
         #endif
+    }
+
+    private func scenePoint(from viewPoint: CGPoint, in viewSize: CGSize) -> CGPoint {
+        let scale = min(
+            viewSize.width / GameScene.designSize.width,
+            viewSize.height / GameScene.designSize.height)
+        guard scale > 0 else { return .zero }
+        let renderedSize = CGSize(
+            width: GameScene.designSize.width * scale,
+            height: GameScene.designSize.height * scale)
+        let offsetX = (viewSize.width - renderedSize.width) / 2
+        let offsetY = (viewSize.height - renderedSize.height) / 2
+        return CGPoint(
+            x: (viewPoint.x - offsetX) / scale,
+            y: (viewSize.height - viewPoint.y - offsetY) / scale)
+    }
+}
+
+private struct BattlefieldView: View {
+    @ObservedObject var session: GameSession
+    let debugOptions: SpriteView.DebugOptions
+
+    var body: some View {
+        GeometryReader { geometry in
+            SpriteView(
+                scene: session.scene,
+                preferredFramesPerSecond: 120,
+                debugOptions: debugOptions)
+                .frame(width: geometry.size.width, height: geometry.size.height)
+        }
+        .aspectRatio(GameScene.designSize.width / GameScene.designSize.height, contentMode: .fit)
+    }
+}
+
+private struct PlantDrag: Equatable {
+    let kind: DefenderKind
+    var location: CGPoint
+}
+
+private struct PlantDragGhost: View {
+    let kind: DefenderKind
+
+    var body: some View {
+        HStack(spacing: 8) {
+            if let texture = UnitSprites.frames(named: "plant-\(kind.id)").first {
+                Image(decorative: texture.cgImage(), scale: 1)
+                    .resizable().scaledToFit().frame(width: 54, height: 50)
+            }
+            Text(kind.name)
+                .font(.title3.weight(.bold))
+                .foregroundStyle(Theme.ink)
+        }
+        .padding(10)
+        .background(Color(red: 0.94, green: 0.88, blue: 0.62), in: RoundedRectangle(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.accent, lineWidth: 3))
+        .shadow(color: .black.opacity(0.25), radius: 10, y: 5)
     }
 }
 
@@ -81,11 +184,17 @@ struct GameHUD: View {
 
     var body: some View {
         HStack(spacing: 24) {
-            Button(action: session.togglePause) {
-                Image(systemName: "pause.circle.fill").font(.system(size: 40))
+            if session.phase == .preparing {
+                Label("准备", systemImage: "leaf.fill")
+                    .font(.title3.weight(.bold))
+                    .foregroundStyle(Theme.jade)
+            } else {
+                Button(action: session.togglePause) {
+                    Image(systemName: "pause.circle.fill").font(.system(size: 40))
+                }
+                .buttonStyle(PressableStyle())
+                .foregroundStyle(Theme.muted)
             }
-            .buttonStyle(PressableStyle())
-            .foregroundStyle(Theme.muted)
 
             if let hearts = session.hearts, let maxHearts = session.tuning.hearts {
                 HStack(spacing: 4) {
@@ -110,6 +219,8 @@ struct GameHUD: View {
                 .font(.title3.weight(.semibold).monospacedDigit())
                 .foregroundStyle(Theme.accent)
 
+            SunCounter(amount: session.sun)
+
             Spacer()
 
             ItemBar(
@@ -124,6 +235,37 @@ struct GameHUD: View {
                 action: session.startUltimate)
         }
         .padding(.horizontal, 8)
+    }
+}
+
+struct PreparationPanel: View {
+    @ObservedObject var session: GameSession
+
+    var body: some View {
+        HStack(spacing: 20) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("准备布阵")
+                    .font(.title2.weight(.heavy))
+                    .foregroundStyle(Theme.ink)
+                Text("把植物卡拖到空草坪。阳光足够就能继续布阵，种下后不能修改，已布阵 \(session.plantedLaneCount)/\(session.tuning.lanes) 路")
+                    .font(.headline)
+                    .foregroundStyle(Theme.muted)
+            }
+
+            Spacer()
+
+            Button(action: session.startBattle) {
+                Text(session.canStartBattle ? "开始闯关" : "先种一株植物")
+                    .font(.title2.weight(.heavy))
+                    .frame(minWidth: 210, minHeight: 58)
+                    .background(Capsule().fill(session.canStartBattle ? Theme.jade : Theme.muted.opacity(0.25)))
+                    .foregroundStyle(session.canStartBattle ? .white : Theme.muted)
+            }
+            .buttonStyle(PressableStyle())
+            .disabled(!session.canStartBattle)
+        }
+        .padding(14)
+        .background(Color(red: 0.98, green: 0.94, blue: 0.80), in: RoundedRectangle(cornerRadius: 12))
     }
 }
 

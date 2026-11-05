@@ -27,6 +27,17 @@ struct Backdrop {
     private var laneHeight: CGFloat { fieldHeight / CGFloat(lanes) }
 
     func build(in scene: SKNode) {
+        if let url = Bundle.module.url(forResource: "courtyard", withExtension: "jpg", subdirectory: "Sprites"),
+           let image = PlatformImage(contentsOfFile: url.path) {
+            let full = SKTexture(image: image)
+            let texture = SKTexture(rect: CGRect(x: 100.0 / 1400, y: 0, width: 1200.0 / 1400, height: 1), in: full)
+            let courtyard = SKSpriteNode(texture: texture, size: size)
+            courtyard.name = "courtyard"
+            courtyard.anchorPoint = .zero
+            courtyard.zPosition = -30
+            scene.addChild(courtyard)
+            return
+        }
         addSky(to: scene)
         addHorizon(to: scene)
         addLanes(to: scene)

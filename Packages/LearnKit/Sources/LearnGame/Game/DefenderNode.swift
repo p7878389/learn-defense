@@ -40,8 +40,7 @@ final class DefenderNode: SKNode {
     }
 
     func shoot() {
-        let visual: SKNode = sprite ?? body
-        visual.run(.sequence([.scale(to: 1.2, duration: 0.08), .scale(to: 1.0, duration: 0.12)]), withKey: "shoot")
+        // 子弹发射时不缩放守卫，避免画面出现晃动
     }
 
     func hurt() {

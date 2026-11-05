@@ -10,17 +10,21 @@ public struct EnemyKind: Identifiable, Hashable, Sendable {
     public var speed: Double
     /// 打败后额外加分
     public var bonus: Int
+    /// 打败后获得的阳光；默认按血量递增
+    public var sunReward: Int
     public var movement: MovementStyle
     public var look: EnemyLook
     public var drop: ItemDrop?
 
     public init(id: String, name: String, hp: Int = 1, speed: Double = 1, bonus: Int = 0,
-                movement: MovementStyle = .steady, look: EnemyLook, drop: ItemDrop? = nil) {
+                sunReward: Int? = nil, movement: MovementStyle = .steady,
+                look: EnemyLook, drop: ItemDrop? = nil) {
         self.id = id
         self.name = name
         self.hp = max(1, hp)
         self.speed = speed
         self.bonus = bonus
+        self.sunReward = sunReward ?? max(1, hp) * 25
         self.movement = movement
         self.look = look
         self.drop = drop
@@ -35,11 +39,14 @@ public struct DefenderKind: Identifiable, Hashable, Sendable {
     public var effects: [HitEffect]
     public var look: DefenderLook
     public var projectile: ProjectileLook
+    /// 种植需要的阳光
+    public var sunCost: Int
 
-    public init(id: String, name: String, attack: AttackStyle, effects: [HitEffect] = [],
+    public init(id: String, name: String, sunCost: Int = 50, attack: AttackStyle, effects: [HitEffect] = [],
                 look: DefenderLook, projectile: ProjectileLook) {
         self.id = id
         self.name = name
+        self.sunCost = max(0, sunCost)
         self.attack = attack
         self.effects = effects
         self.look = look

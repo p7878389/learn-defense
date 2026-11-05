@@ -22,7 +22,7 @@ if match:
     print(match[0]["udid"], match[0]["name"])
 ' "$WANT") || true
 if [ -z "${UDID:-}" ]; then
-    echo "没有找到模拟器「$WANT」。请在 Xcode 设置 → Components 里下载 iOS 模拟器。"
+    echo "没有找到模拟器「${WANT}」。请在 Xcode 设置 → Components 里下载 iOS 模拟器。"
     exit 1
 fi
 echo "▶ 使用模拟器：$DEVICE"

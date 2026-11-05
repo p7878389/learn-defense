@@ -29,7 +29,7 @@ struct AnswerPanel: View {
                         .minimumScaleFactor(0.7)
                 }
             } else {
-                Text("墨团怪马上就来……")
+                Text("僵尸马上就来，准备答题！")
                     .font(.title2)
                     .foregroundStyle(Theme.muted)
                     .frame(maxWidth: .infinity, minHeight: 120)

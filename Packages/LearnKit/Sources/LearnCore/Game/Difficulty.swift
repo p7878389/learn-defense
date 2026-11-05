@@ -22,6 +22,8 @@ public struct GameTuning: Sendable {
     public var crossSeconds: Double
     public var spawnInterval: Double
     public var hearts: Int?
+    /// 开局拥有的阳光，保证孩子可以先种下基础防线
+    public var startingSun: Int
     /// 大招需要的能量（每次一次答对 +1）
     public var ultimateEnergy: Int
     /// 能量攒满后能放的大招
@@ -43,6 +45,7 @@ public struct GameTuning: Sendable {
                 crossSeconds: [45, 38, 30][i],
                 spawnInterval: [9, 8, 7][i],
                 hearts: nil,
+                startingSun: [150, 200, 250][i],
                 ultimateEnergy: 4,
                 ultimate: .rainbow,
                 generator: GeneratorSettings(
@@ -59,7 +62,8 @@ public struct GameTuning: Sendable {
         switch difficulty {
         case .easy:
             return GameTuning(
-                lanes: 5, enemyCount: 8, crossSeconds: 30, spawnInterval: 7, hearts: 5, ultimateEnergy: 5, ultimate: .inkStorm,
+                lanes: 5, enemyCount: 8, crossSeconds: 30, spawnInterval: 7, hearts: 5,
+                startingSun: 250, ultimateEnergy: 5, ultimate: .inkStorm,
                 generator: GeneratorSettings(optionCount: 3, strategy: .easy, showHint: true, preschool: false),
                 lineup: lineup,
                 waves: WavePlan(mix: [
@@ -69,7 +73,8 @@ public struct GameTuning: Sendable {
                 ]))
         case .normal:
             return GameTuning(
-                lanes: 5, enemyCount: 10, crossSeconds: 22, spawnInterval: 5.5, hearts: 3, ultimateEnergy: 5, ultimate: .inkStorm,
+                lanes: 5, enemyCount: 10, crossSeconds: 22, spawnInterval: 5.5, hearts: 3,
+                startingSun: 300, ultimateEnergy: 5, ultimate: .inkStorm,
                 generator: GeneratorSettings(optionCount: 4, strategy: .normal, showHint: false, preschool: false),
                 lineup: lineup,
                 waves: WavePlan(mix: [
@@ -80,7 +85,8 @@ public struct GameTuning: Sendable {
                 ], boss: .king))
         case .hard:
             return GameTuning(
-                lanes: 5, enemyCount: 12, crossSeconds: 16, spawnInterval: 4.2, hearts: 3, ultimateEnergy: 5, ultimate: .inkStorm,
+                lanes: 5, enemyCount: 12, crossSeconds: 16, spawnInterval: 4.2, hearts: 3,
+                startingSun: 350, ultimateEnergy: 5, ultimate: .inkStorm,
                 generator: GeneratorSettings(optionCount: 4, strategy: .hard, showHint: false, preschool: false),
                 lineup: lineup,
                 waves: WavePlan(mix: [

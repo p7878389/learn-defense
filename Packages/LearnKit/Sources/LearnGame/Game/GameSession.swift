@@ -5,7 +5,7 @@ import LearnCore
 @MainActor
 final class GameSession: ObservableObject {
     enum Phase: Equatable {
-        case playing, paused, won, lost
+        case preparing, playing, paused, won, lost
     }
 
     struct Mistake: Identifiable {
@@ -22,10 +22,11 @@ final class GameSession: ObservableObject {
     let scene: GameScene
     let isEmpty: Bool
 
-    @Published private(set) var phase: Phase = .playing
+    @Published private(set) var phase: Phase = .preparing
     @Published private(set) var hearts: Int?
     @Published private(set) var energy = 0
     @Published private(set) var score = 0
+    @Published private(set) var sun: Int
     @Published private(set) var defeated = 0
     @Published private(set) var totalEnemies: Int
     /// 当前瞄准的怪物的题目
@@ -68,12 +69,14 @@ final class GameSession: ObservableObject {
         self.speech = speech
         generator = QuestionGenerator(pool: pool, settings: tuning.generator)
         hearts = tuning.hearts
+        sun = tuning.startingSun
         totalEnemies = tuning.enemyCount
         var planRNG = SystemRandomNumberGenerator()
         spawnPlan = tuning.waves.kinds(count: tuning.enemyCount, using: &planRNG)
         isEmpty = pool.isEmpty
         scene = GameScene(tuning: tuning, theme: SceneTheme.choose(packs: packs, selection: config.selection, grade: config.grade))
         scene.gameDelegate = self
+        scene.setPreparing(true)
         if isEmpty { scene.setGamePaused(true) }
     }
 
@@ -84,6 +87,18 @@ final class GameSession: ObservableObject {
 
     var ultimateReady: Bool {
         energy >= tuning.ultimateEnergy && phase == .playing && ultimate == nil
+    }
+
+    var canUseShop: Bool {
+        (phase == .preparing || phase == .playing) && ultimate == nil
+    }
+
+    var plantedLaneCount: Int {
+        scene.plantedLaneCount
+    }
+
+    var canStartBattle: Bool {
+        phase == .preparing && plantedLaneCount > 0
     }
 
     var accuracy: Double {
@@ -104,6 +119,11 @@ final class GameSession: ObservableObject {
         var picks = enemyWrongPicks[id] ?? []
 
         if index == question.answerIndex {
+            guard scene.canAttack(id) else {
+                scene.play(FloatingTextEffect(text: "先选卡片，再点草坪", color: Palette.hurt, fontSize: 28))
+                speech.speak("先种下一个字灵，再答题打僵尸", interrupt: true)
+                return
+            }
             if picks.isEmpty {
                 attempted += 1
                 firstTryCorrect += 1
@@ -193,6 +213,36 @@ final class GameSession: ObservableObject {
     }
 
     // MARK: - 道具
+
+    func startBattle() {
+        guard canStartBattle else { return }
+        phase = .playing
+        scene.setPreparing(false)
+        speech.speak("准备完成，第一只僵尸来了！", interrupt: true)
+    }
+
+    /// 把拖到战场上的卡牌落到对应草坪；成功后立即扣除阳光
+    func dropSeed(id: String, at point: CGPoint) -> Bool {
+        guard canUseShop, let kind = tuning.lineup.first(where: { $0.id == id }) else { return false }
+        guard sun >= kind.sunCost else {
+            scene.play(FloatingTextEffect(text: "阳光不够", color: Palette.hurt, fontSize: 30))
+            speech.speak("阳光不够", interrupt: true)
+            return false
+        }
+        guard scene.plant(kind, at: point) else {
+            if scene.isPlantable(point) {
+                scene.play(FloatingTextEffect(text: "这一行种满了", color: Palette.hurt, fontSize: 26))
+                speech.speak("这一行种满了，换一行吧", interrupt: true)
+            } else {
+                scene.play(FloatingTextEffect(text: "只能种在空的草坪位置", color: Palette.hurt, fontSize: 26))
+                speech.speak("这里不能种，换个空的草坪位置", interrupt: true)
+            }
+            return false
+        }
+        sun -= kind.sunCost
+        speech.speak("\(kind.name)种下了", interrupt: true)
+        return true
+    }
 
     func useItem(at index: Int) {
         guard canUseItems, let item = inventory.take(at: index) else { return }
@@ -308,6 +358,10 @@ extension GameSession: GameSceneDelegate {
                 score += kind.bonus
                 scene.play(FloatingTextEffect(text: "+\(kind.bonus)"), at: CGPoint(x: point.x, y: point.y + 30))
             }
+            sun += kind.sunReward
+            scene.play(
+                FloatingTextEffect(text: "☀️ +\(kind.sunReward)", color: Palette.bullet, fontSize: 32),
+                at: CGPoint(x: point.x, y: point.y + 62))
             rollDrop(from: kind, at: point)
         }
         defeated += 1

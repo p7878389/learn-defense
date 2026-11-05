@@ -8,6 +8,12 @@ struct EnemySpawn {
     let kind: EnemyKind
 }
 
+/// 草坪上的一个种植格
+struct DefenderCell: Hashable {
+    let lane: Int
+    let column: Int
+}
+
 @MainActor
 protocol GameSceneDelegate: AnyObject {
     /// 要生成新怪物时调用，返回 nil 表示这一局的怪物出完了
@@ -24,14 +30,14 @@ protocol GameSceneDelegate: AnyObject {
 /// 游戏画面：负责怪物移动、瞄准、战斗结算和动画；答题规则在 GameSession 里。
 /// 怪物和字灵的具体表现都交给各自的种类配置（外观、走法、攻击策略），这里不区分种类
 final class GameScene: SKScene {
-    static let designSize = CGSize(width: 1200, height: 520)
+    static let designSize = CGSize(width: 1200, height: 600)
 
     weak var gameDelegate: GameSceneDelegate?
 
     private let tuning: GameTuning
     private let theme: SceneTheme
     private var enemies: [Int: EnemyNode] = [:]
-    private var defenders: [DefenderNode] = []
+    private var defenders: [DefenderCell: DefenderNode] = [:]
     private var targetID: Int?
     private var lastUpdate: TimeInterval = 0
     private var spawnCountdown = 1.0
@@ -39,11 +45,15 @@ final class GameScene: SKScene {
     private var built = false
     private(set) var gamePaused = false
 
-    private let baseX: CGFloat = 130
+    private let baseX: CGFloat = 160
     /// 顶部天空的高度，路在天空下面
-    private let skyHeight: CGFloat = 64
-    private var spawnX: CGFloat { size.width + 70 }
-    private var laneHeight: CGFloat { (size.height - skyHeight) / CGFloat(tuning.lanes) }
+    private let skyHeight: CGFloat = 80
+    private var spawnX: CGFloat { size.width - 45 }
+    private var laneHeight: CGFloat { 500 / 5 }
+    /// 种植格对齐庭院背景的 9 列草坪（x 144…894），plantingStartX 是第一列中心
+    private let plantingColumns = 9
+    private var plantingColumnWidth: CGFloat { 750 / CGFloat(plantingColumns) }
+    private var plantingStartX: CGFloat { 144 + plantingColumnWidth / 2 }
 
     init(tuning: GameTuning, theme: SceneTheme) {
         self.tuning = tuning
@@ -59,26 +69,15 @@ final class GameScene: SKScene {
         guard !built else { return }
         built = true
         buildBackground()
-        buildDefenders()
     }
 
     private func laneY(_ lane: Int) -> CGFloat {
-        laneHeight * (CGFloat(lane) + 0.5)
+        // 草坪从底部 20 到 520；幼儿园只使用中间三行。
+        20 + laneHeight * (CGFloat(lane + (5 - tuning.lanes) / 2) + 0.5)
     }
 
     private func buildBackground() {
         Backdrop(theme: theme, size: size, skyHeight: skyHeight, lanes: tuning.lanes, baseWidth: 64).build(in: self)
-    }
-
-    private func buildDefenders() {
-        for lane in 0..<tuning.lanes {
-            let kind = tuning.lineup.isEmpty ? DefenderKind.inkling : tuning.lineup[lane % tuning.lineup.count]
-            let defender = DefenderNode(kind: kind, radius: min(34, laneHeight * 0.32))
-            defender.position = CGPoint(x: 100, y: laneY(lane))
-            defender.zPosition = 5
-            addChild(defender)
-            defenders.append(defender)
-        }
     }
 
     // MARK: - 主循环
@@ -107,7 +106,9 @@ final class GameScene: SKScene {
             guard enemy.position.x <= baseX + 30 else { continue }
             if delegate.enemyReachedBase(id) {
                 enemies[id] = nil
-                defenders[enemy.lane].hurt()
+                for (cell, defender) in defenders where cell.lane == enemy.lane {
+                    defender.hurt()
+                }
                 enemy.breakThrough()
             } else {
                 enemy.bounceBack(toX: spawnX - 40)
@@ -156,13 +157,77 @@ final class GameScene: SKScene {
 
     // MARK: - 由 GameSession 调用
 
+    /// 在该路第一格种下一株字灵；已有字灵时不覆盖
+    @discardableResult
+    func plant(_ kind: DefenderKind, in lane: Int) -> Bool {
+        plant(kind, in: DefenderCell(lane: lane, column: 0))
+    }
+
+    /// 把植物种到具体草坪格；格子一旦占用就不能修改
+    @discardableResult
+    func plant(_ kind: DefenderKind, in cell: DefenderCell) -> Bool {
+        guard cell.lane >= 0, cell.lane < tuning.lanes,
+              cell.column >= 0, cell.column < plantingColumns,
+              defenders[cell] == nil else { return false }
+        let defender = DefenderNode(kind: kind, radius: min(34, laneHeight * 0.32))
+        defender.position = CGPoint(
+            x: plantingStartX + CGFloat(cell.column) * plantingColumnWidth,
+            y: laneY(cell.lane))
+        defender.zPosition = 5
+        defender.setScale(0.2)
+        defender.run(.sequence([
+            .scale(to: 1, duration: 0.22),
+            .run { [weak self, weak defender] in
+                guard let self, let defender else { return }
+                self.play(FloatingTextEffect(text: "种下了", color: Palette.jadeDark, fontSize: 26),
+                          at: CGPoint(x: defender.position.x, y: defender.position.y + 54))
+            },
+        ]))
+        addChild(defender)
+        defenders[cell] = defender
+        return true
+    }
+
+    /// 把拖到场景里的植物卡吸附到最近的草坪格
+    @discardableResult
+    func plant(_ kind: DefenderKind, at point: CGPoint) -> Bool {
+        guard let desired = cell(at: point) else { return false }
+        if plant(kind, in: desired) { return true }
+        // 落点被占用或刚好在格线上时，自动找同一路最近的空格
+        let candidates = (0..<plantingColumns)
+            .filter({ $0 != desired.column })
+            .sorted {
+                let left = abs($0 - desired.column)
+                let right = abs($1 - desired.column)
+                return left == right ? $0 < $1 : left < right
+            }
+        for column in candidates {
+            if plant(kind, in: DefenderCell(lane: desired.lane, column: column)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    /// 当前瞄准的怪物所在路是否有字灵可以发射
+    func canAttack(_ id: Int) -> Bool {
+        guard let enemy = enemies[id], !enemy.doomed else { return false }
+        return defenders.keys.contains { $0.lane == enemy.lane }
+    }
+
     /// 当前路上的字灵攻击这只怪物，返回它是否被打败（nil 表示怪物已不在场上）。
     /// overwhelming 为 true 时一下打败（大招）
     @discardableResult
     func fire(at id: Int, overwhelming: Bool = false) -> Bool? {
-        guard let enemy = enemies[id], !enemy.doomed else { return nil }
-        let defender = defenders[enemy.lane]
-        let damage = overwhelming ? enemy.health.current : defender.kind.attack.totalDamage
+        guard let enemy = enemies[id], !enemy.doomed else {
+            return nil
+        }
+        guard let defender = defenders
+            .filter({ $0.key.lane == enemy.lane })
+            .max(by: { $0.value.position.x < $1.value.position.x })?
+            .value else { return nil }
+        // 一次正确作答只推进一次攻击，怪物血量就是还要答对的题数。
+        let damage = overwhelming ? enemy.health.current : 1
         let defeated = enemy.health.take(damage)
         if defeated {
             enemy.doomed = true
@@ -231,6 +296,39 @@ final class GameScene: SKScene {
         gamePaused = paused
         // speed 为 0 时动画也停下
         speed = paused ? 0 : 1
+    }
+
+    /// 准备阶段冻结怪物和出怪，但保留植物种植动画
+    func setPreparing(_ preparing: Bool) {
+        gamePaused = preparing
+        speed = 1
+    }
+
+    /// 已经布阵的路数和格子数
+    var plantedLaneCount: Int { Set(defenders.keys.map(\.lane)).count }
+    var plantedCellCount: Int { defenders.count }
+
+    /// 落点所在的草坪行；幼儿园没用到的上下两行不能种
+    private func lane(at point: CGPoint) -> Int? {
+        guard point.y >= 20, point.y <= 520 else { return nil }
+        let row = min(4, Int((point.y - 20) / laneHeight))
+        let lane = row - (5 - tuning.lanes) / 2
+        return (0..<tuning.lanes).contains(lane) ? lane : nil
+    }
+
+    /// 落点是否在本局可种的草坪上（不管格子有没有被占）
+    func isPlantable(_ point: CGPoint) -> Bool {
+        cell(at: point) != nil
+    }
+
+    private func cell(at point: CGPoint) -> DefenderCell? {
+        guard let lane = lane(at: point) else { return nil }
+        let minX = plantingStartX - plantingColumnWidth / 2
+        let maxX = plantingStartX + CGFloat(plantingColumns - 1) * plantingColumnWidth + plantingColumnWidth / 2
+        guard point.x >= minX, point.x <= maxX else { return nil }
+        let rawColumn = (point.x - plantingStartX) / plantingColumnWidth
+        let column = min(plantingColumns - 1, max(0, Int(rawColumn.rounded())))
+        return DefenderCell(lane: lane, column: column)
     }
 }
 
