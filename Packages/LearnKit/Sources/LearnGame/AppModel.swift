@@ -14,15 +14,35 @@ public final class AppModel: ObservableObject {
     private let profileStore: ProfileStore
     private var progressStores: [UUID: ProgressStore] = [:]
     private var growthStores: [UUID: GrowthStore] = [:]
+    /// 本地数据库；打不开时为 nil，学习记录只留在内存里，并在主页提示
+    let database: LearnDatabase?
+    private var databaseIssues: [String] = []
 
     public init() {
         profileStore = ProfileStore(url: AppPaths.profilesFile)
         profiles = profileStore.profiles
         library = ContentLibrary.load(userDirectory: AppPaths.userPacksDirectory)
+        do {
+            database = try LearnDatabase(url: AppPaths.databaseFile)
+        } catch {
+            database = nil
+            databaseIssues.append("本地数据库打开失败，本次学习记录不会保存：\(error.localizedDescription)")
+        }
+        syncContent()
     }
 
     func reloadLibrary() {
         library = ContentLibrary.load(userDirectory: AppPaths.userPacksDirectory)
+        syncContent()
+    }
+
+    /// 把题库同步进数据库，供查询用；失败不影响出题
+    private func syncContent() {
+        do {
+            try database?.syncContent(library.packs)
+        } catch {
+            print("题库同步到数据库失败：\(error)")
+        }
     }
 
     func save(_ profile: Profile) {
@@ -36,13 +56,24 @@ public final class AppModel: ObservableObject {
         profiles = profileStore.profiles
         progressStores[profile.id] = nil
         growthStores[profile.id] = nil
-        try? FileManager.default.removeItem(at: AppPaths.progressFile(for: profile.id))
+        do {
+            try database?.deleteStats(profileID: profile.id)
+        } catch {
+            print("删除学习记录失败：\(error)")
+        }
+        let legacyProgress = AppPaths.progressFile(for: profile.id)
+        try? FileManager.default.removeItem(at: legacyProgress)
+        try? FileManager.default.removeItem(at: ProgressStore.migratedFile(for: legacyProgress))
         try? FileManager.default.removeItem(at: AppPaths.growthFile(for: profile.id))
     }
 
     func progress(for profileID: UUID) -> ProgressStore {
         if let store = progressStores[profileID] { return store }
-        let store = ProgressStore(url: AppPaths.progressFile(for: profileID))
+        let store = ProgressStore(
+            profileID: profileID,
+            database: database,
+            legacyFile: AppPaths.progressFile(for: profileID)
+        )
         progressStores[profileID] = store
         return store
     }
@@ -75,7 +106,7 @@ public final class AppModel: ObservableObject {
     }
 
     /// 题库和成长配置里的问题，显示在主页
-    var issues: [String] { library.issues + growthCatalog.issues }
+    var issues: [String] { databaseIssues + library.issues + growthCatalog.issues }
 }
 
 /// 开一局游戏需要的信息

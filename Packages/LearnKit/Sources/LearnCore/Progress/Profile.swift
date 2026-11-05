@@ -69,6 +69,10 @@ public enum AppPaths {
 
     public static var profilesFile: URL { dataDirectory.appendingPathComponent("profiles.json") }
 
+    /// 本地数据库（SwiftData）：题库索引 + 学习记录
+    public static var databaseFile: URL { dataDirectory.appendingPathComponent("learn.store") }
+
+    /// 旧版学习记录 JSON，只用于迁移到数据库
     public static func progressFile(for id: UUID) -> URL {
         dataDirectory.appendingPathComponent("progress", isDirectory: true)
             .appendingPathComponent("\(id.uuidString).json")

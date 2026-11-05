@@ -116,7 +116,7 @@ struct GeneratorTests {
 @Suite("学习记录")
 struct ProgressTests {
     @Test func reviewAfterWrongUntilTwoCorrect() {
-        let store = ProgressStore(url: nil)
+        let store = ProgressStore()
         let item = LearningItem.character(CharacterItem(char: "晨", pinyin: "chén"))
         store.record(item, correct: false)
         #expect(store.reviewKeys == ["char:晨"])
@@ -126,15 +126,46 @@ struct ProgressTests {
         #expect(store.reviewKeys.isEmpty)
     }
 
-    @Test func persistsToFile() throws {
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent("progress-\(UUID()).json")
-        defer { try? FileManager.default.removeItem(at: url) }
+    @Test func persistsToDatabaseFile() throws {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("learn-db-\(UUID())", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let url = dir.appendingPathComponent("learn.store")
+        let profileID = UUID()
         let item = LearningItem.idiom(IdiomItem(text: "手舞足蹈"))
-        let store = ProgressStore(url: url)
-        store.record(item, correct: false)
-        store.save()
-        let reloaded = ProgressStore(url: url)
+        do {
+            let store = ProgressStore(profileID: profileID, database: try LearnDatabase(url: url))
+            store.record(item, correct: false)
+            store.save()
+            store.record(item, correct: true)
+            store.save()
+        }
+        let reloaded = ProgressStore(profileID: profileID, database: try LearnDatabase(url: url))
         #expect(reloaded.stats["idiom:手舞足蹈"]?.wrong == 1)
+        #expect(reloaded.stats["idiom:手舞足蹈"]?.correct == 1)
+        #expect(ProgressStore(profileID: UUID(), database: try LearnDatabase(url: url)).stats.isEmpty)
+    }
+
+    @Test func migratesLegacyJSONOnce() throws {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("progress-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let legacy = dir.appendingPathComponent("old.json")
+        var old = ItemStats()
+        old.seen = 3; old.wrong = 2; old.correct = 1; old.summary = "晨（chén）"
+        try JSONEncoder().encode(["char:晨": old]).write(to: legacy)
+
+        let database = try LearnDatabase(url: nil)
+        let profileID = UUID()
+        let store = ProgressStore(profileID: profileID, database: database, legacyFile: legacy)
+        #expect(store.stats["char:晨"]?.wrong == 2)
+        #expect(try database.stats(profileID: profileID)["char:晨"]?.seen == 3)
+        #expect(!FileManager.default.fileExists(atPath: legacy.path))
+        #expect(FileManager.default.fileExists(atPath: ProgressStore.migratedFile(for: legacy).path))
+
+        // 数据库已有记录时不再读旧文件
+        try JSONEncoder().encode(["char:晨": ItemStats()]).write(to: legacy)
+        let again = ProgressStore(profileID: profileID, database: database, legacyFile: legacy)
+        #expect(again.stats["char:晨"]?.wrong == 2)
     }
 
     @Test func schedulerPrefersWrongItemsAndAvoidsRepeats() {

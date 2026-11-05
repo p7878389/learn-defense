@@ -82,16 +82,7 @@ public struct ItemPool: Sendable {
             for unit in pack.units {
                 let unitKey = "\(pack.id)/\(unit.id)"
                 for lesson in unit.lessons {
-                    var lessonItems: [LearningItem] = []
-                    lessonItems += lesson.characters.map { .character($0) }
-                    lessonItems += lesson.words.filter { $0.pinyin != nil }.map { .word($0) }
-                    lessonItems += lesson.idioms.filter { $0.text.count >= 2 }.map { .idiom($0) }
-                    for poem in lesson.poems where poem.lines.count >= 2 {
-                        lessonItems += (0..<(poem.lines.count - 1)).map { .poemLine(poem, index: $0) }
-                    }
-                    let scope = "\(unitKey)/\(lesson.id)"
-                    lessonItems += lesson.questions.filter { $0.options.contains($0.answer) }.map { .choice($0, scope: scope) }
-                    lessonItems += lesson.pictures.map { .picture($0) }
+                    let lessonItems = Self.lessonItems(lesson, scope: "\(unitKey)/\(lesson.id)")
 
                     for item in lessonItems where seenKeys.insert(item.key).inserted {
                         allItems.append(item)
@@ -120,6 +111,20 @@ public struct ItemPool: Sendable {
         self.idioms = Array(idioms.values)
         self.poems = Array(poems.values)
         self.pictures = Array(pictures.values)
+    }
+
+    /// 一课里能出题的知识点。scope 为 "题库id/单元id/课id"，手写选择题的 key 里要用
+    public static func lessonItems(_ lesson: Lesson, scope: String) -> [LearningItem] {
+        var items: [LearningItem] = []
+        items += lesson.characters.map { .character($0) }
+        items += lesson.words.filter { $0.pinyin != nil }.map { .word($0) }
+        items += lesson.idioms.filter { $0.text.count >= 2 }.map { .idiom($0) }
+        for poem in lesson.poems where poem.lines.count >= 2 {
+            items += (0..<(poem.lines.count - 1)).map { .poemLine(poem, index: $0) }
+        }
+        items += lesson.questions.filter { $0.options.contains($0.answer) }.map { .choice($0, scope: scope) }
+        items += lesson.pictures.map { .picture($0) }
+        return items
     }
 
     /// 按 key 找知识点（错题本用）
