@@ -258,7 +258,8 @@ final class GameScene: SKScene {
         }
         enemy.hold()
         defender.shoot()
-        let target = CGPoint(x: enemy.position.x, y: enemy.position.y + 10)
+        // 子弹从嘴里平着飞出去，打在僵尸身上同样的高度
+        let target = CGPoint(x: enemy.position.x, y: defender.muzzle.y)
         defender.attack.perform(from: defender.muzzle, to: target, projectile: loadout.projectile(for: defender.kind), in: self) {
             [weak self, weak enemy] isFinal in
             guard let self, let enemy, enemy.parent != nil else { return }
@@ -269,11 +270,11 @@ final class GameScene: SKScene {
                 effect.apply(to: enemy, defeated: defeated, field: self)
             }
             if defeated {
-                enemy.defeat(with: self.loadout.defeat(for: enemy.kind))
+                enemy.defeat(with: self.loadout.defeat(for: enemy.kind), burnt: overwhelming)
                 self.enemies[id] = nil
                 self.gameDelegate?.enemyDefeated(id, at: enemy.center)
             } else {
-                enemy.showHealth()
+                enemy.showWound()
             }
         }
         return defeated

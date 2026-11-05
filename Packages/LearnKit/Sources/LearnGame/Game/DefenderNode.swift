@@ -8,7 +8,9 @@ final class DefenderNode: SKNode {
     let hitEffects: [any HitEffectStrategy]
     private let radius: CGFloat
     private let body: SKShapeNode
-    private let sprite: SKSpriteNode?
+    /// 序列帧外观；自定义字灵没有，用矢量绘制
+    private let rig: SpriteRig?
+    private var sprite: SKSpriteNode? { rig?.sprite }
 
     init(kind: DefenderKind, radius: CGFloat) {
         self.kind = kind
@@ -16,10 +18,10 @@ final class DefenderNode: SKNode {
         attack = kind.attack.makeStrategy()
         hitEffects = kind.effects.map { $0.makeStrategy() }
         body = DefenderArt.body(kind.look, radius: radius)
-        sprite = UnitSprites.defender(kind, radius: radius)
+        rig = UnitSprites.defender(kind, radius: radius)
         super.init()
-        if let sprite {
-            addChild(sprite)
+        if let rig {
+            addChild(rig.sprite)
         } else {
             addChild(body)
             if let accessory = DefenderArt.accessory(kind.look, radius: radius) { addChild(accessory) }
@@ -34,13 +36,18 @@ final class DefenderNode: SKNode {
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
-    /// 子弹出发的位置
+    /// 子弹出发的位置：有序列帧时从嘴里出来（豌豆射手的嘴在右上方），否则从身体右侧
     var muzzle: CGPoint {
-        CGPoint(x: position.x + radius * 0.9, y: position.y)
+        guard let mouth = rig?.muzzle else {
+            return CGPoint(x: position.x + radius * 0.9, y: position.y)
+        }
+        return CGPoint(x: position.x + mouth.x * xScale, y: position.y + mouth.y * yScale)
     }
 
+    /// 发射：有发射动画的（大喷菇）播一遍再回到待机。不缩放守卫，避免画面出现晃动
     func shoot() {
-        // 子弹发射时不缩放守卫，避免画面出现晃动
+        guard let rig, let attack = rig.clip(for: "attack") else { return }
+        rig.playOnce(attack)
     }
 
     func hurt() {

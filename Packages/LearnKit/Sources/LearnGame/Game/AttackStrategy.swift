@@ -53,17 +53,48 @@ struct ShotAttack: AttackStrategy {
                 },
                 .removeFromParent(),
             ])) { [weak layer] in
-                if trail != nil, let layer { IceCombatEffects.impact(at: target, in: layer) }
+                if let layer {
+                    if trail != nil {
+                        IceCombatEffects.impact(at: target, in: layer)
+                    } else {
+                        Self.splat(projectile, at: target, in: layer)
+                    }
+                }
                 onImpact(i == n - 1)
             }
         }
     }
 }
 
-/// 一道笔锋光束，瞬间打中
+extension ShotAttack {
+    /// 子弹打中时溅开（上游豌豆、星星的命中图），停 0.25 秒后淡出；没有素材时不画
+    static func splat(_ projectile: ProjectileLook, at point: CGPoint, in layer: SKNode) {
+        guard let splat = UnitSprites.impact(projectile) else { return }
+        // 稍微靠前一点，像打在僵尸身前
+        splat.position = CGPoint(x: point.x - 8, y: point.y)
+        splat.zPosition = 52
+        splat.zRotation = CGFloat.random(in: -0.4...0.4)
+        layer.addChild(splat)
+        splat.run(.sequence([
+            .wait(forDuration: 0.25),
+            .fadeOut(withDuration: 0.12),
+            .removeFromParent(),
+        ]))
+    }
+}
+
+/// 一道光束瞬间打中；有烟雾素材时（大喷菇）喷出一团孢子烟，否则画一道笔锋
 struct BeamAttack: AttackStrategy {
+    /// 打中的时间点，烟雾和笔锋一样在 0.08 秒时结算
+    static let impactDelay: TimeInterval = 0.08
+
     func perform(from origin: CGPoint, to target: CGPoint, projectile: ProjectileLook, in layer: SKNode,
                  onImpact: @escaping (Bool) -> Void) {
+        if let fume = UnitSprites.beam(projectile) {
+            puff(fume.frames, frameTime: fume.frameTime, from: origin, to: target, projectile: projectile,
+                 in: layer, onImpact: onImpact)
+            return
+        }
         let path = CGMutablePath()
         path.move(to: .zero)
         path.addLine(to: CGPoint(x: target.x - origin.x, y: target.y - origin.y))
@@ -77,22 +108,56 @@ struct BeamAttack: AttackStrategy {
         beam.alpha = 0
         layer.addChild(beam)
 
-        let tip = ProjectileArt.make(projectile)
-        tip.position = target
-        tip.zPosition = 51
-        tip.setScale(0.3)
         beam.run(.sequence([
-            .fadeIn(withDuration: 0.08),
+            .fadeIn(withDuration: Self.impactDelay),
             .run {
-                layer.addChild(tip)
-                tip.run(.sequence([
-                    .group([.scale(to: 1.8, duration: 0.25), .fadeOut(withDuration: 0.25)]),
-                    .removeFromParent(),
-                ]))
+                Self.bloom(projectile, at: target, in: layer)
                 onImpact(true)
             },
             .wait(forDuration: 0.08),
             .fadeOut(withDuration: 0.25),
+            .removeFromParent(),
+        ]))
+    }
+
+    /// 孢子烟：从出口一直铺到目标，播一遍序列帧后淡出
+    private func puff(_ frames: [SKTexture], frameTime: TimeInterval, from origin: CGPoint, to target: CGPoint,
+                      projectile: ProjectileLook, in layer: SKNode, onImpact: @escaping (Bool) -> Void) {
+        let dx = target.x - origin.x, dy = target.y - origin.y
+        let fume = SKSpriteNode(texture: frames[0])
+        fume.name = "fume"
+        fume.anchorPoint = CGPoint(x: 0, y: 0.5)
+        // 横向拉到目标，纵向保持一团烟的高度
+        fume.size = CGSize(width: max(60, hypot(dx, dy) + 24), height: 52)
+        fume.zRotation = atan2(dy, dx)
+        fume.position = origin
+        fume.zPosition = 50
+        layer.addChild(fume)
+        fume.run(.sequence([
+            .group([
+                .animate(with: frames, timePerFrame: frameTime, resize: false, restore: false),
+                .sequence([
+                    .wait(forDuration: Self.impactDelay),
+                    .run {
+                        Self.bloom(projectile, at: target, in: layer)
+                        onImpact(true)
+                    },
+                ]),
+            ]),
+            .fadeOut(withDuration: 0.15),
+            .removeFromParent(),
+        ]))
+    }
+
+    /// 命中处绽开一下
+    private static func bloom(_ projectile: ProjectileLook, at point: CGPoint, in layer: SKNode) {
+        let tip = ProjectileArt.make(projectile)
+        tip.position = point
+        tip.zPosition = 51
+        tip.setScale(0.3)
+        layer.addChild(tip)
+        tip.run(.sequence([
+            .group([.scale(to: 1.8, duration: 0.25), .fadeOut(withDuration: 0.25)]),
             .removeFromParent(),
         ]))
     }

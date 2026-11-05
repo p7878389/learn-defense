@@ -3,8 +3,8 @@
 - 上游：[wszqkzqk/pypvz](https://github.com/wszqkzqk/pypvz)
 - 固定版本：`c88a018209ca48457e24db124f6532aea350f60d`
 - 目录：`resources/graphics/Plants`、`resources/graphics/Zombies`、`resources/graphics/Bullets`
-- 本项目仅复制 14 组、197 张必要的原始 PNG；未重新编码、未删除透明通道。各组源目录记录在 `clips.json`，原始文件校验和记录在 `sha256.json`。
-- 可复现导入：`python3 scripts/import-pvz-sprites.py /path/to/pypvz`，需先将上游检出到上述版本。
+- 本项目仅复制 29 组、394 张必要的原始 PNG（待机/行走，以及啃咬、倒下、掉头、烧焦、发射、豌豆和星星命中、孢子烟）；未重新编码、未删除透明通道。各组源目录记录在 `clips.json`，原始文件校验和记录在 `sha256.json`。
+- 可复现导入：`python3 scripts/import-pvz-sprites.py /path/to/pypvz`，需先将上游检出到上述版本；上游检出没有提交记录时，脚本改为核对已导入帧的 sha256，一致才继续。
 
 上游 README 声明：
 
@@ -18,6 +18,7 @@
 
 - 植物朝右、僵尸朝左；保留上游的完整帧顺序。
 - 同一动画共用内容包围盒，在运行时裁去透明留白，维持原始纵横比和动画基准，避免逐帧裁切带来的抖动。
+- 同一角色的各段动画（行走、啃咬、倒下、掉了防具）按 `clips.json` 的 `pivot` 与画布底边对齐，取值沿用上游切换动画时的做法：僵尸取 `ZOMBIE_RECT` 裁切区中线，植物取画布左缘，掉落的头以身体中线为左缘。角色有哪些动画写在 `states` 里，豌豆射手的子弹出口写在 `muzzle` 里。
 - 读报僵尸的上游帧使用纯白底色，在运行时按 `colorKey` 遮罩转为透明，原始 PNG 保持不变。
 - 角色 ID、血量、速度、攻击与答题规则沿用项目现有配置；这里仅替换视觉表现，不复刻原作关卡和战斗规则。
 - 自定义角色或资源缺失时使用原有矢量绘制。
