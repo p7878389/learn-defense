@@ -8,7 +8,16 @@
       70,
       71
     ],
-    "source": "resources/graphics/Plants/Peashooter"
+    "canvas": [
+      71,
+      71
+    ],
+    "source": "resources/graphics/Plants/Peashooter",
+    "pivot": 0,
+    "muzzle": [
+      64,
+      20
+    ]
   },
   "plant-twin": {
     "frameCount": 15,
@@ -19,7 +28,16 @@
       73,
       71
     ],
-    "source": "resources/graphics/Plants/RepeaterPea"
+    "canvas": [
+      73,
+      71
+    ],
+    "source": "resources/graphics/Plants/RepeaterPea",
+    "pivot": 0,
+    "muzzle": [
+      70,
+      21
+    ]
   },
   "plant-frost": {
     "frameCount": 15,
@@ -30,7 +48,16 @@
       71,
       71
     ],
-    "source": "resources/graphics/Plants/SnowPea"
+    "canvas": [
+      71,
+      71
+    ],
+    "source": "resources/graphics/Plants/SnowPea",
+    "pivot": 0,
+    "muzzle": [
+      67,
+      19
+    ]
   },
   "plant-stroke": {
     "frameCount": 16,
@@ -41,7 +68,35 @@
       84,
       87
     ],
-    "source": "resources/graphics/Plants/FumeShroom/FumeShroom"
+    "canvas": [
+      87,
+      88
+    ],
+    "source": "resources/graphics/Plants/FumeShroom/FumeShroom",
+    "pivot": 0,
+    "muzzle": [
+      80,
+      42
+    ],
+    "states": {
+      "attack": "plant-stroke-attack"
+    }
+  },
+  "plant-stroke-attack": {
+    "frameCount": 23,
+    "frameTime": 0.05,
+    "crop": [
+      0,
+      0,
+      124,
+      87
+    ],
+    "canvas": [
+      124,
+      90
+    ],
+    "source": "resources/graphics/Plants/FumeShroom/FumeShroomAttack",
+    "pivot": 0
   },
   "plant-starling": {
     "frameCount": 13,
@@ -52,7 +107,12 @@
       77,
       70
     ],
-    "source": "resources/graphics/Plants/StarFruit"
+    "canvas": [
+      77,
+      70
+    ],
+    "source": "resources/graphics/Plants/StarFruit",
+    "pivot": 0
   },
   "zombie-blob": {
     "frameCount": 22,
@@ -63,7 +123,82 @@
       87,
       124
     ],
-    "source": "resources/graphics/Zombies/NormalZombie/Zombie"
+    "canvas": [
+      166,
+      144
+    ],
+    "source": "resources/graphics/Zombies/NormalZombie/Zombie",
+    "pivot": 107,
+    "states": {
+      "attack": "zombie-blob-attack",
+      "die": "zombie-blob-die",
+      "head": "zombie-head",
+      "boom": "zombie-boom"
+    }
+  },
+  "zombie-blob-attack": {
+    "frameCount": 21,
+    "frameTime": 0.08,
+    "crop": [
+      63,
+      23,
+      87,
+      121
+    ],
+    "canvas": [
+      166,
+      144
+    ],
+    "source": "resources/graphics/Zombies/NormalZombie/ZombieAttack",
+    "pivot": 107
+  },
+  "zombie-blob-die": {
+    "frameCount": 10,
+    "frameTime": 0.07,
+    "crop": [
+      0,
+      59,
+      165,
+      85
+    ],
+    "canvas": [
+      166,
+      144
+    ],
+    "source": "resources/graphics/Zombies/NormalZombie/ZombieDie",
+    "pivot": 82
+  },
+  "zombie-head": {
+    "frameCount": 12,
+    "frameTime": 0.07,
+    "crop": [
+      9,
+      1,
+      140,
+      185
+    ],
+    "canvas": [
+      150,
+      186
+    ],
+    "source": "resources/graphics/Zombies/NormalZombie/ZombieHead",
+    "pivot": 0
+  },
+  "zombie-boom": {
+    "frameCount": 20,
+    "frameTime": 0.07,
+    "crop": [
+      69,
+      30,
+      79,
+      113
+    ],
+    "canvas": [
+      166,
+      144
+    ],
+    "source": "resources/graphics/Zombies/NormalZombie/BoomDie",
+    "pivot": 108
   },
   "zombie-hopper": {
     "frameCount": 21,
@@ -74,7 +209,34 @@
       87,
       144
     ],
-    "source": "resources/graphics/Zombies/ConeheadZombie/ConeheadZombie"
+    "canvas": [
+      166,
+      144
+    ],
+    "source": "resources/graphics/Zombies/ConeheadZombie/ConeheadZombie",
+    "pivot": 120,
+    "states": {
+      "attack": "zombie-hopper-attack",
+      "die": "zombie-blob-die",
+      "head": "zombie-head",
+      "boom": "zombie-boom"
+    }
+  },
+  "zombie-hopper-attack": {
+    "frameCount": 11,
+    "frameTime": 0.08,
+    "crop": [
+      79,
+      0,
+      87,
+      144
+    ],
+    "canvas": [
+      166,
+      144
+    ],
+    "source": "resources/graphics/Zombies/ConeheadZombie/ConeheadZombieAttack",
+    "pivot": 122.5
   },
   "zombie-dasher": {
     "frameCount": 22,
@@ -85,7 +247,49 @@
       154,
       160
     ],
-    "source": "resources/graphics/Zombies/FootballZombie/FootballZombie"
+    "canvas": [
+      154,
+      160
+    ],
+    "source": "resources/graphics/Zombies/FootballZombie/FootballZombie",
+    "pivot": 77,
+    "states": {
+      "attack": "zombie-dasher-attack",
+      "die": "zombie-dasher-die",
+      "boom": "zombie-boom"
+    }
+  },
+  "zombie-dasher-attack": {
+    "frameCount": 20,
+    "frameTime": 0.06,
+    "crop": [
+      7,
+      19,
+      126,
+      141
+    ],
+    "canvas": [
+      154,
+      160
+    ],
+    "source": "resources/graphics/Zombies/FootballZombie/FootballZombieAttack",
+    "pivot": 77
+  },
+  "zombie-dasher-die": {
+    "frameCount": 16,
+    "frameTime": 0.06,
+    "crop": [
+      44,
+      36,
+      192,
+      134
+    ],
+    "canvas": [
+      236,
+      170
+    ],
+    "source": "resources/graphics/Zombies/FootballZombie/FootballZombieDie",
+    "pivot": 118
   },
   "zombie-drowsy": {
     "frameCount": 19,
@@ -96,7 +300,60 @@
       96,
       137
     ],
+    "canvas": [
+      216,
+      164
+    ],
     "source": "resources/graphics/Zombies/NewspaperZombie/NewspaperZombie",
+    "pivot": 94,
+    "colorKey": [
+      255,
+      255,
+      255
+    ],
+    "states": {
+      "attack": "zombie-drowsy-attack",
+      "die": "zombie-drowsy-die",
+      "head": "zombie-head",
+      "boom": "zombie-boom"
+    }
+  },
+  "zombie-drowsy-attack": {
+    "frameCount": 8,
+    "frameTime": 0.1,
+    "crop": [
+      47,
+      17,
+      101,
+      141
+    ],
+    "canvas": [
+      216,
+      164
+    ],
+    "source": "resources/graphics/Zombies/NewspaperZombie/NewspaperZombieAttack",
+    "pivot": 94,
+    "colorKey": [
+      255,
+      255,
+      255
+    ]
+  },
+  "zombie-drowsy-die": {
+    "frameCount": 11,
+    "frameTime": 0.07,
+    "crop": [
+      0,
+      58,
+      140,
+      106
+    ],
+    "canvas": [
+      216,
+      164
+    ],
+    "source": "resources/graphics/Zombies/NewspaperZombie/NewspaperZombieDie",
+    "pivot": 50,
     "colorKey": [
       255,
       255,
@@ -112,7 +369,36 @@
       94,
       142
     ],
-    "source": "resources/graphics/Zombies/BucketheadZombie/BucketheadZombie"
+    "canvas": [
+      166,
+      144
+    ],
+    "source": "resources/graphics/Zombies/BucketheadZombie/BucketheadZombie",
+    "pivot": 99,
+    "states": {
+      "attack": "zombie-armored-attack",
+      "bare": "zombie-blob",
+      "bareAttack": "zombie-blob-attack",
+      "die": "zombie-blob-die",
+      "head": "zombie-head",
+      "boom": "zombie-boom"
+    }
+  },
+  "zombie-armored-attack": {
+    "frameCount": 11,
+    "frameTime": 0.08,
+    "crop": [
+      47,
+      8,
+      88,
+      136
+    ],
+    "canvas": [
+      166,
+      144
+    ],
+    "source": "resources/graphics/Zombies/BucketheadZombie/BucketheadZombieAttack",
+    "pivot": 91
   },
   "zombie-king": {
     "frameCount": 23,
@@ -123,7 +409,36 @@
       104,
       131
     ],
-    "source": "resources/graphics/Zombies/ScreenDoorZombie/ScreenDoorZombie"
+    "canvas": [
+      166,
+      144
+    ],
+    "source": "resources/graphics/Zombies/ScreenDoorZombie/ScreenDoorZombie",
+    "pivot": 91,
+    "states": {
+      "attack": "zombie-king-attack",
+      "bare": "zombie-blob",
+      "bareAttack": "zombie-blob-attack",
+      "die": "zombie-blob-die",
+      "head": "zombie-head",
+      "boom": "zombie-boom"
+    }
+  },
+  "zombie-king-attack": {
+    "frameCount": 24,
+    "frameTime": 0.08,
+    "crop": [
+      43,
+      19,
+      88,
+      138
+    ],
+    "canvas": [
+      166,
+      157
+    ],
+    "source": "resources/graphics/Zombies/ScreenDoorZombie/ScreenDoorZombieAttack",
+    "pivot": 91
   },
   "pea": {
     "frameCount": 1,
@@ -134,7 +449,29 @@
       24,
       24
     ],
-    "source": "resources/graphics/Bullets/PeaNormal"
+    "canvas": [
+      56,
+      34
+    ],
+    "source": "resources/graphics/Bullets/PeaNormal",
+    "states": {
+      "hit": "pea-hit"
+    }
+  },
+  "pea-hit": {
+    "frameCount": 1,
+    "frameTime": 0.1,
+    "crop": [
+      1,
+      0,
+      51,
+      45
+    ],
+    "canvas": [
+      52,
+      46
+    ],
+    "source": "resources/graphics/Bullets/PeaNormalExplode"
   },
   "ice-pea": {
     "frameCount": 1,
@@ -144,6 +481,10 @@
       3,
       26,
       26
+    ],
+    "canvas": [
+      56,
+      34
     ],
     "source": "resources/graphics/Bullets/PeaIce"
   },
@@ -156,6 +497,43 @@
       32,
       32
     ],
-    "source": "resources/graphics/Bullets/StarBullet"
+    "canvas": [
+      38,
+      38
+    ],
+    "source": "resources/graphics/Bullets/StarBullet",
+    "states": {
+      "hit": "star-hit"
+    }
+  },
+  "star-hit": {
+    "frameCount": 1,
+    "frameTime": 0.1,
+    "crop": [
+      1,
+      0,
+      51,
+      45
+    ],
+    "canvas": [
+      52,
+      46
+    ],
+    "source": "resources/graphics/Bullets/StarBulletExplode"
+  },
+  "fume": {
+    "frameCount": 8,
+    "frameTime": 0.06,
+    "crop": [
+      0,
+      0,
+      343,
+      59
+    ],
+    "canvas": [
+      343,
+      59
+    ],
+    "source": "resources/graphics/Bullets/Fume"
   }
 }

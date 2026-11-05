@@ -17,13 +17,21 @@ final class EnemyNode: SKNode {
     private var holds = 0
     private var slowFactor = 1.0
     private var slowRemaining = 0.0
+    /// 当前动作速度，跟着减速变化
+    private var tempo: CGFloat = 1
 
     /// figure 负责跳起的高度，squash 负责身体一压一伸
     private let figure = SKNode()
     private let squash = SKNode()
     private let figureBaseY: CGFloat
     private let body: SKShapeNode
-    private let sprite: SKSpriteNode?
+    /// 序列帧外观（走路、啃咬、倒下…）；自定义怪物没有，用矢量绘制
+    private let rig: SpriteRig?
+    private var sprite: SKSpriteNode? { rig?.sprite }
+    /// 身体一半高（缩放前），掉防具碎片从头部附近飞出
+    private let halfHeight: CGFloat
+    /// 防具（铁桶、铁门）已经被打掉，改用普通僵尸的动画
+    private var armorShed = false
     private var chill: SKShapeNode?
     private let sign = SKShapeNode()
     private let label = SKLabelNode()
@@ -41,15 +49,16 @@ final class EnemyNode: SKNode {
         let look = kind.look
         let s = CGFloat(look.scale)
         let extent = EnemyArt.extent(of: look.body)
-        sprite = UnitSprites.enemy(kind)
+        rig = UnitSprites.enemy(kind)
         // 不管多大，脚底都在同一高度，牌子挡住下半身
-        let halfHeight = sprite.map { $0.size.height / 2 } ?? extent.height
+        let halfHeight = rig.map { $0.sprite.size.height / 2 } ?? extent.height
+        self.halfHeight = halfHeight
         figureBaseY = -24 + halfHeight * s
         body = EnemyArt.body(look)
         super.init()
 
-        if let sprite {
-            squash.addChild(sprite)
+        if let rig {
+            squash.addChild(rig.sprite)
         } else {
             squash.addChild(body)
             squash.addChild(EnemyArt.eyes(look))
@@ -81,10 +90,20 @@ final class EnemyNode: SKNode {
         }
         setScale(scale)
 
+        breathe(speed: 1)
+    }
+
+    /// 身体一压一伸
+    private func breathe(speed: CGFloat) {
+        guard speed > 0 else {
+            squash.removeAction(forKey: "breathe")
+            return
+        }
+        let half = 0.35 / Double(speed)
         squash.run(.repeatForever(.sequence([
-            .scaleX(to: 1.06, y: 0.94, duration: 0.35),
-            .scaleX(to: 0.95, y: 1.05, duration: 0.35),
-        ])))
+            .scaleX(to: 1.06, y: 0.94, duration: half),
+            .scaleX(to: 0.95, y: 1.05, duration: half),
+        ])), withKey: "breathe")
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
@@ -112,6 +131,7 @@ final class EnemyNode: SKNode {
     func slow(factor: Double, seconds: Double) {
         slowFactor = min(slowFactor, factor)
         slowRemaining = max(slowRemaining, seconds)
+        setTempo(slowFactor)
         if let sprite {
             sprite.color = UnitColor.sky.fill
             sprite.colorBlendFactor = 0.45
@@ -132,6 +152,16 @@ final class EnemyNode: SKNode {
         chill?.removeFromParent()
         chill = nil
         sprite?.colorBlendFactor = 0
+        setTempo(1)
+    }
+
+    /// 减速时动作跟着变慢，冻住时停住不动（和上游减速时放慢动画一样）
+    private func setTempo(_ factor: Double) {
+        let tempo = CGFloat(max(0, factor))
+        guard tempo != self.tempo else { return }
+        self.tempo = tempo
+        rig?.tempo = tempo
+        if !doomed { breathe(speed: tempo) }
     }
 
     // MARK: - 牌子和血量
@@ -177,6 +207,31 @@ final class EnemyNode: SKNode {
         }
     }
 
+    /// 被打中但没倒下：更新血量红点；只剩最后一下时，铁桶、铁门这类防具被打掉，换成普通僵尸继续走
+    func showWound() {
+        showHealth()
+        guard !armorShed, health.max > 1, health.current == 1,
+              let rig, let bare = rig.clip(for: "bare") else { return }
+        armorShed = true
+        // 正在咬人时先不换，咬完回到走路时自然换成普通僵尸
+        if action(forKey: "chomp") == nil { rig.loop(bare) }
+        if let parent {
+            let head = CGPoint(x: center.x, y: center.y + halfHeight * CGFloat(kind.look.scale) * 0.5 * yScale)
+            InkBurstEffect(color: SKColor(white: 0.6, alpha: 1), scale: 0.6, count: 6).play(at: head, in: parent)
+        }
+    }
+
+    /// 啃咬动画（掉了防具后用普通僵尸的）
+    private var biteClip: String? {
+        rig?.clip(for: armorShed ? "bareAttack" : "attack")
+    }
+
+    /// 走路动画（掉了防具后用普通僵尸的）
+    private var walkClip: String? {
+        guard let rig else { return nil }
+        return armorShed ? rig.clip(for: "bare") ?? rig.base : rig.base
+    }
+
     // MARK: - 动画
 
     func appear() {
@@ -210,7 +265,7 @@ final class EnemyNode: SKNode {
         run(.moveBy(x: distance, y: 0, duration: 0.18))
     }
 
-    /// 答错：往前冲一小段
+    /// 答错：往前冲一小段，张嘴咬一下
     func lunge() {
         position.x -= 36
         run(.sequence([
@@ -218,28 +273,68 @@ final class EnemyNode: SKNode {
             .moveBy(x: 12, y: 0, duration: 0.08),
             .moveBy(x: -6, y: 0, duration: 0.05),
         ]))
+        guard let rig, let bite = biteClip else { return }
+        rig.loop(bite)
+        run(.sequence([
+            .wait(forDuration: 0.6),
+            .run { [weak self] in
+                guard let self, let rig = self.rig, let walk = self.walkClip else { return }
+                rig.loop(walk)
+            },
+        ]), withKey: "chomp")
     }
 
-    /// 被打败：播放退场特效（默认用外观配置里的，孩子装备了退场外观时由场景传入）
-    func defeat(with effect: DefeatEffect? = nil) {
+    /// 被打败：播放退场特效（默认用外观配置里的，孩子装备了退场外观时由场景传入）。
+    /// 有序列帧时僵尸掉头倒下；burnt 为 true（大招）时整个烧焦
+    func defeat(with effect: DefeatEffect? = nil, burnt: Bool = false) {
         removeAllActions()
         if let parent {
             (effect ?? kind.look.defeat)
                 .makeEffect(color: kind.look.color.fill, scale: CGFloat(kind.look.scale), count: 7 + kind.hp * 2)
                 .play(at: center, in: parent)
         }
+        let fallClip = burnt ? (rig?.clip(for: "boom") ?? rig?.clip(for: "die")) : rig?.clip(for: "die")
+        guard let rig, let fallClip else {
+            run(.sequence([
+                .group([.scale(by: 1.4, duration: 0.2), .fadeOut(withDuration: 0.2)]),
+                .removeFromParent(),
+            ]))
+            return
+        }
+        // 倒在地上：停掉呼吸和跳跃，取消冰冻色
+        endSlow()
+        squash.removeAllActions()
+        squash.xScale = 1
+        squash.yScale = 1
+        figure.position.y = figureBaseY
+        for node in [sign, pips] {
+            node.removeAllActions()
+            node.run(.fadeOut(withDuration: 0.15))
+        }
+        let duration = rig.playOnce(fallClip, hold: true)
+        if !burnt, let head = rig.clip(for: "head") {
+            rig.spawn(head)
+        }
         run(.sequence([
-            .group([.scale(by: 1.4, duration: 0.2), .fadeOut(withDuration: 0.2)]),
+            .wait(forDuration: duration + 0.35),
+            .fadeOut(withDuration: 0.3),
             .removeFromParent(),
         ]))
     }
 
-    /// 走到书架：钻进去消失
+    /// 走到书架：先啃两口，再钻进去消失
     func breakThrough() {
-        run(.sequence([
+        removeAction(forKey: "chomp")
+        var steps: [SKAction] = []
+        if let rig, let bite = biteClip {
+            rig.loop(bite)
+            steps.append(.wait(forDuration: 0.6))
+        }
+        steps += [
             .group([.moveBy(x: -60, y: 0, duration: 0.3), .fadeOut(withDuration: 0.3)]),
             .removeFromParent(),
-        ]))
+        ]
+        run(.sequence(steps))
     }
 
     /// 幼儿园模式：退回起点重新走
