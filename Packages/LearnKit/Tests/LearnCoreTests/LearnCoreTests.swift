@@ -224,8 +224,8 @@ struct UnitTests {
                 let tuning = GameTuning.make(grade: grade, difficulty: difficulty)
                 #expect(tuning.lineup.count == tuning.lanes)
                 #expect(tuning.startingSun >= tuning.lanes * DefenderKind.inkling.sunCost)
-                let kinds = tuning.waves.kinds(count: tuning.enemyCount, using: &rng)
-                #expect(kinds.count == tuning.enemyCount)
+                let kinds = tuning.waves.kinds(questions: tuning.questions, using: &rng)
+                #expect(kinds.reduce(0) { $0 + $1.hp } == tuning.questions, "怪物血量之和就是题量")
                 #expect(kinds.prefix(tuning.waves.warmup).allSatisfy { $0 == tuning.waves.basic })
                 if let boss = tuning.waves.boss {
                     #expect(kinds.last == boss)

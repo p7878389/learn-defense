@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>字灵守卫 · 收藏馆</title>
+<!-- Fonts & Material Icons -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@600;800;900&amp;family=ZCOOL+KuaiLe&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            paper: '#FAF2DE',
+            meadow: '#E6F4D7',
+            sky: '#DDF1FF',
+            ink: '#2B2B38',
+            subink: '#8C857A',
+            brandOrange: '#F28C2E',
+            brandOrangeDeep: '#C96810',
+            jadeGreen: '#3DA885',
+            jadeGreenDeep: '#237359',
+            gemGold: '#FFC93C',
+            gemGoldDeep: '#C99312',
+            rarityBlue: '#7EC8F2',
+            rarityPurple: '#A77BF3',
+          },
+          borderRadius: {
+            'DEFAULT': '1rem',
+            'lg': '2rem',
+            'xl': '3rem',
+            'full': '9999px'
+          },
+          fontFamily: {
+            headline: ["'ZCOOL KuaiLe'", "'Nunito Sans'", 'sans-serif'],
+            display: ["'ZCOOL KuaiLe'", "'Nunito Sans'", 'sans-serif'],
+            body: ["'Nunito Sans'", 'system-ui', 'sans-serif'],
+            label: ["'Nunito Sans'", 'sans-serif']
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 40;
+    }
+
+    /* 3D Toy Button & Card Shadows */
+    .btn-toy-orange {
+      background-color: #F28C2E;
+      box-shadow: 0 5px 0 #C96810, 0 10px 15px -3px rgba(242, 140, 46, 0.35);
+    }
+    .btn-toy-orange:active {
+      transform: translateY(4px);
+      box-shadow: 0 1px 0 #C96810;
+    }
+
+    .btn-toy-green {
+      background-color: #3DA885;
+      box-shadow: 0 5px 0 #237359, 0 10px 15px -3px rgba(61, 168, 133, 0.35);
+    }
+    .btn-toy-green:active {
+      transform: translateY(4px);
+      box-shadow: 0 1px 0 #237359;
+    }
+
+    .btn-toy-white {
+      background-color: #FFFFFF;
+      box-shadow: 0 4px 0 #E2D7C3;
+    }
+    .btn-toy-white:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #E2D7C3;
+    }
+
+    .card-toy {
+      box-shadow: 0 6px 0 #E5DBC7, 0 12px 20px -4px rgba(0,0,0,0.06);
+      transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .card-toy:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 9px 0 #D8CEB8, 0 18px 24px -4px rgba(0,0,0,0.08);
+    }
+
+    .card-toy-active {
+      box-shadow: 0 6px 0 #FFB800, 0 0 0 3px #FFC93C, 0 16px 26px -2px rgba(255, 201, 60, 0.4);
+      transform: translateY(-2px);
+    }
+
+    /* Keyframe Animations for Kid Excitement */
+    @keyframes starFloat {
+      0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
+      50% { transform: translateY(-8px) rotate(8deg) scale(1.06); }
+    }
+    .animate-star-float {
+      animation: starFloat 2.6s ease-in-out infinite;
+    }
+
+    @keyframes projectileFly {
+      0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+      15% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { transform: translate(250px, -32px) rotate(360deg); opacity: 0.95; }
+    }
+    .animate-bullet-path {
+      animation: projectileFly 1.8s cubic-bezier(0.2, 0.8, 0.4, 1) infinite;
+    }
+
+    @keyframes zombieBob {
+      0%, 100% { transform: rotate(-3deg) translateY(0); }
+      50% { transform: rotate(3deg) translateY(-4px); }
+    }
+    .animate-zombie {
+      animation: zombieBob 2.2s ease-in-out infinite;
+    }
+
+    @keyframes plantCheer {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      30% { transform: scale(1.08, 0.94) rotate(-4deg); }
+      60% { transform: scale(0.96, 1.05) rotate(3deg); }
+    }
+    .animate-plant {
+      animation: plantCheer 1.8s ease-in-out infinite;
+    }
+    .coin { display: inline-block; filter: sepia(1) saturate(6) hue-rotate(-12deg) brightness(1.05); }
+  </style>
+</head>
+<body class="bg-paper text-ink font-body select-none overflow-hidden h-screen w-screen flex flex-col justify-between">
+<!-- Subtle Background Soft Gradient Wash -->
+<div class="fixed inset-0 pointer-events-none bg-gradient-to-br from-sky/40 via-paper to-meadow/50 -z-10"></div>
+<!-- Decorative cloud bubbles in background -->
+<div class="fixed -top-12 -left-12 w-64 h-64 bg-white/40 rounded-full blur-2xl pointer-events-none -z-10"></div>
+<div class="fixed top-1/2 -right-16 w-80 h-80 bg-gemGold/15 rounded-full blur-3xl pointer-events-none -z-10"></div>
+<!-- ========================================== -->
+<!-- 1. 顶部导航栏 TopNavBar                      -->
+<!-- ========================================== -->
+<header class="h-20 w-full px-7 flex items-center justify-between z-30 shrink-0 bg-white/70 backdrop-blur-md rounded-b-3xl shadow-[0_4px_16px_rgba(200,180,140,0.18)] border-b-2 border-amber-100">
+<!-- 左侧：返回按钮 -->
+<button class="btn-toy-white flex items-center gap-2.5 px-6 py-2.5 rounded-full text-ink font-headline text-xl transition-all cursor-pointer">
+<span class="material-symbols-outlined text-brandOrange text-28" data-icon="arrow_back" data-weight="fill">arrow_back</span>
+<span>回主页</span>
+</button>
+<!-- 中间：大标题「🎁 收藏馆」 -->
+<div class="flex items-center gap-3">
+<span class="text-3xl filter drop-shadow-sm">🎁</span>
+<h1 class="font-headline text-3xl md:text-4xl text-ink tracking-wide font-black drop-shadow-[0_2px_0_#FFF]">
+        收藏馆
+      </h1>
+<span class="bg-brandOrange/15 text-brandOrange font-bold text-sm px-3 py-1 rounded-full border border-brandOrange/30">外观与特效</span>
+</div>
+<!-- 右侧：等级徽章 + 金色积分胶囊 -->
+<div class="flex items-center gap-4">
+<!-- 等级牌 -->
+<div class="flex items-center gap-2 bg-gradient-to-b from-indigo-500 to-purple-600 text-white px-4 py-2 rounded-full shadow-[0_4px_0_#4c1d95] border-2 border-indigo-200">
+<span class="material-symbols-outlined text-gemGold text-xl" data-icon="military_tech" data-weight="fill">military_tech</span>
+<span class="font-headline font-black text-xl tracking-wider">Lv.6</span>
+</div>
+<!-- 金币胶囊 -->
+<div class="flex items-center gap-2 bg-white px-5 py-2 rounded-full border-2 border-gemGold shadow-[0_4px_0_#E0A100] group">
+<span class="text-2xl animate-bounce leading-none"><span class="coin">🪙</span></span>
+<span class="font-headline font-black text-2xl text-amber-700 tracking-tight">386</span>
+
+</div>
+<!-- 设置小图标 -->
+</div>
+</header>
+<!-- ========================================== -->
+<!-- 主工作区：左侧 SideNav + 右侧展示与卡片网格   -->
+<!-- ========================================== -->
+<main class="flex-1 w-full max-w-[1194px] mx-auto px-6 py-4 flex gap-6 overflow-hidden">
+<!-- 2. 左侧分类导航栏 SideNavBar (胶囊列) -->
+<aside class="w-56 shrink-0 flex flex-col justify-between py-2">
+<div class="flex flex-col gap-3.5">
+<!-- 标签 1：子弹 (选中态) -->
+<button class="btn-toy-orange w-full flex items-center gap-3.5 px-5 py-3.5 rounded-full text-white font-headline text-xl tracking-wide cursor-pointer scale-102">
+<span class="text-2xl">🟢</span>
+<span class="font-black drop-shadow">子弹外观</span>
+<span class="ml-auto text-xs bg-white/30 px-2 py-0.5 rounded-full">5</span>
+</button>
+<!-- 标签 2：僵尸退场 (未选中) -->
+<button class="btn-toy-white w-full flex items-center gap-3.5 px-5 py-3.5 rounded-full text-stone-700 font-headline text-lg hover:bg-amber-50 cursor-pointer transition-all">
+<span class="text-2xl">💥</span>
+<span class="font-extrabold">僵尸退场</span>
+</button>
+<!-- 标签 3：道具皮肤 (未选中) -->
+<button class="btn-toy-white w-full flex items-center gap-3.5 px-5 py-3.5 rounded-full text-stone-700 font-headline text-lg hover:bg-amber-50 cursor-pointer transition-all">
+<span class="text-2xl">🎒</span>
+<span class="font-extrabold">道具皮肤</span>
+</button>
+<!-- 标签 4：命中特效 (即将开放) -->
+<div class="w-full flex items-center gap-3 px-5 py-3 rounded-full bg-stone-200/70 border border-dashed border-stone-300 text-stone-400 font-headline text-base cursor-not-allowed">
+<span class="material-symbols-outlined text-stone-400 text-xl" data-icon="lock" data-weight="fill">lock</span>
+<span class="font-bold">命中特效</span>
+<span class="text-xs bg-stone-300 text-stone-600 px-1.5 py-0.5 rounded ml-auto">待开放</span>
+</div>
+</div>
+<!-- 底部小贴士挂牌 -->
+<div class="bg-amber-100/90 border-2 border-amber-200/80 rounded-2xl p-3.5 text-center shadow-sm">
+<span class="text-2xl block mb-1">🌱✨</span>
+<p class="text-xs text-stone-600 font-bold leading-relaxed">
+          换上闪亮弹药<br/>打僵尸更有趣！
+        </p>
+</div>
+</aside>
+<!-- 3. 右侧主内容展示区 -->
+<section class="flex-1 flex flex-col gap-6 justify-between overflow-hidden"><div class="relative w-full h-52 bg-gradient-to-b from-sky via-meadow/40 to-emerald-200/60 rounded-3xl border-4 border-amber-200/90 shadow-[0_8px_0_#d5c5a3] overflow-hidden flex flex-col justify-between p-4">
+<div class="absolute top-2 left-10 text-3xl opacity-60">☁️</div>
+<div class="absolute top-4 right-28 text-2xl opacity-60">☁️</div>
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 w-80 h-32 bg-yellow-200/25 blur-xl rounded-full pointer-events-none"></div>
+<!-- 舞台标签与居中小提示 -->
+<div class="relative z-10 w-full flex items-center justify-between">
+<div class="inline-flex items-center gap-2 bg-[#A06432] text-white px-4 py-1.5 rounded-full border-2 border-[#E7BF85] shadow-[0_3px_0_#6E411B]">
+<span class="material-symbols-outlined text-gemGold text-lg" data-icon="visibility" data-weight="fill">visibility</span>
+<span class="font-headline font-black text-sm tracking-wide">战场试穿：金星弹 ⭐</span>
+</div>
+<div class="inline-flex items-center gap-1.5 bg-white/90 backdrop-blur-md px-3.5 py-1 rounded-full border border-amber-200 shadow-sm text-xs font-bold text-amber-900">
+<span>💡</span>
+<span>点卡片可以先试看效果</span>
+</div>
+</div>
+<!-- 舞台中心：更大更萌植物射手 VS 僵尸 -->
+<div class="relative z-10 w-full flex-1 flex items-center justify-between px-12">
+<!-- 左侧：萌萌绿色豌豆射手植物 -->
+<div class="flex flex-col items-center animate-plant relative">
+<div class="absolute -right-2 top-2 w-10 h-10 bg-gemGold/40 rounded-full blur-md animate-ping"></div>
+<div class="text-7xl filter drop-shadow-md select-none transform hover:scale-110 transition-transform">🌱</div>
+<div class="bg-jadeGreenDeep/90 text-white font-headline text-xs px-3 py-0.5 rounded-full mt-0.5 border border-white/40 shadow-sm">
+      豌豆小兵
+    </div>
+</div>
+<!-- 中间空域：金星弹飞行轨迹 -->
+<div class="relative flex-1 mx-8 h-20 flex items-center">
+<svg class="absolute inset-0 w-full h-full pointer-events-none" overflow="visible">
+<path d="M 15 45 Q 160 12 300 40" fill="transparent" opacity="0.75" stroke="#FFC93C" stroke-dasharray="6,6" stroke-width="3.5"></path>
+</svg>
+<div class="animate-bullet-path flex items-center justify-center">
+<div class="relative">
+<span class="text-5xl filter drop-shadow-[0_0_12px_rgba(255,201,60,0.95)] animate-spin" style="animation-duration: 3.5s;">⭐</span>
+<div class="absolute -left-3 top-3 flex gap-1">
+<span class="w-3 h-3 rounded-full bg-amber-400 opacity-90 blur-[1px]"></span>
+<span class="w-2 h-2 rounded-full bg-yellow-200 opacity-70 blur-[1px]"></span>
+</div>
+</div>
+</div>
+<div class="absolute left-1/3 top-1 text-base opacity-80 animate-bounce">✨</div>
+<div class="absolute left-2/3 bottom-2 text-sm opacity-85">✨</div>
+</div>
+<!-- 右侧：迷糊小僵尸 -->
+<div class="flex flex-col items-center animate-zombie relative">
+<div class="absolute -top-3 right-0 text-2xl font-headline font-black text-rose-500 animate-pulse">! ?</div>
+<div class="text-7xl filter drop-shadow-md select-none transform hover:scale-110 transition-transform">🧟</div>
+<div class="bg-stone-700/80 text-white font-headline text-xs px-3 py-0.5 rounded-full mt-0.5 border border-white/40 shadow-sm">
+      迷糊小僵尸
+    </div>
+</div>
+</div>
+<!-- 舞台底部草坪泥土底坎 -->
+<div class="w-full -mx-4 -mb-4 h-5 bg-[#75B833] border-t-4 border-[#5E9B23] flex items-center justify-around px-6">
+<span class="text-xs">🌼</span>
+<span class="text-xs">🌿</span>
+<span class="text-xs">🌸</span>
+<span class="text-xs">🌿</span>
+<span class="text-xs">🌼</span>
+</div>
+</div><!-- 5张外观卡片区域 (紧凑约340px高度，26px标题与副文案) -->
+<div class="grid grid-cols-5 gap-3.5 items-stretch h-[340px]">
+<!-- 卡片 1：原版豌豆 -->
+<div class="card-toy bg-white rounded-3xl p-3 flex flex-col justify-between items-center text-center border-2 border-stone-100 relative group">
+<div class="w-full flex justify-center">
+<span class="bg-rarityBlue/20 text-[#2B84B8] font-bold text-xs px-3 py-0.5 rounded-full border border-rarityBlue/40">普通</span>
+</div>
+<div class="my-auto flex flex-col items-center justify-center py-1">
+<!-- 柔光底座与放大图标 -->
+<div class="w-[108px] h-[108px] rounded-full bg-emerald-50 border-4 border-emerald-100/80 shadow-inner flex items-center justify-center group-hover:scale-105 transition-transform">
+<span class="text-6xl filter drop-shadow">🟢</span>
+</div>
+<h3 class="font-headline font-black text-2xl text-ink mt-2 leading-tight">原版豌豆</h3>
+<p class="text-xs text-stone-500 font-bold mt-0.5">最经典的绿豆子</p>
+</div>
+<button class="w-full py-2.5 rounded-full bg-emerald-50 hover:bg-emerald-100 text-jadeGreenDeep font-headline font-black text-base border-2 border-jadeGreen shadow-[0_3px_0_#237359] active:translate-y-1 active:shadow-none transition-all cursor-pointer">
+      装备
+    </button>
+</div>
+<!-- 卡片 2：金星弹 (装扮中) -->
+<div class="card-toy-active bg-gradient-to-b from-amber-50 to-white rounded-3xl p-3 flex flex-col justify-between items-center text-center border-3 border-gemGold relative group">
+<div class="absolute -top-2.5 -right-2 bg-gemGold text-amber-950 font-black text-[11px] px-2 py-0.5 rounded-full border border-white shadow-sm flex items-center gap-0.5">
+<span>✨</span> 装扮中
+    </div>
+<div class="w-full flex justify-center">
+<span class="bg-rarityBlue/25 text-[#2B84B8] font-bold text-xs px-3 py-0.5 rounded-full border border-rarityBlue/40">普通</span>
+</div>
+<div class="my-auto flex flex-col items-center justify-center py-1">
+<!-- 金黄柔光底座 -->
+<div class="w-[108px] h-[108px] rounded-full bg-amber-100/90 border-4 border-amber-200/90 shadow-inner flex items-center justify-center animate-star-float">
+<span class="text-6xl filter drop-shadow-[0_0_8px_rgba(255,201,60,0.8)]">⭐</span>
+</div>
+<h3 class="font-headline font-black text-2xl text-amber-900 mt-2 leading-tight">金星弹</h3>
+<p class="text-xs text-amber-700/80 font-bold mt-0.5">闪闪发光的星星</p>
+</div>
+<div class="w-full py-2.5 rounded-full btn-toy-green text-white font-headline font-black text-base flex items-center justify-center gap-1 cursor-default">
+<span>使用中</span>
+<span class="material-symbols-outlined text-sm font-bold" data-icon="check">check</span>
+</div>
+</div>
+<!-- 卡片 3：花瓣弹 -->
+<div class="card-toy bg-white rounded-3xl p-3 flex flex-col justify-between items-center text-center border-2 border-stone-100 relative group">
+<div class="w-full flex justify-center">
+<span class="bg-rarityPurple/20 text-[#6B35C4] font-bold text-xs px-3 py-0.5 rounded-full border border-rarityPurple/40">稀有</span>
+</div>
+<div class="my-auto flex flex-col items-center justify-center py-1">
+<!-- 粉色柔光底座 -->
+<div class="w-[108px] h-[108px] rounded-full bg-pink-50 border-4 border-pink-100 shadow-inner flex items-center justify-center group-hover:scale-105 transition-transform">
+<span class="text-6xl filter drop-shadow">🌸</span>
+</div>
+<h3 class="font-headline font-black text-2xl text-ink mt-2 leading-tight">花瓣弹</h3>
+<p class="text-xs text-stone-500 font-bold mt-0.5">粉粉的花瓣飞出去</p>
+</div>
+<button class="w-full py-2.5 rounded-full btn-toy-orange text-white font-headline font-black text-base flex items-center justify-center gap-1 cursor-pointer">
+<span><span class="coin">🪙</span> 100</span>
+<span class="text-xs">购买</span>
+</button>
+</div>
+<!-- 卡片 4：紫晶弹 -->
+<div class="card-toy bg-white rounded-3xl p-3 flex flex-col justify-between items-center text-center border-2 border-stone-100 relative group">
+<div class="w-full flex justify-center">
+<span class="bg-rarityPurple/20 text-[#6B35C4] font-bold text-xs px-3 py-0.5 rounded-full border border-rarityPurple/40">稀有</span>
+</div>
+<div class="my-auto flex flex-col items-center justify-center py-1">
+<!-- 紫色柔光底座 -->
+<div class="w-[108px] h-[108px] rounded-full bg-purple-50 border-4 border-purple-100 shadow-inner flex items-center justify-center group-hover:scale-105 transition-transform">
+<span class="text-6xl filter drop-shadow">🔮</span>
+</div>
+<h3 class="font-headline font-black text-2xl text-ink mt-2 leading-tight">紫晶弹</h3>
+<p class="text-xs text-stone-500 font-bold mt-0.5">神秘的紫色水晶</p>
+</div>
+<button class="w-full py-2.5 rounded-full btn-toy-orange text-white font-headline font-black text-base flex items-center justify-center gap-1 cursor-pointer">
+<span><span class="coin">🪙</span> 150</span>
+<span class="text-xs">购买</span>
+</button>
+</div>
+<!-- 卡片 5：爱心弹 -->
+<div class="card-toy bg-stone-50/90 rounded-3xl p-3 flex flex-col justify-between items-center text-center border-2 border-dashed border-stone-300 relative group opacity-90">
+<div class="w-full flex justify-center">
+<span class="bg-gradient-to-r from-amber-400 to-yellow-300 text-amber-950 font-black text-xs px-3 py-0.5 rounded-full shadow-sm">传说</span>
+</div>
+<div class="my-auto flex flex-col items-center justify-center py-1 w-full">
+<!-- 灰色柔光底座与锁头 -->
+<div class="relative w-[108px] h-[108px] rounded-full bg-stone-200/70 border-4 border-stone-200 flex items-center justify-center mx-auto shadow-inner">
+<span class="text-6xl filter grayscale contrast-50 opacity-40">💖</span>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-amber-600 text-4xl filter drop-shadow" data-icon="lock" data-weight="fill">lock</span>
+</div>
+</div>
+<h3 class="font-headline font-black text-2xl text-stone-500 mt-2 leading-tight">爱心弹</h3>
+<p class="text-xs text-stone-400 font-bold mt-0.5">打败僵尸也要有爱</p>
+<!-- 等级解锁进度条 -->
+<div class="w-full px-2 mt-1">
+<div class="flex flex-col items-center gap-0.5 text-xs font-bold mb-1">
+<span class="bg-stone-200 text-stone-600 px-2 py-0.5 rounded-full whitespace-nowrap">🔒 Lv.10 解锁</span>
+<span class="text-brandOrange font-black whitespace-nowrap">还差 4 级就能拿到！</span>
+</div>
+<div class="w-full h-2 bg-stone-200 rounded-full overflow-hidden p-0.5">
+<div class="h-full bg-gradient-to-r from-amber-400 to-brandOrange rounded-full w-[60%]"></div>
+</div>
+</div>
+</div>
+<div class="w-full py-2.5 rounded-full bg-stone-200 text-stone-400 font-headline font-bold text-base flex items-center justify-center gap-1 cursor-not-allowed">
+<span class="material-symbols-outlined text-sm" data-icon="lock">lock</span>
+<span>还没解锁</span>
+</div>
+</div>
+</div>
+<!-- 底部：温馨提示条 (成就指引) -->
+<footer class="h-11 shrink-0 bg-amber-100/80 border-2 border-amber-200/90 rounded-2xl px-5 flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-2.5 text-amber-900 font-bold text-sm md:text-base">
+<span class="text-xl">💡</span>
+<span>积分怎么来？通关、拿星星、升级、得徽章都能拿积分！</span>
+</div>
+<div class="flex items-center gap-2 text-xs font-black text-amber-800 bg-amber-200/70 px-3 py-1 rounded-full">
+<span>坚持打卡奖励更多</span>
+<span class="material-symbols-outlined text-sm" data-icon="celebration" data-weight="fill">celebration</span>
+</div>
+</footer>
+</section>
+</main>
+<!-- 触控音效与点击按压微交互交互脚本 -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 为所有可点击按钮添加轻微震动与点击效果体验
+      const clickableCards = document.querySelectorAll('.card-toy:not(.opacity-90)');
+
+      clickableCards.forEach(card => {
+        card.addEventListener('click', function(e) {
+          // 如果点击的不是购买按钮本身，也可触发预览联动
+          const title = this.querySelector('h3')?.innerText;
+          const stageBadge = document.querySelector('.font-headline.font-black.text-sm.tracking-wide');
+          if (stageBadge && title) {
+            stageBadge.innerText = `战场试穿：${title} ✨`;
+          }
+        });
+      });
+    });
+  </script>
+</body></html>

@@ -93,7 +93,7 @@ enum UnitSprites {
         case .orb: name = "pea"
         case .snowflake: name = "ice-pea"
         case .star: name = "star"
-        case .petal: return nil
+        case .petal, .heart, .gem: return nil
         }
         let diameter = CGFloat(look.size) * 2
         return node(named: name, fitting: CGSize(width: diameter, height: diameter))

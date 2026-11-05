@@ -55,6 +55,10 @@ public enum DefeatEffect: String, CaseIterable, Sendable {
     case ripple
     /// 变成星星飞走
     case sparkle
+    /// 撒出五颜六色的彩纸
+    case confetti
+    /// 放一朵烟花
+    case firework
 }
 
 /// 字灵外观 = 身体 + 颜色 + 配件
@@ -87,6 +91,8 @@ public struct DefenderLook: Hashable, Sendable {
 public struct ProjectileLook: Hashable, Sendable {
     public enum Shape: String, CaseIterable, Sendable {
         case orb, star, snowflake, petal
+        /// 爱心、宝石：收藏馆里的子弹外观
+        case heart, gem
     }
 
     public var shape: Shape

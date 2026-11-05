@@ -36,6 +36,8 @@ final class GameScene: SKScene {
 
     private let tuning: GameTuning
     private let theme: SceneTheme
+    /// 孩子装备的外观：子弹和退场特效按它选，场景里不按皮肤写判断
+    private let loadout: Loadout
     private var enemies: [Int: EnemyNode] = [:]
     private var defenders: [DefenderCell: DefenderNode] = [:]
     private var targetID: Int?
@@ -52,9 +54,10 @@ final class GameScene: SKScene {
     /// 拖动植物卡时标出落点格
     private var plantPreview: SKShapeNode?
 
-    init(tuning: GameTuning, theme: SceneTheme) {
+    init(tuning: GameTuning, theme: SceneTheme, loadout: Loadout = .standard) {
         self.tuning = tuning
         self.theme = theme
+        self.loadout = loadout
         lawn = Lawn(lanes: tuning.lanes)
         super.init(size: Self.designSize)
         scaleMode = .aspectFit
@@ -255,7 +258,7 @@ final class GameScene: SKScene {
         enemy.hold()
         defender.shoot()
         let target = CGPoint(x: enemy.position.x, y: enemy.position.y + 10)
-        defender.attack.perform(from: defender.muzzle, to: target, projectile: defender.kind.projectile, in: self) {
+        defender.attack.perform(from: defender.muzzle, to: target, projectile: loadout.projectile(for: defender.kind), in: self) {
             [weak self, weak enemy] isFinal in
             guard let self, let enemy, enemy.parent != nil else { return }
             enemy.flash()
@@ -265,7 +268,7 @@ final class GameScene: SKScene {
                 effect.apply(to: enemy, defeated: defeated, field: self)
             }
             if defeated {
-                enemy.defeat()
+                enemy.defeat(with: self.loadout.defeat(for: enemy.kind))
                 self.enemies[id] = nil
                 self.gameDelegate?.enemyDefeated(id, at: enemy.center)
             } else {

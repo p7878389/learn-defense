@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>字灵守卫 - 闯关成功与升级庆祝</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,300..1000;1,6..12,300..1000&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            paper: '#FAF2DE',
+            cream: '#FFFDF9',
+            grass: '#E6F4D7',
+            sky: '#DDF1FF',
+            gold: '#FFC93C',
+            'gold-edge': '#E0A100',
+            primary: '#F28C2E',
+            'primary-dark': '#C6650B',
+            emerald: '#3DA885',
+            'emerald-dark': '#247359',
+            ink: '#2B2B38',
+            'ink-muted': '#8C857A',
+          },
+          borderRadius: {
+            "DEFAULT": "1rem",
+            "lg": "2rem",
+            "xl": "3rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Nunito Sans", "system-ui", "sans-serif"],
+            display: ["Nunito Sans", "system-ui", "sans-serif"],
+            body: ["Nunito Sans", "system-ui", "sans-serif"],
+            label: ["Nunito Sans", "system-ui", "sans-serif"]
+          },
+          boxShadow: {
+            'candy-green': '0 8px 0 #247359',
+            'candy-orange': '0 8px 0 #C6650B',
+            'candy-gold': '0 8px 0 #D97706',
+            'candy-white': '0 6px 0 #D6CEBE',
+            'thick-modal': '0 24px 60px -15px rgba(60, 40, 10, 0.35), 0 10px 0 #E2CD9D'
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 48;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    @keyframes bounce-gentle {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-8px) scale(1.02); }
+    }
+    @keyframes pulse-sunburst {
+      0% { transform: rotate(0deg) scale(1); opacity: 0.75; }
+      50% { transform: rotate(180deg) scale(1.08); opacity: 0.9; }
+      100% { transform: rotate(360deg) scale(1); opacity: 0.75; }
+    }
+    @keyframes star-pop {
+      0% { transform: scale(0.6) rotate(-15deg); opacity: 0; }
+      70% { transform: scale(1.15) rotate(5deg); }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    @keyframes float-badge {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-5px) rotate(2deg); }
+    }
+    .sunburst-bg {
+      background: repeating-conic-gradient(
+        from 0deg,
+        rgba(255, 201, 60, 0.28) 0deg 15deg,
+        rgba(255, 201, 60, 0.04) 15deg 30deg
+      );
+      animation: pulse-sunburst 45s linear infinite;
+    }
+    .star-pop-1 { animation: star-pop 0.5s 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+    .star-pop-2 { animation: star-pop 0.6s 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+    .star-pop-3 { animation: star-pop 0.5s 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+    .candy-press:active {
+      transform: translateY(5px) !important;
+      box-shadow: 0 2px 0 rgba(0,0,0,0.3) !important;
+    }
+    .coin { display: inline-block; filter: sepia(1) saturate(6) hue-rotate(-12deg) brightness(1.05); }
+  </style>
+</head>
+<body class="w-screen h-screen mx-auto overflow-hidden select-none bg-[#E7F3D3] text-ink relative font-body flex items-center justify-center">
+<!-- ================= 1. 底层草坪战斗背景（半透明暗化+景深模糊模拟） ================= -->
+<div class="absolute inset-0 z-0 overflow-hidden pointer-events-none filter blur-sm brightness-90">
+<!-- 天空与渐变远景 -->
+<div class="absolute inset-0 bg-gradient-to-b from-sky via-grass/70 to-[#CDE8AC]"></div>
+<!-- 卡通云朵 -->
+<div class="absolute top-12 left-16 w-48 h-20 bg-white/70 rounded-full filter blur-[1px]"></div>
+<div class="absolute top-8 left-36 w-32 h-24 bg-white/80 rounded-full"></div>
+<div class="absolute top-16 right-36 w-56 h-24 bg-white/70 rounded-full filter blur-[1px]"></div>
+<div class="absolute top-10 right-20 w-36 h-28 bg-white/80 rounded-full"></div>
+<!-- 远景栅栏与青草坡 -->
+<div class="absolute bottom-40 left-0 right-0 h-48 bg-[#9CD179] rounded-t-[140px] opacity-90 border-t-8 border-[#76B250]"></div>
+<div class="absolute bottom-0 left-0 right-0 h-80 bg-[#7CBF58] rounded-t-[100px] border-t-8 border-[#5EA537]">
+<!-- 棋盘草坪格线透视感 -->
+<div class="grid grid-cols-6 grid-rows-3 h-full opacity-20 gap-2 p-6">
+<div class="bg-emerald-dark rounded-2xl"></div>
+<div class="bg-white rounded-2xl"></div>
+<div class="bg-emerald-dark rounded-2xl"></div>
+<div class="bg-white rounded-2xl"></div>
+<div class="bg-emerald-dark rounded-2xl"></div>
+<div class="bg-white rounded-2xl"></div>
+<div class="bg-white rounded-2xl"></div>
+<div class="bg-emerald-dark rounded-2xl"></div>
+<div class="bg-white rounded-2xl"></div>
+<div class="bg-emerald-dark rounded-2xl"></div>
+<div class="bg-white rounded-2xl"></div>
+<div class="bg-emerald-dark rounded-2xl"></div>
+</div>
+</div>
+<!-- 战场守护植物剪影提示（文字守卫豌豆射手与坚果） -->
+<div class="absolute bottom-28 left-24 text-7xl transform -scale-x-100 opacity-60">🌱</div>
+<div class="absolute bottom-44 left-56 text-7xl opacity-50">🪴</div>
+<div class="absolute bottom-20 right-28 text-8xl opacity-40">🧟</div>
+<div class="absolute bottom-48 right-60 text-7xl opacity-30">🧟</div>
+</div>
+<!-- 半透明暗化保护层 (Modal Backdrop) -->
+<div class="absolute inset-0 bg-[#2B2B38]/55 backdrop-blur-[3px] z-10"></div>
+<!-- 庆祝放射光芒 (Sunburst) -->
+<div class="absolute w-[1400px] h-[1400px] pointer-events-none z-10 flex items-center justify-center opacity-85">
+<div class="w-full h-full sunburst-bg rounded-full"></div>
+</div>
+<!-- 五彩纸屑与星星飘落氛围粒子 -->
+<div class="absolute inset-0 pointer-events-none z-20 overflow-hidden">
+<div class="absolute top-14 left-44 text-4xl animate-bounce" style="animation-duration: 2.8s;">✨</div>
+<div class="absolute top-24 right-52 text-5xl animate-bounce" style="animation-duration: 2.4s;">⭐</div>
+<div class="absolute bottom-24 left-36 text-4xl animate-pulse">🎊</div>
+<div class="absolute bottom-20 right-40 text-4xl animate-pulse">🎉</div>
+<div class="absolute top-44 left-20 w-5 h-8 bg-amber-400 rotate-45 rounded-sm opacity-90 shadow-md"></div>
+<div class="absolute top-28 right-32 w-6 h-5 bg-emerald-500 rotate-12 rounded-sm opacity-80 shadow-md"></div>
+<div class="absolute top-80 left-28 w-6 h-6 bg-rose-400 -rotate-12 rounded-full opacity-90 shadow-md"></div>
+<div class="absolute bottom-40 right-24 w-8 h-4 bg-sky-400 rotate-45 rounded-sm opacity-90 shadow-md"></div>
+<div class="absolute top-64 right-20 w-5 h-7 bg-purple-400 rotate-30 rounded-sm opacity-85 shadow-md"></div>
+<div class="absolute bottom-32 left-64 w-5 h-5 bg-gold rotate-45 rounded-sm opacity-90 shadow-md"></div>
+</div>
+<!-- ================= 2. 中央大弹窗 (Modal) ================= -->
+<!-- 尺寸精确适配 1000px × 710px，无滚动条单屏沉浸 -->
+<div class="relative z-30 w-[1010px] h-[700px] mt-6 bg-[#FAF2DE] rounded-3xl p-4 shadow-thick-modal border-4 border-[#F3E3BD] flex flex-col justify-between select-none">
+<!-- 顶部飘扬橙金丝带横幅 (Ribbon Banner) -->
+<div class="absolute -top-10 left-1/2 -translate-x-1/2 z-40 flex items-center justify-center w-[540px]">
+<!-- 丝带左尾翼 -->
+<div class="absolute -left-7 top-4 w-12 h-16 bg-[#C6650B] rounded-l-2xl border-4 border-[#FFE382] transform -skew-y-12 shadow-md"></div>
+<!-- 丝带主体 -->
+<div class="relative bg-gradient-to-b from-[#FFAE33] via-primary to-[#E06D0C] px-12 py-3 rounded-full border-4 border-[#FFF3B2] shadow-[0_8px_0_#A94C03] flex items-center justify-center gap-3">
+<span class="text-3xl filter drop-shadow">🎉</span>
+<span class="text-white font-headline text-4xl font-black tracking-widest drop-shadow-[0_3px_2px_rgba(0,0,0,0.35)]">
+          闯关成功！
+        </span>
+<span class="text-3xl filter drop-shadow">🌟</span>
+</div>
+<!-- 丝带右尾翼 -->
+<div class="absolute -right-7 top-4 w-12 h-16 bg-[#C6650B] rounded-r-2xl border-4 border-[#FFE382] transform skew-y-12 shadow-md"></div>
+</div>
+<!-- 弹窗内部：内层双层白底内胆 (White Canvas Inner) -->
+<div class="w-full h-full bg-cream rounded-[28px] border-4 border-white/80 p-6 pt-10 flex flex-col justify-between shadow-[inset_0_4px_12px_rgba(235,215,178,0.5)]">
+<!-- 主体双栏区域 -->
+<div class="grid grid-cols-2 gap-5 flex-1 items-stretch">
+<!-- ================= 左栏：本局战报 ================= -->
+<div class="bg-[#FCF9F1] rounded-2xl p-4 border-2 border-[#EFE4CF] shadow-[0_4px_0_#E8DAC0] flex flex-col justify-between">
+<!-- 标题标签栏 -->
+<div class="flex items-center justify-between pb-1 border-b-2 border-dashed border-[#E7DAC1]">
+<div class="flex items-center gap-2">
+<span class="w-3.5 h-3.5 rounded-full bg-primary inline-block"></span>
+<span class="font-headline font-black text-2xl text-ink">这一局 · 看拼音选字</span>
+</div>
+<span class="bg-[#FFF0D4] text-[#B55D08] px-3 py-1 rounded-full text-sm font-black border border-amber-300">
+              全部答对 🏆
+            </span>
+</div>
+<!-- 顶端：三颗超大立体高光金色星星 (拱形排列) -->
+<div class="flex items-end justify-center gap-4 py-1 relative">
+<!-- 左星 -->
+<div class="star-pop-1 flex flex-col items-center transform -rotate-12 translate-y-1">
+<div class="relative w-16 h-16 flex items-center justify-center">
+<span class="text-6xl drop-shadow-[0_6px_0_#C68200]">⭐</span>
+<span class="absolute top-2 left-3 w-3 h-2 bg-white/70 rounded-full blur-[0.5px]"></span>
+</div>
+<span class="text-xs font-black text-[#96680D] mt-0.5 bg-[#FFF4C7] px-2 py-0.5 rounded-full">通关</span>
+</div>
+<!-- 中星 (最大 + 头戴小皇冠) -->
+<div class="star-pop-2 flex flex-col items-center -translate-y-2 z-10">
+<div class="relative flex flex-col items-center">
+<span class="text-3xl -mb-3 z-20 animate-bounce" style="animation-duration: 2s;">👑</span>
+<div class="relative w-20 h-20 flex items-center justify-center">
+<span class="text-8xl drop-shadow-[0_8px_0_#C68200]">⭐</span>
+<span class="absolute top-2 left-4 w-4 h-3 bg-white/80 rounded-full blur-[0.5px]"></span>
+</div>
+</div>
+<span class="relative z-20 mt-2 text-sm font-black text-white bg-gradient-to-r from-amber-500 to-[#F28C2E] px-3 py-0.5 rounded-full shadow-[0_2px_0_#B35805]">答对 7 成</span>
+</div>
+<!-- 右星 -->
+<div class="star-pop-3 flex flex-col items-center transform rotate-12 translate-y-1">
+<div class="relative w-16 h-16 flex items-center justify-center">
+<span class="text-6xl drop-shadow-[0_6px_0_#C68200]">⭐</span>
+<span class="absolute top-2 left-3 w-3 h-2 bg-white/70 rounded-full blur-[0.5px]"></span>
+</div>
+<span class="text-xs font-black text-[#96680D] mt-0.5 bg-[#FFF4C7] px-2 py-0.5 rounded-full">9 成 · 满心</span>
+</div>
+</div>
+<!-- 中部：统计指标卡片 (3 个并排圆角微卡片) -->
+<div class="grid grid-cols-3 gap-2.5">
+<!-- 答对数 -->
+<div class="bg-white rounded-xl p-2.5 border-2 border-[#E9DFC8] shadow-[0_3px_0_#DFD4BD] flex flex-col items-center text-center">
+<span class="text-2xl mb-0.5">🎯</span>
+<span class="text-xs font-bold text-ink-muted">答对汉字</span>
+<span class="font-headline text-2xl font-black text-ink tracking-tight mt-0.5">12<span class="text-base text-ink-muted">/12</span></span>
+</div>
+<!-- 首答正确率 -->
+<div class="bg-white rounded-xl p-2.5 border-2 border-[#E9DFC8] shadow-[0_3px_0_#DFD4BD] flex flex-col items-center text-center">
+<span class="text-2xl mb-0.5">⚡</span>
+<span class="text-xs font-bold text-ink-muted">首答正确率</span>
+<span class="font-headline text-2xl font-black text-emerald tracking-tight mt-0.5">100%</span>
+</div>
+<!-- 用时 -->
+<div class="bg-white rounded-xl p-2.5 border-2 border-[#E9DFC8] shadow-[0_3px_0_#DFD4BD] flex flex-col items-center text-center">
+<span class="text-2xl mb-0.5">⏱️</span>
+<span class="text-xs font-bold text-ink-muted">通关用时</span>
+<span class="font-headline text-2xl font-black text-[#5C5549] tracking-tight mt-0.5">03:20</span>
+</div>
+</div>
+<!-- 下部：结算奖励大胶囊区 -->
+<div class="space-y-2 pt-1">
+<div class="grid grid-cols-2 gap-3">
+<!-- 经验卡 -->
+<div class="bg-gradient-to-b from-[#4DC19B] to-emerald text-white rounded-2xl p-3 border-2 border-[#7FE3C4] shadow-[0_5px_0_#247359] flex items-center justify-between px-4">
+<div class="flex items-center gap-2">
+<span class="text-3xl">⭐</span>
+<div>
+<div class="text-[11px] font-bold text-emerald-100">经验</div>
+<div class="font-headline text-2xl font-black text-white drop-shadow">+165</div>
+</div>
+</div>
+
+</div>
+<!-- 金币积分卡 -->
+<div class="bg-gradient-to-b from-[#FFD55E] to-gold text-ink rounded-2xl p-3 border-2 border-[#FFE899] shadow-[0_5px_0_#D97706] flex items-center justify-between px-4">
+<div class="flex items-center gap-2">
+<span class="text-3xl"><span class="coin">🪙</span></span>
+<div>
+<div class="text-[11px] font-bold text-[#8A5F00]">积分</div>
+<div class="font-headline text-2xl font-black text-[#5C3F00] drop-shadow-sm">+54</div>
+</div>
+</div>
+
+</div>
+</div>
+<!-- 每日首胜额外赠送提示 -->
+<div class="bg-[#FFF4E0] border-2 border-[#FBDCA3] rounded-full py-1.5 px-4 flex items-center justify-center gap-1.5 shadow-[0_2px_0_#E8C683]">
+<span class="text-base">🔥</span>
+<span class="text-xs font-black text-[#A65B00]">每日首胜额外赠送：+30 经验 · +10 积分（已计入）</span>
+</div>
+</div>
+</div>
+<!-- ================= 右栏：升级啦！庆祝专属区 ================= -->
+<div class="bg-gradient-to-b from-[#FFF9EE] via-[#FCF4E4] to-[#F7EDE0] rounded-2xl p-4 border-2 border-[#EEDBBA] shadow-[0_4px_0_#DECA9E] flex flex-col justify-around gap-3 relative overflow-hidden">
+<!-- 升级专属光效微背景 -->
+<div class="absolute -top-12 -right-12 w-44 h-44 bg-amber-200/40 rounded-full blur-xl pointer-events-none"></div>
+<!-- 顶部：大号等级勋章与经验条 -->
+<div class="bg-white/80 rounded-2xl p-3 border-2 border-[#F5E6CA] shadow-[0_3px_0_#E5D3B2] flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<!-- 翅膀徽章 -->
+<div class="flex items-center gap-3">
+<div class="relative flex items-center" style="animation: float-badge 3s ease-in-out infinite;">
+<span class="text-2xl -mr-1">🪽</span>
+<div class="w-14 h-14 rounded-2xl bg-gradient-to-b from-amber-400 to-[#F28C2E] border-2 border-white shadow-[0_4px_0_#C6650B] flex flex-col items-center justify-center text-white">
+<span class="text-[10px] font-black text-amber-100 -mb-1">Lv.</span>
+<span class="font-headline font-black text-2xl leading-none">6</span>
+</div>
+<span class="text-2xl -ml-1 transform -scale-x-100">🪽</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="bg-[#FF7A00] text-white text-[11px] font-black px-2 py-0.5 rounded-full shadow-sm">
+                      Lv.5 ➔ Lv.6
+                    </span>
+<span class="text-base">✨</span>
+</div>
+<div class="font-headline text-3xl font-black text-[#E8740C] mt-0.5 tracking-wider">升级啦！</div>
+</div>
+</div>
+<!-- 满级突破提示 -->
+<div class="text-right">
+<span class="inline-block bg-emerald/15 text-emerald-dark border border-emerald/30 font-black text-xs px-2.5 py-1 rounded-full">
+                  <span class="coin">🪙</span> 升级奖励 +30
+                </span>
+</div>
+</div>
+<!-- 饱满粗壮翡翠绿经验进度条 -->
+<div class="space-y-1">
+<div class="w-full h-6 bg-[#E2D8C3] rounded-full p-1 border-2 border-[#D3C7AE] relative overflow-hidden flex items-center">
+<!-- 进度条本体 -->
+<div class="h-full bg-gradient-to-r from-emerald via-[#4CD4A7] to-[#3DA885] rounded-full w-[17%] relative shadow-[inset_0_2px_4px_rgba(255,255,255,0.6)] flex items-center justify-end pr-2">
+
+</div>
+</div>
+<div class="flex justify-between items-center px-1 text-[11px] font-bold text-ink-muted">
+<span class="text-emerald-700 font-black text-xs">Lv.6　95 / 560 经验</span>
+<span class="text-amber-600 font-black">下一级奖励：<span class="coin">🪙</span> 30 积分</span>
+</div>
+</div>
+</div>
+<!-- 中部：新解锁物品卡片 (彩纸礼花) -->
+<div class="bg-white rounded-2xl p-3 border-2 border-[#E9DFC8] shadow-[0_3px_0_#DFD4BD] flex items-center justify-between relative overflow-hidden">
+<!-- 醒目右上角红色角标 -->
+<div class="absolute top-0 right-0 bg-[#FF4747] text-white text-[10px] font-black px-3 py-0.5 rounded-bl-xl shadow-sm tracking-wider">
+              新！
+            </div>
+<div class="flex items-center gap-3">
+<div class="w-20 h-20 rounded-2xl bg-[#FFF6D9] border-2 border-[#FFDF80] shadow-[0_3px_0_#F0C440] flex items-center justify-center text-5xl">
+                🎉
+              </div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-headline font-black text-lg text-ink">彩纸礼花</span>
+<span class="bg-emerald-100 text-emerald-700 text-[10px] font-black px-1.5 py-0.5 rounded">Lv.6 解锁</span>
+</div>
+<div class="text-xs font-bold text-ink-muted mt-0.5">僵尸退场特效 · 现在可以用 <span class="coin">🪙</span> 150 买了</div>
+</div>
+</div>
+<button class="mr-6 whitespace-nowrap px-4 py-2 bg-[#FFF0D4] hover:bg-amber-200 text-[#B55D08] font-black text-xs rounded-xl border border-amber-300 transition-colors">
+              去看看
+            </button>
+</div>
+<!-- 下方：新荣誉徽章卡片 (一字不差) -->
+<div class="bg-white rounded-2xl p-3 border-2 border-[#E9DFC8] shadow-[0_3px_0_#DFD4BD] flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-14 h-14 rounded-full bg-gradient-to-b from-[#FFE380] via-gold to-[#E5A500] border-2 border-white shadow-[0_4px_0_#BF8200] flex items-center justify-center text-3xl text-ink">
+                🛡️
+              </div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-headline font-black text-lg text-ink">一字不差</span>
+<span class="bg-[#FFF4C7] text-[#96680D] text-[10px] font-black px-1.5 py-0.5 rounded border border-amber-300">新徽章！</span>
+</div>
+<div class="text-xs font-bold text-ink-muted mt-0.5">一局里每题第一次就答对 · 奖励 <span class="text-amber-600 font-black">+50 积分 ✨</span></div>
+</div>
+</div>
+<div class="bg-[#E6F8F0] border border-emerald/30 text-emerald-dark font-black text-xs px-2.5 py-1.5 rounded-xl flex items-center gap-1">
+<span class="whitespace-nowrap">已收进徽章墙</span>
+<span class="text-sm">✓</span>
+</div>
+</div>
+</div>
+</div>
+<!-- ================= 4. 底部超大 3D 立体操作按钮区 ================= -->
+<div class="pt-4 border-t-2 border-dashed border-[#E7DAC1] flex items-center justify-between gap-4">
+<!-- 辅助按钮：回主页 -->
+<button class="candy-press h-16 px-7 rounded-full bg-white hover:bg-[#FAF4E6] text-ink font-headline text-xl font-black border-2 border-[#DBD0BE] shadow-candy-white transition-all flex items-center gap-2 cursor-pointer">
+<span class="text-2xl">🏡</span>
+<span>回主页</span>
+</button>
+<div class="flex items-center gap-4">
+<!-- 次按钮：去收藏馆装备 -->
+<button class="candy-press h-16 px-8 rounded-full bg-gradient-to-b from-[#FFA238] to-primary hover:brightness-105 text-white font-headline text-xl font-black border-2 border-[#FFD285] shadow-candy-orange transition-all flex items-center gap-2.5 cursor-pointer">
+<span class="text-2xl">🎁</span>
+<span>去收藏馆看看</span>
+</button>
+<!-- 主按钮：再来一局 -->
+<button class="candy-press h-16 px-12 rounded-full bg-gradient-to-b from-[#4CD4A7] to-emerald hover:brightness-105 text-white font-headline text-2xl font-black border-2 border-[#A2F5D7] shadow-candy-green transition-all flex items-center gap-3 cursor-pointer">
+<span class="text-3xl">▶</span>
+<span class="tracking-wide">再来一局</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</body></html>

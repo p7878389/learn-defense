@@ -105,6 +105,33 @@ public struct WavePlan: Sendable {
         self.boss = boss
     }
 
+    /// 按题量出怪：所有怪物要答对的题数（血量）加起来正好等于 questions，每局题量固定。
+    /// 先出 warmup 只基础怪；首领算在题量里，放在最后，题量不够容纳首领时就不出首领；
+    /// 剩下的预算放不下血量多的怪时补基础怪
+    public func kinds<R: RandomNumberGenerator>(questions budget: Int, using rng: inout R) -> [EnemyKind] {
+        var remaining = max(0, budget)
+        var result: [EnemyKind] = []
+        let bossHP = boss?.hp ?? 0
+        let withBoss = boss != nil && remaining >= warmup * basic.hp + bossHP + 1
+        if withBoss { remaining -= bossHP }
+        while remaining >= basic.hp, remaining > 0 {
+            let candidates = result.count < warmup ? [] : mix.filter { $0.weight > 0 && $0.kind.hp <= remaining }
+            let total = candidates.reduce(0) { $0 + $1.weight }
+            var kind = basic
+            if total > 0 {
+                var roll = Double.random(in: 0..<total, using: &rng)
+                for entry in candidates {
+                    roll -= entry.weight
+                    if roll < 0 { kind = entry.kind; break }
+                }
+            }
+            result.append(kind)
+            remaining -= kind.hp
+        }
+        if withBoss, let boss { result.append(boss) }
+        return result
+    }
+
     public func kinds<R: RandomNumberGenerator>(count: Int, using rng: inout R) -> [EnemyKind] {
         let total = mix.reduce(0) { $0 + max(0, $1.weight) }
         return (0..<max(0, count)).map { i in

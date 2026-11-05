@@ -74,6 +74,12 @@ public enum AppPaths {
             .appendingPathComponent("\(id.uuidString).json")
     }
 
+    /// 成长档案（等级、积分、徽章、外观），和学习记录分开存
+    public static func growthFile(for id: UUID) -> URL {
+        dataDirectory.appendingPathComponent("growth", isDirectory: true)
+            .appendingPathComponent("\(id.uuidString).json")
+    }
+
     /// 用户导入题库的目录。iOS 上在「文件」App 里可见（Documents/Packs）
     public static var userPacksDirectory: URL {
         let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]

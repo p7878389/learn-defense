@@ -61,7 +61,7 @@ struct ProfilesView: View {
             .padding(40)
             .frame(maxWidth: .infinity)
         }
-        .background(Theme.paper.ignoresSafeArea())
+        .background(GrowthPageBackground())
         .navigationDestination(for: UUID.self) { id in
             ProfileHomeView(profileID: id)
         }
@@ -102,7 +102,7 @@ struct ProfileCard: View {
             Text(subtitle).font(.headline).foregroundStyle(Theme.muted)
         }
         .frame(maxWidth: .infinity, minHeight: 220)
-        .background(RoundedRectangle(cornerRadius: 28).fill(Theme.card))
+        .background(RoundedRectangle(cornerRadius: 28).fill(GrowthColors.surface))
         .shadow(color: .black.opacity(0.08), radius: 8, y: 4)
     }
 }

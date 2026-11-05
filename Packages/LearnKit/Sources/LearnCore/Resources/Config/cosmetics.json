@@ -1,0 +1,24 @@
+[
+  { "id": "projectile.original", "slot": "projectile", "name": "原版豌豆", "icon": "🟢", "summary": "最经典的绿豆子", "rarity": "common", "unlockLevel": 1, "price": 0 },
+  { "id": "projectile.goldStar", "slot": "projectile", "name": "金星弹", "icon": "⭐", "summary": "闪闪发光的星星", "rarity": "common", "unlockLevel": 3, "price": 0,
+    "projectile": { "shape": "star", "color": "gold", "size": 14 } },
+  { "id": "projectile.petal", "slot": "projectile", "name": "花瓣弹", "icon": "🌸", "summary": "粉粉的花瓣飞出去", "rarity": "rare", "unlockLevel": 5, "price": 100,
+    "projectile": { "shape": "petal", "color": "coral", "size": 12 } },
+  { "id": "projectile.amethyst", "slot": "projectile", "name": "紫晶弹", "icon": "🔮", "summary": "神秘的紫色水晶", "rarity": "rare", "unlockLevel": 7, "price": 150,
+    "projectile": { "shape": "gem", "color": "plum", "size": 13 } },
+  { "id": "projectile.heart", "slot": "projectile", "name": "爱心弹", "icon": "💖", "summary": "打败僵尸也要有爱", "rarity": "legendary", "unlockLevel": 10, "price": 250,
+    "projectile": { "shape": "heart", "color": "crimson", "size": 13 } },
+
+  { "id": "defeat.original", "slot": "defeat", "name": "原版", "icon": "🧟", "summary": "每种僵尸自己的样子", "rarity": "common", "unlockLevel": 1, "price": 0 },
+  { "id": "defeat.sparkle", "slot": "defeat", "name": "星星飞散", "icon": "✨", "summary": "变成一堆小星星", "rarity": "common", "unlockLevel": 2, "price": 0, "defeat": "sparkle" },
+  { "id": "defeat.ripple", "slot": "defeat", "name": "涟漪", "icon": "🫧", "summary": "像石头掉进水里", "rarity": "rare", "unlockLevel": 4, "price": 80, "defeat": "ripple" },
+  { "id": "defeat.confetti", "slot": "defeat", "name": "彩纸礼花", "icon": "🎉", "summary": "撒出五颜六色的彩纸", "rarity": "rare", "unlockLevel": 6, "price": 150, "defeat": "confetti" },
+  { "id": "defeat.firework", "slot": "defeat", "name": "烟花", "icon": "🎆", "summary": "砰！放一朵大烟花", "rarity": "legendary", "unlockLevel": 12, "price": 300, "defeat": "firework" },
+
+  { "id": "item.iceCube", "slot": "itemSkin", "name": "冰块符", "icon": "🧊", "summary": "冰冻符换个样子，效果不变", "rarity": "common", "unlockLevel": 4, "price": 60,
+    "itemSkin": { "item": "frostCharm", "icon": "🧊", "name": "冰块符" } },
+  { "id": "item.giftHeart", "slot": "itemSkin", "name": "礼物心", "icon": "💝", "summary": "爱心叶换个样子，效果不变", "rarity": "common", "unlockLevel": 6, "price": 60,
+    "itemSkin": { "item": "heartLeaf", "icon": "💝", "name": "礼物心" } },
+  { "id": "item.shiningStar", "slot": "itemSkin", "name": "闪耀星", "icon": "🌟", "summary": "幸运星换个样子，效果不变", "rarity": "common", "unlockLevel": 8, "price": 60,
+    "itemSkin": { "item": "luckyStar", "icon": "🌟", "name": "闪耀星" } }
+]
