@@ -160,7 +160,7 @@ struct ProgressTests {
         #expect(store.stats["char:晨"]?.wrong == 2)
         #expect(try database.stats(profileID: profileID)["char:晨"]?.seen == 3)
         #expect(!FileManager.default.fileExists(atPath: legacy.path))
-        #expect(FileManager.default.fileExists(atPath: ProgressStore.migratedFile(for: legacy).path))
+        #expect(FileManager.default.fileExists(atPath: AppPaths.migratedBackup(for: legacy).path))
 
         // 数据库已有记录时不再读旧文件
         try JSONEncoder().encode(["char:晨": ItemStats()]).write(to: legacy)

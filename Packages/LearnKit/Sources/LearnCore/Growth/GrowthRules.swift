@@ -178,31 +178,57 @@ extension GrowthState {
     }
 }
 
-/// 读写一个孩子的成长档案（growth/<档案id>.json）。url 为 nil 时只在内存里（测试用）
+/// 读写一个孩子的成长档案，存在本地数据库（LearnDatabase）里。
 public final class GrowthStore {
     public private(set) var state: GrowthState
     public let catalog: GrowthCatalog
-    private let url: URL?
+    private let profileID: UUID
+    private let database: LearnDatabase?
 
-    /// - Parameter legacyCorrectAnswers: 没有成长档案时，老学习记录里累计答对的次数，用来补发
-    public init(url: URL?, catalog: GrowthCatalog, legacyCorrectAnswers: () -> Int = { 0 }) {
-        self.url = url
+    /// - Parameters:
+    ///   - database: 为 nil 时只在内存里（测试用，或数据库打不开时），此时只读取 legacyFile、不改动它
+    ///   - legacyFile: 旧版的 growth/<档案id>.json。数据库里还没有这个孩子的成长档案时导入一次，
+    ///     导入后改名为 .json.migrated；文件坏了则改名为 .json.bak，从头开始
+    ///   - legacyCorrectAnswers: 既没有成长档案也没有旧文件时，老学习记录里累计答对的次数，用来补发
+    public init(profileID: UUID = UUID(), database: LearnDatabase? = nil, legacyFile: URL? = nil,
+                catalog: GrowthCatalog, legacyCorrectAnswers: () -> Int = { 0 }) {
+        self.profileID = profileID
+        self.database = database
         self.catalog = catalog
-        guard let url, FileManager.default.fileExists(atPath: url.path) else {
-            let correct = legacyCorrectAnswers()
-            state = correct > 0 ? GrowthState.migrated(fromCorrectAnswers: correct, catalog: catalog) : GrowthState()
-            if correct > 0 { save() }
+
+        if let database {
+            do {
+                if let saved = try database.growthState(profileID: profileID) {
+                    state = saved
+                    return
+                }
+            } catch {
+                print("读取成长档案失败，从头开始：\(error)")
+                state = GrowthState()
+                return
+            }
+        }
+
+        if let legacyFile, FileManager.default.fileExists(atPath: legacyFile.path) {
+            if let data = try? Data(contentsOf: legacyFile),
+               let saved = try? JSONDecoder.growth.decode(GrowthState.self, from: data) {
+                state = saved
+                guard database != nil else { return }
+                if persist() { AppPaths.markMigrated(legacyFile) }
+            } else {
+                state = GrowthState()
+                guard database != nil else { return }
+                // 文件坏了：先把原文件留成 .bak，再从头开始，不覆盖丢数据
+                let backup = legacyFile.appendingPathExtension("bak")
+                try? FileManager.default.removeItem(at: backup)
+                try? FileManager.default.moveItem(at: legacyFile, to: backup)
+            }
             return
         }
-        if let data = try? Data(contentsOf: url), let saved = try? JSONDecoder.growth.decode(GrowthState.self, from: data) {
-            state = saved
-        } else {
-            // 文件坏了：先把原文件留成 .bak，再从头开始，不覆盖丢数据
-            let backup = url.appendingPathExtension("bak")
-            try? FileManager.default.removeItem(at: backup)
-            try? FileManager.default.moveItem(at: url, to: backup)
-            state = GrowthState()
-        }
+
+        let correct = legacyCorrectAnswers()
+        state = correct > 0 ? GrowthState.migrated(fromCorrectAnswers: correct, catalog: catalog) : GrowthState()
+        if correct > 0 { save() }
     }
 
     public var level: LevelProgress { state.level(catalog.pacing.levelCurve) }
@@ -235,12 +261,18 @@ public final class GrowthStore {
     }
 
     public func save() {
-        guard let url else { return }
+        persist()
+    }
+
+    @discardableResult
+    private func persist() -> Bool {
+        guard let database else { return false }
         do {
-            try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
-            try JSONEncoder.growth.encode(state).write(to: url, options: .atomic)
+            try database.saveGrowthState(state, profileID: profileID)
+            return true
         } catch {
             print("保存成长档案失败：\(error)")
+            return false
         }
     }
 }

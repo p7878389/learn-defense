@@ -14,21 +14,26 @@ public final class AppModel: ObservableObject {
     private let profileStore: ProfileStore
     private var progressStores: [UUID: ProgressStore] = [:]
     private var growthStores: [UUID: GrowthStore] = [:]
-    /// 本地数据库；打不开时为 nil，学习记录只留在内存里，并在主页提示
+    /// 本地数据库；打不开时为 nil，档案和记录只留在内存里，并在主页提示
     let database: LearnDatabase?
     private var databaseIssues: [String] = []
 
     public init() {
-        profileStore = ProfileStore(url: AppPaths.profilesFile)
-        profiles = profileStore.profiles
-        library = ContentLibrary.load(userDirectory: AppPaths.userPacksDirectory)
+        let database: LearnDatabase?
+        var issues: [String] = []
         do {
             database = try LearnDatabase(url: AppPaths.databaseFile)
         } catch {
             database = nil
-            databaseIssues.append("本地数据库打开失败，本次学习记录不会保存：\(error.localizedDescription)")
+            issues.append("本地数据库打开失败，本次的档案、成长和学习记录不会保存：\(error.localizedDescription)")
         }
+        self.database = database
+        databaseIssues = issues
+        profileStore = ProfileStore(database: database, legacyFile: AppPaths.profilesFile)
+        profiles = profileStore.profiles
+        library = ContentLibrary.load(userDirectory: AppPaths.userPacksDirectory)
         syncContent()
+        syncConfig()
     }
 
     func reloadLibrary() {
@@ -45,26 +50,35 @@ public final class AppModel: ObservableObject {
         }
     }
 
+    /// 把系统配置同步进数据库，供查询用；运行时仍用 growthCatalog
+    private func syncConfig() {
+        do {
+            try database?.syncConfig(growthCatalog)
+        } catch {
+            print("系统配置同步到数据库失败：\(error)")
+        }
+    }
+
     func save(_ profile: Profile) {
         profileStore.upsert(profile)
         profiles = profileStore.profiles
     }
 
-    /// 删除档案和它的学习记录（界面上会先确认）
+    /// 删除档案和它的成长档案、学习记录（界面上会先确认）
     func delete(_ profile: Profile) {
         profileStore.delete(id: profile.id)
         profiles = profileStore.profiles
         progressStores[profile.id] = nil
         growthStores[profile.id] = nil
         do {
-            try database?.deleteStats(profileID: profile.id)
+            try database?.deletePersonalData(profileID: profile.id)
         } catch {
-            print("删除学习记录失败：\(error)")
+            print("删除个人数据失败：\(error)")
         }
-        let legacyProgress = AppPaths.progressFile(for: profile.id)
-        try? FileManager.default.removeItem(at: legacyProgress)
-        try? FileManager.default.removeItem(at: ProgressStore.migratedFile(for: legacyProgress))
-        try? FileManager.default.removeItem(at: AppPaths.growthFile(for: profile.id))
+        for legacy in [AppPaths.progressFile(for: profile.id), AppPaths.growthFile(for: profile.id)] {
+            try? FileManager.default.removeItem(at: legacy)
+            try? FileManager.default.removeItem(at: AppPaths.migratedBackup(for: legacy))
+        }
     }
 
     func progress(for profileID: UUID) -> ProgressStore {
@@ -81,7 +95,12 @@ public final class AppModel: ObservableObject {
     /// 成长档案。老档案第一次打开时按学习记录里的答对次数补发经验和积分
     func growth(for profileID: UUID) -> GrowthStore {
         if let store = growthStores[profileID] { return store }
-        let store = GrowthStore(url: AppPaths.growthFile(for: profileID), catalog: growthCatalog) { [unowned self] in
+        let store = GrowthStore(
+            profileID: profileID,
+            database: database,
+            legacyFile: AppPaths.growthFile(for: profileID),
+            catalog: growthCatalog
+        ) { [unowned self] in
             progress(for: profileID).stats.values.reduce(0) { $0 + $1.correct }
         }
         growthStores[profileID] = store

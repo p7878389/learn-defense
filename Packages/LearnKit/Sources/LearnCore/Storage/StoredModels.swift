@@ -135,3 +135,160 @@ public final class StoredItemStats {
         return s
     }
 }
+
+/// 孩子档案（对应 Profile）
+@Model
+public final class StoredProfile {
+    /// Profile.id.uuidString
+    @Attribute(.unique) public var id: String
+    public var name: String
+    /// Grade.rawValue
+    public var grade: String
+    public var avatar: String
+    /// Difficulty.rawValue
+    public var difficulty: String
+    /// 在档案列表里的顺序
+    public var position: Int
+
+    public init(profile: Profile, position: Int) {
+        id = profile.id.uuidString
+        name = profile.name
+        grade = profile.grade.rawValue
+        avatar = profile.avatar
+        difficulty = profile.difficulty.rawValue
+        self.position = position
+    }
+
+    func update(_ profile: Profile, position: Int) {
+        name = profile.name
+        grade = profile.grade.rawValue
+        avatar = profile.avatar
+        difficulty = profile.difficulty.rawValue
+        self.position = position
+    }
+
+    /// 年级、难度取值不认识时返回 nil（比如被旧版 App 读到新版写的数据）
+    public var profile: Profile? {
+        guard let uuid = UUID(uuidString: id), let g = Grade(rawValue: grade) else { return nil }
+        return Profile(id: uuid, name: name, grade: g, avatar: avatar, difficulty: Difficulty(rawValue: difficulty) ?? .easy)
+    }
+}
+
+/// 一个孩子的成长档案。完整状态存在 stateData（GrowthState 的 JSON），
+/// 常用数值另存成列，方便直接查询排序
+@Model
+public final class StoredGrowth {
+    /// Profile.id.uuidString
+    @Attribute(.unique) public var profileID: String
+    public var stateData: Data
+    public var xp: Int
+    public var coins: Int
+    public var badgeCount: Int
+    public var gamesPlayed: Int
+    public var gamesWon: Int
+    public var questionsAnswered: Int
+    public var firstTryCorrect: Int
+    public var playSeconds: Int
+    public var updatedAt: Date
+
+    init(profileID: String, state: GrowthState, data: Data) {
+        self.profileID = profileID
+        stateData = data
+        xp = state.xp
+        coins = state.coins
+        badgeCount = state.badges.count
+        gamesPlayed = state.stats.gamesPlayed
+        gamesWon = state.stats.gamesWon
+        questionsAnswered = state.stats.questionsAnswered
+        firstTryCorrect = state.stats.firstTryCorrect
+        playSeconds = state.stats.playSeconds
+        updatedAt = Date()
+    }
+
+    func update(_ state: GrowthState, data: Data) {
+        stateData = data
+        xp = state.xp
+        coins = state.coins
+        badgeCount = state.badges.count
+        gamesPlayed = state.stats.gamesPlayed
+        gamesWon = state.stats.gamesWon
+        questionsAnswered = state.stats.questionsAnswered
+        firstTryCorrect = state.stats.firstTryCorrect
+        playSeconds = state.stats.playSeconds
+        updatedAt = Date()
+    }
+}
+
+/// 系统配置原文件（Resources/Config 下的 JSON），启动时整份同步
+@Model
+public final class StoredConfigFile {
+    /// 文件名，如 pacing.json
+    @Attribute(.unique) public var name: String
+    public var data: Data
+    public var syncedAt: Date
+
+    public init(name: String, data: Data) {
+        self.name = name
+        self.data = data
+        syncedAt = Date()
+    }
+
+    /// 文件内容（UTF-8 文本）
+    public var text: String { String(decoding: data, as: UTF8.self) }
+}
+
+/// 徽章配置（来自 badges.json，已校验，写错的不会进来）
+@Model
+public final class StoredBadge {
+    @Attribute(.unique) public var id: String
+    public var name: String
+    public var icon: String
+    public var summary: String
+    public var coins: Int
+    public var stat: String?
+    public var atLeast: Int?
+    public var level: Int?
+    public var position: Int
+
+    public init(badge: BadgeKind, position: Int) {
+        id = badge.id
+        name = badge.name
+        icon = badge.icon
+        summary = badge.summary
+        coins = badge.coins
+        stat = badge.stat
+        atLeast = badge.atLeast
+        level = badge.level
+        self.position = position
+    }
+}
+
+/// 外观配置（来自 cosmetics.json，已校验）。特效参数在 itemData（CosmeticKind 的 JSON）里
+@Model
+public final class StoredCosmetic {
+    @Attribute(.unique) public var id: String
+    /// CosmeticSlot.rawValue
+    public var slot: String
+    public var name: String
+    public var icon: String
+    public var summary: String
+    /// CosmeticRarity.rawValue
+    public var rarity: String
+    public var unlockLevel: Int
+    public var price: Int
+    public var itemData: Data
+    public var position: Int
+
+    public init(item: CosmeticKind, data: Data, position: Int) {
+        id = item.id
+        slot = item.slot.rawValue
+        name = item.name
+        icon = item.icon
+        summary = item.summary
+        rarity = item.rarity.rawValue
+        unlockLevel = item.unlockLevel
+        price = item.price
+        itemData = data
+        self.position = position
+    }
+}

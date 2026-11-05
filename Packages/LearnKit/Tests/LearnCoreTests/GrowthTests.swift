@@ -279,38 +279,59 @@ struct GrowthStoreTests {
         FileManager.default.temporaryDirectory.appendingPathComponent("growth-\(UUID().uuidString).json")
     }
 
-    @Test func roundTrip() {
-        let url = tempURL()
-        let store = GrowthStore(url: url, catalog: catalog)
+    @Test func roundTrip() throws {
+        let db = try LearnDatabase(url: nil)
+        let id = UUID()
+        let store = GrowthStore(profileID: id, database: db, catalog: catalog)
         // 存档里的时间精确到秒，这里用整秒的时间才能逐字段比较
         _ = store.settle(GameReport(won: true, difficulty: .easy, questions: 10, firstTryCorrect: 9, stars: 2, date: day(5)))
-        let reloaded = GrowthStore(url: url, catalog: catalog)
+        let reloaded = GrowthStore(profileID: id, database: db, catalog: catalog)
         #expect(reloaded.state == store.state)
         #expect(reloaded.state.badges["firstWin"] != nil)
+        #expect(GrowthStore(profileID: UUID(), database: db, catalog: catalog).state == GrowthState())
     }
 
     @Test func oldFileWithMissingFieldsStillLoads() throws {
         let url = tempURL()
+        defer { try? FileManager.default.removeItem(at: AppPaths.migratedBackup(for: url)) }
         try Data(#"{ "xp": 300, "stats": { "gamesPlayed": 4 } }"#.utf8).write(to: url)
-        let store = GrowthStore(url: url, catalog: catalog)
+        let db = try LearnDatabase(url: nil)
+        let id = UUID()
+        let store = GrowthStore(profileID: id, database: db, legacyFile: url, catalog: catalog)
         #expect(store.state.xp == 300 && store.state.coins == 0 && store.state.stats.gamesPlayed == 4)
         #expect(store.state.equipped.isEmpty)
+        // 已导入数据库，旧文件改名备份
+        #expect(try db.growthState(profileID: id)?.xp == 300)
+        #expect(!FileManager.default.fileExists(atPath: url.path))
+        #expect(FileManager.default.fileExists(atPath: AppPaths.migratedBackup(for: url).path))
     }
 
     @Test func corruptedFileIsBackedUp() throws {
         let url = tempURL()
+        defer { try? FileManager.default.removeItem(at: url.appendingPathExtension("bak")) }
         try Data("not json".utf8).write(to: url)
-        let store = GrowthStore(url: url, catalog: catalog, legacyCorrectAnswers: { 500 })
+        let store = GrowthStore(database: try LearnDatabase(url: nil), legacyFile: url, catalog: catalog,
+                                legacyCorrectAnswers: { 500 })
         #expect(store.state == GrowthState(), "文件坏了从头开始，不重复补发")
         #expect(FileManager.default.fileExists(atPath: url.appendingPathExtension("bak").path))
     }
 
-    @Test func migrationFromOldProgress() {
-        let store = GrowthStore(url: tempURL(), catalog: catalog, legacyCorrectAnswers: { 150 })
+    @Test func withoutDatabaseLegacyFileIsReadOnly() throws {
+        let url = tempURL()
+        defer { try? FileManager.default.removeItem(at: url) }
+        try Data(#"{ "xp": 120 }"#.utf8).write(to: url)
+        let store = GrowthStore(legacyFile: url, catalog: catalog)
+        #expect(store.state.xp == 120)
+        #expect(FileManager.default.fileExists(atPath: url.path), "数据库打不开时不动旧文件")
+    }
+
+    @Test func migrationFromOldProgress() throws {
+        let store = GrowthStore(database: try LearnDatabase(url: nil), legacyFile: tempURL(), catalog: catalog,
+                                legacyCorrectAnswers: { 150 })
         #expect(store.state.xp == 750 && store.state.coins == 150)
         #expect(store.state.badges["correct100"] != nil)
         let capped = GrowthState.migrated(fromCorrectAnswers: 5000, catalog: catalog)
         #expect(capped.level(catalog.pacing.levelCurve).level == 10, "最多补到 Lv.10")
-        #expect(GrowthStore(url: tempURL(), catalog: catalog, legacyCorrectAnswers: { 0 }).state == GrowthState())
+        #expect(GrowthStore(catalog: catalog, legacyCorrectAnswers: { 0 }).state == GrowthState())
     }
 }

@@ -26,14 +26,14 @@ public final class ProgressStore {
     /// 上次 save 之后改过的知识点
     private var dirty: Set<String> = []
 
-    /// database 为 nil 时只在内存里记录（测试用）。
     /// legacyFile 是旧版的 progress/<id>.json：数据库里还没有这个孩子的记录时导入一次，
     /// 导入成功后改名为 .json.migrated 留作备份。
+    /// database 为 nil 时只在内存里记录（测试用，或数据库打不开时），此时只读取 legacyFile、不改动它。
     public init(profileID: UUID = UUID(), database: LearnDatabase? = nil, legacyFile: URL? = nil) {
         self.profileID = profileID
         self.database = database
         guard let database else {
-            stats = [:]
+            stats = legacyFile.flatMap(Self.readLegacy) ?? [:]
             return
         }
         do {
@@ -46,23 +46,22 @@ public final class ProgressStore {
         if stats.isEmpty, let legacyFile { migrate(from: legacyFile) }
     }
 
+    private static func readLegacy(_ file: URL) -> [String: ItemStats]? {
+        guard let data = try? Data(contentsOf: file) else { return nil }
+        return try? JSONDecoder().decode([String: ItemStats].self, from: data)
+    }
+
     private func migrate(from file: URL) {
-        guard let data = try? Data(contentsOf: file),
-              let saved = try? JSONDecoder().decode([String: ItemStats].self, from: data) else { return }
+        guard let saved = Self.readLegacy(file) else { return }
         do {
             try database?.saveStats(saved, profileID: profileID)
             stats = saved
-            try? FileManager.default.moveItem(at: file, to: Self.migratedFile(for: file))
+            AppPaths.markMigrated(file)
         } catch {
             print("迁移学习记录失败：\(error)")
             stats = saved
             dirty = Set(saved.keys)
         }
-    }
-
-    /// 旧 JSON 迁移后的备份文件
-    public static func migratedFile(for legacyFile: URL) -> URL {
-        legacyFile.appendingPathExtension("migrated")
     }
 
     /// 只记录每道题的第一次作答

@@ -2,10 +2,14 @@ import Foundation
 import SwiftData
 
 /// 本地数据库（SwiftData，底层是 SQLite）。
-/// - 题库：JSON 仍是来源，每次加载后整份同步到 StoredPack / StoredItem，用来查询
-/// - 学习记录：StoredItemStats 是唯一存储，老的 progress/*.json 首次打开时迁移进来
+/// - 题库、系统配置：JSON 仍是来源，每次加载后整份同步过来，用来查询
+/// - 孩子档案、成长档案、学习记录：数据库是唯一存储，旧版 JSON 第一次读取时迁移进来
 public final class LearnDatabase {
-    public static let schema = Schema([StoredPack.self, StoredItem.self, StoredItemStats.self])
+    public static let schema = Schema([
+        StoredPack.self, StoredItem.self, StoredItemStats.self,
+        StoredProfile.self, StoredGrowth.self,
+        StoredConfigFile.self, StoredBadge.self, StoredCosmetic.self,
+    ])
 
     public let container: ModelContainer
     /// 自己管理保存时机（ProgressStore.save、syncContent），不自动保存
