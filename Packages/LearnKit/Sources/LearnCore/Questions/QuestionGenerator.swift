@@ -1,0 +1,221 @@
+import Foundation
+
+public struct GeneratorSettings: Sendable {
+    public var optionCount: Int
+    public var strategy: DistractorStrategy
+    /// 显示拼音等提示
+    public var showHint: Bool
+    /// 幼儿园：听音题，不出需要识字的题
+    public var preschool: Bool
+
+    public init(optionCount: Int, strategy: DistractorStrategy, showHint: Bool, preschool: Bool) {
+        self.optionCount = optionCount
+        self.strategy = strategy
+        self.showHint = showHint
+        self.preschool = preschool
+    }
+}
+
+/// 根据知识点和难度生成题目，干扰项从同年级题库中自动挑选。
+public struct QuestionGenerator: Sendable {
+    public let pool: ItemPool
+    public var settings: GeneratorSettings
+
+    public init(pool: ItemPool, settings: GeneratorSettings) {
+        self.pool = pool
+        self.settings = settings
+    }
+
+    public func makeQuestion<R: RandomNumberGenerator>(for item: LearningItem, using rng: inout R) -> Question? {
+        switch item {
+        case .character(let c):
+            return settings.preschool ? listenPickChar(c, item.key, &rng) : character(c, item.key, &rng)
+        case .word(let w):
+            return pinyinToWord(w, item.key, &rng)
+        case .idiom(let i):
+            return idiomFill(i, item.key, &rng)
+        case .poemLine(let p, let index):
+            return poemNextLine(p, index, item.key, &rng)
+        case .choice(let q, _):
+            return choice(q, item.key, &rng)
+        case .picture(let p):
+            return listenPickPicture(p, item.key, &rng)
+        }
+    }
+
+    /// 大招题：优先成语，没有成语就随便出一道
+    public func makeUltimateQuestion<R: RandomNumberGenerator>(using rng: inout R) -> (LearningItem, Question)? {
+        let candidates = settings.preschool ? pool.items : (pool.ultimateItems.isEmpty ? pool.items : pool.ultimateItems)
+        for item in candidates.shuffled(using: &rng) {
+            if let q = makeQuestion(for: item, using: &rng) { return (item, q) }
+        }
+        return nil
+    }
+
+    // MARK: - 各题型
+
+    private func character<R: RandomNumberGenerator>(_ c: CharacterItem, _ key: String, _ rng: inout R) -> Question? {
+        let words = (c.words ?? []).filter { $0.contains(c.char) && $0.count > 1 }
+        var kinds: [QuestionKind] = [.charToPinyin, .pinyinToChar]
+        if !words.isEmpty { kinds.append(.fillCharInWord) }
+        let kind = kinds.randomElement(using: &rng)!
+        let speech = words.first.map { "\(c.char)，\($0)的\(c.char)" } ?? c.char
+        let explanation = ([c.char + " " + c.pinyin] + words).joined(separator: "  ")
+        let card = charCard(c)
+
+        switch kind {
+        case .charToPinyin:
+            let distractors = Pinyin.distractors(
+                for: c.pinyin, count: settings.optionCount - 1, strategy: settings.strategy,
+                pool: pool.characters.map(\.pinyin), using: &rng)
+            return build(
+                kind: kind, key: key, instruction: "选出正确的读音", prompt: c.char, hint: nil,
+                correct: Pinyin.normalize(c.pinyin), distractors: distractors, style: .pinyin,
+                answerSpeech: speech, explanation: explanation, card: card, &rng)
+        case .pinyinToChar:
+            // 同音字很多，有组词时用组词做提示
+            let hint = words.randomElement(using: &rng).map { $0.replacingOccurrences(of: c.char, with: "□") }
+            return build(
+                kind: kind, key: key, instruction: "选出正确的汉字", prompt: Pinyin.normalize(c.pinyin), hint: hint,
+                correct: c.char, distractors: similarChars(to: c, &rng), style: .text,
+                answerSpeech: speech, explanation: explanation, card: card, &rng)
+        default:
+            let word = words.randomElement(using: &rng)!
+            return build(
+                kind: .fillCharInWord, key: key, instruction: "选字填空",
+                prompt: word.replacingOccurrences(of: c.char, with: "□"),
+                hint: settings.showHint ? Pinyin.normalize(c.pinyin) : nil,
+                correct: c.char, distractors: similarChars(to: c, &rng), style: .text,
+                answerSpeech: word, explanation: explanation, card: card, &rng)
+        }
+    }
+
+    private func listenPickChar<R: RandomNumberGenerator>(_ c: CharacterItem, _ key: String, _ rng: inout R) -> Question? {
+        let word = c.words?.first { $0.contains(c.char) && $0.count > 1 }
+        let speech = word.map { "\(c.char)，\($0)的\(c.char)" } ?? c.char
+        let others = pool.characters.map(\.char).filter { $0 != c.char }.shuffled(using: &rng)
+        return build(
+            kind: .listenPickChar, key: key, instruction: "听一听，是哪个字？", prompt: "🔊", hint: nil,
+            correct: c.char, distractors: others, style: .text,
+            promptSpeech: "找一找，\(speech)", answerSpeech: c.char, explanation: "\(c.char) \(c.pinyin)",
+            card: charCard(c), &rng)
+    }
+
+    private func pinyinToWord<R: RandomNumberGenerator>(_ w: WordItem, _ key: String, _ rng: inout R) -> Question? {
+        guard let pinyin = w.pinyin else { return nil }
+        let others = pool.words.map(\.text).filter { $0 != w.text && $0.count == w.text.count }.shuffled(using: &rng)
+        return build(
+            kind: .pinyinToWord, key: key, instruction: "选出正确的词语", prompt: Pinyin.normalize(pinyin), hint: nil,
+            correct: w.text, distractors: others, style: .text,
+            answerSpeech: w.text, explanation: "\(w.text)（\(pinyin)）",
+            card: WordCard(text: w.text, pinyin: Pinyin.normalize(pinyin)), &rng)
+    }
+
+    private func idiomFill<R: RandomNumberGenerator>(_ idiom: IdiomItem, _ key: String, _ rng: inout R) -> Question? {
+        var chars = Array(idiom.text)
+        let index = Int.random(in: 0..<chars.count, using: &rng)
+        let correct = String(chars[index])
+        chars[index] = "□"
+        let own = Set(idiom.text.map(String.init))
+        var others = pool.idioms.flatMap { $0.text.map(String.init) } + pool.characters.map(\.char)
+        others = Array(Set(others).subtracting(own)).shuffled(using: &rng)
+        return build(
+            kind: .idiomFill, key: key, instruction: "补全成语", prompt: String(chars),
+            hint: settings.showHint ? idiom.pinyin.map(Pinyin.normalize) : nil,
+            correct: correct, distractors: others, style: .text,
+            answerSpeech: idiom.text,
+            explanation: idiom.meaning.map { "\(idiom.text)：\($0)" } ?? idiom.text,
+            card: WordCard(text: idiom.text, pinyin: idiom.pinyin.map(Pinyin.normalize), detail: idiom.meaning), &rng)
+    }
+
+    private func poemNextLine<R: RandomNumberGenerator>(_ poem: PoemItem, _ index: Int, _ key: String, _ rng: inout R) -> Question? {
+        let line = poem.lines[index]
+        let correct = poem.lines[index + 1]
+        let sameLength: (String) -> Bool = { $0.count == correct.count && $0 != correct && $0 != line }
+        let ownLines = poem.lines.filter(sameLength).shuffled(using: &rng)
+        let otherLines = pool.poems.filter { $0.title != poem.title }
+            .flatMap(\.lines).filter(sameLength).shuffled(using: &rng)
+        // 难度高时干扰项多来自同一首诗
+        let distractors = settings.strategy == .easy ? otherLines + ownLines : ownLines + otherLines
+        return build(
+            kind: .poemNextLine, key: key, instruction: "接下一句", prompt: line, hint: poem.byline,
+            correct: correct, distractors: distractors, style: .text,
+            answerSpeech: "\(line)，\(correct)", explanation: "\(line)，\(correct)。\(poem.byline)",
+            card: WordCard(text: correct, detail: poem.byline), &rng)
+    }
+
+    private func choice<R: RandomNumberGenerator>(_ q: ChoiceItem, _ key: String, _ rng: inout R) -> Question? {
+        let options = q.options.shuffled(using: &rng)
+        guard let answerIndex = options.firstIndex(of: q.answer), options.count >= 2 else { return nil }
+        return Question(
+            kind: .choice, itemKey: key, instruction: "选一选", prompt: q.prompt, signText: "？",
+            options: options, optionStyle: .text, answerIndex: answerIndex,
+            answerSpeech: q.answer, explanation: q.explain.map { "\(q.answer)。\($0)" } ?? q.answer,
+            card: WordCard(text: q.answer, detail: q.explain))
+    }
+
+    private func listenPickPicture<R: RandomNumberGenerator>(_ p: PictureItem, _ key: String, _ rng: inout R) -> Question? {
+        let others = pool.pictures.filter { $0.emoji != p.emoji }.map(\.emoji).shuffled(using: &rng)
+        return build(
+            kind: .listenPickPicture, key: key, instruction: "听一听，找出来", prompt: "🔊", hint: nil,
+            correct: p.emoji, distractors: others, style: .emoji,
+            promptSpeech: "找一找，\(p.text)", answerSpeech: p.text, explanation: "\(p.emoji) \(p.text)",
+            card: WordCard(picture: p.emoji, text: p.text, pinyin: p.pinyin.map(Pinyin.normalize)), &rng)
+    }
+
+    // MARK: - 工具
+
+    private func charCard(_ c: CharacterItem) -> WordCard {
+        let words = (c.words ?? []).filter { $0.contains(c.char) && $0.count > 1 }
+        return WordCard(text: c.char, pinyin: Pinyin.normalize(c.pinyin),
+                        detail: words.isEmpty ? nil : words.prefix(3).joined(separator: "  "))
+    }
+
+    /// 读音相近的字更容易混淆，难度越高越优先选
+    private func similarChars<R: RandomNumberGenerator>(to c: CharacterItem, _ rng: inout R) -> [String] {
+        let target = Pinyin.parse(c.pinyin)
+        let (ini, fin) = Pinyin.split(target.base)
+        let candidates = pool.characters.filter {
+            $0.char != c.char && Pinyin.normalize($0.pinyin) != Pinyin.normalize(c.pinyin)
+        }.shuffled(using: &rng)
+        guard settings.strategy != .easy else { return candidates.map(\.char) }
+
+        func score(_ other: CharacterItem) -> Int {
+            let s = Pinyin.parse(other.pinyin)
+            if s.base == target.base { return 2 }
+            let (i, f) = Pinyin.split(s.base)
+            return (i == ini || f == fin) ? 1 : 0
+        }
+        // 同分时保持洗牌后的顺序
+        return candidates.enumerated()
+            .sorted { (score($0.element), -$0.offset) > (score($1.element), -$1.offset) }
+            .map(\.element.char)
+    }
+
+    private func build<R: RandomNumberGenerator>(
+        kind: QuestionKind,
+        key: String,
+        instruction: String,
+        prompt: String,
+        hint: String?,
+        correct: String,
+        distractors: [String],
+        style: OptionStyle,
+        promptSpeech: String? = nil,
+        answerSpeech: String?,
+        explanation: String?,
+        card: WordCard?,
+        _ rng: inout R
+    ) -> Question? {
+        var picked: [String] = []
+        for d in distractors where d != correct && !picked.contains(d) && picked.count < settings.optionCount - 1 {
+            picked.append(d)
+        }
+        guard !picked.isEmpty else { return nil }
+        let options = (picked + [correct]).shuffled(using: &rng)
+        return Question(
+            kind: kind, itemKey: key, instruction: instruction, prompt: prompt, hint: hint,
+            options: options, optionStyle: style, answerIndex: options.firstIndex(of: correct)!,
+            promptSpeech: promptSpeech, answerSpeech: answerSpeech, explanation: explanation, card: card)
+    }
+}

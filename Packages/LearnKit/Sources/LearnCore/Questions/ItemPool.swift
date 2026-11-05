@@ -1,0 +1,129 @@
+import Foundation
+
+/// 一个可以出题的知识点。学习记录按知识点（而不是题型）统计。
+public enum LearningItem: Sendable {
+    case character(CharacterItem)
+    case word(WordItem)
+    case idiom(IdiomItem)
+    /// 给出第 index 句，接第 index + 1 句
+    case poemLine(PoemItem, index: Int)
+    case choice(ChoiceItem, scope: String)
+    case picture(PictureItem)
+
+    public var key: String {
+        switch self {
+        case .character(let c): "char:\(c.char)"
+        case .word(let w): "word:\(w.text)"
+        case .idiom(let i): "idiom:\(i.text)"
+        case .poemLine(let p, let index): "poem:\(p.title)#\(index)"
+        case .choice(let q, let scope): "choice:\(scope):\(q.id ?? q.prompt)"
+        case .picture(let p): "pic:\(p.text)"
+        }
+    }
+
+    /// 错题本里显示的一行
+    public var summary: String {
+        switch self {
+        case .character(let c):
+            let words = (c.words ?? []).joined(separator: " ")
+            return words.isEmpty ? "\(c.char)（\(c.pinyin)）" : "\(c.char)（\(c.pinyin)）\(words)"
+        case .word(let w):
+            return w.pinyin.map { "\(w.text)（\($0)）" } ?? w.text
+        case .idiom(let i):
+            return i.meaning.map { "\(i.text)：\($0)" } ?? i.text
+        case .poemLine(let p, let index):
+            return "\(p.lines[index])，\(p.lines[index + 1]) —— \(p.byline)"
+        case .choice(let q, _):
+            return "\(q.prompt) 答案：\(q.answer)"
+        case .picture(let p):
+            return "\(p.emoji) \(p.text)"
+        }
+    }
+
+    var isIdiom: Bool {
+        if case .idiom = self { return true }
+        return false
+    }
+}
+
+/// 本局可出题的知识点，以及生成干扰项用的素材（来自同年级同学科的全部题库）。
+public struct ItemPool: Sendable {
+    public enum Selection: Hashable, Sendable {
+        case all
+        /// 元素为 "题库id/单元id"
+        case units(Set<String>)
+        /// 错题复习：只出这些知识点
+        case review(Set<String>)
+    }
+
+    public let items: [LearningItem]
+    /// 大招题优先用成语
+    public let ultimateItems: [LearningItem]
+
+    let characters: [CharacterItem]
+    let words: [WordItem]
+    let idioms: [IdiomItem]
+    let poems: [PoemItem]
+    let pictures: [PictureItem]
+
+    public var isEmpty: Bool { items.isEmpty }
+
+    public init(packs: [ContentPack], selection: Selection) {
+        var items: [LearningItem] = []
+        var allItems: [LearningItem] = []
+        var seenKeys: Set<String> = []
+        var characters: [String: CharacterItem] = [:]
+        var words: [String: WordItem] = [:]
+        var idioms: [String: IdiomItem] = [:]
+        var poems: [String: PoemItem] = [:]
+        var pictures: [String: PictureItem] = [:]
+
+        for pack in packs {
+            for unit in pack.units {
+                let unitKey = "\(pack.id)/\(unit.id)"
+                for lesson in unit.lessons {
+                    var lessonItems: [LearningItem] = []
+                    lessonItems += lesson.characters.map { .character($0) }
+                    lessonItems += lesson.words.filter { $0.pinyin != nil }.map { .word($0) }
+                    lessonItems += lesson.idioms.filter { $0.text.count >= 2 }.map { .idiom($0) }
+                    for poem in lesson.poems where poem.lines.count >= 2 {
+                        lessonItems += (0..<(poem.lines.count - 1)).map { .poemLine(poem, index: $0) }
+                    }
+                    let scope = "\(unitKey)/\(lesson.id)"
+                    lessonItems += lesson.questions.filter { $0.options.contains($0.answer) }.map { .choice($0, scope: scope) }
+                    lessonItems += lesson.pictures.map { .picture($0) }
+
+                    for item in lessonItems where seenKeys.insert(item.key).inserted {
+                        allItems.append(item)
+                        let selected: Bool
+                        switch selection {
+                        case .all: selected = true
+                        case .units(let keys): selected = keys.contains(unitKey)
+                        case .review(let keys): selected = keys.contains(item.key)
+                        }
+                        if selected { items.append(item) }
+                    }
+
+                    for c in lesson.characters { characters[c.char] = characters[c.char] ?? c }
+                    for w in lesson.words { words[w.text] = words[w.text] ?? w }
+                    for i in lesson.idioms { idioms[i.text] = idioms[i.text] ?? i }
+                    for p in lesson.poems { poems[p.title] = poems[p.title] ?? p }
+                    for p in lesson.pictures { pictures[p.text] = pictures[p.text] ?? p }
+                }
+            }
+        }
+
+        self.items = items
+        self.ultimateItems = allItems.filter(\.isIdiom)
+        self.characters = Array(characters.values)
+        self.words = Array(words.values)
+        self.idioms = Array(idioms.values)
+        self.poems = Array(poems.values)
+        self.pictures = Array(pictures.values)
+    }
+
+    /// 按 key 找知识点（错题本用）
+    public static func item(forKey key: String, in packs: [ContentPack]) -> LearningItem? {
+        ItemPool(packs: packs, selection: .review([key])).items.first
+    }
+}

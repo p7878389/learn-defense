@@ -1,0 +1,50 @@
+# ---- macOS ----
+.DS_Store
+._*
+.AppleDouble
+.LSOverride
+
+# ---- Xcode ----
+# 本地构建输出（scripts/run-simulator.sh 和命令行装机都用 -derivedDataPath build）
+build/
+DerivedData/
+# 个人界面状态、断点等，只和本机有关；共享的 scheme 在 xcshareddata 里，要保留
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+*.moved-aside
+*.hmap
+# 打包产物
+*.ipa
+*.dSYM
+*.dSYM.zip
+*.xcarchive
+
+# ---- Swift Package Manager ----
+.build/
+.swiftpm/
+
+# ---- Python（scripts/ 下的素材脚本）----
+__pycache__/
+*.py[cod]
+.venv/
+
+# ---- 编辑器 ----
+.vscode/
+.idea/
+*.swp
+*~
+
+# ---- 本地环境 ----
+.env
+.env.*
+
+# ---- AI 编码工具 ----
+# GitNexus 索引和运行器，由 `gitnexus analyze` 生成（目录里另有 .gitignore，这里再写一遍更直观）
+.gitnexus/
+# `gitnexus analyze` 生成的项目级技能，用户目录里已有同名技能；AGENTS.md / CLAUDE.md 保留
+.claude/skills/gitnexus-*/
+# Claude Code 的 worktree 和本机设置
+.claude/worktrees/
+.claude/settings.local.json

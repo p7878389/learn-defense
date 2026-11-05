@@ -1,0 +1,161 @@
+{
+  "plant-inkling": {
+    "frameCount": 13,
+    "frameTime": 0.1,
+    "crop": [
+      0,
+      0,
+      70,
+      71
+    ],
+    "source": "resources/graphics/Plants/Peashooter"
+  },
+  "plant-twin": {
+    "frameCount": 15,
+    "frameTime": 0.1,
+    "crop": [
+      0,
+      0,
+      73,
+      71
+    ],
+    "source": "resources/graphics/Plants/RepeaterPea"
+  },
+  "plant-frost": {
+    "frameCount": 15,
+    "frameTime": 0.1,
+    "crop": [
+      0,
+      0,
+      71,
+      71
+    ],
+    "source": "resources/graphics/Plants/SnowPea"
+  },
+  "plant-stroke": {
+    "frameCount": 16,
+    "frameTime": 0.1,
+    "crop": [
+      1,
+      0,
+      84,
+      87
+    ],
+    "source": "resources/graphics/Plants/FumeShroom/FumeShroom"
+  },
+  "plant-starling": {
+    "frameCount": 13,
+    "frameTime": 0.1,
+    "crop": [
+      0,
+      0,
+      77,
+      70
+    ],
+    "source": "resources/graphics/Plants/StarFruit"
+  },
+  "zombie-blob": {
+    "frameCount": 22,
+    "frameTime": 0.09,
+    "crop": [
+      63,
+      20,
+      87,
+      124
+    ],
+    "source": "resources/graphics/Zombies/NormalZombie/Zombie"
+  },
+  "zombie-hopper": {
+    "frameCount": 21,
+    "frameTime": 0.09,
+    "crop": [
+      79,
+      0,
+      87,
+      144
+    ],
+    "source": "resources/graphics/Zombies/ConeheadZombie/ConeheadZombie"
+  },
+  "zombie-dasher": {
+    "frameCount": 22,
+    "frameTime": 0.07,
+    "crop": [
+      0,
+      0,
+      154,
+      160
+    ],
+    "source": "resources/graphics/Zombies/FootballZombie/FootballZombie"
+  },
+  "zombie-drowsy": {
+    "frameCount": 19,
+    "frameTime": 0.12,
+    "crop": [
+      48,
+      21,
+      96,
+      137
+    ],
+    "source": "resources/graphics/Zombies/NewspaperZombie/NewspaperZombie",
+    "colorKey": [
+      255,
+      255,
+      255
+    ]
+  },
+  "zombie-armored": {
+    "frameCount": 15,
+    "frameTime": 0.1,
+    "crop": [
+      52,
+      2,
+      94,
+      142
+    ],
+    "source": "resources/graphics/Zombies/BucketheadZombie/BucketheadZombie"
+  },
+  "zombie-king": {
+    "frameCount": 23,
+    "frameTime": 0.1,
+    "crop": [
+      43,
+      13,
+      104,
+      131
+    ],
+    "source": "resources/graphics/Zombies/ScreenDoorZombie/ScreenDoorZombie"
+  },
+  "pea": {
+    "frameCount": 1,
+    "frameTime": 0.1,
+    "crop": [
+      28,
+      5,
+      24,
+      24
+    ],
+    "source": "resources/graphics/Bullets/PeaNormal"
+  },
+  "ice-pea": {
+    "frameCount": 1,
+    "frameTime": 0.1,
+    "crop": [
+      26,
+      3,
+      26,
+      26
+    ],
+    "source": "resources/graphics/Bullets/PeaIce"
+  },
+  "star": {
+    "frameCount": 1,
+    "frameTime": 0.1,
+    "crop": [
+      3,
+      3,
+      32,
+      32
+    ],
+    "source": "resources/graphics/Bullets/StarBullet"
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "id": "chinese-k2-sample",
+  "title": "中班语文启蒙（示例）",
+  "subject": "chinese",
+  "grade": "k2",
+  "edition": "示例数据",
+  "units": [
+    {
+      "id": "u1",
+      "title": "动物朋友",
+      "theme": "meadow",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "认识动物",
+          "pictures": [
+            { "text": "猫", "pinyin": "māo", "emoji": "🐱", "en": "cat" },
+            { "text": "狗", "pinyin": "gǒu", "emoji": "🐶", "en": "dog" },
+            { "text": "鱼", "pinyin": "yú", "emoji": "🐟", "en": "fish" },
+            { "text": "小鸟", "pinyin": "xiǎo niǎo", "emoji": "🐦", "en": "bird" },
+            { "text": "兔子", "pinyin": "tù zi", "emoji": "🐰", "en": "rabbit" },
+            { "text": "熊", "pinyin": "xióng", "emoji": "🐻", "en": "bear" },
+            { "text": "猪", "pinyin": "zhū", "emoji": "🐷", "en": "pig" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u2",
+      "title": "好吃的水果",
+      "theme": "orchard",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "认识水果",
+          "pictures": [
+            { "text": "苹果", "pinyin": "píng guǒ", "emoji": "🍎", "en": "apple" },
+            { "text": "香蕉", "pinyin": "xiāng jiāo", "emoji": "🍌", "en": "banana" },
+            { "text": "西瓜", "pinyin": "xī guā", "emoji": "🍉", "en": "watermelon" },
+            { "text": "葡萄", "pinyin": "pú tao", "emoji": "🍇", "en": "grape" },
+            { "text": "草莓", "pinyin": "cǎo méi", "emoji": "🍓", "en": "strawberry" },
+            { "text": "梨", "pinyin": "lí", "emoji": "🍐", "en": "pear" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u3",
+      "title": "天空和大地",
+      "theme": "starry",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "看一看",
+          "pictures": [
+            { "text": "太阳", "pinyin": "tài yáng", "emoji": "☀️", "en": "sun" },
+            { "text": "月亮", "pinyin": "yuè liang", "emoji": "🌙", "en": "moon" },
+            { "text": "星星", "pinyin": "xīng xing", "emoji": "⭐️", "en": "star" },
+            { "text": "云", "pinyin": "yún", "emoji": "☁️", "en": "cloud" },
+            { "text": "花", "pinyin": "huā", "emoji": "🌸", "en": "flower" },
+            { "text": "树", "pinyin": "shù", "emoji": "🌳", "en": "tree" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u4",
+      "title": "认一认（象形字）",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "简单的字",
+          "characters": [
+            { "char": "日", "pinyin": "rì", "words": ["日出"] },
+            { "char": "月", "pinyin": "yuè", "words": ["月亮"] },
+            { "char": "山", "pinyin": "shān", "words": ["大山"] },
+            { "char": "水", "pinyin": "shuǐ", "words": ["喝水"] },
+            { "char": "火", "pinyin": "huǒ", "words": ["火车"] },
+            { "char": "人", "pinyin": "rén", "words": ["大人"] },
+            { "char": "大", "pinyin": "dà", "words": ["大象"] },
+            { "char": "小", "pinyin": "xiǎo", "words": ["小鸟"] }
+          ]
+        }
+      ]
+    }
+  ]
+}
