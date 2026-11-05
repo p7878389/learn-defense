@@ -1,5 +1,7 @@
 [
   { "id": "projectile.original", "slot": "projectile", "name": "原版豌豆", "icon": "🟢", "summary": "最经典的绿豆子", "rarity": "common", "unlockLevel": 1, "price": 0 },
+  { "id": "projectile.iceCrystal", "slot": "projectile", "name": "冰晶弹", "icon": "💎", "summary": "冰晶光环与闪亮尾迹，只换外观，不增加冰冻", "rarity": "common", "unlockLevel": 1, "price": 0,
+    "projectile": { "shape": "gem", "color": "sky", "size": 13 } },
   { "id": "projectile.goldStar", "slot": "projectile", "name": "金星弹", "icon": "⭐", "summary": "闪闪发光的星星", "rarity": "common", "unlockLevel": 3, "price": 0,
     "projectile": { "shape": "star", "color": "gold", "size": 14 } },
   { "id": "projectile.petal", "slot": "projectile", "name": "花瓣弹", "icon": "🌸", "summary": "粉粉的花瓣飞出去", "rarity": "rare", "unlockLevel": 5, "price": 100,

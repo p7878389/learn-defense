@@ -179,6 +179,7 @@ final class GameScene: SKScene {
               cell.column >= 0, cell.column < Lawn.columns,
               defenders[cell] == nil else { return false }
         let defender = DefenderNode(kind: kind, radius: min(34, laneHeight * 0.32))
+        IceCombatEffects.decorate(defender, projectile: loadout.projectile(for: kind), radius: min(34, laneHeight * 0.32))
         defender.position = CGPoint(x: lawn.columnX(cell.column), y: laneY(cell.lane))
         defender.zPosition = 5
         defender.setScale(0.2)
