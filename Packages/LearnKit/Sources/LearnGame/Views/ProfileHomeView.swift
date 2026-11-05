@@ -15,6 +15,10 @@ struct ProfileHomeView: View {
     @State private var editing: EditingProfile?
     /// 游戏结束后刷新错题数
     @State private var refresh = 0
+    @State private var showCollection = false
+    @State private var showBadges = false
+    /// 结算页点了「去收藏馆看看」：等游戏页关掉后再打开收藏馆
+    @State private var openCollectionAfterGame = false
 
     private var profile: Profile? {
         model.profiles.first { $0.id == profileID }
@@ -28,13 +32,31 @@ struct ProfileHomeView: View {
                 Text("档案不存在").font(.title)
             }
         }
-        .background(Theme.paper.ignoresSafeArea())
-        .gameCover(item: $activeGame, onDismiss: { refresh += 1 }) { config in
+        .background(GrowthPageBackground())
+        .gameCover(item: $activeGame, onDismiss: {
+            refresh += 1
+            if openCollectionAfterGame {
+                openCollectionAfterGame = false
+                showCollection = true
+            }
+        }) { config in
             GameView(
                 config: config,
                 model: model,
                 onReplay: { activeGame = config.again() },
-                onExit: { activeGame = nil })
+                onExit: { activeGame = nil },
+                onOpenCollection: {
+                    openCollectionAfterGame = true
+                    activeGame = nil
+                })
+        }
+        .growthCover(isPresented: $showCollection) {
+            CollectionView(profileID: profileID, onClose: { showCollection = false })
+                .environmentObject(model)
+        }
+        .growthCover(isPresented: $showBadges) {
+            BadgeWallView(profileID: profileID, onClose: { showBadges = false })
+                .environmentObject(model)
         }
         .sheet(isPresented: $showWrongBook) {
             if let profile { WrongBookView(profile: profile, progress: model.progress(for: profile.id)) }
@@ -53,22 +75,14 @@ struct ProfileHomeView: View {
 
         ScrollView {
             VStack(alignment: .leading, spacing: 28) {
-                HStack(spacing: 20) {
-                    PictureView(emoji: profile.avatar, size: 84)
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(profile.name).font(.largeTitle.weight(.heavy)).foregroundStyle(Theme.ink)
-                        Text(profile.grade.displayName).font(.title3).foregroundStyle(Theme.muted)
-                    }
-                    Spacer()
-                    Button("编辑档案") { editing = EditingProfile(profile: profile, isNew: false) }
-                        .font(.title3)
+                // 成长卡和两个入口加在主页顶部，下面选学科、单元、难度的部分保持不变
+                let growth = model.growth(for: profile.id)
+                GrowthCard(profile: profile, growth: growth) {
+                    editing = EditingProfile(profile: profile, isNew: false)
                 }
+                GrowthEntryCards(growth: growth, onCollection: { showCollection = true }, onBadges: { showBadges = true })
 
-                Picker("学科", selection: $subject) {
-                    ForEach(Subject.allCases) { Text($0.displayName).tag($0) }
-                }
-                .pickerStyle(.segmented)
-                .frame(maxWidth: 360)
+                GrowthSegmentedPicker(options: Subject.allCases, title: \.displayName, selection: $subject)
                 .onChange(of: subject) { _, _ in
                     packID = nil
                     selectedUnits = []
@@ -82,10 +96,10 @@ struct ProfileHomeView: View {
                     emptyHint(profile)
                 }
 
-                if !model.library.issues.isEmpty {
+                if !model.issues.isEmpty {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("题库问题").font(.headline).foregroundStyle(Theme.wrong)
-                        ForEach(model.library.issues, id: \.self) { Text($0).font(.callout) }
+                        ForEach(model.issues, id: \.self) { Text($0).font(.callout) }
                     }
                 }
             }
@@ -123,14 +137,10 @@ struct ProfileHomeView: View {
     private func difficultySection(_ profile: Profile) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("难度").font(.title2.weight(.bold))
-            Picker("难度", selection: Binding(
+            GrowthSegmentedPicker(options: Difficulty.allCases, title: \.displayName, selection: Binding(
                 get: { profile.difficulty },
                 set: { var p = profile; p.difficulty = $0; model.save(p) }
-            )) {
-                ForEach(Difficulty.allCases) { Text($0.displayName).tag($0) }
-            }
-            .pickerStyle(.segmented)
-            .frame(maxWidth: 360)
+            ))
         }
     }
 
@@ -184,7 +194,7 @@ struct ProfileHomeView: View {
                 .font(.title3.weight(.semibold))
         }
         .padding(24)
-        .background(RoundedRectangle(cornerRadius: 20).fill(Theme.card))
+        .background(RoundedRectangle(cornerRadius: 20).fill(GrowthColors.surface))
     }
 }
 
@@ -195,15 +205,24 @@ struct Chip: View {
 
     var body: some View {
         Button(action: action) {
-            Text(title)
-                .font(.title3.weight(.semibold))
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-                .padding(.horizontal, 16)
-                .frame(maxWidth: .infinity, minHeight: 56)
-                .background(RoundedRectangle(cornerRadius: 16).fill(selected ? Theme.accent.opacity(0.22) : Theme.card))
-                .overlay(RoundedRectangle(cornerRadius: 16).stroke(selected ? Theme.accent : Theme.muted.opacity(0.3), lineWidth: 2))
-                .foregroundStyle(Theme.ink)
+            HStack(spacing: 8) {
+                if selected { Text("✓") }
+                Text(title)
+            }
+            .font(.title3.weight(.semibold))
+            .lineLimit(1)
+            .minimumScaleFactor(0.7)
+            .padding(.horizontal, 16)
+            .frame(maxWidth: .infinity, minHeight: 56)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(selected ? Theme.jade : GrowthColors.surface)
+                    .shadow(color: selected ? GrowthColors.jadeDark : GrowthColors.cardEdge,
+                            radius: 0, x: 0, y: 4))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(selected ? GrowthColors.jadeDark : GrowthColors.cardEdge, lineWidth: 2))
+            .foregroundStyle(selected ? .white : Theme.ink)
         }
         .buttonStyle(PressableStyle())
     }

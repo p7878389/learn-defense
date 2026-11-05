@@ -14,7 +14,8 @@ let package = Package(
     targets: [
         .target(
             name: "LearnCore",
-            resources: [.copy("Resources/Packs")]
+            // Config：成长系统的节奏、徽章、外观配置（JSON），调参数只改这里
+            resources: [.copy("Resources/Packs"), .copy("Resources/Config")]
         ),
         .target(
             name: "LearnGame",

@@ -40,6 +40,16 @@ final class GameSession: ObservableObject {
     private(set) var attempted = 0
     private(set) var firstTryCorrect = 0
     private(set) var mistakes: [Mistake] = []
+    /// 通关或失败时的成长结算（经验、积分、升级、徽章）；没有成长档案时为 nil
+    @Published private(set) var growthResult: GrowthResult?
+
+    // 成长系统用的本局统计
+    private(set) var bossesDefeated = 0
+    private(set) var itemsUsed = 0
+    private(set) var ultimatesCast = 0
+    private var battleStartedAt: Date?
+    /// 从开始闯关到结束的秒数，结算页显示
+    private(set) var playSeconds = 0
 
     private var generator: QuestionGenerator
     private var scheduler = ItemScheduler()
@@ -55,6 +65,9 @@ final class GameSession: ObservableObject {
     }()
     private let progress: ProgressStore
     private let speech: Speech
+    private let growth: GrowthStore?
+    /// 本局装备的外观（子弹、退场特效、道具皮肤）
+    let loadout: Loadout
 
     /// 这一局依次出场的怪物种类
     private let spawnPlan: [EnemyKind]
@@ -67,22 +80,33 @@ final class GameSession: ObservableObject {
     private var targetID: Int?
     private var ultimateItem: LearningItem?
 
-    init(config: GameConfig, library: ContentLibrary, progress: ProgressStore, speech: Speech) {
+    init(config: GameConfig, library: ContentLibrary, progress: ProgressStore, speech: Speech, growth: GrowthStore? = nil) {
         let packs = config.packIDs.compactMap(library.pack(id:))
         let pool = ItemPool(packs: packs, selection: config.selection)
-        let tuning = GameTuning.make(grade: config.grade, difficulty: config.difficulty)
+        let pacing = growth?.catalog.pacing ?? GrowthCatalog.bundled.pacing
+        let tuning = GameTuning.make(grade: config.grade, difficulty: config.difficulty, pacing: pacing)
         self.config = config
         self.tuning = tuning
         self.progress = progress
         self.speech = speech
+        self.growth = growth
+        loadout = growth?.loadout ?? .standard
         generator = QuestionGenerator(pool: pool, settings: tuning.generator)
         hearts = tuning.hearts
         sun = tuning.startingSun
-        totalEnemies = tuning.enemyCount
+        // 每局题量固定：按题量凑怪物，怪物血量之和就是题数；错题复习局按错题数定题量
+        var questions = tuning.questions
+        if case .review = config.selection {
+            questions = pacing.reviewBudget(itemCount: pool.items.count, cap: questions)
+        }
         var planRNG = SystemRandomNumberGenerator()
-        spawnPlan = tuning.waves.kinds(count: tuning.enemyCount, using: &planRNG)
+        spawnPlan = tuning.waves.kinds(questions: questions, using: &planRNG)
+        totalEnemies = spawnPlan.count
         isEmpty = pool.isEmpty
-        scene = GameScene(tuning: tuning, theme: SceneTheme.choose(packs: packs, selection: config.selection, grade: config.grade))
+        scene = GameScene(
+            tuning: tuning,
+            theme: SceneTheme.choose(packs: packs, selection: config.selection, grade: config.grade),
+            loadout: loadout)
         scene.gameDelegate = self
         scene.setPreparing(true)
         if isEmpty { scene.setGamePaused(true) }
@@ -206,6 +230,7 @@ final class GameSession: ObservableObject {
             if let card = question.card { scene.showCard(card, near: nil) }
             if firstTry {
                 score += 30
+                ultimatesCast += 1
                 tuning.ultimate.use(on: self)
             }
         } else {
@@ -225,6 +250,7 @@ final class GameSession: ObservableObject {
     func startBattle() {
         guard canStartBattle else { return }
         phase = .playing
+        battleStartedAt = Date()
         scene.setPreparing(false)
         speech.speak("准备完成，第一只僵尸来了！", interrupt: true)
     }
@@ -259,6 +285,7 @@ final class GameSession: ObservableObject {
 
     func useItem(at index: Int) {
         guard canUseItems, let item = inventory.take(at: index) else { return }
+        itemsUsed += 1
         speech.speak(item.name, interrupt: true)
         scene.play(FloatingTextEffect(text: "\(item.icon) \(item.name)", fontSize: 40))
         item.use(on: self)
@@ -266,7 +293,8 @@ final class GameSession: ObservableObject {
 
     /// 打败怪物时按概率掉落道具
     private func rollDrop(from kind: EnemyKind, at point: CGPoint) {
-        guard let item = kind.drop?.roll(using: &rng) else { return }
+        // 道具皮肤只换图标和名字，效果不变
+        guard let item = kind.drop?.roll(using: &rng).map(loadout.skin) else { return }
         // 不会失败的模式里回血没用
         if !tuning.canLose && item.onlyHeals { return }
         guard inventory.add(item) else { return }
@@ -307,7 +335,29 @@ final class GameSession: ObservableObject {
         ultimate = nil
         scene.setGamePaused(true)
         progress.save()
+        playSeconds = battleStartedAt.map { Int(Date().timeIntervalSince($0)) } ?? 0
         speech.speak(won ? "太棒了，书本守住了！" : "没关系，再来一次吧！", interrupt: false)
+        settleGrowth()
+    }
+
+    /// 通关或失败才结算成长奖励；中途退出（end）不结算，免得反复开局刷积分
+    private func settleGrowth() {
+        guard let growth, growthResult == nil, !isEmpty else { return }
+        let result = growth.settle(GameReport(
+            won: phase == .won,
+            difficulty: config.difficulty,
+            questions: attempted,
+            firstTryCorrect: firstTryCorrect,
+            stars: stars,
+            bossesDefeated: bossesDefeated,
+            enemiesDefeated: defeated,
+            itemsUsed: itemsUsed,
+            ultimatesCast: ultimatesCast,
+            seconds: playSeconds))
+        growthResult = result
+        if result.leveledUp {
+            speech.speak("升到第\(result.after.level)级啦！", interrupt: false)
+        }
     }
 }
 
@@ -367,6 +417,7 @@ extension GameSession: GameSceneDelegate {
 
     func enemyDefeated(_ id: Int, at point: CGPoint) {
         if let kind = enemyKinds.removeValue(forKey: id) {
+            if kind == tuning.waves.boss { bossesDefeated += 1 }
             if kind.bonus > 0 {
                 score += kind.bonus
                 scene.play(FloatingTextEffect(text: "+\(kind.bonus)"), at: CGPoint(x: point.x, y: point.y + 30))

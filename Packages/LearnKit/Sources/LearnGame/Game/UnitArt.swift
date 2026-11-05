@@ -284,6 +284,21 @@ enum ProjectileArt {
         case .petal:
             node = Shapes.filled(CGPath(ellipseIn: CGRect(x: -r * 1.4, y: -r * 0.5, width: r * 2.8, height: r), transform: nil),
                                  look.color.fill, stroke: look.color.dark, width: 2)
+        case .heart:
+            let path = CGMutablePath()
+            path.move(to: CGPoint(x: 0, y: -r))
+            path.addCurve(to: CGPoint(x: 0, y: r * 0.45), control1: CGPoint(x: r * 1.5, y: -r * 0.1), control2: CGPoint(x: r * 0.6, y: r * 1.2))
+            path.addCurve(to: CGPoint(x: 0, y: -r), control1: CGPoint(x: -r * 0.6, y: r * 1.2), control2: CGPoint(x: -r * 1.5, y: -r * 0.1))
+            node = Shapes.filled(path, look.color.fill, stroke: .white, width: 2)
+            node.glowWidth = 3
+            node.run(.repeatForever(.sequence([.scale(to: 1.2, duration: 0.15), .scale(to: 1, duration: 0.15)])))
+        case .gem:
+            let path = CGMutablePath()
+            path.addLines(between: [CGPoint(x: 0, y: r), CGPoint(x: r * 0.8, y: 0), CGPoint(x: 0, y: -r), CGPoint(x: -r * 0.8, y: 0)])
+            path.closeSubpath()
+            node = Shapes.filled(path, look.color.fill, stroke: .white, width: 2)
+            node.glowWidth = 5
+            node.run(.repeatForever(.rotate(byAngle: .pi * 2, duration: 0.6)))
         }
         return node
     }

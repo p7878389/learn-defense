@@ -1,0 +1,14 @@
+[
+  { "id": "firstWin", "name": "初出茅庐", "icon": "🌱", "summary": "第一次通关", "coins": 20, "stat": "gamesWon", "atLeast": 1 },
+  { "id": "threeStar", "name": "满星守卫", "icon": "⭐", "summary": "一局拿到 3 星", "coins": 30, "stat": "threeStarGames", "atLeast": 1 },
+  { "id": "perfect", "name": "一字不差", "icon": "🛡️", "summary": "一局里每题第一次就答对", "coins": 50, "stat": "perfectGames", "atLeast": 1 },
+  { "id": "correct100", "name": "百题小将", "icon": "📚", "summary": "累计第一次就答对 100 题", "coins": 40, "stat": "firstTryCorrect", "atLeast": 100 },
+  { "id": "correct1000", "name": "千题达人", "icon": "🏆", "summary": "累计第一次就答对 1000 题", "coins": 100, "stat": "firstTryCorrect", "atLeast": 1000 },
+  { "id": "games10", "name": "小小守卫", "icon": "🎯", "summary": "完成 10 局", "coins": 30, "stat": "gamesPlayed", "atLeast": 10 },
+  { "id": "games50", "name": "守卫队长", "icon": "🎖️", "summary": "完成 50 局", "coins": 80, "stat": "gamesPlayed", "atLeast": 50 },
+  { "id": "hardWin", "name": "挑战勇士", "icon": "⚔️", "summary": "挑战难度通关", "coins": 50, "stat": "hardWins", "atLeast": 1 },
+  { "id": "bossHunter", "name": "首领克星", "icon": "👑", "summary": "打败铁门僵尸 10 次", "coins": 50, "stat": "bossesDefeated", "atLeast": 10 },
+  { "id": "itemFan", "name": "道具达人", "icon": "🎒", "summary": "使用道具 20 次", "coins": 30, "stat": "itemsUsed", "atLeast": 20 },
+  { "id": "ultimateMaster", "name": "大招高手", "icon": "⚡", "summary": "放出大招 10 次", "coins": 30, "stat": "ultimatesCast", "atLeast": 10 },
+  { "id": "level10", "name": "十级守卫", "icon": "🔟", "summary": "达到 Lv.10", "coins": 60, "level": 10 }
+]

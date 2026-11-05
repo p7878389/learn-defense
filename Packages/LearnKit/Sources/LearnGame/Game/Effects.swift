@@ -16,6 +16,8 @@ extension DefeatEffect {
         case .inkBurst: InkBurstEffect(color: color, scale: scale, count: count)
         case .ripple: RippleEffect(color: color, rings: 3)
         case .sparkle: SparkleEffect(count: count)
+        case .confetti: ConfettiEffect(count: count + 6)
+        case .firework: FireworkEffect(scale: scale)
         }
     }
 }
@@ -84,6 +86,76 @@ struct SparkleEffect: VisualEffect {
                 .group([
                     .moveBy(x: cos(angle) * 70, y: sin(angle) * 70 + 30, duration: 0.5),
                     .rotate(byAngle: .pi, duration: 0.5),
+                    .sequence([.wait(forDuration: 0.25), .fadeOut(withDuration: 0.25)]),
+                ]),
+                .removeFromParent(),
+            ]))
+        }
+    }
+}
+
+/// 彩纸礼花：五颜六色的小纸片往上撒，再飘落
+struct ConfettiEffect: VisualEffect {
+    var count = 14
+    static let colors: [SKColor] = [Palette.hurt, Palette.bullet, Palette.jade, Palette.target,
+                                    SKColor(red: 0.45, green: 0.6, blue: 0.95, alpha: 1),
+                                    SKColor(red: 0.75, green: 0.5, blue: 0.95, alpha: 1)]
+
+    func play(at point: CGPoint, in layer: SKNode) {
+        for i in 0..<count {
+            let piece = SKShapeNode(rectOf: CGSize(width: 7, height: 12), cornerRadius: 1.5)
+            piece.fillColor = Self.colors[i % Self.colors.count]
+            piece.strokeColor = .clear
+            piece.position = point
+            piece.zPosition = 61
+            piece.zRotation = CGFloat.random(in: 0..<(.pi))
+            layer.addChild(piece)
+            let dx = CGFloat.random(in: -90...90)
+            let up = CGFloat.random(in: 50...110)
+            piece.run(.sequence([
+                .group([
+                    .moveBy(x: dx * 0.6, y: up, duration: 0.3),
+                    .rotate(byAngle: .pi * 2, duration: 0.3),
+                ]),
+                .group([
+                    .moveBy(x: dx * 0.4, y: -up - 40, duration: 0.6),
+                    .rotate(byAngle: .pi * 3, duration: 0.6),
+                    .sequence([.wait(forDuration: 0.3), .fadeOut(withDuration: 0.3)]),
+                ]),
+                .removeFromParent(),
+            ]))
+        }
+    }
+}
+
+/// 烟花：一点亮光飞上去，砰地炸成一圈彩色光点
+struct FireworkEffect: VisualEffect {
+    var scale: CGFloat = 1
+    var sparks = 14
+
+    func play(at point: CGPoint, in layer: SKNode) {
+        let color = ConfettiEffect.colors.randomElement() ?? Palette.bullet
+        let rocket = Shapes.circle(5, Palette.bullet, at: point)
+        rocket.zPosition = 61
+        layer.addChild(rocket)
+        let top = CGPoint(x: point.x, y: point.y + 70 * scale)
+        rocket.run(.sequence([
+            .move(to: top, duration: 0.2),
+            .removeFromParent(),
+        ]))
+        for i in 0..<sparks {
+            let spark = Shapes.circle(CGFloat.random(in: 3...5), i.isMultiple(of: 2) ? color : Palette.bullet, at: top)
+            spark.zPosition = 62
+            spark.alpha = 0
+            spark.glowWidth = 2
+            layer.addChild(spark)
+            let angle = CGFloat(i) / CGFloat(sparks) * .pi * 2
+            let distance = CGFloat.random(in: 60...85) * scale
+            spark.run(.sequence([
+                .wait(forDuration: 0.2),
+                .fadeIn(withDuration: 0.01),
+                .group([
+                    .moveBy(x: cos(angle) * distance, y: sin(angle) * distance - 15, duration: 0.5),
                     .sequence([.wait(forDuration: 0.25), .fadeOut(withDuration: 0.25)]),
                 ]),
                 .removeFromParent(),

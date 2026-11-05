@@ -17,7 +17,8 @@ public enum Difficulty: String, Codable, CaseIterable, Identifiable, Sendable {
 /// 一局游戏的参数，由年级和难度决定
 public struct GameTuning: Sendable {
     public var lanes: Int
-    public var enemyCount: Int
+    /// 一局的题量：所有怪物血量之和，按年级段和难度从节奏配置读取（不含大招题）
+    public var questions: Int
     /// 怪物从右走到左需要的秒数
     public var crossSeconds: Double
     public var spawnInterval: Double
@@ -36,12 +37,13 @@ public struct GameTuning: Sendable {
     /// hearts 为 nil 表示不会失败，怪物走到头只会退回去
     public var canLose: Bool { hearts != nil }
 
-    public static func make(grade: Grade, difficulty: Difficulty) -> GameTuning {
+    public static func make(grade: Grade, difficulty: Difficulty, pacing: PacingConfig = GrowthCatalog.bundled.pacing) -> GameTuning {
+        let questions = pacing.questionBudget(grade: grade, difficulty: difficulty)
         if grade.isPreschool {
             let i = Difficulty.allCases.firstIndex(of: difficulty)!
             return GameTuning(
                 lanes: 3,
-                enemyCount: [6, 8, 10][i],
+                questions: questions,
                 crossSeconds: [45, 38, 30][i],
                 spawnInterval: [9, 8, 7][i],
                 hearts: nil,
@@ -62,7 +64,7 @@ public struct GameTuning: Sendable {
         switch difficulty {
         case .easy:
             return GameTuning(
-                lanes: 5, enemyCount: 8, crossSeconds: 30, spawnInterval: 7, hearts: 5,
+                lanes: 5, questions: questions, crossSeconds: 30, spawnInterval: 7, hearts: 5,
                 startingSun: 250, ultimateEnergy: 5, ultimate: .inkStorm,
                 generator: GeneratorSettings(optionCount: 3, strategy: .easy, showHint: true, preschool: false),
                 lineup: lineup,
@@ -73,7 +75,7 @@ public struct GameTuning: Sendable {
                 ]))
         case .normal:
             return GameTuning(
-                lanes: 5, enemyCount: 10, crossSeconds: 22, spawnInterval: 5.5, hearts: 3,
+                lanes: 5, questions: questions, crossSeconds: 22, spawnInterval: 5.5, hearts: 3,
                 startingSun: 300, ultimateEnergy: 5, ultimate: .inkStorm,
                 generator: GeneratorSettings(optionCount: 4, strategy: .normal, showHint: false, preschool: false),
                 lineup: lineup,
@@ -85,7 +87,7 @@ public struct GameTuning: Sendable {
                 ], boss: .king))
         case .hard:
             return GameTuning(
-                lanes: 5, enemyCount: 12, crossSeconds: 16, spawnInterval: 4.2, hearts: 3,
+                lanes: 5, questions: questions, crossSeconds: 16, spawnInterval: 4.2, hearts: 3,
                 startingSun: 350, ultimateEnergy: 5, ultimate: .inkStorm,
                 generator: GeneratorSettings(optionCount: 4, strategy: .hard, showHint: false, preschool: false),
                 lineup: lineup,

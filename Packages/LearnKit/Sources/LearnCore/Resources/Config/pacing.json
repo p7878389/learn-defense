@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "questions": [
+    { "grades": ["k2"], "easy": 6, "normal": 7, "hard": 8 },
+    { "grades": ["k3"], "easy": 8, "normal": 9, "hard": 10 },
+    { "grades": ["g1", "g2"], "easy": 10, "normal": 12, "hard": 14 },
+    { "grades": ["g3", "g4"], "easy": 12, "normal": 14, "hard": 16 },
+    { "grades": ["g5", "g6"], "easy": 14, "normal": 16, "hard": 18 }
+  ],
+  "review": { "perWrongItem": 2, "min": 6 },
+  "daily": { "fullRewardGames": 5, "extraGameRewardRate": 0.5, "firstWinXP": 30, "firstWinCoins": 10 },
+  "xp": {
+    "accuracy": 60, "win": 20, "perStar": 10,
+    "difficultyRate": { "easy": 1.0, "normal": 1.2, "hard": 1.5 }
+  },
+  "coins": {
+    "accuracy": 20, "perStar": 5, "perLevel": 30,
+    "win": { "easy": 10, "normal": 15, "hard": 25 }
+  },
+  "levels": { "perLevel": 100, "offset": -40, "maxPerLevel": 1500 },
+  "perfectMinQuestions": 8
+}

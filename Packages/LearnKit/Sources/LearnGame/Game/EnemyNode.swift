@@ -220,11 +220,11 @@ final class EnemyNode: SKNode {
         ]))
     }
 
-    /// 被打败：按外观配置播放退场特效
-    func defeat() {
+    /// 被打败：播放退场特效（默认用外观配置里的，孩子装备了退场外观时由场景传入）
+    func defeat(with effect: DefeatEffect? = nil) {
         removeAllActions()
         if let parent {
-            kind.look.defeat
+            (effect ?? kind.look.defeat)
                 .makeEffect(color: kind.look.color.fill, scale: CGFloat(kind.look.scale), count: 7 + kind.hp * 2)
                 .play(at: center, in: parent)
         }

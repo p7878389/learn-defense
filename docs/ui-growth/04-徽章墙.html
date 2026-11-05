@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>字灵守卫 · 我的徽章墙</title>
+<!-- Material Symbols Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Nunito Sans Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,300..1000;1,6..12,300..1000&amp;family=ZCOOL+KuaiLe&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            paper: '#FAF2DE',
+            'paper-subtle': '#F4EACC',
+            ink: '#2B2B38',
+            'ink-muted': '#8C857A',
+            brand: {
+              orange: '#F28C2E',
+              'orange-dark': '#C96E1B',
+              green: '#3DA885',
+              'green-dark': '#247359',
+              gold: '#FFC93C',
+              'gold-dark': '#E0A100',
+              purple: '#A77BF3',
+              'purple-dark': '#7F52CE',
+              blue: '#7EC8F2'
+            }
+          },
+          borderRadius: {
+            "DEFAULT": "1rem",
+            "lg": "2rem",
+            "xl": "3rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Nunito Sans", "ZCOOL KuaiLe", "sans-serif"],
+            display: ["Nunito Sans", "ZCOOL KuaiLe", "sans-serif"],
+            body: ["Nunito Sans", "sans-serif"],
+            label: ["Nunito Sans", "sans-serif"]
+          },
+          boxShadow: {
+            'candy': '0 6px 0 rgba(0,0,0,0.12)',
+            'candy-orange': '0 6px 0 #C96E1B',
+            'candy-green': '0 6px 0 #247359',
+            'candy-purple': '0 6px 0 #7F52CE',
+            'candy-gold': '0 6px 0 #D49000',
+            'candy-card': '0 8px 0 #E3D4B6',
+            'candy-cell': '0 5px 0 #EADDC6',
+            'candy-active': '0 6px 0 #E0A100',
+            'candy-gray': '0 4px 0 #D1C9BA'
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 48;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+
+    /* Dot pattern background */
+    .bg-dot-pattern {
+      background-image: radial-gradient(#E8DAC0 1.75px, transparent 1.75px);
+      background-size: 18px 18px;
+    }
+
+    /* Bunting triangle flags */
+    .bunting-flag {
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+    }
+
+    /* Soft sunburst rotating rays */
+    @keyframes spin-slow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .animate-spin-slow {
+      animation: spin-slow 24s linear infinite;
+    }
+
+    /* Pulse float */
+    @keyframes soft-float {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-5px) scale(1.02); }
+    }
+    .animate-float {
+      animation: soft-float 3s ease-in-out infinite;
+    }
+
+    /* 圆形奖章 + 底部双色丝带 */
+    .medal { position: relative; box-shadow: 0 5px 0 rgba(0,0,0,.14), inset 0 -5px 0 rgba(0,0,0,.07), inset 0 4px 0 rgba(255,255,255,.6); border-width: 4px !important; margin-bottom: 14px; }
+    .medal::after { content: ""; position: absolute; top: calc(100% - 2px); left: 50%; width: 38px; height: 20px; transform: translateX(-50%);
+      background: linear-gradient(90deg, #F25C54 0 47%, transparent 47% 53%, #3DA885 53%);
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 75% 65%, 50% 100%, 25% 65%, 0 100%); }
+    /* 积分硬币统一为金色 */
+    .coin { display: inline-block; filter: sepia(1) saturate(6) hue-rotate(-12deg) brightness(1.05); }
+  </style>
+</head>
+<body class="bg-[#FAF2DE] text-[#2B2B38] font-body h-screen w-screen overflow-hidden select-none flex flex-col justify-between relative antialiased">
+<!-- TOP BUNTING CELEBRATION FLAGS (欢庆小三角彩旗挂饰) -->
+<div class="absolute top-0 left-0 right-0 h-6 flex justify-around pointer-events-none z-30 px-6 overflow-hidden opacity-95">
+<div class="w-8 h-5 bg-rose-400 bunting-flag shadow-sm transform -rotate-3"></div>
+<div class="w-8 h-6 bg-amber-400 bunting-flag shadow-sm transform rotate-2"></div>
+<div class="w-8 h-5 bg-sky-400 bunting-flag shadow-sm transform -rotate-1"></div>
+<div class="w-8 h-6 bg-emerald-400 bunting-flag shadow-sm transform rotate-3"></div>
+<div class="w-8 h-5 bg-purple-400 bunting-flag shadow-sm transform -rotate-2"></div>
+<div class="w-8 h-6 bg-orange-400 bunting-flag shadow-sm transform rotate-1"></div>
+<div class="w-8 h-5 bg-pink-400 bunting-flag shadow-sm transform -rotate-3"></div>
+<div class="w-8 h-6 bg-yellow-400 bunting-flag shadow-sm transform rotate-2"></div>
+<div class="w-8 h-5 bg-teal-400 bunting-flag shadow-sm transform -rotate-1"></div>
+<div class="w-8 h-6 bg-indigo-400 bunting-flag shadow-sm transform rotate-3"></div>
+<div class="w-8 h-5 bg-rose-400 bunting-flag shadow-sm transform -rotate-2"></div>
+<div class="w-8 h-6 bg-lime-400 bunting-flag shadow-sm transform rotate-1"></div>
+<div class="w-8 h-5 bg-sky-400 bunting-flag shadow-sm transform -rotate-3"></div>
+</div>
+<!-- HEADER NAVBAR (顶部栏) -->
+<header class="h-[74px] px-8 pt-3 pb-2 flex items-center justify-between z-20 shrink-0">
+<!-- Left: Return Button -->
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2.5 px-6 py-2.5 rounded-full bg-white text-stone-700 font-headline font-black text-xl border-2 border-stone-200/90 shadow-[0_5px_0_#D9CEB9] active:translate-y-1 active:shadow-[0_1px_0_#D9CEB9] hover:bg-amber-50/70 transition-all">
+<span class="material-symbols-outlined text-amber-600 text-2xl" data-icon="arrow_back">arrow_back</span>
+<span>回主页</span>
+</button>
+</div>
+<!-- Center: Page Title & Realm Badge -->
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-2 bg-white/95 px-6 py-2 rounded-full border-2 border-amber-300 shadow-[0_4px_0_#EAD7AC]">
+<span class="text-2xl">🏅</span>
+<h1 class="text-3xl font-black font-headline tracking-wide text-stone-800 flex items-center gap-2">
+          我的徽章墙
+          <span class="text-amber-500 text-xl font-normal">✨</span>
+</h1>
+<span class="ml-1 px-3 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 text-white text-xs font-black shadow-sm tracking-wider">
+          荣誉殿堂
+        </span>
+</div>
+</div>
+<!-- Right: Level and Collection Progress -->
+<div class="flex items-center gap-4">
+<!-- Level Card -->
+<div class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-2xl shadow-[0_4px_0_#7F52CE] border border-purple-300/40">
+<span class="material-symbols-outlined text-yellow-300 text-2xl" data-icon="military_tech">military_tech</span>
+<div class="flex flex-col text-left leading-tight">
+<span class="text-base font-black tracking-wide">Lv.6 小小守卫</span>
+</div>
+</div>
+<!-- Collection Progress Pill -->
+<div class="bg-white/95 border-2 border-amber-200 rounded-2xl px-4 py-1.5 flex items-center gap-3 shadow-[0_4px_0_#E3D5BC]">
+<div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-lg text-amber-600">
+          <span class="coin">🪙</span>
+        </div>
+<div class="flex flex-col">
+<div class="flex items-center justify-between text-xs font-black text-stone-600 mb-1 gap-3">
+<span>收集进度</span>
+<span class="text-brand-orange font-black">5 / 12</span>
+</div>
+<!-- Progress bar -->
+<div class="w-28 h-3 bg-amber-100/90 rounded-full overflow-hidden p-0.5 border border-amber-200">
+<div class="h-full bg-gradient-to-r from-amber-400 to-orange-500 rounded-full shadow-inner" style="width: 42%;"></div>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- MAIN CANVAS (左右两栏紧凑布局，无全局滚动) -->
+<main class="flex-1 px-8 pb-5 pt-1.5 flex gap-6 overflow-hidden">
+<!-- LEFT PANEL: 4x3 徽章展示橱窗 (~68% 宽) -->
+<section class="flex-1 bg-white rounded-3xl border-4 border-amber-100 shadow-[0_8px_0_#E5D7BF] p-4 flex flex-col relative overflow-hidden">
+<!-- Pin Decoration -->
+<div class="absolute top-3 left-4 flex items-center gap-1.5 z-10">
+<div class="w-3.5 h-3.5 rounded-full bg-rose-500 shadow-md border-2 border-white"></div>
+<span class="text-xs font-bold text-amber-800/60 tracking-wider">守护者荣誉陈列架</span>
+</div>
+<!-- Subtitle Tag Right -->
+<div class="absolute top-3 right-4 flex items-center gap-2 text-xs font-bold text-stone-500">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+<span>已点亮 5 颗星灵奖章</span>
+</div>
+<!-- Badge Grid (4 cols x 3 rows) -->
+<div class="mt-7 flex-1 grid grid-cols-4 grid-rows-3 gap-3 bg-[#FAF5E8]/70 rounded-2xl p-3 border-2 border-amber-100/80 bg-dot-pattern overflow-hidden">
+<!-- 1. 初出茅庐 (已获得) -->
+<article class="bg-white rounded-2xl p-2.5 flex flex-col items-center justify-center gap-1 border-2 border-amber-200 shadow-[0_4px_0_#E5D7BF] relative active:scale-95 transition-transform cursor-pointer group">
+<div class="medal w-24 h-24 rounded-full bg-gradient-to-b from-emerald-100 to-emerald-200 border-2 border-emerald-400 flex items-center justify-center text-5xl shadow-sm group-hover:rotate-6 transition-transform">
+            🌱
+          </div>
+<div class="text-center w-full mt-1">
+<h3 class="font-headline font-black text-sm text-stone-800 leading-tight">初出茅庐</h3>
+<p class="text-[11px] text-stone-500 truncate mt-0.5">第一次通关</p>
+</div>
+<div class="w-full flex justify-between items-center px-1 text-[10px] text-emerald-700 font-bold bg-emerald-50 rounded-full py-0.5 border border-emerald-200/60 mt-1">
+<span>✨ 已点亮</span>
+<span class="text-stone-400">10-28</span>
+</div>
+</article>
+<!-- 2. 满星守卫 (已获得) -->
+<article class="bg-white rounded-2xl p-2.5 flex flex-col items-center justify-center gap-1 border-2 border-amber-200 shadow-[0_4px_0_#E5D7BF] relative active:scale-95 transition-transform cursor-pointer group">
+<div class="medal w-24 h-24 rounded-full bg-gradient-to-b from-amber-100 to-amber-200 border-2 border-amber-400 flex items-center justify-center text-5xl shadow-sm group-hover:rotate-6 transition-transform">
+            ⭐
+          </div>
+<div class="text-center w-full mt-1">
+<h3 class="font-headline font-black text-sm text-stone-800 leading-tight">满星守卫</h3>
+<p class="text-[11px] text-stone-500 truncate mt-0.5">一局拿到 3 星</p>
+</div>
+<div class="w-full flex justify-between items-center px-1 text-[10px] text-amber-700 font-bold bg-amber-50 rounded-full py-0.5 border border-amber-200/60 mt-1">
+<span>✨ 已点亮</span>
+<span class="text-stone-400">11-01</span>
+</div>
+</article>
+<!-- 3. 一字不差 (当前选中项 ACTIVE HIGHLIGHT) -->
+<article class="bg-gradient-to-b from-amber-50 via-white to-orange-50/50 rounded-2xl p-2.5 flex flex-col items-center justify-center gap-1 border-4 border-brand-orange shadow-[0_5px_0_#C96E1B] ring-4 ring-amber-300/60 relative scale-[1.02] z-10 cursor-pointer">
+<!-- "新！" 标签 -->
+<div class="absolute -top-2.5 -right-2 px-2 py-0.5 bg-rose-500 text-white rounded-full text-[10px] font-black shadow-md uppercase tracking-wider animate-bounce">
+            新获得!
+          </div>
+<div class="medal w-24 h-24 rounded-full bg-gradient-to-br from-amber-300 via-orange-400 to-amber-500 border-2 border-white flex items-center justify-center text-5xl shadow-md ring-2 ring-orange-300">
+            🛡️
+          </div>
+<div class="text-center w-full mt-1">
+<h3 class="font-headline font-black text-sm text-orange-950 flex items-center justify-center gap-1">
+              一字不差
+              <span class="text-amber-500">✨</span>
+</h3>
+<p class="text-[11px] text-amber-800/80 font-bold truncate mt-0.5">一局首答全对</p>
+</div>
+<!-- Viewing State -->
+<div class="w-full text-center text-[10px] text-white font-black bg-gradient-to-r from-orange-500 to-amber-500 rounded-full py-0.5 shadow-sm mt-1">
+            查看中 👀
+          </div>
+</article>
+<!-- 4. 小小守卫 (已获得) -->
+<article class="bg-white rounded-2xl p-2.5 flex flex-col items-center justify-center gap-1 border-2 border-amber-200 shadow-[0_4px_0_#E5D7BF] relative active:scale-95 transition-transform cursor-pointer group">
+<div class="medal w-24 h-24 rounded-full bg-gradient-to-b from-blue-100 to-blue-200 border-2 border-blue-400 flex items-center justify-center text-5xl shadow-sm group-hover:rotate-6 transition-transform">
+            🎯
+          </div>
+<div class="text-center w-full mt-1">
+<h3 class="font-headline font-black text-sm text-stone-800 leading-tight">小小守卫</h3>
+<p class="text-[11px] text-stone-500 truncate mt-0.5">完成 10 局对战</p>
+</div>
+<div class="w-full flex justify-between items-center px-1 text-[10px] text-blue-700 font-bold bg-blue-50 rounded-full py-0.5 border border-blue-200/60 mt-1">
+<span>✨ 已点亮</span>
+<span class="text-stone-400">11-03</span>
+</div>
+</article>
+<!-- 5. 挑战勇士 (已获得) -->
+<article class="bg-white rounded-2xl p-2.5 flex flex-col items-center justify-center gap-1 border-2 border-amber-200 shadow-[0_4px_0_#E5D7BF] relative active:scale-95 transition-transform cursor-pointer group">
+<div class="medal w-24 h-24 rounded-full bg-gradient-to-b from-purple-100 to-purple-200 border-2 border-purple-400 flex items-center justify-center text-5xl shadow-sm group-hover:rotate-6 transition-transform">
+            ⚔️
+          </div>
+<div class="text-center w-full mt-1">
+<h3 class="font-headline font-black text-sm text-stone-800 leading-tight">挑战勇士</h3>
+<p class="text-[11px] text-stone-500 truncate mt-0.5">挑战难度通关</p>
+</div>
+<div class="w-full flex justify-between items-center px-1 text-[10px] text-purple-700 font-bold bg-purple-50 rounded-full py-0.5 border border-purple-200/60 mt-1">
+<span>✨ 已点亮</span>
+<span class="text-stone-400">11-04</span>
+</div>
+</article>
+<!-- 6. 百题小将 (未获得 - 灰度剪影锁态) -->
+<article class="bg-stone-100/90 rounded-2xl p-2.5 flex flex-col items-center justify-center gap-1 border-2 border-dashed border-stone-300 shadow-[0_3px_0_#D9D4C7] relative opacity-90 hover:opacity-100 transition-opacity">
+<div class="medal w-24 h-24 rounded-full bg-stone-200/80 border-2 border-stone-300 flex items-center justify-center text-5xl relative grayscale">
+<span>📚</span>
+<div class="absolute -bottom-1 -right-1 w-5 h-5 bg-amber-400 rounded-full border-2 border-white flex items-center justify-center shadow-xs">
+<span class="text-[10px]">🔒</span>
+</div>
+</div>
+<div class="text-center w-full mt-1">
+<h3 class="font-headline font-black text-sm text-stone-600 leading-tight">百题小将</h3>
+<p class="text-[10px] text-stone-400 mt-0.5">首答对 63/100</p>
+</div>
+<div class="w-full bg-stone-200 h-2.5 rounded-full overflow-hidden p-0.5 border border-stone-300/50 mt-1">
+<div class="bg-emerald-400 h-full rounded-full" style="width: 63%;"></div>
+</div>
+</article>
+<!-- 7. 千题达人 (未获得) -->
+<article class="bg-stone-100/90 rounded-2xl p-2.5 flex flex-col items-center justify-center gap-1 border-2 border-dashed border-stone-300 shadow-[0_3px_0_#D9D4C7] relative opacity-85 hover:opacity-100 transition-opacity">
+<div class="medal w-24 h-24 rounded-full bg-stone-200/80 border-2 border-stone-300 flex items-center justify-center text-5xl relative grayscale">
+<span>🏆</span>
+<div class="absolute -bottom-1 -right-1 w-5 h-5 bg-stone-400 rounded-full border-2 border-white flex items-center justify-center shadow-xs">
+<span class="text-[10px]">🔒</span>
+</div>
+</div>
+<div class="text-center w-full mt-1">
+<h3 class="font-headline font-black text-sm text-stone-600 leading-tight">千题达人</h3>
+<p class="text-[10px] text-stone-400 mt-0.5">63/1000 题</p>
+</div>
+<div class="w-full bg-stone-200 h-2.5 rounded-full overflow-hidden p-0.5 border border-stone-300/50 mt-1">
+<div class="bg-sky-400 h-full rounded-full" style="width: 6.3%;"></div>
+</div>
+</article>
+<!-- 8. 守卫队长 (未获得) -->
+<article class="bg-stone-100/90 rounded-2xl p-2.5 flex flex-col items-center justify-center gap-1 border-2 border-dashed border-stone-300 shadow-[0_3px_0_#D9D4C7] relative opacity-90 hover:opacity-100 transition-opacity">
+<div class="medal w-24 h-24 rounded-full bg-stone-200/80 border-2 border-stone-300 flex items-center justify-center text-5xl relative grayscale">
+<span>🎖️</span>
+<div class="absolute -bottom-1 -right-1 w-5 h-5 bg-amber-400 rounded-full border-2 border-white flex items-center justify-center shadow-xs">
+<span class="text-[10px]">🔒</span>
+</div>
+</div>
+<div class="text-center w-full mt-1">
+<h3 class="font-headline font-black text-sm text-stone-600 leading-tight">守卫队长</h3>
+<p class="text-[10px] text-stone-400 mt-0.5">完成 12/50 局</p>
+</div>
+<div class="w-full bg-stone-200 h-2.5 rounded-full overflow-hidden p-0.5 border border-stone-300/50 mt-1">
+<div class="bg-orange-400 h-full rounded-full" style="width: 24%;"></div>
+</div>
+</article>
+<!-- 9. 首领克星 (未获得) -->
+<article class="bg-stone-100/90 rounded-2xl p-2.5 flex flex-col items-center justify-center gap-1 border-2 border-dashed border-stone-300 shadow-[0_3px_0_#D9D4C7] relative opacity-90 hover:opacity-100 transition-opacity">
+<div class="medal w-24 h-24 rounded-full bg-stone-200/80 border-2 border-stone-300 flex items-center justify-center text-5xl relative grayscale">
+<span>👑</span>
+<div class="absolute -bottom-1 -right-1 w-5 h-5 bg-amber-400 rounded-full border-2 border-white flex items-center justify-center shadow-xs">
+<span class="text-[10px]">🔒</span>
+</div>
+</div>
+<div class="text-center w-full mt-1">
+<h3 class="font-headline font-black text-sm text-stone-600 leading-tight">首领克星</h3>
+<p class="text-[10px] text-stone-400 mt-0.5">击败铁门 4/10</p>
+</div>
+<div class="w-full bg-stone-200 h-2.5 rounded-full overflow-hidden p-0.5 border border-stone-300/50 mt-1">
+<div class="bg-purple-400 h-full rounded-full" style="width: 40%;"></div>
+</div>
+</article>
+<!-- 10. 道具达人 (未获得) -->
+<article class="bg-stone-100/90 rounded-2xl p-2.5 flex flex-col items-center justify-center gap-1 border-2 border-dashed border-stone-300 shadow-[0_3px_0_#D9D4C7] relative opacity-90 hover:opacity-100 transition-opacity">
+<div class="medal w-24 h-24 rounded-full bg-stone-200/80 border-2 border-stone-300 flex items-center justify-center text-5xl relative grayscale">
+<span>🎒</span>
+<div class="absolute -bottom-1 -right-1 w-5 h-5 bg-amber-400 rounded-full border-2 border-white flex items-center justify-center shadow-xs">
+<span class="text-[10px]">🔒</span>
+</div>
+</div>
+<div class="text-center w-full mt-1">
+<h3 class="font-headline font-black text-sm text-stone-600 leading-tight">道具达人</h3>
+<p class="text-[10px] text-stone-400 mt-0.5">使用 13/20 次</p>
+</div>
+<div class="w-full bg-stone-200 h-2.5 rounded-full overflow-hidden p-0.5 border border-stone-300/50 mt-1">
+<div class="bg-teal-400 h-full rounded-full" style="width: 65%;"></div>
+</div>
+</article>
+<!-- 11. 大招高手 (即將達成冲刺 HIGHLIGHT!) -->
+<article class="bg-amber-50/80 rounded-2xl p-2.5 flex flex-col items-center justify-center gap-1 border-2 border-amber-300 shadow-[0_3px_0_#E2CEAB] relative group cursor-pointer">
+<!-- Impending achievement badge -->
+<div class="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-full text-[10px] font-black shadow-xs whitespace-nowrap">
+            ⚡ 还差 3 次！
+          </div>
+<div class="medal w-24 h-24 rounded-full bg-stone-200/90 border-2 border-amber-400 flex items-center justify-center text-5xl relative">
+<span class="opacity-75">⚡</span>
+<div class="absolute -bottom-1 -right-1 w-5 h-5 bg-orange-500 text-white rounded-full border-2 border-white flex items-center justify-center shadow-xs">
+<span class="text-[10px]">🔒</span>
+</div>
+</div>
+<div class="text-center w-full mt-1">
+<h3 class="font-headline font-black text-sm text-amber-900 leading-tight">大招高手</h3>
+<p class="text-[10px] text-amber-700 font-bold mt-0.5">放出大招 7/10</p>
+</div>
+<div class="w-full bg-amber-200/80 h-2.5 rounded-full overflow-hidden p-0.5 border border-amber-300 mt-1">
+<div class="bg-gradient-to-r from-amber-400 to-orange-500 h-full rounded-full animate-pulse" style="width: 70%;"></div>
+</div>
+</article>
+<!-- 12. 十级守卫 (未获得) -->
+<article class="bg-stone-100/90 rounded-2xl p-2.5 flex flex-col items-center justify-center gap-1 border-2 border-dashed border-stone-300 shadow-[0_3px_0_#D9D4C7] relative opacity-90 hover:opacity-100 transition-opacity">
+<div class="medal w-24 h-24 rounded-full bg-stone-200/80 border-2 border-stone-300 flex items-center justify-center text-5xl relative grayscale">
+<span>🔟</span>
+<div class="absolute -bottom-1 -right-1 w-5 h-5 bg-stone-400 rounded-full border-2 border-white flex items-center justify-center shadow-xs">
+<span class="text-[10px]">🔒</span>
+</div>
+</div>
+<div class="text-center w-full mt-1">
+<h3 class="font-headline font-black text-sm text-stone-600 leading-tight">十级守卫</h3>
+<p class="text-[10px] text-stone-400 mt-0.5">当前 Lv.6 / Lv.10</p>
+</div>
+<div class="w-full bg-stone-200 h-2.5 rounded-full overflow-hidden p-0.5 border border-stone-300/50 mt-1">
+<div class="bg-indigo-400 h-full rounded-full" style="width: 60%;"></div>
+</div>
+</article>
+</div>
+</section>
+<!-- RIGHT PANEL: 选中徽章聚光灯大卡 (~32% 宽) -->
+<aside class="w-[380px] shrink-0 bg-white rounded-3xl border-4 border-amber-200 shadow-[0_8px_0_#E3D4B6] p-5 flex flex-col justify-between relative overflow-hidden">
+<!-- Top Metal Clip Decoration -->
+<div class="absolute -top-3 left-1/2 -translate-x-1/2 w-28 h-6 bg-gradient-to-b from-stone-300 to-amber-200 rounded-b-xl border-2 border-stone-400 shadow-sm flex justify-center items-center">
+<div class="w-16 h-1.5 bg-stone-400 rounded-full"></div>
+</div>
+<!-- Center Big Shield & Glow Aura -->
+<div class="flex flex-col items-center mt-2 relative">
+<!-- Rotating Aura Rays -->
+<div class="w-44 h-44 rounded-full bg-gradient-to-tr from-amber-200/40 via-yellow-100/50 to-orange-200/30 absolute -top-4 flex items-center justify-center animate-spin-slow pointer-events-none">
+<div class="w-full h-full rounded-full border-4 border-dashed border-amber-300/60"></div>
+</div>
+<!-- Laurel / Wreath Light Ring -->
+<div class="text-amber-400 text-xs font-black tracking-widest uppercase mb-1 z-10 flex items-center gap-1.5">
+<span>🌿</span>
+<span class="bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full">今天刚得到 · 新！</span>
+<span>🌿</span>
+</div>
+<!-- Giant 3D Shield Badge -->
+<div class="medal w-32 h-32 rounded-full bg-gradient-to-b from-amber-300 via-brand-orange to-amber-500 border-4 border-white shadow-[0_8px_0_#C96E1B] flex items-center justify-center text-6xl relative z-10 animate-float my-1 ring-4 ring-amber-200">
+<span>🛡️</span>
+<!-- Sparkling stars around -->
+<span class="absolute -top-2 -left-2 text-2xl animate-pulse">✨</span>
+<span class="absolute -bottom-2 -right-2 text-2xl">🌟</span>
+</div>
+<!-- Badge Title -->
+<h2 class="text-2xl font-black font-headline text-stone-900 tracking-wide mt-2">
+          🌟 一字不差 🌟
+        </h2>
+<!-- Condition & Praise Quote Box -->
+<div class="mt-2.5 bg-[#FAF3E1] border-2 border-amber-200/90 rounded-2xl p-3 text-center relative w-full shadow-inner">
+<span class="text-amber-400 text-xl font-serif absolute -top-1 left-2">“</span>
+<p class="text-stone-700 font-bold text-sm leading-relaxed px-3">
+            一局里每道题第一次就答对，你真细心！
+          </p>
+<span class="text-amber-400 text-xl font-serif absolute -bottom-3 right-2">”</span>
+</div>
+<!-- Achievement Status Info -->
+<div class="w-full mt-2.5 space-y-1.5">
+<div class="flex items-center justify-between text-xs px-2 font-bold text-stone-500">
+<span>📅 达成时间</span>
+<span class="text-stone-700 bg-amber-100/60 px-2 py-0.5 rounded-md">今天 (11月5日)</span>
+</div>
+<!-- Reward Banner -->
+<div class="flex items-center justify-between bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl text-emerald-800 font-bold text-xs">
+<span class="flex items-center gap-1">
+<span>奖励 <span class="coin">🪙</span> 50 积分</span>
+</span>
+<span class="text-emerald-600 font-black">已到账 ✓</span>
+</div>
+<div class="text-center text-xs font-black text-amber-700 pt-0.5">
+            你真细心！字灵们为你骄傲！🎉
+          </div>
+</div>
+</div>
+<!-- NEXT GOAL PROMO CARD (🎯 下一个最近目标) -->
+<div class="grid grid-cols-3 gap-2 text-center mt-1">
+<div class="bg-emerald-50 rounded-2xl py-2 border-2 border-emerald-200"><div class="text-xs font-bold text-emerald-700">已得到</div><div class="text-3xl font-black text-emerald-600 leading-tight">5</div></div>
+<div class="bg-orange-50 rounded-2xl py-2 border-2 border-orange-200"><div class="text-xs font-bold text-orange-700">快完成</div><div class="text-3xl font-black text-orange-500 leading-tight">2</div><div class="text-[10px] font-bold text-orange-600">大招 · 道具</div></div>
+<div class="bg-stone-50 rounded-2xl py-2 border-2 border-stone-200"><div class="text-xs font-bold text-stone-500">继续加油</div><div class="text-3xl font-black text-stone-500 leading-tight">5</div></div>
+</div>
+<div class="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-2.5 border-2 border-orange-200 shadow-sm mt-1">
+<div class="flex items-center justify-between mb-1">
+<div class="flex items-center gap-1 text-xs font-black text-stone-800">
+<span>🎯 下一个目标</span>
+<span class="text-orange-600 font-bold">⚡ 大招高手</span>
+</div>
+<span class="text-[11px] font-black text-orange-600">7 / 10 次</span>
+</div>
+<!-- Progress Bar + Play Button inline -->
+<div class="flex items-center gap-2">
+<div class="flex-1 bg-amber-200/70 h-3 rounded-full overflow-hidden p-0.5 border border-amber-300">
+<div class="bg-gradient-to-r from-amber-400 to-orange-500 h-full rounded-full" style="width: 70%;"></div>
+</div>
+<button class="shrink-0 bg-brand-orange text-white text-xs font-black px-3 py-1 rounded-full shadow-[0_3px_0_#C96E1B] active:translate-y-0.5 active:shadow-[0_1px_0_#C96E1B] flex items-center gap-0.5 hover:bg-orange-500 transition-colors">
+<span>去闯关</span>
+<span class="text-[10px]">➔</span>
+</button>
+</div>
+</div>
+<!-- ACTION BUTTONS (底部操作按钮 触控面积友好) -->
+<div class="mt-2"><button class="w-full h-14 bg-brand-green text-white rounded-2xl font-headline font-black text-xl shadow-[0_5px_0_#247359] flex items-center justify-center gap-2"><span>▶</span><span>去闯关，拿下一枚</span></button></div>
+</aside>
+</main>
+<!-- Interactive script for child feedback -->
+<script>
+    // Micro-interaction for clicking unlocked badges
+    document.querySelectorAll('article').forEach(card => {
+      card.addEventListener('click', () => {
+        // Subtle bounce animation trigger
+        card.classList.add('scale-95');
+        setTimeout(() => {
+          card.classList.remove('scale-95');
+        }, 150);
+      });
+    });
+  </script>
+</body></html>

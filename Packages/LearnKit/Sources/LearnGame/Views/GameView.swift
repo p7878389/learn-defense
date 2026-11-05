@@ -13,15 +13,19 @@ struct GameView: View {
     @State private var seedStripFrame: CGRect = .zero
     let onReplay: () -> Void
     let onExit: () -> Void
+    let onOpenCollection: () -> Void
 
-    init(config: GameConfig, model: AppModel, onReplay: @escaping () -> Void, onExit: @escaping () -> Void) {
+    init(config: GameConfig, model: AppModel, onReplay: @escaping () -> Void, onExit: @escaping () -> Void,
+         onOpenCollection: @escaping () -> Void = {}) {
         _session = StateObject(wrappedValue: GameSession(
             config: config,
             library: model.library,
             progress: model.progress(for: config.profileID),
-            speech: model.speech))
+            speech: model.speech,
+            growth: model.growth(for: config.profileID)))
         self.onReplay = onReplay
         self.onExit = onExit
+        self.onOpenCollection = onOpenCollection
     }
 
     private var debugOptions: SpriteView.DebugOptions {
@@ -160,7 +164,7 @@ struct GameView: View {
             }
 
             if session.phase == .won || session.phase == .lost {
-                ResultView(session: session, onReplay: onReplay, onExit: onExit)
+                ResultView(session: session, onReplay: onReplay, onExit: onExit, onOpenCollection: onOpenCollection)
             }
         }
         .coordinateSpace(name: "gameLayout")
