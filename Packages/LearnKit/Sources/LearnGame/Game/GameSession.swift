@@ -45,6 +45,14 @@ final class GameSession: ObservableObject {
     private var scheduler = ItemScheduler()
     private var tuner = AdaptiveTuner()
     private var rng = SystemRandomNumberGenerator()
+    /// 准备阶段给答题区预留高度用的样题：按本局出题方式出一道，不计入进度，也不影响出题顺序
+    private(set) lazy var layoutSample: Question? = {
+        var sampleRng = SystemRandomNumberGenerator()
+        for item in generator.pool.items.shuffled(using: &sampleRng).prefix(8) {
+            if let question = generator.makeQuestion(for: item, using: &sampleRng) { return question }
+        }
+        return nil
+    }()
     private let progress: ProgressStore
     private let speech: Speech
 

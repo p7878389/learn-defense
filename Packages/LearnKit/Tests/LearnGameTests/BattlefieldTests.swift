@@ -89,6 +89,14 @@ struct BattlefieldTests {
         #expect(GameScene.scenePoint(at: CGPoint(x: 0, y: 350), in: tall) == CGPoint(x: 0, y: 0))
     }
 
+    @Test func wordCardAppearsWithoutZoom() throws {
+        let scene = GameScene(tuning: GameTuning.make(grade: .g3, difficulty: .normal), theme: .academy)
+        scene.didMove(to: SKView(frame: CGRect(origin: .zero, size: scene.size)))
+        scene.showCard(WordCard(picture: "🌸", text: "春天", pinyin: "chūn tiān"), near: nil)
+        let card = try #require(scene.childNode(withName: "wordCard"))
+        #expect(card.xScale == 1 && card.yScale == 1, "答对弹出单词卡时不放大画面")
+    }
+
     @Test func plantPreviewShowsTargetCell() throws {
         let scene = GameScene(tuning: GameTuning.make(grade: .g3, difficulty: .normal), theme: .academy)
         scene.didMove(to: SKView(frame: CGRect(origin: .zero, size: scene.size)))

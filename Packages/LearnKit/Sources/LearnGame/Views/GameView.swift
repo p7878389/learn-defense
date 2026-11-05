@@ -6,6 +6,11 @@ struct GameView: View {
     @StateObject private var session: GameSession
     @State private var battlefieldFrame: CGRect = .zero
     @State private var activeDrag: PlantDrag?
+    /// 本局答题区出现过的最高高度。战场占剩下的高度，答题区变矮时战场会跟着放大，
+    /// 所以答题区只增不减；准备阶段先按样题留好高度，开局、答对、换题时画面都不跳
+    @State private var answerPanelHeight: CGFloat = 0
+    /// 卡牌栏叠在战场上，在它上面松手（含只点一下）算取消
+    @State private var seedStripFrame: CGRect = .zero
     let onReplay: () -> Void
     let onExit: () -> Void
 
@@ -23,6 +28,33 @@ struct GameView: View {
         []
     }
 
+    private var seedPackets: some View {
+        SeedPacketStrip(
+            kinds: session.tuning.lineup,
+            sun: session.sun,
+            enabled: session.canUseShop,
+            draggingID: activeDrag?.kind.id,
+            onDragChanged: { kind, location in
+                activeDrag = PlantDrag(kind: kind, location: location)
+                session.previewSeed(at: GameScene.scenePoint(at: location, in: battlefieldFrame))
+            },
+            onDragEnded: { kind, location in
+                // 只点一下卡牌、或拖回卡牌栏松手，都当作取消，不提示种错
+                if !seedStripFrame.contains(location),
+                   let point = GameScene.scenePoint(at: location, in: battlefieldFrame) {
+                    _ = session.dropSeed(id: kind.id, at: point)
+                }
+                session.previewSeed(at: nil)
+                activeDrag = nil
+            })
+            .background(
+                GeometryReader { proxy in
+                    Color.clear.onChange(of: proxy.frame(in: .named("gameLayout")), initial: true) { _, frame in
+                        seedStripFrame = frame
+                    }
+                })
+    }
+
     var body: some View {
         ZStack {
             Color(red: 0.24, green: 0.31, blue: 0.12).ignoresSafeArea()
@@ -33,27 +65,8 @@ struct GameView: View {
                     Button("返回", action: onExit).font(.title2)
                 }
             } else {
-                VStack(spacing: 8) {
-                    GameHUD(session: session, onExit: onExit)
-                        .padding(.vertical, 8)
-                        .background(Color(red: 0.91, green: 0.80, blue: 0.53), in: RoundedRectangle(cornerRadius: 8))
-                    SeedPacketStrip(
-                        kinds: session.tuning.lineup,
-                        sun: session.sun,
-                        enabled: session.canUseShop,
-                        draggingID: activeDrag?.kind.id,
-                        onDragChanged: { kind, location in
-                            activeDrag = PlantDrag(kind: kind, location: location)
-                            session.previewSeed(at: GameScene.scenePoint(at: location, in: battlefieldFrame))
-                        },
-                        onDragEnded: { kind, location in
-                            // 只点一下卡牌、或拖回卡牌栏松手，都当作取消，不提示种错
-                            if let point = GameScene.scenePoint(at: location, in: battlefieldFrame) {
-                                _ = session.dropSeed(id: kind.id, at: point)
-                            }
-                            session.previewSeed(at: nil)
-                            activeDrag = nil
-                        })
+                // 战场铺满宽度；卡牌栏、状态栏叠在顶部篱笆上，道具和大招叠在左边房子前，不占草坪
+                VStack(spacing: 6) {
                     BattlefieldView(session: session, debugOptions: debugOptions)
                         .background(
                             // 直接记下战场位置；用 PreferenceKey 传到外层时真机上一直是 .zero
@@ -70,22 +83,60 @@ struct GameView: View {
                                     .allowsHitTesting(false)
                             }
                         }
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                        .overlay(alignment: .topLeading) {
+                            seedPackets.padding(6)
+                        }
+                        .overlay(alignment: .topTrailing) {
+                            GameHUD(session: session, onExit: onExit).padding(6)
+                        }
+                        .overlay(alignment: .bottomLeading) {
+                            VStack(spacing: 8) {
+                                UltimateButton(
+                                    energy: session.energy,
+                                    maxEnergy: session.tuning.ultimateEnergy,
+                                    ready: session.ultimateReady,
+                                    action: session.startUltimate)
+                                ItemBar(
+                                    inventory: session.inventory,
+                                    enabled: session.canUseItems,
+                                    onUse: session.useItem(at:))
+                            }
+                            .padding(8)
+                        }
                         .layoutPriority(-1)
-                    if session.phase == .preparing {
-                        PreparationPanel(session: session)
-                    } else {
-                        AnswerPanel(
-                            question: session.current,
-                            wrongPicks: session.wrongPicks,
-                            onAnswer: session.answer,
-                            onReplay: session.replayPrompt)
-                            .padding(12)
-                            .background(Color(red: 0.98, green: 0.94, blue: 0.80), in: RoundedRectangle(cornerRadius: 12))
+                    Group {
+                        if session.phase == .preparing {
+                            PreparationPanel(session: session)
+                                .background(alignment: .top) {
+                                    // 按本局出题方式量一道答错后的样题，开局前就把答题区的高度留出来
+                                    if let sample = session.layoutSample {
+                                        AnswerPanel(
+                                            question: sample,
+                                            wrongPicks: Set(sample.options.indices.filter { $0 != sample.answerIndex }.prefix(1)),
+                                            onAnswer: { _ in },
+                                            onReplay: {})
+                                            .fixedSize(horizontal: false, vertical: true)
+                                            .modifier(MaxHeightReader(height: $answerPanelHeight))
+                                            .opacity(0)
+                                            .allowsHitTesting(false)
+                                            .accessibilityHidden(true)
+                                    }
+                                }
+                        } else {
+                            AnswerPanel(
+                                question: session.current,
+                                wrongPicks: session.wrongPicks,
+                                onAnswer: session.answer,
+                                onReplay: session.replayPrompt)
+                                .modifier(MaxHeightReader(height: $answerPanelHeight))
+                        }
                     }
+                    .frame(maxWidth: .infinity, minHeight: answerPanelHeight)
+                    .padding(10)
+                    .background(Color(red: 0.98, green: 0.94, blue: 0.80), in: RoundedRectangle(cornerRadius: 12))
+                    .padding(.horizontal, 10)
                     Spacer(minLength: 0)
                 }
-                .padding(10)
             }
 
             if let drag = activeDrag {
@@ -166,8 +217,9 @@ struct GameHUD: View {
     @ObservedObject var session: GameSession
     let onExit: () -> Void
 
+    /// 叠在战场右上角的状态：暂停、生命、进度、得分。阳光在卡牌栏里，道具和大招在战场左下角
     var body: some View {
-        HStack(spacing: 24) {
+        HStack(spacing: 18) {
             if session.phase == .preparing {
                 Label("准备", systemImage: "leaf.fill")
                     .font(.title3.weight(.bold))
@@ -202,23 +254,10 @@ struct GameHUD: View {
             Label("\(session.score)", systemImage: "star.fill")
                 .font(.title3.weight(.semibold).monospacedDigit())
                 .foregroundStyle(Theme.accent)
-
-            SunCounter(amount: session.sun)
-
-            Spacer()
-
-            ItemBar(
-                inventory: session.inventory,
-                enabled: session.canUseItems,
-                onUse: session.useItem(at:))
-
-            UltimateButton(
-                energy: session.energy,
-                maxEnergy: session.tuning.ultimateEnergy,
-                ready: session.ultimateReady,
-                action: session.startUltimate)
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 6)
+        .background(Color(red: 0.91, green: 0.80, blue: 0.53).opacity(0.92), in: Capsule())
     }
 }
 
@@ -248,19 +287,31 @@ struct PreparationPanel: View {
             .buttonStyle(PressableStyle())
             .disabled(!session.canStartBattle)
         }
-        .padding(14)
-        .background(Color(red: 0.98, green: 0.94, blue: 0.80), in: RoundedRectangle(cornerRadius: 12))
     }
 }
 
-/// 道具栏：捡到的道具，点一下就用
+/// 量出视图的自然高度，只记下更大的值
+private struct MaxHeightReader: ViewModifier {
+    @Binding var height: CGFloat
+
+    func body(content: Content) -> some View {
+        content.background(
+            GeometryReader { proxy in
+                Color.clear.onChange(of: proxy.size.height, initial: true) { _, newHeight in
+                    height = max(height, newHeight)
+                }
+            })
+    }
+}
+
+/// 道具栏：捡到的道具，点一下就用。竖着排在战场左边房子前
 struct ItemBar: View {
     let inventory: Inventory
     let enabled: Bool
     let onUse: (Int) -> Void
 
     var body: some View {
-        HStack(spacing: 8) {
+        VStack(spacing: 8) {
             ForEach(0..<inventory.capacity, id: \.self) { i in
                 let item = i < inventory.items.count ? inventory.items[i] : nil
                 Button { onUse(i) } label: {
@@ -268,7 +319,7 @@ struct ItemBar: View {
                         if let item { PictureView(emoji: item.icon, size: 38) } else { Color.clear }
                     }
                         .frame(width: 54, height: 54)
-                        .background(RoundedRectangle(cornerRadius: 14).fill(item == nil ? Theme.muted.opacity(0.12) : Theme.card))
+                        .background(RoundedRectangle(cornerRadius: 14).fill(item == nil ? Theme.card.opacity(0.5) : Theme.card))
                         .overlay(RoundedRectangle(cornerRadius: 14).stroke(item == nil ? .clear : Theme.jade, lineWidth: 3))
                 }
                 .buttonStyle(PressableStyle())
@@ -290,7 +341,8 @@ struct UltimateButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 10) {
+            // 文字在上、能量点在下，窄一些才放得进房子前
+            VStack(spacing: 6) {
                 Text(ready ? "放大招！" : "大招")
                     .font(.title3.weight(.heavy))
                 HStack(spacing: 4) {
@@ -301,10 +353,10 @@ struct UltimateButton: View {
                     }
                 }
             }
-            .padding(.horizontal, 18)
-            .padding(.vertical, 10)
-            .background(Capsule().fill(ready ? Theme.accent.opacity(0.25) : Theme.card))
-            .overlay(Capsule().stroke(ready ? Theme.accent : Theme.muted.opacity(0.3), lineWidth: 3))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(RoundedRectangle(cornerRadius: 16).fill(ready ? Theme.accent.opacity(0.25) : Theme.card))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(ready ? Theme.accent : Theme.muted.opacity(0.3), lineWidth: 3))
             .foregroundStyle(ready ? Theme.accent : Theme.muted)
             .scaleEffect(ready && glow ? 1.08 : 1)
         }

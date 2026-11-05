@@ -226,13 +226,12 @@ struct WordCardEffect: VisualEffect {
         node.position = CGPoint(
             x: min(max(point.x, halfW), bounds.width - halfW),
             y: min(max(point.y + 100, halfH), bounds.height - halfH))
-        node.setScale(0.3)
+        // 直接淡入，不做由小到大的缩放，免得画面一下被放大
         node.alpha = 0
         layer.addChild(node)
         node.run(.sequence([
-            .group([.fadeIn(withDuration: 0.15), .scale(to: 1.08, duration: 0.18)]),
-            .scale(to: 1.0, duration: 0.1),
-            .wait(forDuration: 1.4),
+            .fadeIn(withDuration: 0.2),
+            .wait(forDuration: 1.5),
             .group([.moveBy(x: 0, y: 40, duration: 0.35), .fadeOut(withDuration: 0.35)]),
             .removeFromParent(),
         ]))
