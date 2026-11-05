@@ -46,18 +46,16 @@ final class GameScene: SKScene {
     private(set) var gamePaused = false
 
     private let baseX: CGFloat = 160
-    /// 顶部天空的高度，路在天空下面
-    private let skyHeight: CGFloat = 80
     private var spawnX: CGFloat { size.width - 45 }
-    private var laneHeight: CGFloat { 500 / 5 }
-    /// 种植格对齐庭院背景的 9 列草坪（x 144…894），plantingStartX 是第一列中心
-    private let plantingColumns = 9
-    private var plantingColumnWidth: CGFloat { 750 / CGFloat(plantingColumns) }
-    private var plantingStartX: CGFloat { 144 + plantingColumnWidth / 2 }
+    private let lawn: Lawn
+    private var laneHeight: CGFloat { lawn.rowHeight }
+    /// 拖动植物卡时标出落点格
+    private var plantPreview: SKShapeNode?
 
     init(tuning: GameTuning, theme: SceneTheme) {
         self.tuning = tuning
         self.theme = theme
+        lawn = Lawn(lanes: tuning.lanes)
         super.init(size: Self.designSize)
         scaleMode = .aspectFit
         backgroundColor = theme.skyBottom.color
@@ -72,12 +70,26 @@ final class GameScene: SKScene {
     }
 
     private func laneY(_ lane: Int) -> CGFloat {
-        // 草坪从底部 20 到 520；幼儿园只使用中间三行。
-        20 + laneHeight * (CGFloat(lane + (5 - tuning.lanes) / 2) + 0.5)
+        lawn.laneY(lane)
     }
 
     private func buildBackground() {
-        Backdrop(theme: theme, size: size, skyHeight: skyHeight, lanes: tuning.lanes, baseWidth: 64).build(in: self)
+        // 草坪上方是天空
+        Backdrop(theme: theme, size: size, skyHeight: size.height - Lawn.frame.maxY, lawn: lawn, baseWidth: 64)
+            .build(in: self)
+    }
+
+    /// 把 SwiftUI 里的拖动位置换成场景坐标。frame 是战场在同一坐标系里的位置，
+    /// 场景按 aspectFit 等比缩放居中；落点不在战场里时返回 nil
+    static func scenePoint(at location: CGPoint, in frame: CGRect) -> CGPoint? {
+        guard frame.width > 0, frame.height > 0, frame.contains(location) else { return nil }
+        let scale = min(frame.width / designSize.width, frame.height / designSize.height)
+        let offsetX = (frame.width - designSize.width * scale) / 2
+        let offsetY = (frame.height - designSize.height * scale) / 2
+        // SwiftUI 的 y 向下，SpriteKit 的 y 向上
+        return CGPoint(
+            x: (location.x - frame.minX - offsetX) / scale,
+            y: (frame.maxY - location.y - offsetY) / scale)
     }
 
     // MARK: - 主循环
@@ -157,22 +169,14 @@ final class GameScene: SKScene {
 
     // MARK: - 由 GameSession 调用
 
-    /// 在该路第一格种下一株字灵；已有字灵时不覆盖
-    @discardableResult
-    func plant(_ kind: DefenderKind, in lane: Int) -> Bool {
-        plant(kind, in: DefenderCell(lane: lane, column: 0))
-    }
-
     /// 把植物种到具体草坪格；格子一旦占用就不能修改
     @discardableResult
     func plant(_ kind: DefenderKind, in cell: DefenderCell) -> Bool {
         guard cell.lane >= 0, cell.lane < tuning.lanes,
-              cell.column >= 0, cell.column < plantingColumns,
+              cell.column >= 0, cell.column < Lawn.columns,
               defenders[cell] == nil else { return false }
         let defender = DefenderNode(kind: kind, radius: min(34, laneHeight * 0.32))
-        defender.position = CGPoint(
-            x: plantingStartX + CGFloat(cell.column) * plantingColumnWidth,
-            y: laneY(cell.lane))
+        defender.position = CGPoint(x: lawn.columnX(cell.column), y: laneY(cell.lane))
         defender.zPosition = 5
         defender.setScale(0.2)
         defender.run(.sequence([
@@ -188,25 +192,39 @@ final class GameScene: SKScene {
         return true
     }
 
-    /// 把拖到场景里的植物卡吸附到最近的草坪格
+    /// 把拖到场景里的植物卡种到落点所在的草坪格；格子已有植物时不种，也不挪到别处
     @discardableResult
     func plant(_ kind: DefenderKind, at point: CGPoint) -> Bool {
-        guard let desired = cell(at: point) else { return false }
-        if plant(kind, in: desired) { return true }
-        // 落点被占用或刚好在格线上时，自动找同一路最近的空格
-        let candidates = (0..<plantingColumns)
-            .filter({ $0 != desired.column })
-            .sorted {
-                let left = abs($0 - desired.column)
-                let right = abs($1 - desired.column)
-                return left == right ? $0 < $1 : left < right
-            }
-        for column in candidates {
-            if plant(kind, in: DefenderCell(lane: desired.lane, column: column)) {
-                return true
-            }
+        guard let cell = lawn.cell(at: point) else { return false }
+        return plant(kind, in: cell)
+    }
+
+    /// 拖动植物卡时标出会种到哪一格：空格绿色，已有植物红色；不在可种草坪上或 point 为 nil 时隐藏
+    func showPlantPreview(at point: CGPoint?) {
+        guard let point, let cell = lawn.cell(at: point) else {
+            plantPreview?.isHidden = true
+            return
         }
-        return false
+        let preview = plantPreview ?? makePlantPreview()
+        let color = defenders[cell] == nil ? Palette.jade : Palette.hurt
+        preview.fillColor = color.withAlphaComponent(0.25)
+        preview.strokeColor = color
+        preview.position = CGPoint(x: lawn.columnX(cell.column), y: laneY(cell.lane))
+        preview.isHidden = false
+    }
+
+    private func makePlantPreview() -> SKShapeNode {
+        let inset: CGFloat = 4
+        let node = SKShapeNode(
+            rectOf: CGSize(width: lawn.columnWidth - inset * 2, height: lawn.rowHeight - inset * 2),
+            cornerRadius: 8)
+        node.name = "plantPreview"
+        node.lineWidth = 3
+        // 在植物下面一层
+        node.zPosition = 4
+        addChild(node)
+        plantPreview = node
+        return node
     }
 
     /// 当前瞄准的怪物所在路是否有字灵可以发射
@@ -308,27 +326,9 @@ final class GameScene: SKScene {
     var plantedLaneCount: Int { Set(defenders.keys.map(\.lane)).count }
     var plantedCellCount: Int { defenders.count }
 
-    /// 落点所在的草坪行；幼儿园没用到的上下两行不能种
-    private func lane(at point: CGPoint) -> Int? {
-        guard point.y >= 20, point.y <= 520 else { return nil }
-        let row = min(4, Int((point.y - 20) / laneHeight))
-        let lane = row - (5 - tuning.lanes) / 2
-        return (0..<tuning.lanes).contains(lane) ? lane : nil
-    }
-
     /// 落点是否在本局可种的草坪上（不管格子有没有被占）
     func isPlantable(_ point: CGPoint) -> Bool {
-        cell(at: point) != nil
-    }
-
-    private func cell(at point: CGPoint) -> DefenderCell? {
-        guard let lane = lane(at: point) else { return nil }
-        let minX = plantingStartX - plantingColumnWidth / 2
-        let maxX = plantingStartX + CGFloat(plantingColumns - 1) * plantingColumnWidth + plantingColumnWidth / 2
-        guard point.x >= minX, point.x <= maxX else { return nil }
-        let rawColumn = (point.x - plantingStartX) / plantingColumnWidth
-        let column = min(plantingColumns - 1, max(0, Int(rawColumn.rounded())))
-        return DefenderCell(lane: lane, column: column)
+        lawn.cell(at: point) != nil
     }
 }
 

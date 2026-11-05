@@ -19,12 +19,14 @@ struct Backdrop {
     let size: CGSize
     /// 顶部天空的高度，下面是路
     let skyHeight: CGFloat
-    let lanes: Int
+    /// 路面按草坪的行来画，和怪物、植物站的位置对齐
+    let lawn: Lawn
     /// 基地那一列的宽度
     let baseWidth: CGFloat
 
     private var fieldHeight: CGFloat { size.height - skyHeight }
-    private var laneHeight: CGFloat { fieldHeight / CGFloat(lanes) }
+    private var lanes: Int { lawn.lanes }
+    private var laneHeight: CGFloat { lawn.rowHeight }
 
     func build(in scene: SKNode) {
         if let url = Bundle.module.url(forResource: "courtyard", withExtension: "jpg", subdirectory: "Sprites"),
@@ -120,7 +122,7 @@ struct Backdrop {
     private func addLanes(to scene: SKNode) {
         for lane in 0..<lanes {
             let rgb = theme.lanes[lane % theme.lanes.count]
-            let y = laneHeight * CGFloat(lane)
+            let y = lawn.laneBottom(lane)
             let strip = SKSpriteNode(color: rgb.color, size: CGSize(width: size.width, height: laneHeight))
             strip.anchorPoint = .zero
             strip.position = CGPoint(x: 0, y: y)
@@ -185,7 +187,7 @@ struct Backdrop {
         guard !theme.scenery.isEmpty else { return }
         let s = min(30, laneHeight * 0.3)
         for border in 0..<lanes {
-            let y = laneHeight * CGFloat(border) + (border == 0 ? s * 0.45 : 0)
+            let y = lawn.laneBottom(border) + (border == 0 ? s * 0.45 : 0)
             for _ in 0..<4 {
                 let node = Pictures.node(theme.scenery.randomElement()!, size: s * CGFloat.random(in: 0.8...1.1))
                 node.position = CGPoint(x: CGFloat.random(in: (baseWidth + 140)...(size.width - 20)), y: y)
@@ -231,7 +233,7 @@ struct Backdrop {
         scene.addChild(wall)
         for lane in 0..<lanes {
             let node = Pictures.node(theme.base, size: min(56, laneHeight * 0.55))
-            node.position = CGPoint(x: baseWidth / 2, y: laneHeight * (CGFloat(lane) + 0.5))
+            node.position = CGPoint(x: baseWidth / 2, y: lawn.laneY(lane))
             node.zPosition = -8
             scene.addChild(node)
         }

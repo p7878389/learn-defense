@@ -221,6 +221,11 @@ final class GameSession: ObservableObject {
         speech.speak("准备完成，第一只僵尸来了！", interrupt: true)
     }
 
+    /// 拖动卡牌时在草坪上标出落点格，point 为 nil 时收起
+    func previewSeed(at point: CGPoint?) {
+        scene.showPlantPreview(at: canUseShop ? point : nil)
+    }
+
     /// 把拖到战场上的卡牌落到对应草坪；成功后立即扣除阳光
     func dropSeed(id: String, at point: CGPoint) -> Bool {
         guard canUseShop, let kind = tuning.lineup.first(where: { $0.id == id }) else { return false }
@@ -231,8 +236,8 @@ final class GameSession: ObservableObject {
         }
         guard scene.plant(kind, at: point) else {
             if scene.isPlantable(point) {
-                scene.play(FloatingTextEffect(text: "这一行种满了", color: Palette.hurt, fontSize: 26))
-                speech.speak("这一行种满了，换一行吧", interrupt: true)
+                scene.play(FloatingTextEffect(text: "这里已经有植物了", color: Palette.hurt, fontSize: 26))
+                speech.speak("这里已经有植物了，换个空格吧", interrupt: true)
             } else {
                 scene.play(FloatingTextEffect(text: "只能种在空的草坪位置", color: Palette.hurt, fontSize: 26))
                 speech.speak("这里不能种，换个空的草坪位置", interrupt: true)

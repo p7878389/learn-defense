@@ -23,8 +23,9 @@ struct BattlefieldTests {
         for column in 1..<9 {
             #expect(scene.plant(.twin, at: CGPoint(x: 144 + (CGFloat(column) + 0.5) * 750 / 9, y: 70)))
         }
-        #expect(!scene.plant(.frost, at: CGPoint(x: 260, y: 70)), "整条路都满时才拒绝")
+        #expect(!scene.plant(.frost, at: CGPoint(x: 260, y: 70)), "格子已有植物时拒绝")
         #expect(scene.isPlantable(CGPoint(x: 260, y: 70)), "种满的格子仍算草坪")
+        #expect(!scene.plant(.frost, at: CGPoint(x: 190, y: 170)), "这一路还有空格也不挪到别格")
         #expect(!scene.plant(.twin, at: CGPoint(x: 350, y: 560)), "草坪外不能种植")
         #expect(!scene.plant(.twin, at: CGPoint(x: 940, y: 270)), "右侧石板路不能种植")
         #expect(!scene.plant(.twin, at: CGPoint(x: 120, y: 270)), "左侧房前不能种植")
@@ -60,5 +61,51 @@ struct BattlefieldTests {
             #expect(scene.plant(.inkling, at: CGPoint(x: 190, y: CGFloat(y))))
         }
         #expect(scene.plantedLaneCount == 3)
+    }
+
+    @Test func lawnCellsMatchCourtyard() {
+        let lawn = Lawn(lanes: 5)
+        #expect(lawn.cell(at: CGPoint(x: 144, y: 20)) == DefenderCell(lane: 0, column: 0))
+        #expect(lawn.cell(at: CGPoint(x: 894, y: 520)) == DefenderCell(lane: 4, column: 8), "右上角的边也算草坪")
+        #expect(lawn.cell(at: CGPoint(x: 143, y: 100)) == nil)
+        #expect(lawn.cell(at: CGPoint(x: 500, y: 521)) == nil)
+        #expect(abs(lawn.columnX(0) - 185.67) < 0.01)
+        #expect(lawn.laneY(0) == 70 && lawn.laneY(4) == 470)
+
+        let preschool = Lawn(lanes: 3)
+        #expect(preschool.laneY(0) == 170 && preschool.laneBottom(0) == 120)
+        #expect(preschool.cell(at: CGPoint(x: 300, y: 119)) == nil)
+        #expect(preschool.cell(at: CGPoint(x: 300, y: 120)) == DefenderCell(lane: 0, column: 1))
+    }
+
+    @Test func dragLocationMapsToScene() {
+        let frame = CGRect(x: 10, y: 100, width: 600, height: 300)
+        #expect(GameScene.scenePoint(at: CGPoint(x: 310, y: 250), in: frame) == CGPoint(x: 600, y: 300))
+        #expect(GameScene.scenePoint(at: CGPoint(x: 10, y: 100), in: frame) == CGPoint(x: 0, y: 600), "左上角在场景里是左上")
+        #expect(GameScene.scenePoint(at: CGPoint(x: 5, y: 250), in: frame) == nil, "战场外松手不算")
+        #expect(GameScene.scenePoint(at: CGPoint(x: 0, y: 0), in: .zero) == nil, "还没量到战场位置时不算")
+        // 战场比 2:1 高时上下留边
+        let tall = CGRect(x: 0, y: 0, width: 600, height: 400)
+        #expect(GameScene.scenePoint(at: CGPoint(x: 0, y: 350), in: tall) == CGPoint(x: 0, y: 0))
+    }
+
+    @Test func plantPreviewShowsTargetCell() throws {
+        let scene = GameScene(tuning: GameTuning.make(grade: .g3, difficulty: .normal), theme: .academy)
+        scene.didMove(to: SKView(frame: CGRect(origin: .zero, size: scene.size)))
+        scene.showPlantPreview(at: CGPoint(x: 200, y: 80))
+        let preview = try #require(scene.childNode(withName: "plantPreview") as? SKShapeNode)
+        #expect(!preview.isHidden)
+        #expect(abs(preview.position.x - 185.67) < 0.01 && preview.position.y == 70)
+        #expect(preview.strokeColor == Palette.jade)
+
+        scene.plant(.inkling, at: CGPoint(x: 200, y: 80))
+        scene.showPlantPreview(at: CGPoint(x: 200, y: 80))
+        #expect(preview.strokeColor == Palette.hurt, "已有植物的格子标红")
+
+        scene.showPlantPreview(at: CGPoint(x: 1000, y: 80))
+        #expect(preview.isHidden, "草坪外不显示")
+        scene.showPlantPreview(at: CGPoint(x: 200, y: 80))
+        scene.showPlantPreview(at: nil)
+        #expect(preview.isHidden)
     }
 }

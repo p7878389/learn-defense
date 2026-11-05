@@ -44,15 +44,14 @@ struct GameView: View {
                         draggingID: activeDrag?.kind.id,
                         onDragChanged: { kind, location in
                             activeDrag = PlantDrag(kind: kind, location: location)
+                            session.previewSeed(at: GameScene.scenePoint(at: location, in: battlefieldFrame))
                         },
                         onDragEnded: { kind, location in
                             // 只点一下卡牌、或拖回卡牌栏松手，都当作取消，不提示种错
-                            if battlefieldFrame.contains(location) {
-                                let localPoint = CGPoint(
-                                    x: location.x - battlefieldFrame.minX,
-                                    y: location.y - battlefieldFrame.minY)
-                                _ = session.dropSeed(id: kind.id, at: scenePoint(from: localPoint, in: battlefieldFrame.size))
+                            if let point = GameScene.scenePoint(at: location, in: battlefieldFrame) {
+                                _ = session.dropSeed(id: kind.id, at: point)
                             }
+                            session.previewSeed(at: nil)
                             activeDrag = nil
                         })
                     BattlefieldView(session: session, debugOptions: debugOptions)
@@ -119,21 +118,6 @@ struct GameView: View {
         .statusBarHidden()
         .persistentSystemOverlays(.hidden)
         #endif
-    }
-
-    private func scenePoint(from viewPoint: CGPoint, in viewSize: CGSize) -> CGPoint {
-        let scale = min(
-            viewSize.width / GameScene.designSize.width,
-            viewSize.height / GameScene.designSize.height)
-        guard scale > 0 else { return .zero }
-        let renderedSize = CGSize(
-            width: GameScene.designSize.width * scale,
-            height: GameScene.designSize.height * scale)
-        let offsetX = (viewSize.width - renderedSize.width) / 2
-        let offsetY = (viewSize.height - renderedSize.height) / 2
-        return CGPoint(
-            x: (viewPoint.x - offsetX) / scale,
-            y: (viewSize.height - viewPoint.y - offsetY) / scale)
     }
 }
 
