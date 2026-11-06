@@ -24,6 +24,8 @@ protocol GameSceneDelegate: AnyObject {
     func enemyReachedBase(_ id: Int) -> Bool
     /// 怪物被打败，point 是它倒下的位置
     func enemyDefeated(_ id: Int, at point: CGPoint)
+    /// 战斗中放下的路障（铁栅门）被啃碎了
+    func barricadeRemoved()
     var speedFactor: Double { get }
 }
 
@@ -40,6 +42,10 @@ final class GameScene: SKScene {
     private let loadout: Loadout
     private var enemies: [Int: EnemyNode] = [:]
     private var defenders: [DefenderCell: DefenderNode] = [:]
+    /// 战斗中放下的路障（铁栅门），不占种植格
+    private var barricades: [DefenderNode] = []
+    /// 每只怪物正在啃哪个防御道具
+    private var chewing: [Int: DefenderNode] = [:]
     private var targetID: Int?
     private var lastUpdate: TimeInterval = 0
     private var spawnCountdown = 1.0
@@ -50,6 +56,10 @@ final class GameScene: SKScene {
     private var lastDiagStats: TimeInterval = 0
 
     private let baseX: CGFloat = 160
+    /// 怪物和防御道具中心相距这么近就算碰上了（约半格）
+    private var contactGap: CGFloat { lawn.columnWidth * 0.45 }
+    /// 被挡住时答错，怪物狠咬一口，扣掉的耐久秒数
+    static let wrongAnswerBite = 2.0
     private var spawnX: CGFloat { size.width - 45 }
     private let lawn: Lawn
     private var laneHeight: CGFloat { lawn.rowHeight }
@@ -133,8 +143,11 @@ final class GameScene: SKScene {
 
         let speed = Double(spawnX - baseX) / tuning.crossSeconds * factor
         for (id, enemy) in enemies where !enemy.doomed {
-            enemy.position.x -= enemy.advance(dt: dt, speed: speed * enemy.kind.speed)
-            guard enemy.position.x <= baseX + 30 else { continue }
+            let step = enemy.advance(dt: dt, speed: speed * enemy.kind.speed)
+            move(enemy, by: step, chew: dt * factor * enemy.chewRate)
+            triggerMines(under: enemy)
+            guard !enemy.doomed, enemy.position.x <= baseX + 30 else { continue }
+            chewing[id] = nil
             if delegate.enemyReachedBase(id) {
                 enemies[id] = nil
                 for (cell, defender) in defenders where cell.lane == enemy.lane {
@@ -158,15 +171,145 @@ final class GameScene: SKScene {
             spawningFinished = true
             return
         }
-        let lane = chooseLane()
+        spawn(spec, lane: chooseLane())
+    }
+
+    /// 让一只怪物从右边出场；测试里可以指定路和位置
+    @discardableResult
+    func spawn(_ spec: EnemySpawn, lane: Int, x: CGFloat? = nil) -> EnemyNode {
         let enemy = EnemyNode(id: spec.id, kind: spec.kind, sign: spec.sign, lane: lane,
                               scale: min(1.2, laneHeight / 104), skin: loadout.enemySkin)
-        enemy.position = CGPoint(x: spawnX, y: laneY(lane))
+        enemy.position = CGPoint(x: x ?? spawnX, y: laneY(lane))
         enemy.zPosition = 10 + CGFloat(tuning.lanes - lane)
         addChild(enemy)
         enemies[spec.id] = enemy
         enemy.appear()
+        return enemy
     }
+
+    // MARK: - 防御道具
+
+    /// 这一路上的防御道具（种下的坚果、土豆雷，和放下的铁栅门）
+    private func guards(inLane lane: Int) -> [DefenderNode] {
+        defenders.values.filter { $0.lane == lane && $0.guardian != nil } + barricades.filter { $0.lane == lane }
+    }
+
+    /// 怪物前方最近、会挡住它的防御道具
+    private func blocker(for enemy: EnemyNode) -> DefenderNode? {
+        guards(inLane: enemy.lane)
+            .filter {
+                $0.position.x < enemy.position.x
+                    && $0.guardian?.blocks(enemy, vaulting: tuning.wallsCanBeVaulted) == true
+            }
+            .max { $0.position.x < $1.position.x }
+    }
+
+    /// 往前走一步；碰上防御道具就停在它面前啃，啃掉 seconds 秒耐久
+    private func move(_ enemy: EnemyNode, by step: CGFloat, chew seconds: Double) {
+        guard let blocker = blocker(for: enemy), enemy.position.x - step <= blocker.position.x + contactGap else {
+            enemy.position.x -= step
+            stopChewing(enemy)
+            return
+        }
+        enemy.position.x = blocker.position.x + contactGap
+        enemy.setChewing(true)
+        chewing[enemy.enemyID] = blocker
+        chew(blocker, seconds: seconds)
+    }
+
+    private func stopChewing(_ enemy: EnemyNode) {
+        enemy.setChewing(false)
+        chewing[enemy.enemyID] = nil
+    }
+
+    private func chew(_ blocker: DefenderNode, seconds: Double) {
+        guard let guardian = blocker.guardian, seconds > 0 else { return }
+        blocker.showDurability(guardian.chew(seconds))
+        if guardian.isSpent { remove(blocker, exploded: false) }
+    }
+
+    /// 防御道具碎了或炸了：从场上拿掉，空出格子；正在啃它的怪物接着走
+    private func remove(_ guardNode: DefenderNode, exploded: Bool) {
+        if let cell = defenders.first(where: { $0.value === guardNode })?.key {
+            defenders[cell] = nil
+        }
+        let wasBarricade = barricades.contains { $0 === guardNode }
+        barricades.removeAll { $0 === guardNode }
+        for (id, blocker) in chewing where blocker === guardNode {
+            chewing[id] = nil
+            enemies[id]?.setChewing(false)
+        }
+        if exploded { guardNode.explode() } else { guardNode.crumble() }
+        if wasBarricade { gameDelegate?.barricadeRemoved() }
+    }
+
+    /// 出土的土豆雷被踩到就炸：普通怪物直接倒下，首领只扣血并被弹开
+    private func triggerMines(under enemy: EnemyNode) {
+        for mine in guards(inLane: enemy.lane) where abs(mine.position.x - enemy.position.x) <= contactGap {
+            guard let damage = mine.guardian?.trigger(isBoss: enemy.kind == tuning.waves.boss,
+                                                      health: enemy.health.current) else { continue }
+            remove(mine, exploded: true)
+            InkBurstEffect(color: UnitColor.coral.fill, scale: 1.3, count: 12).play(at: mine.position, in: self)
+            blast(enemy, damage: damage)
+            return
+        }
+    }
+
+    /// 不经过答题直接受到伤害（土豆雷）
+    private func blast(_ enemy: EnemyNode, damage: Int) {
+        let id = enemy.enemyID
+        enemy.flash()
+        guard enemy.health.take(damage) else {
+            enemy.showWound()
+            stopChewing(enemy)
+            enemy.knockBack(70)
+            return
+        }
+        enemy.doomed = true
+        enemy.setTargeted(false)
+        stopChewing(enemy)
+        enemies[id] = nil
+        if targetID == id { targetID = nil }
+        enemy.defeat(with: loadout.defeat(for: enemy.kind), burnt: true)
+        gameDelegate?.enemyDefeated(id, at: enemy.center)
+    }
+
+    /// 孩子答对一题：埋着的土豆雷往出土再近一步。返回有没有土豆雷刚出土
+    @discardableResult
+    func noteCorrectAnswer() -> Bool {
+        var armed = false
+        for defender in defenders.values where defender.guardian?.correctAnswer() == true {
+            defender.arm()
+            armed = true
+            play(FloatingTextEffect(text: "土豆雷出土了", color: Palette.jadeDark, fontSize: 26),
+                 at: CGPoint(x: defender.position.x, y: defender.position.y + 54))
+        }
+        return armed
+    }
+
+    /// 在这只怪物面前落下一道路障（铁栅门）。怪物不在场上时不放
+    @discardableResult
+    func dropBarricade(_ kind: DefenderKind, before id: Int) -> Bool {
+        guard !gamePaused, kind.guardStyle != nil, let enemy = enemies[id], !enemy.doomed else { return false }
+        let x = max(baseX + 40, enemy.position.x - contactGap - 6)
+        let gate = DefenderNode(kind: kind, radius: min(34, laneHeight * 0.32))
+        gate.lane = enemy.lane
+        gate.position = CGPoint(x: x, y: laneY(enemy.lane) + 120)
+        gate.zPosition = 5
+        gate.alpha = 0
+        addChild(gate)
+        barricades.append(gate)
+        gate.run(.group([
+            .moveTo(y: laneY(enemy.lane), duration: 0.22),
+            .fadeIn(withDuration: 0.15),
+        ]))
+        // 怪物已经贴得很近时往后挪一点，正好停在门前
+        if enemy.position.x < x + contactGap { enemy.position.x = x + contactGap }
+        return true
+    }
+
+    /// 场上还有几道路障
+    var barricadeCount: Int { barricades.count }
 
     /// 选右半边怪物最少的路，避免挤在一起
     private func chooseLane() -> Int {
@@ -219,7 +362,10 @@ final class GameScene: SKScene {
               cell.column >= 0, cell.column < Lawn.columns,
               defenders[cell] == nil else { return false }
         let defender = DefenderNode(kind: kind, radius: min(34, laneHeight * 0.32), skin: loadout.defenderSkin)
-        IceCombatEffects.decorate(defender, projectile: loadout.projectile(for: kind), radius: min(34, laneHeight * 0.32))
+        if kind.canShoot {
+            IceCombatEffects.decorate(defender, projectile: loadout.projectile(for: kind), radius: min(34, laneHeight * 0.32))
+        }
+        defender.lane = cell.lane
         defender.position = CGPoint(x: lawn.columnX(cell.column), y: laneY(cell.lane))
         defender.zPosition = 5
         defender.setScale(0.2)
@@ -271,10 +417,10 @@ final class GameScene: SKScene {
         return node
     }
 
-    /// 当前瞄准的怪物所在路是否有字灵可以发射
+    /// 当前瞄准的怪物所在路是否有字灵可以发射（防御道具不算）
     func canAttack(_ id: Int) -> Bool {
         guard let enemy = enemies[id], !enemy.doomed else { return false }
-        return defenders.keys.contains { $0.lane == enemy.lane }
+        return defenders.contains { $0.key.lane == enemy.lane && $0.value.canShoot }
     }
 
     /// 当前路上的字灵攻击这只怪物，返回它是否被打败（nil 表示怪物已不在场上）。
@@ -285,9 +431,9 @@ final class GameScene: SKScene {
             return nil
         }
         guard let defender = defenders
-            .filter({ $0.key.lane == enemy.lane })
+            .filter({ $0.key.lane == enemy.lane && $0.value.canShoot })
             .max(by: { $0.value.position.x < $1.value.position.x })?
-            .value else { return nil }
+            .value, let attack = defender.attack else { return nil }
         // 一次正确作答只推进一次攻击，怪物血量就是还要答对的题数。
         let damage = overwhelming ? enemy.health.current : 1
         let defeated = enemy.health.take(damage)
@@ -300,7 +446,7 @@ final class GameScene: SKScene {
         defender.shoot()
         // 子弹从嘴里平着飞出去，打在僵尸身上同样的高度
         let target = CGPoint(x: enemy.position.x, y: defender.muzzle.y)
-        defender.attack.perform(from: defender.muzzle, to: target, projectile: loadout.projectile(for: defender.kind), in: self) {
+        attack.perform(from: defender.muzzle, to: target, projectile: loadout.projectile(for: defender.kind), in: self) {
             [weak self, weak enemy] isFinal in
             guard let self, let enemy, enemy.parent != nil else { return }
             enemy.flash()
@@ -330,8 +476,14 @@ final class GameScene: SKScene {
         WordCardEffect(card: card).play(at: point ?? CGPoint(x: size.width / 2, y: size.height / 2), in: self)
     }
 
+    /// 答错：怪物往前冲一段；被挡住时改为狠咬一口防御道具
     func penalize(_ id: Int) {
-        enemies[id]?.lunge()
+        guard let enemy = enemies[id] else { return }
+        if enemy.isChewing, let blocker = chewing[id] {
+            blocker.shake()
+            chew(blocker, seconds: Self.wrongAnswerBite)
+        }
+        enemy.lunge()
     }
 
     /// 全场怪物一起消灭（大招）
@@ -381,8 +533,8 @@ final class GameScene: SKScene {
         speed = 1
     }
 
-    /// 已经布阵的路数和格子数
-    var plantedLaneCount: Int { Set(defenders.keys.map(\.lane)).count }
+    /// 已经布阵的路数（有射手的路）和格子数（含防御道具）
+    var plantedLaneCount: Int { Set(defenders.filter { $0.value.canShoot }.keys.map(\.lane)).count }
     var plantedCellCount: Int { defenders.count }
 
     /// 落点是否在本局可种的草坪上（不管格子有没有被占）

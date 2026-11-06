@@ -72,6 +72,9 @@ public enum SpeechText {
         public static let cellBlocked = "这里不能种，换个空的草坪位置"
         public static let won = "太棒了，书本守住了！"
         public static let lost = "没关系，再来一次吧！"
+        public static let gateDown = "铁栅门挡住僵尸啦，慢慢答"
+        public static let gateBusy = "铁栅门还在挡着呢"
+        public static let gateNoTarget = "僵尸来了再放铁栅门"
         /// 设置页试听用
         public static let sample = "你好，我们一起来认字吧！晨，早晨的晨。apple，苹果。"
         public static let englishSample = "Hello! Let's learn the word apple together. A-P-P-L-E, apple."
@@ -80,6 +83,7 @@ public enum SpeechText {
         public static func bought(_ name: String) -> String { "买到\(name)啦，已经换上了！" }
 
         /// 预先生成的固定提示语（试听句不在内）
-        static let all = [plantFirst, battleStart, notEnoughSun, cellTaken, cellBlocked, won, lost]
+        static let all = [plantFirst, battleStart, notEnoughSun, cellTaken, cellBlocked, won, lost,
+                          gateDown, gateBusy, gateNoTarget]
     }
 }
