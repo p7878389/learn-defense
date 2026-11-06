@@ -25,6 +25,8 @@ protocol GameSceneDelegate: AnyObject {
     /// 怪物被打败，point 是它倒下的位置
     func enemyDefeated(_ id: Int, at point: CGPoint)
     var speedFactor: Double { get }
+    /// 孩子正在写瞄准的这道输入题：这只怪物原地等着
+    var holdsTarget: Bool { get }
 }
 
 /// 游戏画面：负责怪物移动、瞄准、战斗结算和动画；答题规则在 GameSession 里。
@@ -132,7 +134,8 @@ final class GameScene: SKScene {
         }
 
         let speed = Double(spawnX - baseX) / tuning.crossSeconds * factor
-        for (id, enemy) in enemies where !enemy.doomed {
+        let held = delegate.holdsTarget ? targetID : nil
+        for (id, enemy) in enemies where !enemy.doomed && id != held {
             enemy.position.x -= enemy.advance(dt: dt, speed: speed * enemy.kind.speed)
             guard enemy.position.x <= baseX + 30 else { continue }
             if delegate.enemyReachedBase(id) {

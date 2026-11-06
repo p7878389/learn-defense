@@ -79,9 +79,32 @@ struct GeneratorTests {
                 // 每个知识点多出几次，覆盖随机到的不同题型
                 for _ in 0..<5 {
                     let q = try #require(generator.makeQuestion(for: item, using: &rng), "\(item.key)")
-                    #expect(q.options.count >= 2)
-                    #expect(q.options.count <= max(tuning.generator.optionCount, 3))
-                    #expect(Set(q.options).count == q.options.count, "选项重复：\(q.options)")
+                    if let spec = q.input {
+                        // 输入题：空格答案拼起来就是标准答案，模板里的 □ 和空格一一对应
+                        #expect(difficulty != .easy, "入门只出选择题")
+                        #expect(!spec.blanks.isEmpty)
+                        #expect(spec.blanks.allSatisfy { !$0.answer.isEmpty })
+                        #expect(q.options == [spec.answerText])
+                        #expect(spec.accepts(spec.blanks.map(\.answer)), "标准答案判不对：\(item.key)")
+                        // 每组字块里都要有足够的正确字块，并且至少有一块干扰
+                        for (g, group) in spec.groups.enumerated() {
+                            let needed = spec.blanks.filter { $0.group == g }.map(\.answer)
+                            var left = group.tiles
+                            for answer in needed {
+                                let i = try #require(left.firstIndex(of: answer), "缺字块 \(answer)：\(item.key)")
+                                left.remove(at: i)
+                            }
+                            #expect(!left.isEmpty, "没有干扰字块：\(item.key)")
+                        }
+                        if let template = spec.template {
+                            #expect(template.filter { $0 == "□" }.count == spec.blanks.count, "\(template)")
+                        }
+                        #expect(!spec.hint.isEmpty)
+                    } else {
+                        #expect(q.options.count >= 2)
+                        #expect(q.options.count <= max(tuning.generator.optionCount, 3))
+                        #expect(Set(q.options).count == q.options.count, "选项重复：\(q.options)")
+                    }
                     #expect(q.itemKey == item.key)
                     let card = try #require(q.card, "答对后要有单词卡：\(item.key)")
                     #expect(!card.text.isEmpty)

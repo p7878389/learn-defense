@@ -51,7 +51,8 @@ public struct GameTuning: Sendable {
                 ultimateEnergy: 4,
                 ultimate: .rainbow,
                 generator: GeneratorSettings(
-                    optionCount: [2, 3, 3][i], strategy: .easy, showHint: true, preschool: true),
+                    optionCount: [2, 3, 3][i], strategy: .easy, showHint: true, preschool: true,
+                    answerMix: .make(for: difficulty)),
                 lineup: [.starling, .inkling, .frost],
                 // 幼儿园的怪物都只要答对一次
                 waves: WavePlan(mix: [
@@ -66,7 +67,8 @@ public struct GameTuning: Sendable {
             return GameTuning(
                 lanes: 5, questions: questions, crossSeconds: 30, spawnInterval: 7, hearts: 5,
                 startingSun: 250, ultimateEnergy: 5, ultimate: .inkStorm,
-                generator: GeneratorSettings(optionCount: 3, strategy: .easy, showHint: true, preschool: false),
+                generator: GeneratorSettings(optionCount: 3, strategy: .easy, showHint: true, preschool: false,
+                                              answerMix: .make(for: difficulty)),
                 lineup: lineup,
                 waves: WavePlan(mix: [
                     WavePlan.Entry(.blob, weight: 4),
@@ -77,7 +79,8 @@ public struct GameTuning: Sendable {
             return GameTuning(
                 lanes: 5, questions: questions, crossSeconds: 22, spawnInterval: 5.5, hearts: 3,
                 startingSun: 300, ultimateEnergy: 5, ultimate: .inkStorm,
-                generator: GeneratorSettings(optionCount: 4, strategy: .normal, showHint: false, preschool: false),
+                generator: GeneratorSettings(optionCount: 4, strategy: .normal, showHint: false, preschool: false,
+                                              answerMix: .make(for: difficulty)),
                 lineup: lineup,
                 waves: WavePlan(mix: [
                     WavePlan.Entry(.blob, weight: 4),
@@ -89,7 +92,8 @@ public struct GameTuning: Sendable {
             return GameTuning(
                 lanes: 5, questions: questions, crossSeconds: 16, spawnInterval: 4.2, hearts: 3,
                 startingSun: 350, ultimateEnergy: 5, ultimate: .inkStorm,
-                generator: GeneratorSettings(optionCount: 4, strategy: .hard, showHint: false, preschool: false),
+                generator: GeneratorSettings(optionCount: 4, strategy: .hard, showHint: false, preschool: false,
+                                              answerMix: .make(for: difficulty)),
                 lineup: lineup,
                 waves: WavePlan(mix: [
                     WavePlan.Entry(.blob, weight: 3),

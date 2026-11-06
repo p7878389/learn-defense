@@ -31,6 +31,14 @@ public struct AnswerRecord: Sendable, Equatable {
         responseMs = shownAt.map { max(0, Int(answeredAt.timeIntervalSince($0) * 1000)) }
         self.answeredAt = answeredAt
     }
+
+    /// 输入题：记下孩子写的内容
+    public init(question: Question, typed: String, correct: Bool, ultimate: Bool, shownAt: Date?, answeredAt: Date) {
+        self.init(question: question, chosenIndex: nil, ultimate: ultimate, shownAt: shownAt, answeredAt: answeredAt)
+        chosen = typed
+        self.correct = correct
+        missed = false
+    }
 }
 
 /// 一局结束时的统计
@@ -121,6 +129,13 @@ public final class GameRecorder {
                              shownAt: Date?, at date: Date = Date()) {
         guard record == nil else { return }
         answers.append(AnswerRecord(question: question, chosenIndex: chosenIndex, ultimate: ultimate,
+                                    shownAt: shownAt, answeredAt: date))
+    }
+
+    public func recordAnswer(_ question: Question, typed: String, correct: Bool, ultimate: Bool = false,
+                             shownAt: Date?, at date: Date = Date()) {
+        guard record == nil else { return }
+        answers.append(AnswerRecord(question: question, typed: typed, correct: correct, ultimate: ultimate,
                                     shownAt: shownAt, answeredAt: date))
     }
 

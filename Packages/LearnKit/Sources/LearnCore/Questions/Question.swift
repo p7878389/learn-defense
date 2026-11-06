@@ -62,6 +62,8 @@ public struct Question: Identifiable, Sendable {
     public var explanation: String?
     /// 答对后弹出的单词卡
     public var card: WordCard?
+    /// 输入题的空格；nil 是选择题。输入题的 options 只有一个元素，就是拼好的标准答案
+    public var input: InputSpec?
 
     public var answer: String { options[answerIndex] }
 
@@ -78,7 +80,8 @@ public struct Question: Identifiable, Sendable {
         promptSpeech: String? = nil,
         answerSpeech: String? = nil,
         explanation: String? = nil,
-        card: WordCard? = nil
+        card: WordCard? = nil,
+        input: InputSpec? = nil
     ) {
         self.kind = kind
         self.itemKey = itemKey
@@ -93,5 +96,6 @@ public struct Question: Identifiable, Sendable {
         self.answerSpeech = answerSpeech
         self.explanation = explanation
         self.card = card
+        self.input = input
     }
 }
