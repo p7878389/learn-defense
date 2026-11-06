@@ -35,7 +35,7 @@ struct GameView: View {
 
     private var seedPackets: some View {
         SeedPacketStrip(
-            kinds: session.tuning.lineup,
+            kinds: session.tuning.plantable,
             sun: session.sun,
             enabled: session.canUseShop,
             draggingID: activeDrag?.kind.id,
@@ -52,7 +52,10 @@ struct GameView: View {
                 }
                 session.previewSeed(at: nil)
                 activeDrag = nil
-            })
+            },
+            barricade: session.tuning.barricade,
+            barricadeEnabled: session.canDropBarricade,
+            onBarricade: { session.dropBarricade() })
             .background(
                 GeometryReader { proxy in
                     Color.clear.onChange(of: proxy.frame(in: .named("gameLayout")), initial: true) { _, frame in
@@ -118,7 +121,9 @@ struct GameView: View {
                                     if let sample = session.layoutSample {
                                         AnswerPanel(
                                             question: sample,
-                                            wrongPicks: Set(sample.options.indices.filter { $0 != sample.answerIndex }.prefix(1)),
+                                            // 字块题按答错一次量（多一行提示）
+                                            wrongPicks: sample.input != nil ? [1]
+                                                : Set(sample.options.indices.filter { $0 != sample.answerIndex }.prefix(1)),
                                             onAnswer: { _ in },
                                             onReplay: {})
                                             .fixedSize(horizontal: false, vertical: true)
@@ -148,7 +153,9 @@ struct GameView: View {
                                     question: session.current,
                                     wrongPicks: session.wrongPicks,
                                     onAnswer: session.answer,
-                                    onReplay: session.replayPrompt)
+                                    onReplay: session.replayPrompt,
+                                    onStartInput: { session.setTyping(true) },
+                                    onSubmitInput: session.answerInput)
                                 .disabled(session.phase != .playing || session.ultimate != nil)
                             }
                             .modifier(MaxHeightReader(height: $answerPanelHeight))
@@ -175,7 +182,8 @@ struct GameView: View {
                     question: question,
                     wrongPicks: session.ultimateWrongPicks,
                     onAnswer: session.answerUltimate,
-                    onReplay: session.replayPrompt)
+                    onReplay: session.replayPrompt,
+                    onCancel: session.cancelUltimate)
             }
 
             if session.phase == .paused {
@@ -413,15 +421,30 @@ struct UltimateOverlay: View {
     let wrongPicks: Set<Int>
     let onAnswer: (Int) -> Void
     let onReplay: () -> Void
+    /// 点空白处或「先不放了」：取消这次大招
+    let onCancel: () -> Void
 
     var body: some View {
         ZStack {
             Color.black.opacity(0.45).ignoresSafeArea()
+                .contentShape(Rectangle())
+                .onTapGesture(perform: onCancel)
+                .accessibilityAddTraits(.isButton)
+                .accessibilityLabel("取消大招")
             VStack(spacing: 20) {
                 Text(title)
                     .font(.system(size: 34, weight: .heavy, design: .rounded))
                     .foregroundStyle(Theme.accent)
                 AnswerPanel(question: question, wrongPicks: wrongPicks, onAnswer: onAnswer, onReplay: onReplay)
+                Button(action: onCancel) {
+                    Label("先不放了", systemImage: "xmark.circle.fill")
+                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .foregroundStyle(Theme.muted)
+                }
+                .buttonStyle(.plain)
+                Text(wrongPicks.isEmpty ? "点空白处也能取消，能量会留着" : "已经答错过，取消后这次能量就用掉了")
+                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .foregroundStyle(Theme.muted)
             }
             .padding(32)
             .frame(maxWidth: 900)

@@ -65,17 +65,46 @@ public extension DefenderKind {
         projectile: ProjectileLook(shape: .star, color: .gold, size: 14))
 }
 
+// MARK: - 内置防御道具（不发射，用来拦僵尸、多给答题时间）
+
+public extension DefenderKind {
+    static let wallnut = DefenderKind(
+        id: "wallnut", name: "坚果墙", sunCost: 50,
+        guardStyle: .wall(seconds: 15, tall: false),
+        look: DefenderLook(body: .round, color: .gold))
+
+    static let tallnut = DefenderKind(
+        id: "tallnut", name: "高坚果", sunCost: 125,
+        guardStyle: .wall(seconds: 30, tall: true),
+        look: DefenderLook(body: .drop, color: .gold))
+
+    static let potato = DefenderKind(
+        id: "potato", name: "土豆雷", sunCost: 25,
+        guardStyle: .mine(armAfter: 2, bossDamage: 1),
+        look: DefenderLook(body: .round, color: .coral, accessory: .leaf))
+
+    /// 战斗中点一下就用：落在正在答题的僵尸面前，不占种植格
+    static let ironGate = DefenderKind(
+        id: "ironGate", name: "铁栅门", sunCost: 75,
+        guardStyle: .wall(seconds: 10, tall: true),
+        look: DefenderLook(body: .gate, color: .ink))
+}
+
 /// 所有内置的怪物和字灵，按 id 查找
 public enum UnitCatalog {
     public static let enemies: [EnemyKind] = [.blob, .hopper, .dasher, .drowsy, .armored, .king]
-    public static let defenders: [DefenderKind] = [.inkling, .twin, .frost, .stroke, .starling]
+    /// 能种在草坪上的植物：射手和防御道具
+    public static let defenders: [DefenderKind] = [.inkling, .twin, .frost, .stroke, .starling,
+                                                   .wallnut, .tallnut, .potato]
+    /// 战斗中花阳光放下的路障，不占种植格
+    public static let barricades: [DefenderKind] = [.ironGate]
 
     public static func enemy(id: String) -> EnemyKind? {
         enemies.first { $0.id == id }
     }
 
     public static func defender(id: String) -> DefenderKind? {
-        defenders.first { $0.id == id }
+        (defenders + barricades).first { $0.id == id }
     }
 }
 

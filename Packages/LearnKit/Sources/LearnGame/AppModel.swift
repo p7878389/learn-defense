@@ -12,37 +12,48 @@ public final class AppModel: ObservableObject {
 
     /// 成长系统配置（节奏、徽章、外观），来自 LearnCore 内置 JSON
     let growthCatalog = GrowthCatalog.bundled
-    let gameRules: GameRules
+    @Published private(set) var gameRules: GameRules
+    @Published private(set) var readerPreferences: ReaderPreferences
+    private var allowsLegacyMigration = true
 
-    private let profileStore: ProfileStore
+    private var profileStore: ProfileStore
     private var progressStores: [UUID: ProgressStore] = [:]
     private var growthStores: [UUID: GrowthStore] = [:]
     /// 本地数据库；打不开时为 nil，档案和记录只留在内存里，并在主页提示
     let database: LearnDatabase?
     private var databaseIssues: [String] = []
 
-    public init() {
+    public convenience init() {
         let database: LearnDatabase?
         var issues: [String] = []
-        do {
-            database = try LearnDatabase(url: AppPaths.databaseFile)
-        } catch {
+        do { database = try LearnDatabase(url: AppPaths.databaseFile) }
+        catch {
             database = nil
             issues.append("本地数据库打开失败，本次的档案、成长和学习记录不会保存：\(error.localizedDescription)")
         }
+        self.init(database: database, library: Self.loadLibrary(database: database),
+                  speechLibrary: SpeechLibrary(database: database))
+        databaseIssues += issues
+    }
+
+    /// 明确注入存储和语音资源，便于使用独立数据环境及离线预览。
+    init(database: LearnDatabase?, library: ContentLibrary, speechLibrary: SpeechLibrary) {
         self.database = database
-        do {
-            gameRules = try database?.gameRules() ?? .defaults
-        } catch {
+        self.library = library
+        self.speechLibrary = speechLibrary
+        var issues: [String] = []
+        do { gameRules = try database?.gameRules() ?? .defaults }
+        catch {
             gameRules = .defaults
             issues.append("运行规则读取失败，使用默认值：\(error.localizedDescription)")
         }
+        allowsLegacyMigration = !((try? database?.setting(named: "legacy-disabled", fallback: false)) ?? false)
+        readerPreferences = ((try? database?.setting(named: "reader-preferences", fallback: ReaderPreferences())) ?? ReaderPreferences()).validated()
         databaseIssues = issues
-        speechLibrary = SpeechLibrary(database: database)
         speech = Speech(library: speechLibrary)
-        profileStore = ProfileStore(database: database, legacyFile: AppPaths.profilesFile)
+        profileStore = ProfileStore(database: database, legacyFile: allowsLegacyMigration ? AppPaths.profilesFile : nil)
         profiles = profileStore.profiles
-        library = Self.loadLibrary(database: database)
+        speech.apply(readerPreferences)
         syncConfig()
         prepareSpeech()
     }
@@ -106,7 +117,8 @@ public final class AppModel: ObservableObject {
         let store = ProgressStore(
             profileID: profileID,
             database: database,
-            legacyFile: AppPaths.progressFile(for: profileID)
+            legacyFile: allowsLegacyMigration && !((try? database?.setting(named: "reset-learning-" + profileID.uuidString, fallback: false)) ?? false)
+                ? AppPaths.progressFile(for: profileID) : nil
         )
         progressStores[profileID] = store
         return store
@@ -118,7 +130,7 @@ public final class AppModel: ObservableObject {
         let store = GrowthStore(
             profileID: profileID,
             database: database,
-            legacyFile: AppPaths.growthFile(for: profileID),
+            legacyFile: allowsLegacyMigration ? AppPaths.growthFile(for: profileID) : nil,
             catalog: growthCatalog, rules: gameRules
         ) { [unowned self] in
             progress(for: profileID).stats.values.reduce(0) { $0 + $1.correct }
@@ -164,6 +176,73 @@ public final class AppModel: ObservableObject {
     func unequip(key: String, for profileID: UUID) {
         growth(for: profileID).unequip(key: key)
         objectWillChange.send()
+    }
+
+
+    func updateReader(_ preferences: ReaderPreferences) throws {
+        guard let database else { throw SettingsError.invalid("数据库不可用，无法保存设置") }
+        let value = preferences.validated()
+        try database.saveSetting(value, named: "reader-preferences")
+        readerPreferences = value
+        speech.apply(value)
+        prepareSpeech()
+    }
+
+    func updateRules(_ rules: GameRules) throws {
+        guard let database else { throw SettingsError.invalid("数据库不可用，无法保存设置") }
+        try database.saveGameRules(rules)
+        gameRules = rules.validated()
+        growthStores.removeAll()
+    }
+
+    func reloadPersonalState() throws {
+        guard let database else { throw SettingsError.invalid("数据库不可用") }
+        speech.stop()
+        profileStore = ProfileStore(database: database)
+        profiles = profileStore.profiles
+        progressStores.removeAll()
+        growthStores.removeAll()
+        gameRules = try database.gameRules()
+        readerPreferences = try database.setting(named: "reader-preferences", fallback: ReaderPreferences()).validated()
+        speech.apply(readerPreferences)
+        reloadLibrary()
+    }
+
+    func resetLearning(_ profile: Profile) throws {
+        guard let database else { throw SettingsError.invalid("数据库不可用") }
+        try database.resetLearning(profileID: profile.id)
+        progressStores[profile.id] = nil
+        objectWillChange.send()
+    }
+
+    func restoreBackup(_ archive: SettingsBackup) throws {
+        guard let database else { throw SettingsError.invalid("数据库不可用") }
+        try SettingsFiles.restore(archive, database: database, packsDirectory: AppPaths.userPacksDirectory)
+        allowsLegacyMigration = false
+        try reloadPersonalState()
+    }
+
+    func resetAll(keepingPacks: Bool) throws {
+        guard let database else { throw SettingsError.invalid("数据库不可用") }
+        let archive = SettingsBackup(children: [], games: [], settings: [:], importedPacks: [])
+        if keepingPacks {
+            try database.restore(archive)
+        } else {
+            try SettingsFiles.restore(archive, database: database, packsDirectory: AppPaths.userPacksDirectory)
+        }
+        try database.saveSetting(true, named: "legacy-disabled")
+        allowsLegacyMigration = false
+        speechLibrary.clear()
+        let legacyFiles = [
+            AppPaths.profilesFile, AppPaths.migratedBackup(for: AppPaths.profilesFile),
+            AppPaths.profilesFile.appendingPathExtension("bak"),
+            AppPaths.dataDirectory.appendingPathComponent("progress"),
+            AppPaths.dataDirectory.appendingPathComponent("growth")
+        ]
+        for file in legacyFiles where FileManager.default.fileExists(atPath: file.path) {
+            try FileManager.default.removeItem(at: file)
+        }
+        try reloadPersonalState()
     }
 
     /// 题库和成长配置里的问题，显示在主页

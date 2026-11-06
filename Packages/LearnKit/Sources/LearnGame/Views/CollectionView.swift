@@ -99,7 +99,8 @@ struct CollectionView: View {
         let grade = model.profiles.first { $0.id == profileID }?.grade
         let playable = grade.map { Set(GameTuning.defenders(for: $0).map(\.id)) }
         return HStack(spacing: 10) {
-            ForEach(UnitCatalog.defenders, id: \.id) { kind in
+            // 只列会射击的植物；坚果墙、土豆雷这类防御植物没有射手皮肤
+            ForEach(UnitCatalog.defenders.filter(\.canShoot), id: \.id) { kind in
                 let selected = shooter == kind.id
                 let worn = loadout.defenderSkins[kind.id]
                 let wornName = worn.flatMap { skin in

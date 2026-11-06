@@ -79,9 +79,32 @@ struct GeneratorTests {
                 // 每个知识点多出几次，覆盖随机到的不同题型
                 for _ in 0..<5 {
                     let q = try #require(generator.makeQuestion(for: item, using: &rng), "\(item.key)")
-                    #expect(q.options.count >= 2)
-                    #expect(q.options.count <= max(tuning.generator.optionCount, 3))
-                    #expect(Set(q.options).count == q.options.count, "选项重复：\(q.options)")
+                    if let spec = q.input {
+                        // 输入题：空格答案拼起来就是标准答案，模板里的 □ 和空格一一对应
+                        #expect(difficulty != .easy, "入门只出选择题")
+                        #expect(!spec.blanks.isEmpty)
+                        #expect(spec.blanks.allSatisfy { !$0.answer.isEmpty })
+                        #expect(q.options == [spec.answerText])
+                        #expect(spec.accepts(spec.blanks.map(\.answer)), "标准答案判不对：\(item.key)")
+                        // 每组字块里都要有足够的正确字块，并且至少有一块干扰
+                        for (g, group) in spec.groups.enumerated() {
+                            let needed = spec.blanks.filter { $0.group == g }.map(\.answer)
+                            var left = group.tiles
+                            for answer in needed {
+                                let i = try #require(left.firstIndex(of: answer), "缺字块 \(answer)：\(item.key)")
+                                left.remove(at: i)
+                            }
+                            #expect(!left.isEmpty, "没有干扰字块：\(item.key)")
+                        }
+                        if let template = spec.template {
+                            #expect(template.filter { $0 == "□" }.count == spec.blanks.count, "\(template)")
+                        }
+                        #expect(!spec.hint.isEmpty)
+                    } else {
+                        #expect(q.options.count >= 2)
+                        #expect(q.options.count <= max(tuning.generator.optionCount, 3))
+                        #expect(Set(q.options).count == q.options.count, "选项重复：\(q.options)")
+                    }
                     #expect(q.itemKey == item.key)
                     let card = try #require(q.card, "答对后要有单词卡：\(item.key)")
                     #expect(!card.text.isEmpty)
@@ -197,7 +220,39 @@ struct UnitTests {
         #expect(UnitCatalog.defender(id: "frost") == .frost)
         #expect(Set(UnitCatalog.enemies.map(\.hp)) == [1, 2, 3])
         #expect(UnitCatalog.enemies.allSatisfy { $0.sunReward == $0.hp * 25 })
-        #expect(UnitCatalog.defenders.allSatisfy { $0.sunCost >= 50 })
+        #expect(UnitCatalog.defenders.filter(\.canShoot).allSatisfy { $0.sunCost >= 50 })
+        // 防御道具不发射，土豆雷最便宜
+        #expect(UnitCatalog.defenders.allSatisfy { $0.sunCost >= 25 })
+        #expect((UnitCatalog.defenders + UnitCatalog.barricades).allSatisfy { $0.canShoot != ($0.guardStyle != nil) })
+        #expect(UnitCatalog.defender(id: "ironGate") == .ironGate)
+        #expect(EnemyKind.hopper.canVault && !EnemyKind.blob.canVault)
+    }
+
+    @Test func guardNumbersFollowDifficulty() {
+        func wall(_ tuning: GameTuning, _ id: String) -> Double? {
+            guard case let .wall(seconds, _) = tuning.guards.first(where: { $0.id == id })?.guardStyle else { return nil }
+            return seconds
+        }
+        func mine(_ tuning: GameTuning) -> Int? {
+            guard case let .mine(armAfter, _) = tuning.guards.first(where: { $0.id == "potato" })?.guardStyle else { return nil }
+            return armAfter
+        }
+        let preschool = GameTuning.make(grade: .k3, difficulty: .normal)
+        let normal = GameTuning.make(grade: .g2, difficulty: .normal)
+        let hard = GameTuning.make(grade: .g2, difficulty: .hard)
+        #expect(preschool.guards.map(\.id) == ["wallnut", "potato"])
+        #expect(normal.guards.map(\.id) == ["wallnut", "tallnut", "potato"])
+        #expect(wall(preschool, "wallnut") == 20 && mine(preschool) == 1)
+        #expect(wall(normal, "wallnut") == 15 && wall(normal, "tallnut") == 30 && mine(normal) == 2)
+        #expect(wall(hard, "wallnut") == 12 && wall(hard, "tallnut") == 25 && mine(hard) == 3)
+        #expect(preschool.barricade == nil)
+        guard case let .wall(gate, tall) = hard.barricade?.guardStyle else {
+            Issue.record("小学应提供铁栅门")
+            return
+        }
+        #expect(gate == 8 && tall)
+        #expect(normal.plantable.map(\.id) == normal.lineup.map(\.id) + ["wallnut", "tallnut", "potato"])
+        #expect(normal.guards.allSatisfy { !$0.canShoot })
     }
 
     /// 不管哪种走法，平均速度都要等于设定值，否则「多少秒走到书架」的难度就不准了

@@ -50,7 +50,7 @@ struct CharacterSkinTests {
     /// 每种射手一个装备位；豌豆射手沿用旧键，老存档照常生效
     @Test func eachShooterHasItsOwnSlot() throws {
         let catalog = GrowthCatalog.bundled
-        for kind in UnitCatalog.defenders {
+        for kind in UnitCatalog.defenders where kind.canShoot {
             let skins = catalog.shooterSkins(for: kind.id)
             #expect(skins.contains { $0.isOriginal }, "\(kind.id) 缺原版")
             #expect(Set(skins.map(\.equipKey)).count == 1)
@@ -84,7 +84,7 @@ struct CharacterSkinTests {
 
     @Test func shootersOnFieldFollowGrade() {
         #expect(GameTuning.defenders(for: .k2).map(\.id) == ["inkling", "frost", "starling"])
-        #expect(GameTuning.defenders(for: .g3).map(\.id) == UnitCatalog.defenders.map(\.id))
+        #expect(GameTuning.defenders(for: .g3).filter(\.canShoot).map(\.id) == UnitCatalog.defenders.filter(\.canShoot).map(\.id))
     }
 
     @Test func wrongSlotPayloadIsRejected() throws {

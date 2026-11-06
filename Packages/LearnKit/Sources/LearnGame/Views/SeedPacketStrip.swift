@@ -1,7 +1,7 @@
 import LearnCore
 import SwiftUI
 
-/// 阳光和植物卡：把卡牌拖到草坪空位种下。
+/// 阳光和植物卡：把卡牌拖到草坪空位种下。最后一张铁栅门卡点一下就放在正在答题的僵尸面前
 struct SeedPacketStrip: View {
     let kinds: [DefenderKind]
     let sun: Int
@@ -11,6 +11,12 @@ struct SeedPacketStrip: View {
     var skins: [String: CharacterSkin] = [:]
     let onDragChanged: (DefenderKind, CGPoint) -> Void
     let onDragEnded: (DefenderKind, CGPoint) -> Void
+    var barricade: DefenderKind? = nil
+    var barricadeEnabled = false
+    var onBarricade: () -> Void = {}
+
+    /// 卡牌多时窄一点，免得挡住右上角的按钮
+    private var cardWidth: CGFloat { kinds.count + (barricade == nil ? 0 : 1) > 7 ? 54 : 62 }
 
     var body: some View {
         HStack(spacing: 6) {
@@ -24,6 +30,9 @@ struct SeedPacketStrip: View {
 
             ForEach(kinds) { kind in
                 packet(for: kind)
+            }
+            if let barricade {
+                barricadePacket(for: barricade)
             }
         }
         .padding(6)
@@ -46,7 +55,7 @@ struct SeedPacketStrip: View {
                 .font(.system(size: 11, weight: .heavy, design: .rounded).monospacedDigit())
         }
         .foregroundStyle(Color(red: 0.20, green: 0.27, blue: 0.10))
-        .frame(width: 62, height: 58)
+        .frame(width: cardWidth, height: 58)
         .background(
             Color(red: affordable ? 0.94 : 0.72, green: affordable ? 0.88 : 0.72,
                   blue: affordable ? 0.62 : 0.68),
@@ -65,6 +74,58 @@ struct SeedPacketStrip: View {
         .allowsHitTesting(available)
         .accessibilityLabel("\(kind.name)，需要 \(kind.sunCost) 阳光")
         .accessibilityHint("拖到草坪空位种下")
+    }
+
+    private func barricadePacket(for kind: DefenderKind) -> some View {
+        let affordable = sun >= kind.sunCost
+        let available = barricadeEnabled && affordable
+        return Button(action: onBarricade) {
+            VStack(spacing: 0) {
+                GateIcon().frame(width: 30, height: 34).padding(.vertical, 1)
+                Text(kind.name)
+                    .font(.system(size: 9, weight: .bold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                Text("☀️\(kind.sunCost)")
+                    .font(.system(size: 11, weight: .heavy, design: .rounded).monospacedDigit())
+            }
+            .foregroundStyle(Color(red: 0.16, green: 0.18, blue: 0.22))
+            .frame(width: cardWidth, height: 58)
+            .background(
+                Color(red: affordable ? 0.82 : 0.70, green: affordable ? 0.86 : 0.70, blue: affordable ? 0.90 : 0.70),
+                in: RoundedRectangle(cornerRadius: 3))
+            .overlay(
+                RoundedRectangle(cornerRadius: 3)
+                    .stroke(Color(red: 0.25, green: 0.28, blue: 0.33), lineWidth: 2))
+        }
+        .buttonStyle(.plain)
+        .opacity(available ? 1 : 0.52)
+        .disabled(!available)
+        .accessibilityLabel("\(kind.name)，需要 \(kind.sunCost) 阳光")
+        .accessibilityHint("点一下，挡住正在答题的僵尸")
+    }
+}
+
+/// 卡牌上的铁栅门：两道横梁、四根竖栏
+private struct GateIcon: View {
+    var body: some View {
+        Canvas { context, size in
+            let w = size.width, h = size.height
+            let metal = GraphicsContext.Shading.color(Color(white: 0.45))
+            for y in [h * 0.28, h * 0.72] {
+                context.fill(Path(CGRect(x: 0, y: y, width: w, height: h * 0.09)), with: metal)
+            }
+            for i in 0..<4 {
+                let x = w * (CGFloat(i) + 0.5) / 4 - w * 0.05
+                context.fill(Path(CGRect(x: x, y: h * 0.12, width: w * 0.1, height: h * 0.88)), with: metal)
+                var tip = Path()
+                tip.move(to: CGPoint(x: x - w * 0.03, y: h * 0.13))
+                tip.addLine(to: CGPoint(x: x + w * 0.05, y: 0))
+                tip.addLine(to: CGPoint(x: x + w * 0.13, y: h * 0.13))
+                tip.closeSubpath()
+                context.fill(tip, with: metal)
+            }
+        }
     }
 }
 

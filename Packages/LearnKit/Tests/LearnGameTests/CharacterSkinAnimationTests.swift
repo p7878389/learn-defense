@@ -129,7 +129,7 @@ struct CharacterSkinAnimationTests {
     /// 收藏馆试穿：每种皮肤、每个角色的舞台身份各不相同，切换时 SpriteView 才会换成新场景
     @Test func previewStageIdentityFollowsSkinAndRole() {
         let skins: [CharacterSkin?] = [nil] + CharacterSkin.allCases.map { Optional($0) }
-        let ids = UnitCatalog.defenders.flatMap { kind in skins.map { CharacterSkinPreview.stageID(kind: kind, skin: $0, enemy: false) } }
+        let ids = UnitCatalog.defenders.filter(\.canShoot).flatMap { kind in skins.map { CharacterSkinPreview.stageID(kind: kind, skin: $0, enemy: false) } }
             + skins.map { CharacterSkinPreview.stageID(skin: $0, enemy: true) }
         #expect(Set(ids).count == ids.count)
     }

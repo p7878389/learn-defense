@@ -310,7 +310,7 @@ struct CombatAnimationTests {
             zombie.position = CGPoint(x: 560, y: y)
             scene.addChild(zombie)
             plant.shoot()
-            plant.attack.perform(from: plant.muzzle, to: CGPoint(x: 560, y: plant.muzzle.y),
+            plant.attack?.perform(from: plant.muzzle, to: CGPoint(x: 560, y: plant.muzzle.y),
                                  projectile: kind.projectile, in: scene) { _ in }
         }
         // 下排：各种僵尸的啃咬、掉防具、倒下、烧焦
