@@ -174,7 +174,8 @@ struct GameView: View {
                     question: question,
                     wrongPicks: session.ultimateWrongPicks,
                     onAnswer: session.answerUltimate,
-                    onReplay: session.replayPrompt)
+                    onReplay: session.replayPrompt,
+                    onCancel: session.cancelUltimate)
             }
 
             if session.phase == .paused {
@@ -411,15 +412,30 @@ struct UltimateOverlay: View {
     let wrongPicks: Set<Int>
     let onAnswer: (Int) -> Void
     let onReplay: () -> Void
+    /// 点空白处或「先不放了」：取消这次大招
+    let onCancel: () -> Void
 
     var body: some View {
         ZStack {
             Color.black.opacity(0.45).ignoresSafeArea()
+                .contentShape(Rectangle())
+                .onTapGesture(perform: onCancel)
+                .accessibilityAddTraits(.isButton)
+                .accessibilityLabel("取消大招")
             VStack(spacing: 20) {
                 Text(title)
                     .font(.system(size: 34, weight: .heavy, design: .rounded))
                     .foregroundStyle(Theme.accent)
                 AnswerPanel(question: question, wrongPicks: wrongPicks, onAnswer: onAnswer, onReplay: onReplay)
+                Button(action: onCancel) {
+                    Label("先不放了", systemImage: "xmark.circle.fill")
+                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .foregroundStyle(Theme.muted)
+                }
+                .buttonStyle(.plain)
+                Text(wrongPicks.isEmpty ? "点空白处也能取消，能量会留着" : "已经答错过，取消后这次能量就用掉了")
+                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .foregroundStyle(Theme.muted)
             }
             .padding(32)
             .frame(maxWidth: 900)
