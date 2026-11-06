@@ -22,6 +22,7 @@ final class SpeechLibrary: ObservableObject {
     private var worker: Task<Void, Never>?
     /// 账号或参数有问题：停止生成，等家长改设置
     private var paused = false
+    private var generationEnabled = true
 
     init(
         database: LearnDatabase?,
@@ -39,7 +40,17 @@ final class SpeechLibrary: ObservableObject {
         [AppPaths.userPackAudioDirectory] + [Bundle.module.url(forResource: "Speech", withExtension: nil)].compactMap { $0 }
     }
 
-    var canGenerate: Bool { settings?.isUsable == true }
+    var canGenerate: Bool { generationEnabled && settings?.isUsable == true }
+
+    func setGenerationEnabled(_ enabled: Bool) {
+        generationEnabled = enabled
+        if !enabled {
+            worker?.cancel()
+            waiting.removeAll()
+            waitingKeys.removeAll()
+            pendingCount = 0
+        }
+    }
 
     // MARK: - 查找
 
@@ -127,7 +138,7 @@ final class SpeechLibrary: ObservableObject {
             }
             do {
                 let audio = try await client.synthesize(text)
-                guard self.settings == settings else { break }
+                guard self.settings == settings, !Task.isCancelled else { break }
                 try store(audio, text: text, voice: settings.voiceTag)
                 failures = 0
                 lastError = nil
@@ -149,7 +160,7 @@ final class SpeechLibrary: ObservableObject {
         }
         worker = nil
         // 设置换了以后排进来的新任务
-        if !paused, self.settings != settings { startWorker() }
+        if canGenerate, !paused, !waiting.isEmpty { startWorker() }
     }
 
     private func store(_ audio: Data, text: String, voice: String) throws {
@@ -184,6 +195,7 @@ final class SpeechLibrary: ObservableObject {
 
     /// 清除账号设置和全部缓存，之后只用预先生成的音频和系统语音
     func clear() {
+        worker?.cancel()
         TTSKeychain.delete()
         settings = nil
         paused = false
