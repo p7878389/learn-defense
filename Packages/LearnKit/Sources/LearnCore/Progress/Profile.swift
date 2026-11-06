@@ -127,4 +127,15 @@ public enum AppPaths {
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir
     }
+
+    /// 题库自带的语音（Documents/Packs/Audio/<文本key>.mp3），和导入的题库 JSON 放在一起。
+    /// 不主动创建，没有就跳过
+    public static var userPackAudioDirectory: URL {
+        userPacksDirectory.appendingPathComponent("Audio", isDirectory: true)
+    }
+
+    /// 运行时生成的语音缓存（可以随时删，删了会重新生成）
+    public static var speechCacheDirectory: URL {
+        dataDirectory.appendingPathComponent("Speech", isDirectory: true)
+    }
 }
