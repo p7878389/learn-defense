@@ -5,7 +5,7 @@ import LearnCore
 @MainActor
 final class GameSession: ObservableObject {
     enum Phase: Equatable {
-        case preparing, playing, paused, won, lost
+        case preparing, playing, paused, resting, won, lost
     }
 
     struct Mistake: Identifiable {
@@ -18,6 +18,8 @@ final class GameSession: ObservableObject {
     }
 
     let config: GameConfig
+    let rules: GameRules
+    private let feedback = AnswerFeedback()
     let tuning: GameTuning
     let scene: GameScene
     let isEmpty: Bool
@@ -75,7 +77,20 @@ final class GameSession: ObservableObject {
     let loadout: Loadout
 
     /// 这一局依次出场的怪物种类
-    private let spawnPlan: [EnemyKind]
+    private var spawnPlan: [EnemyKind]
+    private let initialQuestions: Int
+    @Published private(set) var round = 1
+    @Published private(set) var roundQuestions: Int
+    @Published private(set) var roundResolved = 0
+    @Published private(set) var completedRounds = 0
+    @Published private(set) var roundScore = 0
+    @Published private(set) var roundAccuracy = 0.0
+    @Published private(set) var restRemaining = 0
+    @Published private(set) var questionIDs: [Int] = []
+    private var restUntil: Date?
+    private var roundStartScore = 0
+    private var roundStartAttempted = 0
+    private var roundStartCorrect = 0
     private var enemyKinds: [Int: EnemyKind] = [:]
     private var lastEnemyID = 0
     private var spawned = 0
@@ -92,6 +107,7 @@ final class GameSession: ObservableObject {
         let pacing = growth?.catalog.pacing ?? GrowthCatalog.bundled.pacing
         let tuning = GameTuning.make(grade: config.grade, difficulty: config.difficulty, pacing: pacing)
         self.config = config
+        rules = growth?.rules ?? .defaults
         self.tuning = tuning
         self.progress = progress
         self.speech = speech
@@ -101,11 +117,13 @@ final class GameSession: ObservableObject {
         generator = QuestionGenerator(pool: pool, settings: tuning.generator)
         hearts = tuning.hearts
         sun = tuning.startingSun
-        // 每局题量固定：按题量凑怪物，怪物血量之和就是题数；错题复习局按错题数定题量
+        // 首回合按年级/难度定题量，随后递增；怪物血量之和就是题数
         var questions = tuning.questions
         if case .review = config.selection {
             questions = pacing.reviewBudget(itemCount: pool.items.count, cap: questions)
         }
+        initialQuestions = questions
+        roundQuestions = questions
         var planRNG = SystemRandomNumberGenerator()
         spawnPlan = tuning.waves.kinds(questions: questions, using: &planRNG)
         totalEnemies = spawnPlan.count
@@ -129,7 +147,7 @@ final class GameSession: ObservableObject {
     }
 
     var canUseShop: Bool {
-        (phase == .preparing || phase == .playing) && ultimate == nil
+        (phase == .preparing || phase == .playing || phase == .resting) && ultimate == nil
     }
 
     var plantedLaneCount: Int {
@@ -155,6 +173,7 @@ final class GameSession: ObservableObject {
     func answer(_ index: Int) {
         guard phase == .playing, ultimate == nil, let id = targetID, let entry = enemyQuestions[id] else { return }
         let question = entry.question
+        guard question.options.indices.contains(index) else { return }
         var picks = enemyWrongPicks[id] ?? []
 
         if index == question.answerIndex {
@@ -174,16 +193,18 @@ final class GameSession: ObservableObject {
             } else {
                 score += 2
             }
-            speech.speak(question.answerSpeech, interrupt: true)
-            if let card = question.card { scene.showCard(card, near: id) }
+            feedback.play(correct: true)
+
             enemyQuestions[id] = nil
             enemyWrongPicks[id] = nil
             shownAt[id] = nil
+            questionIDs = enemyQuestions.keys.sorted()
             // 打败时场景会马上瞄准下一个怪物，并回调 targetChanged
             if scene.fire(at: id) == false {
                 // 还没打倒（血量多的怪物）：换一道题继续打它
                 if let next = makeQuestion() {
                     enemyQuestions[id] = next
+                    questionIDs = enemyQuestions.keys.sorted()
                     shownAt[id] = Date()
                     scene.setSign(id, next.question.signText)
                     current = next.question
@@ -206,14 +227,13 @@ final class GameSession: ObservableObject {
             picks.insert(index)
             enemyWrongPicks[id] = picks
             wrongPicks = picks
-            // 揭晓正确答案并读出来，孩子再点一次正确的才能发射
-            speech.speak(question.answerSpeech, interrupt: true)
+            feedback.play(correct: false)
             scene.penalize(id)
         }
     }
 
     func replayPrompt() {
-        speech.speak(current?.promptSpeech, interrupt: true)
+        speech.speak((ultimate ?? current)?.promptSpeech, interrupt: true)
     }
 
     // MARK: - 大招
@@ -229,20 +249,20 @@ final class GameSession: ObservableObject {
     }
 
     func answerUltimate(_ index: Int) {
-        guard let question = ultimate, let item = ultimateItem else { return }
+        guard phase == .playing, let question = ultimate, let item = ultimateItem, question.options.indices.contains(index) else { return }
         if index == question.answerIndex {
             let firstTry = ultimateWrongPicks.isEmpty
             if firstTry {
                 progress.record(item, correct: true)
                 recorder?.recordAnswer(question, chosenIndex: index, ultimate: true, shownAt: ultimateShownAt)
             }
-            speech.speak(question.answerSpeech, interrupt: true)
+            feedback.play(correct: true)
             ultimate = nil
             ultimateItem = nil
             energy = 0
             if phase == .playing { scene.setGamePaused(false) }
             // 第一次就答对才放大招；答错后再点对只是关掉
-            if let card = question.card { scene.showCard(card, near: nil) }
+
             if firstTry {
                 score += 30
                 ultimatesCast += 1
@@ -257,7 +277,7 @@ final class GameSession: ObservableObject {
                 recorder?.recordAnswer(question, chosenIndex: index, ultimate: true, shownAt: ultimateShownAt)
             }
             ultimateWrongPicks.insert(index)
-            speech.speak(question.answerSpeech, interrupt: true)
+            feedback.play(correct: false)
         }
     }
 
@@ -337,18 +357,72 @@ final class GameSession: ObservableObject {
         scene.setGamePaused(true)
         speech.stop()
         progress.save()
-        // 开始闯关后中途退出：只记对局，不结算成长
-        if phase == .playing || phase == .paused { recordGame(.quit) }
+        finishGame()
+        speech.stop()
     }
 
     private func checkFinished() {
-        if spawned >= totalEnemies && resolved >= spawned {
-            finish(won: true)
-        }
+        guard phase == .playing, totalEnemies > 0,
+              spawned >= totalEnemies, resolved >= spawned else { return }
+        completedRounds += 1
+        roundScore = score - roundStartScore
+        let answered = attempted - roundStartAttempted
+        roundAccuracy = answered == 0 ? 0 : Double(firstTryCorrect - roundStartCorrect) / Double(answered)
+        restRemaining = rules.restSeconds(afterRound: round)
+        restUntil = Date().addingTimeInterval(Double(restRemaining))
+        phase = .resting
+        ultimate = nil
+        ultimateItem = nil
+        current = nil
+        targetID = nil
+        questionIDs = []
+        scene.setGamePaused(true)
+        progress.save()
+        speech.stop()
+    }
+
+    /// 明确结束整局才结算；回合结束不发成长奖励。
+    func finishGame() {
+        finish(won: completedRounds > 0)
+    }
+
+    func updateRest(now: Date = Date()) {
+        guard phase == .resting, let restUntil else { return }
+        restRemaining = max(0, Int(ceil(restUntil.timeIntervalSince(now))))
+        if restRemaining == 0 { self.restUntil = nil }
+    }
+
+    func continueRound() {
+        updateRest()
+        guard phase == .resting, restRemaining == 0 else { return }
+        round += 1
+        roundQuestions = initialQuestions + (round - 1) * rules.questionIncrement[config.difficulty]
+        spawnPlan = tuning.waves.kinds(questions: roundQuestions, using: &rng)
+        totalEnemies = spawnPlan.count
+        spawned = 0
+        resolved = 0
+        roundResolved = 0
+        enemyQuestions.removeAll()
+        enemyWrongPicks.removeAll()
+        shownAt.removeAll()
+        wrongPicks = []
+        roundStartScore = score
+        roundStartAttempted = attempted
+        roundStartCorrect = firstTryCorrect
+        restUntil = nil
+        phase = .playing
+        scene.beginRound()
+    }
+
+    var selectedQuestionID: Int? { targetID }
+
+    func selectQuestion(_ id: Int) {
+        guard phase == .playing, ultimate == nil, enemyQuestions[id] != nil else { return }
+        scene.selectTarget(id)
     }
 
     private func finish(won: Bool) {
-        guard phase == .playing || phase == .paused else { return }
+        guard phase == .playing || phase == .paused || phase == .resting else { return }
         phase = won ? .won : .lost
         ultimate = nil
         scene.setGamePaused(true)
@@ -379,7 +453,7 @@ final class GameSession: ObservableObject {
             coins: growthResult?.totalCoins))
     }
 
-    /// 通关或失败才结算成长奖励；中途退出（end）不结算，免得反复开局刷积分
+    /// 整局只结算一次；所有积分来源受成长系统的每日硬上限约束
     private func settleGrowth() {
         guard let growth, growthResult == nil, !isEmpty else { return }
         let result = growth.settle(GameReport(
@@ -404,10 +478,10 @@ extension GameSession: GameSceneDelegate {
     var speedFactor: Double { tuner.speedFactor }
 
     func nextEnemy() -> EnemySpawn? {
-        guard spawned < totalEnemies else { return nil }
+        guard phase == .playing, spawned < totalEnemies else { return nil }
         guard let entry = makeQuestion() else {
-            totalEnemies = spawned
-            checkFinished()
+            // 题库无法继续出题时结束，不能卡在空回合。
+            finishGame()
             return nil
         }
         let kind = spawned < spawnPlan.count ? spawnPlan[spawned] : .blob
@@ -415,13 +489,14 @@ extension GameSession: GameSceneDelegate {
         spawned += 1
         enemyQuestions[lastEnemyID] = entry
         enemyKinds[lastEnemyID] = kind
+        questionIDs = enemyQuestions.keys.sorted()
         return EnemySpawn(id: lastEnemyID, sign: entry.question.signText, kind: kind)
     }
 
     private func makeQuestion() -> (item: LearningItem, question: Question)? {
         // 个别知识点可能凑不齐干扰项，换一个再试
         for _ in 0..<8 {
-            guard let item = scheduler.next(from: generator.pool.items, stats: progress.stats, using: &rng) else { break }
+            guard let item = scheduler.next(from: generator.pool.items, stats: progress.stats, using: &rng, reviewEvery: rules.reviewEvery) else { break }
             if let question = generator.makeQuestion(for: item, using: &rng) {
                 return (item, question)
             }
@@ -430,6 +505,7 @@ extension GameSession: GameSceneDelegate {
     }
 
     func targetChanged(to id: Int?) {
+        guard phase == .playing else { return }
         targetID = id
         current = id.flatMap { enemyQuestions[$0]?.question }
         if let id, current != nil, shownAt[id] == nil { shownAt[id] = Date() }
@@ -438,11 +514,13 @@ extension GameSession: GameSceneDelegate {
     }
 
     func enemyReachedBase(_ id: Int) -> Bool {
-        guard let hearts else { return false }
+        guard phase == .playing, enemyKinds[id] != nil, let hearts else { return false }
         if let entry = enemyQuestions[id] {
             mistakes.append(Mistake(question: entry.question, missed: true))
             // 已经答错过的那次作答已记录；一次都没答的记为没来得及答
             if (enemyWrongPicks[id] ?? []).isEmpty {
+                attempted += 1
+                progress.record(entry.item, correct: false)
                 recorder?.recordAnswer(entry.question, chosenIndex: nil, shownAt: shownAt[id])
             }
         }
@@ -451,6 +529,8 @@ extension GameSession: GameSceneDelegate {
         shownAt[id] = nil
         enemyKinds[id] = nil
         resolved += 1
+        roundResolved = resolved
+        questionIDs = enemyQuestions.keys.sorted()
         self.hearts = hearts - 1
         if hearts - 1 <= 0 {
             finish(won: false)
@@ -461,20 +541,24 @@ extension GameSession: GameSceneDelegate {
     }
 
     func enemyDefeated(_ id: Int, at point: CGPoint) {
-        if let kind = enemyKinds.removeValue(forKey: id) {
-            if kind == tuning.waves.boss { bossesDefeated += 1 }
-            if kind.bonus > 0 {
-                score += kind.bonus
-                scene.play(FloatingTextEffect(text: "+\(kind.bonus)"), at: CGPoint(x: point.x, y: point.y + 30))
-            }
-            sun += kind.sunReward
-            scene.play(
-                FloatingTextEffect(text: "☀️ +\(kind.sunReward)", color: Palette.bullet, fontSize: 32),
-                at: CGPoint(x: point.x, y: point.y + 62))
-            rollDrop(from: kind, at: point)
+        guard phase == .playing, let kind = enemyKinds.removeValue(forKey: id) else { return }
+        enemyQuestions[id] = nil
+        enemyWrongPicks[id] = nil
+        shownAt[id] = nil
+        questionIDs = enemyQuestions.keys.sorted()
+        if kind == tuning.waves.boss { bossesDefeated += 1 }
+        if kind.bonus > 0 {
+            score += kind.bonus
+            scene.play(FloatingTextEffect(text: "+\(kind.bonus)"), at: CGPoint(x: point.x, y: point.y + 30))
         }
+        sun += kind.sunReward
+        scene.play(
+            FloatingTextEffect(text: "☀️ +\(kind.sunReward)", color: Palette.bullet, fontSize: 32),
+            at: CGPoint(x: point.x, y: point.y + 62))
+        rollDrop(from: kind, at: point)
         defeated += 1
         resolved += 1
+        roundResolved = resolved
         checkFinished()
     }
 }

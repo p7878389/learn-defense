@@ -169,7 +169,7 @@ struct SettlementTests {
         }
         #expect(results[4].reduced == false && results[4].xp == 109)
         #expect(results[5].reduced && results[5].xp == 55 && results[5].fullXP == 109)
-        #expect(results[5].coins == 21 && results[5].fullCoins == 42)
+        #expect(results[5].coins == 9 && results[5].fullCoins == 42, "过关来源已达每日 100 分，第六局只发减半后的答题积分")
         // 第二天重新算
         let next = state.settle(report(at: day(6)), catalog: catalog, calendar: calendar)
         #expect(!next.reduced && next.dailyFirstWin && next.gamesToday == 1)

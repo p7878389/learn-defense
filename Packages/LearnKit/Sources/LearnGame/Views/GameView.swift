@@ -121,6 +121,7 @@ struct GameView: View {
                                             onAnswer: { _ in },
                                             onReplay: {})
                                             .fixedSize(horizontal: false, vertical: true)
+                                            .padding(.top, 52) // 预留切题栏，开局时战场不缩放
                                             .modifier(MaxHeightReader(height: $answerPanelHeight))
                                             .opacity(0)
                                             .allowsHitTesting(false)
@@ -128,12 +129,28 @@ struct GameView: View {
                                     }
                                 }
                         } else {
-                            AnswerPanel(
-                                question: session.current,
-                                wrongPicks: session.wrongPicks,
-                                onAnswer: session.answer,
-                                onReplay: session.replayPrompt)
-                                .modifier(MaxHeightReader(height: $answerPanelHeight))
+                            VStack(spacing: 8) {
+                                ScrollView(.horizontal) {
+                                    HStack(spacing: 10) {
+                                        ForEach(Array(session.questionIDs.enumerated()), id: \.element) { offset, id in
+                                            Button("题目 \(offset + 1)") { session.selectQuestion(id) }
+                                                .font(.headline)
+                                                .padding(.horizontal, 14).padding(.vertical, 8)
+                                                .background(session.selectedQuestionID == id ? Theme.jade : Theme.card, in: Capsule())
+                                                .foregroundStyle(session.selectedQuestionID == id ? .white : Theme.ink)
+                                        }
+                                    }
+                                }
+                                .frame(height: 44)
+                                .disabled(session.phase != .playing || session.ultimate != nil)
+                                AnswerPanel(
+                                    question: session.current,
+                                    wrongPicks: session.wrongPicks,
+                                    onAnswer: session.answer,
+                                    onReplay: session.replayPrompt)
+                                .disabled(session.phase != .playing || session.ultimate != nil)
+                            }
+                            .modifier(MaxHeightReader(height: $answerPanelHeight))
                         }
                     }
                     .frame(maxWidth: .infinity, minHeight: answerPanelHeight)
@@ -161,7 +178,11 @@ struct GameView: View {
             }
 
             if session.phase == .paused {
-                PauseOverlay(onResume: session.togglePause, onExit: onExit)
+                PauseOverlay(onResume: session.togglePause, onExit: session.finishGame)
+            }
+
+            if session.phase == .resting {
+                RoundRestOverlay(session: session)
             }
 
             if session.phase == .won || session.phase == .lost {
@@ -169,6 +190,7 @@ struct GameView: View {
             }
         }
         .coordinateSpace(name: "gameLayout")
+        .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { session.updateRest(now: $0) }
         .onDisappear { session.end() }
         #if os(iOS)
         .statusBarHidden()
@@ -188,6 +210,12 @@ private struct BattlefieldView: View {
                 preferredFramesPerSecond: 120,
                 debugOptions: debugOptions)
                 .frame(width: geometry.size.width, height: geometry.size.height)
+                .simultaneousGesture(SpatialTapGesture().onEnded { value in
+                    guard session.phase == .playing, session.ultimate == nil,
+                          let point = GameScene.scenePoint(at: value.location,
+                              in: CGRect(origin: .zero, size: geometry.size)) else { return }
+                    session.scene.selectTarget(at: point)
+                })
         }
         .aspectRatio(GameScene.designSize.width / GameScene.designSize.height, contentMode: .fit)
     }
@@ -252,7 +280,7 @@ struct GameHUD: View {
                 }
             }
 
-            Label("\(session.defeated)/\(session.totalEnemies)", systemImage: "flag.fill")
+            Label("第 \(session.round) 回合 · \(session.roundResolved)/\(session.totalEnemies)", systemImage: "flag.fill")
                 .font(.title3.weight(.semibold).monospacedDigit())
                 .foregroundStyle(Theme.ink)
 
@@ -417,13 +445,43 @@ struct PauseOverlay: View {
                 }
                 .buttonStyle(PressableStyle())
                 Button(action: onExit) {
-                    Text("退出").font(.title2.weight(.semibold)).frame(width: 240, height: 60)
+                    Text("结束并结算").font(.title2.weight(.semibold)).frame(width: 240, height: 60)
                         .background(Capsule().stroke(Theme.muted, lineWidth: 2)).foregroundStyle(Theme.muted)
                 }
                 .buttonStyle(PressableStyle())
             }
             .padding(48)
             .background(RoundedRectangle(cornerRadius: 28).fill(Theme.paper))
+        }
+    }
+}
+
+/// 回合只评分，所有成长奖励留到整局结束。
+private struct RoundRestOverlay: View {
+    @ObservedObject var session: GameSession
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.45).ignoresSafeArea()
+            VStack(spacing: 18) {
+                Text("第 \(session.round) 回合完成").font(.largeTitle.bold())
+                Text("本回合评分 \(session.roundScore) · 首答正确率 \(Int((session.roundAccuracy * 100).rounded()))%")
+                    .font(.title2)
+                Text("本回合 \(session.roundQuestions) 题 · 积分将在整局结束后统一结算")
+                    .foregroundStyle(Theme.muted)
+                Text(session.restRemaining > 0 ? "休息 \(session.restRemaining) 秒，看看远处吧" : "休息好了，准备下一回合")
+                    .font(.title2.bold())
+                HStack(spacing: 24) {
+                    Button("结束并结算", action: session.finishGame)
+                    Button("继续下一回合", action: session.continueRound)
+                        .disabled(session.restRemaining > 0)
+                }
+                .font(.title2.bold())
+                .buttonStyle(.borderedProminent)
+            }
+            .padding(32)
+            .background(Theme.paper, in: RoundedRectangle(cornerRadius: 24))
+            .padding(24)
         }
     }
 }

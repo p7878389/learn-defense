@@ -186,6 +186,29 @@ final class GameScene: SKScene {
         gameDelegate?.targetChanged(to: newID)
     }
 
+    /// 手动选题沿用自动瞄准的同一入口，场上已死亡目标不能再选。
+    func selectTarget(_ id: Int) {
+        guard !gamePaused, let enemy = enemies[id], !enemy.doomed else { return }
+        if let targetID { enemies[targetID]?.setTargeted(false) }
+        targetID = id
+        enemy.setTargeted(true)
+        gameDelegate?.targetChanged(to: id)
+    }
+
+    func selectTarget(at point: CGPoint) {
+        guard let enemy = enemies.values.filter({ !$0.doomed && $0.calculateAccumulatedFrame().contains(point) })
+            .min(by: { $0.enemyID < $1.enemyID }) else { return }
+        selectTarget(enemy.enemyID)
+    }
+
+    func beginRound() {
+        spawningFinished = false
+        spawnCountdown = 0.5
+        lastUpdate = 0
+        targetID = nil
+        setGamePaused(false)
+    }
+
     // MARK: - 由 GameSession 调用
 
     /// 把植物种到具体草坪格；格子一旦占用就不能修改

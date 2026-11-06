@@ -30,6 +30,8 @@ public struct GrowthStats: Codable, Sendable, Equatable {
     public var day: String?
     public var gamesToday = 0
     public var wonToday = false
+    /// 当日各来源已领取积分；独立于余额，消费不会恢复额度
+    public var coinsToday: [String: Int] = [:]
 
     public init() {}
 
@@ -70,6 +72,7 @@ public struct GrowthStats: Codable, Sendable, Equatable {
         hardWins = int(.hardWins)
         playSeconds = int(.playSeconds)
         day = try? c.decodeIfPresent(String.self, forKey: .day)
+        coinsToday = (try? c.decodeIfPresent([String: Int].self, forKey: .coinsToday)) ?? [:]
         gamesToday = int(.gamesToday)
         wonToday = (try? c.decodeIfPresent(Bool.self, forKey: .wonToday)) ?? false
     }
