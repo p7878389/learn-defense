@@ -63,9 +63,16 @@ struct IceCombatTests {
         #expect(scene.children.contains { $0.childNode(withName: "iceTrail") != nil })
         #expect(scene.children.compactMap { $0.childNode(withName: "iceTrail") as? SKEmitterNode }
             .allSatisfy { $0.particleBirthRate == 0 }, "延迟发射前不产生拖尾")
-        for index in 1...12 { try frame(index) }
+        // 闪退回归：尾迹不能用 targetNode，也不能在帧更新途中被挪出子弹（11-06 iPad EXC_BAD_ACCESS）
+        func trailsStayOnBullets() -> Bool {
+            scene.childNode(withName: "iceTrail") == nil
+                && scene.children.compactMap { $0.childNode(withName: "iceTrail") as? SKEmitterNode }
+                    .allSatisfy { $0.targetNode == nil }
+        }
+        #expect(trailsStayOnBullets())
+        for index in 1...12 { try frame(index); #expect(trailsStayOnBullets()) }
         #expect(impacts.isEmpty, "视觉不能提前结算命中")
-        for index in 13...45 { try frame(index) }
+        for index in 13...45 { try frame(index); #expect(trailsStayOnBullets()) }
         #expect(impacts == [false, true])
         for index in 46...180 { try frame(index) }
         #expect(scene.children.isEmpty, "子弹、残留拖尾、爆点都必须清理")

@@ -37,7 +37,10 @@ struct ShotAttack: AttackStrategy {
             bullet.zPosition = 50
             bullet.alpha = 0
             layer.addChild(bullet)
-            let trail = IceCombatEffects.supports(projectile) ? IceCombatEffects.trail(on: bullet, in: layer) : nil
+            let flight = hypot(target.x - bullet.position.x, target.y - bullet.position.y) / duration
+            let trail = IceCombatEffects.supports(projectile) ? IceCombatEffects.trail(on: bullet, speed: flight) : nil
+            let bulletID = DiagLog.id(bullet)
+            DiagLog.log("shot+ bullet=\(bulletID) \(i + 1)/\(n) shape=\(projectile.shape) ice=\(trail != nil)")
             bullet.run(.sequence([
                 .wait(forDuration: interval * TimeInterval(i)),
                 .run { [weak bullet, weak layer] in
@@ -48,11 +51,10 @@ struct ShotAttack: AttackStrategy {
                 },
                 .fadeIn(withDuration: 0.02),
                 .move(to: target, duration: duration),
-                .run { [weak layer] in
-                    if let trail, let layer { IceCombatEffects.finish(trail, in: layer) }
-                },
+                // 冰晶尾迹挂在子弹上，这里一起移除
                 .removeFromParent(),
             ])) { [weak layer] in
+                DiagLog.log("shot- bullet=\(bulletID) layer=\(layer != nil)")
                 if let layer {
                     if trail != nil {
                         IceCombatEffects.impact(at: target, in: layer)
@@ -90,6 +92,7 @@ struct BeamAttack: AttackStrategy {
 
     func perform(from origin: CGPoint, to target: CGPoint, projectile: ProjectileLook, in layer: SKNode,
                  onImpact: @escaping (Bool) -> Void) {
+        DiagLog.log("beam fume=\(UnitSprites.beam(projectile) != nil)")
         if let fume = UnitSprites.beam(projectile) {
             puff(fume.frames, frameTime: fume.frameTime, from: origin, to: target, projectile: projectile,
                  in: layer, onImpact: onImpact)

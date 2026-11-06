@@ -228,9 +228,18 @@ final class SpriteRig {
             sprite.run(animate, withKey: Self.onceKey)
         } else {
             let back = looping
-            sprite.run(.sequence([animate, .run { [weak self] in self?.loop(back) }]), withKey: Self.onceKey)
+            sprite.run(.sequence([animate, .run { [weak self] in self?.resume(back) }]), withKey: Self.onceKey)
         }
         return clip.duration
+    }
+
+    /// 单次动画播完后回到循环。此时还在 onceKey 那条动作里面执行，
+    /// 不能像 loop 那样 removeAction(forKey: onceKey) 把正在跑的自己删掉——
+    /// SpriteKit 会接着访问已释放的动作，偶发 EXC_BAD_ACCESS 闪退；这条动作播完会自己结束
+    private func resume(_ name: String) {
+        guard show(name) else { return }
+        looping = name
+        startLoop(name)
     }
 
     /// 在同一坐标里另起一个精灵播一遍 name（比如掉下来的头），播完自己移除
