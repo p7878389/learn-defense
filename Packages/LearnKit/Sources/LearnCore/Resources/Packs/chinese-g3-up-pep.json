@@ -1,0 +1,680 @@
+{
+  "schemaVersion": 1,
+  "id": "chinese-g3-up-pep",
+  "title": "义务教育教科书 语文 三年级上册",
+  "subject": "chinese",
+  "grade": "g3",
+  "term": "up",
+  "edition": "人民教育出版社（教育部组织编写）",
+  "units": [
+    {
+      "id": "u1",
+      "title": "第一单元 · 校园生活",
+      "theme": "academy",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "大青树下的小学",
+          "characters": [
+            { "char": "绒", "pinyin": "róng", "words": ["绒球", "绒毛"] },
+            { "char": "昂", "pinyin": "áng", "words": ["昂扬", "昂首"] },
+            { "char": "凤", "pinyin": "fèng", "words": ["凤尾竹", "凤凰"] },
+            { "char": "墙", "pinyin": "qiáng", "words": ["墙壁", "城墙"] },
+            { "char": "晃", "pinyin": "huàng", "words": ["摇晃", "晃动"] }
+          ],
+          "words": [
+            { "text": "飘扬", "pinyin": "piāo yáng" },
+            { "text": "热闹", "pinyin": "rè nao" },
+            { "text": "粗壮", "pinyin": "cū zhuàng" },
+            { "text": "洁白", "pinyin": "jié bái" }
+          ],
+          "idioms": [
+            { "text": "书声琅琅", "pinyin": "shū shēng láng láng", "meaning": "形容读书声清脆响亮；联想到窗外安静听同学们读课文的山林朋友。" },
+            { "text": "欢声笑语", "pinyin": "huān shēng xiào yǔ", "meaning": "欢乐的说笑声；联想到下课后跳孔雀舞、摔跤、做游戏的场面。" },
+            { "text": "生机勃勃", "pinyin": "shēng jī bó bó", "meaning": "充满生命力；联想到大青树、铜钟、凤尾竹和边疆小学的早晨。" }
+          ]
+        },
+        {
+          "id": "l2",
+          "title": "花的学校",
+          "characters": [
+            { "char": "轰", "pinyin": "hōng", "words": ["轰响", "轰动"] },
+            { "char": "湿", "pinyin": "shī", "words": ["湿润", "潮湿"] },
+            { "char": "荒", "pinyin": "huāng", "words": ["荒野", "荒凉"] },
+            { "char": "笛", "pinyin": "dí", "words": ["风笛", "笛声"] },
+            { "char": "罚", "pinyin": "fá", "words": ["罚站", "惩罚"] }
+          ],
+          "words": [
+            { "text": "阵雨", "pinyin": "zhèn yǔ" },
+            { "text": "湿润", "pinyin": "shī rùn" },
+            { "text": "风笛", "pinyin": "fēng dí" },
+            { "text": "狂欢", "pinyin": "kuáng huān" }
+          ],
+          "idioms": [
+            { "text": "奇思妙想", "pinyin": "qí sī miào xiǎng", "meaning": "奇妙的想法；联想到花孩子把地下当成学校、把雷云当成拍手。" },
+            { "text": "天真烂漫", "pinyin": "tiān zhēn làn màn", "meaning": "纯真可爱；联想到花孩子们穿紫的、黄的、白的衣裳冲出来。" },
+            { "text": "欢天喜地", "pinyin": "huān tiān xǐ dì", "meaning": "非常欢喜；联想到雨一来，花孩子们便放假了。" }
+          ]
+        },
+        {
+          "id": "l3",
+          "title": "不懂就要问",
+          "characters": [
+            { "char": "诵", "pinyin": "sòng", "words": ["背诵", "诵读"] },
+            { "char": "糊", "pinyin": "hú", "words": ["糊涂", "糊里糊涂"] },
+            { "char": "戒", "pinyin": "jiè", "words": ["戒尺", "警戒"] },
+            { "char": "厉", "pinyin": "lì", "words": ["厉声", "严厉"] },
+            { "char": "详", "pinyin": "xiáng", "words": ["详细", "详略"] }
+          ],
+          "words": [
+            { "text": "背诵", "pinyin": "bèi sòng" },
+            { "text": "照例", "pinyin": "zhào lì" },
+            { "text": "流利", "pinyin": "liú lì" },
+            { "text": "鸦雀无声", "pinyin": "yā què wú shēng" }
+          ],
+          "idioms": [
+            { "text": "勤学好问", "pinyin": "qín xué hào wèn", "meaning": "勤奋学习、乐于提问；联想到孙中山壮着胆子向先生请教。" },
+            { "text": "不耻下问", "pinyin": "bù chǐ xià wèn", "meaning": "不以向别人请教为耻；联想到“学问学问，不懂就要问”。" },
+            { "text": "刨根问底", "pinyin": "páo gēn wèn dǐ", "meaning": "追问事情的根源；联想到孙中山一定要弄懂书里的意思。" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u2",
+      "title": "第二单元 · 金秋时节",
+      "theme": "orchard",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "古诗三首",
+          "characters": [
+            { "char": "庭", "pinyin": "tíng", "words": ["庭院", "庭园"] },
+            { "char": "磨", "pinyin": "mó", "words": ["磨镜", "磨练"] },
+            { "char": "斜", "pinyin": "xié", "words": ["倾斜", "斜阳"] },
+            { "char": "萧", "pinyin": "xiāo", "words": ["萧萧", "萧条"] },
+            { "char": "促", "pinyin": "cù", "words": ["促织", "催促"] }
+          ],
+          "words": [
+            { "text": "湖光", "pinyin": "hú guāng" },
+            { "text": "寒山", "pinyin": "hán shān" },
+            { "text": "枫林", "pinyin": "fēng lín" },
+            { "text": "篱落", "pinyin": "lí luò" }
+          ],
+          "idioms": [
+            { "text": "秋高气爽", "pinyin": "qiū gāo qì shuǎng", "meaning": "秋天天空高远、空气清爽；联想到寒山石径和霜叶红花。" },
+            { "text": "湖光秋月", "pinyin": "hú guāng qiū yuè", "meaning": "湖上月光相映；联想到洞庭湖“白银盘里一青螺”。" },
+            { "text": "枫林尽染", "pinyin": "fēng lín jìn rǎn", "meaning": "枫林被秋色染红；联想到“霜叶红于二月花”。" }
+          ],
+          "poems": [
+            { "title": "望洞庭", "author": "刘禹锡", "dynasty": "唐", "lines": ["湖光秋月两相和", "潭面无风镜未磨", "遥望洞庭山水翠", "白银盘里一青螺"] },
+            { "title": "山行", "author": "杜牧", "dynasty": "唐", "lines": ["远上寒山石径斜", "白云生处有人家", "停车坐爱枫林晚", "霜叶红于二月花"] },
+            { "title": "夜书所见", "author": "叶绍翁", "dynasty": "宋", "lines": ["萧萧梧叶送寒声", "江上秋风动客情", "知有儿童挑促织", "夜深篱落一灯明"] }
+          ],
+          "questions": [
+            { "id": "q1", "prompt": "“停车坐爱枫林晚”中“坐”的意思是？", "options": ["因为", "坐下", "座位"], "answer": "因为", "explain": "“坐”在这里是“因为”的意思。" },
+            { "id": "q2", "prompt": "“白银盘里一青螺”中的“青螺”喻指？", "options": ["君山", "小船", "月亮"], "answer": "君山", "explain": "青螺喻指洞庭湖中的君山。" }
+          ]
+        },
+        {
+          "id": "l2",
+          "title": "铺满金色巴掌的水泥道",
+          "characters": [
+            { "char": "粘", "pinyin": "zhān", "words": ["粘贴", "粘住"] },
+            { "char": "印", "pinyin": "yìn", "words": ["印着", "脚印"] },
+            { "char": "列", "pinyin": "liè", "words": ["排列", "列车"] },
+            { "char": "凌", "pinyin": "líng", "words": ["凌乱", "凌晨"] },
+            { "char": "棕", "pinyin": "zōng", "words": ["棕色", "棕红"] }
+          ],
+          "words": [
+            { "text": "明朗", "pinyin": "míng lǎng" },
+            { "text": "亮晶晶", "pinyin": "liàng jīng jīng" },
+            { "text": "图案", "pinyin": "tú àn" },
+            { "text": "规则", "pinyin": "guī zé" },
+            { "text": "凌乱", "pinyin": "líng luàn" }
+          ],
+          "idioms": [
+            { "text": "秋雨绵绵", "pinyin": "qiū yǔ mián mián", "meaning": "秋雨连续不断；联想到“一夜秋风，一夜秋雨”。" },
+            { "text": "五彩斑斓", "pinyin": "wǔ cǎi bān lán", "meaning": "颜色繁多、灿烂好看；联想到金色巴掌铺成的地毯。" },
+            { "text": "小心翼翼", "pinyin": "xiǎo xīn yì yì", "meaning": "非常小心谨慎；联想到“一步一步小心地走，一片一片仔细地数”。" }
+          ]
+        },
+        {
+          "id": "l3",
+          "title": "秋天的雨",
+          "characters": [
+            { "char": "钥", "pinyin": "yào", "words": ["钥匙"] },
+            { "char": "匙", "pinyin": "shi", "words": ["钥匙"] },
+            { "char": "缤", "pinyin": "bīn", "words": ["缤纷", "五彩缤纷"] },
+            { "char": "枚", "pinyin": "méi", "words": ["一枚", "邮票"] },
+            { "char": "爽", "pinyin": "shuǎng", "words": ["凉爽", "清爽"] }
+          ],
+          "words": [
+            { "text": "清凉", "pinyin": "qīng liáng" },
+            { "text": "炎热", "pinyin": "yán rè" },
+            { "text": "邮票", "pinyin": "yóu piào" },
+            { "text": "凉爽", "pinyin": "liáng shuǎng" },
+            { "text": "丰收", "pinyin": "fēng shōu" }
+          ],
+          "idioms": [
+            { "text": "五彩缤纷", "pinyin": "wǔ cǎi bīn fēn", "meaning": "颜色繁多、非常好看；联想到秋雨有一盒五彩缤纷的颜料。" },
+            { "text": "瓜果飘香", "pinyin": "guā guǒ piāo xiāng", "meaning": "瓜果香味四处飘散；联想到梨香、葡萄甜和小朋友被香味勾住脚。" },
+            { "text": "频频点头", "pinyin": "pín pín diǎn tóu", "meaning": "不断地点头；联想到菊花仙子在秋雨里频频点头。" }
+          ]
+        },
+        {
+          "id": "l4",
+          "title": "听听，秋的声音",
+          "characters": [
+            { "char": "抖", "pinyin": "dǒu", "words": ["抖动", "抖抖"] },
+            { "char": "振", "pinyin": "zhèn", "words": ["振动", "振奋"] },
+            { "char": "韵", "pinyin": "yùn", "words": ["歌韵", "韵味"] },
+            { "char": "掠", "pinyin": "lüè", "words": ["掠过", "掠夺"] },
+            { "char": "阔", "pinyin": "kuò", "words": ["辽阔", "广阔"] }
+          ],
+          "words": [
+            { "text": "道别", "pinyin": "dào bié" },
+            { "text": "歌韵", "pinyin": "gē yùn" },
+            { "text": "叮咛", "pinyin": "dīng níng" },
+            { "text": "掠过", "pinyin": "lüè guò" },
+            { "text": "辽阔", "pinyin": "liáo kuò" }
+          ],
+          "idioms": [
+            { "text": "秋虫唧唧", "pinyin": "qiū chóng jī jī", "meaning": "秋虫鸣叫；联想到蟋蟀振动翅膀发出“哩哩”的声音。" },
+            { "text": "雁过留声", "pinyin": "yàn guò liú shēng", "meaning": "大雁飞过留下叫声；联想到大雁追上白云撒下叮咛。" },
+            { "text": "丰收在望", "pinyin": "fēng shōu zài wàng", "meaning": "丰收即将到来；联想到秋风送来丰收的歌吟。" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u3",
+      "title": "第三单元 · 预测与推想",
+      "theme": "academy",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "总也倒不了的老屋",
+          "characters": [
+            { "char": "眯", "pinyin": "mī", "words": ["眯眼", "眯缝"] },
+            { "char": "喵", "pinyin": "miāo", "words": ["喵喵"] },
+            { "char": "孵", "pinyin": "fū", "words": ["孵蛋", "孵化"] },
+            { "char": "叽", "pinyin": "jī", "words": ["叽叽", "叽叽喳喳"] },
+            { "char": "偶", "pinyin": "ǒu", "words": ["偶尔", "偶然"] }
+          ],
+          "words": [
+            { "text": "暴风雨", "pinyin": "bào fēng yǔ" },
+            { "text": "安心", "pinyin": "ān xīn" },
+            { "text": "吃力", "pinyin": "chī lì" },
+            { "text": "漂亮", "pinyin": "piào liang" }
+          ],
+          "idioms": [
+            { "text": "乐于助人", "pinyin": "lè yú zhù rén", "meaning": "喜欢帮助别人；联想到老屋一次次答应小猫、老母鸡和小蜘蛛的请求。" },
+            { "text": "慈眉善目", "pinyin": "cí méi shàn mù", "meaning": "形容慈祥；联想到插图中老屋和善的样子。" },
+            { "text": "善有善报", "pinyin": "shàn yǒu shàn bào", "meaning": "做好事会有好结果；联想到老屋一直站着听小蜘蛛讲故事。" }
+          ]
+        },
+        {
+          "id": "l2",
+          "title": "犟龟",
+          "characters": [
+            { "char": "陶", "pinyin": "táo", "words": ["陶陶", "陶器"] },
+            { "char": "适", "pinyin": "shì", "words": ["舒适", "合适"] },
+            { "char": "婚", "pinyin": "hūn", "words": ["婚礼", "结婚"] },
+            { "char": "庆", "pinyin": "qìng", "words": ["庆典", "庆祝"] },
+            { "char": "途", "pinyin": "tú", "words": ["路途", "途中"] }
+          ],
+          "words": [
+            { "text": "舒适", "pinyin": "shū shì" },
+            { "text": "婚礼", "pinyin": "hūn lǐ" },
+            { "text": "庆典", "pinyin": "qìng diǎn" },
+            { "text": "障碍", "pinyin": "zhàng ài" }
+          ],
+          "idioms": [
+            { "text": "坚持不懈", "pinyin": "jiān chí bù xiè", "meaning": "坚持到底、不松懈；联想到陶陶一步一步向前爬，虽然慢却一直不停。" },
+            { "text": "锲而不舍", "pinyin": "qiè ér bù shě", "meaning": "比喻有恒心、有毅力；联想到陶陶日夜不停赶路。" },
+            { "text": "勇往直前", "pinyin": "yǒng wǎng zhí qián", "meaning": "勇敢地一直向前；联想到陶陶不听蜘蛛、蜗牛的劝说。" }
+          ]
+        },
+        {
+          "id": "l3",
+          "title": "小狗学叫",
+          "characters": [
+            { "char": "陌", "pinyin": "mò", "words": ["陌生", "陌路"] },
+            { "char": "讨", "pinyin": "tǎo", "words": ["讨厌", "讨论"] },
+            { "char": "厌", "pinyin": "yàn", "words": ["讨厌", "厌恶"] },
+            { "char": "委", "pinyin": "wěi", "words": ["委屈", "委员"] },
+            { "char": "汪", "pinyin": "wāng", "words": ["汪汪", "汪洋"] }
+          ],
+          "words": [
+            { "text": "陌生", "pinyin": "mò shēng" },
+            { "text": "讨厌", "pinyin": "tǎo yàn" },
+            { "text": "委屈", "pinyin": "wěi qū" },
+            { "text": "逼真", "pinyin": "bī zhēn" }
+          ],
+          "idioms": [
+            { "text": "啼笑皆非", "pinyin": "tí xiào jiē fēi", "meaning": "哭笑不得；联想到小狗学公鸡叫却引来狐狸。" },
+            { "text": "屡败屡战", "pinyin": "lǚ bài lǚ zhàn", "meaning": "多次失败仍继续努力；联想到小狗试了一次、两次、三次。" },
+            { "text": "阴差阳错", "pinyin": "yīn chā yáng cuò", "meaning": "偶然造成差错；联想到小狗学杜鹃叫却引来猎人。" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u4",
+      "title": "第四单元 · 童话世界",
+      "theme": "starry",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "宝葫芦的秘密（节选）",
+          "characters": [
+            { "char": "葫", "pinyin": "hú", "words": ["葫芦"] },
+            { "char": "芦", "pinyin": "lú", "words": ["葫芦"] },
+            { "char": "普", "pinyin": "pǔ", "words": ["普通", "普遍"] },
+            { "char": "宫", "pinyin": "gōng", "words": ["宫殿", "龙宫"] },
+            { "char": "瘦", "pinyin": "shòu", "words": ["瘦长", "瘦弱"] }
+          ],
+          "words": [
+            { "text": "声明", "pinyin": "shēng míng" },
+            { "text": "普通", "pinyin": "pǔ tōng" },
+            { "text": "让步", "pinyin": "ràng bù" },
+            { "text": "可怜", "pinyin": "kě lián" },
+            { "text": "科学", "pinyin": "kē xué" }
+          ],
+          "idioms": [
+            { "text": "异想天开", "pinyin": "yì xiǎng tiān kāi", "meaning": "想法离奇、不切实际；联想到王葆想要一个宝葫芦。" },
+            { "text": "不劳而获", "pinyin": "bù láo ér huò", "meaning": "不劳动却得到成果；联想到宝葫芦要什么有什么带来的烦恼。" },
+            { "text": "心想事成", "pinyin": "xīn xiǎng shì chéng", "meaning": "心里想的事情能够实现；联想到宝葫芦的神奇之处。" }
+          ]
+        },
+        {
+          "id": "l2",
+          "title": "在牛肚子里旅行",
+          "characters": [
+            { "char": "答", "pinyin": "dā", "words": ["答应"] },
+            { "char": "卷", "pinyin": "juǎn", "words": ["卷到", "卷起"] },
+            { "char": "齿", "pinyin": "chǐ", "words": ["牙齿", "齿轮"] },
+            { "char": "胃", "pinyin": "wèi", "words": ["胃室", "胃口"] },
+            { "char": "咽", "pinyin": "yàn", "words": ["细嚼慢咽", "吞咽"] }
+          ],
+          "words": [
+            { "text": "旅行", "pinyin": "lǚ xíng" },
+            { "text": "答应", "pinyin": "dā ying" },
+            { "text": "救命", "pinyin": "jiù mìng" },
+            { "text": "大吃一惊", "pinyin": "dà chī yī jīng" },
+            { "text": "消化", "pinyin": "xiāo huà" }
+          ],
+          "idioms": [
+            { "text": "有惊无险", "pinyin": "yǒu jīng wú xiǎn", "meaning": "受到惊吓但没有危险；联想到红头在牛肚子里的旅行。" },
+            { "text": "急中生智", "pinyin": "jí zhōng shēng zhì", "meaning": "紧急时想出办法；联想到青头在牛鼻子上蹭来蹭去让牛打喷嚏。" },
+            { "text": "患难与共", "pinyin": "huàn nàn yǔ gòng", "meaning": "共同承担困难；联想到青头和红头是非常要好的朋友。" }
+          ]
+        },
+        {
+          "id": "l3",
+          "title": "一块奶酪",
+          "characters": [
+            { "char": "宣", "pinyin": "xuān", "words": ["宣布", "宣告"] },
+            { "char": "诱", "pinyin": "yòu", "words": ["诱人", "引诱"] },
+            { "char": "毅", "pinyin": "yì", "words": ["毅力", "坚毅"] },
+            { "char": "纪", "pinyin": "jì", "words": ["纪律", "纪念"] },
+            { "char": "禁", "pinyin": "jìn", "words": ["禁令", "禁止"] }
+          ],
+          "words": [
+            { "text": "宣布", "pinyin": "xuān bù" },
+            { "text": "诱人", "pinyin": "yòu rén" },
+            { "text": "毅力", "pinyin": "yì lì" },
+            { "text": "纪律", "pinyin": "jì lǜ" },
+            { "text": "争先恐后", "pinyin": "zhēng xiān kǒng hòu" }
+          ],
+          "idioms": [
+            { "text": "以身作则", "pinyin": "yǐ shēn zuò zé", "meaning": "用自己的行动做榜样；联想到蚂蚁队长面对奶酪渣也不偷嘴。" },
+            { "text": "严于律己", "pinyin": "yán yú lǜ jǐ", "meaning": "严格约束自己；联想到队长一跺脚让全体向后转。" },
+            { "text": "同心协力", "pinyin": "tóng xīn xié lì", "meaning": "齐心合力；联想到小蚂蚁们劲头更足，把奶酪搬进洞里。" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u5",
+      "title": "第五单元 · 留心观察",
+      "theme": "meadow",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "搭船的鸟",
+          "characters": [
+            { "char": "舱", "pinyin": "cāng", "words": ["船舱", "机舱"] },
+            { "char": "鹦", "pinyin": "yīng", "words": ["鹦鹉"] },
+            { "char": "鹉", "pinyin": "wǔ", "words": ["鹦鹉"] },
+            { "char": "衔", "pinyin": "xián", "words": ["衔着", "衔接"] },
+            { "char": "翠", "pinyin": "cuì", "words": ["翠绿", "翠鸟"] }
+          ],
+          "words": [
+            { "text": "母亲", "pinyin": "mǔ qīn" },
+            { "text": "外祖父", "pinyin": "wài zǔ fù" },
+            { "text": "船夫", "pinyin": "chuán fū" },
+            { "text": "翠绿", "pinyin": "cuì lǜ" },
+            { "text": "静悄悄", "pinyin": "jìng qiāo qiāo" }
+          ],
+          "idioms": [
+            { "text": "色彩斑斓", "pinyin": "sè cǎi bān lán", "meaning": "颜色灿烂多彩；联想到翠鸟翠绿的羽毛和红色的长嘴。" },
+            { "text": "身手敏捷", "pinyin": "shēn shǒu mǐn jié", "meaning": "动作灵活迅速；联想到翠鸟一下子冲进水里衔起小鱼。" },
+            { "text": "悄然而至", "pinyin": "qiǎo rán ér zhì", "meaning": "无声无息地到来；联想到翠鸟静悄悄停在船头。" }
+          ]
+        },
+        {
+          "id": "l2",
+          "title": "金色的草地",
+          "characters": [
+            { "char": "蒲", "pinyin": "pú", "words": ["蒲公英"] },
+            { "char": "英", "pinyin": "yīng", "words": ["蒲公英", "英雄"] },
+            { "char": "耍", "pinyin": "shuǎ", "words": ["玩耍", "耍赖"] },
+            { "char": "茸", "pinyin": "róng", "words": ["茸毛", "毛茸茸"] },
+            { "char": "拢", "pinyin": "lǒng", "words": ["合拢", "聚拢"] }
+          ],
+          "words": [
+            { "text": "草地", "pinyin": "cǎo dì" },
+            { "text": "蒲公英", "pinyin": "pú gōng yīng" },
+            { "text": "盛开", "pinyin": "shèng kāi" },
+            { "text": "玩耍", "pinyin": "wán shuǎ" },
+            { "text": "观察", "pinyin": "guān chá" }
+          ],
+          "idioms": [
+            { "text": "变化多端", "pinyin": "biàn huà duō duān", "meaning": "变化很多；联想到草地早上绿色、中午金色、傍晚又变绿。" },
+            { "text": "仔细观察", "pinyin": "zǐ xì guān chá", "meaning": "认真地看；联想到作者发现蒲公英花瓣可以张开、合上。" },
+            { "text": "生机盎然", "pinyin": "shēng jī àng rán", "meaning": "充满生命力；联想到金色草地和有趣的蒲公英。" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u6",
+      "title": "第六单元 · 祖国河山",
+      "theme": "meadow",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "富饶的西沙群岛",
+          "characters": [
+            { "char": "饶", "pinyin": "ráo", "words": ["富饶", "饶恕"] },
+            { "char": "优", "pinyin": "yōu", "words": ["优美", "优点"] },
+            { "char": "崖", "pinyin": "yá", "words": ["山崖", "悬崖"] },
+            { "char": "懒", "pinyin": "lǎn", "words": ["懒洋洋", "懒惰"] },
+            { "char": "威", "pinyin": "wēi", "words": ["威武", "威严"] }
+          ],
+          "words": [
+            { "text": "风景", "pinyin": "fēng jǐng" },
+            { "text": "优美", "pinyin": "yōu měi" },
+            { "text": "物产", "pinyin": "wù chǎn" },
+            { "text": "交错", "pinyin": "jiāo cuò" },
+            { "text": "成群结队", "pinyin": "chéng qún jié duì" }
+          ],
+          "idioms": [
+            { "text": "五光十色", "pinyin": "wǔ guāng shí sè", "meaning": "色彩鲜艳繁多；联想到西沙海水深蓝、淡青、浅绿、杏黄交错。" },
+            { "text": "瑰丽无比", "pinyin": "guī lì wú bǐ", "meaning": "美丽奇异、无可相比；联想到西沙群岛的海水。" },
+            { "text": "物产丰富", "pinyin": "wù chǎn fēng fù", "meaning": "物产很多；联想到鱼、海参、龙虾、鸟蛋和鸟粪肥料。" }
+          ]
+        },
+        {
+          "id": "l2",
+          "title": "海滨小城",
+          "characters": [
+            { "char": "滨", "pinyin": "bīn", "words": ["海滨", "滨海"] },
+            { "char": "胳", "pinyin": "gē", "words": ["胳膊"] },
+            { "char": "滩", "pinyin": "tān", "words": ["沙滩", "海滩"] },
+            { "char": "睬", "pinyin": "cǎi", "words": ["理睬"] },
+            { "char": "载", "pinyin": "zài", "words": ["满载", "载重"] }
+          ],
+          "words": [
+            { "text": "海滨", "pinyin": "hǎi bīn" },
+            { "text": "街道", "pinyin": "jiē dào" },
+            { "text": "渔民", "pinyin": "yú mín" },
+            { "text": "贝壳", "pinyin": "bèi ké" },
+            { "text": "庭院", "pinyin": "tíng yuàn" }
+          ],
+          "idioms": [
+            { "text": "风景如画", "pinyin": "fēng jǐng rú huà", "meaning": "风景像画一样美；联想到海滨小城的海、沙滩和街道。" },
+            { "text": "熙熙攘攘", "pinyin": "xī xī rǎng rǎng", "meaning": "人来人往、非常热闹；联想到船队靠岸后海滩上的喧闹。" },
+            { "text": "绿树成荫", "pinyin": "lǜ shù chéng yīn", "meaning": "树木枝叶茂密遮阴；联想到小城公园里撑开绿绒大伞的榕树。" }
+          ]
+        },
+        {
+          "id": "l3",
+          "title": "美丽的小兴安岭",
+          "characters": [
+            { "char": "融", "pinyin": "róng", "words": ["融化", "融合"] },
+            { "char": "侧", "pinyin": "cè", "words": ["侧着", "侧面"] },
+            { "char": "欣", "pinyin": "xīn", "words": ["欣赏", "欣喜"] },
+            { "char": "浸", "pinyin": "jìn", "words": ["浸在", "浸泡"] },
+            { "char": "梢", "pinyin": "shāo", "words": ["树梢", "眉梢"] }
+          ],
+          "words": [
+            { "text": "东北", "pinyin": "dōng běi" },
+            { "text": "密密层层", "pinyin": "mì mì céng céng" },
+            { "text": "严严实实", "pinyin": "yán yán shí shí" },
+            { "text": "花坛", "pinyin": "huā tán" },
+            { "text": "宝库", "pinyin": "bǎo kù" }
+          ],
+          "idioms": [
+            { "text": "四季如画", "pinyin": "sì jì rú huà", "meaning": "四季都像画一样美；联想到小兴安岭春夏秋冬不同的景色。" },
+            { "text": "郁郁葱葱", "pinyin": "yù yù cōng cōng", "meaning": "草木茂盛；联想到夏天树木葱葱笼笼、枝叶密密层层。" },
+            { "text": "层林尽染", "pinyin": "céng lín jìn rǎn", "meaning": "树林层层染上秋色；联想到秋天白桦和栎树的叶子变黄。" }
+          ]
+        },
+        {
+          "id": "l4",
+          "title": "香港，璀璨的明珠",
+          "characters": [
+            { "char": "贸", "pinyin": "mào", "words": ["贸易", "商贸"] },
+            { "char": "赠", "pinyin": "zèng", "words": ["赠送", "赠品"] },
+            { "char": "幻", "pinyin": "huàn", "words": ["幻彩", "幻想"] },
+            { "char": "焰", "pinyin": "yàn", "words": ["焰火", "火焰"] },
+            { "char": "澳", "pinyin": "ào", "words": ["港澳", "澳门"] }
+          ],
+          "words": [
+            { "text": "香港", "pinyin": "xiāng gǎng" },
+            { "text": "贸易", "pinyin": "mào yì" },
+            { "text": "琳琅满目", "pinyin": "lín láng mǎn mù" },
+            { "text": "旅游", "pinyin": "lǚ yóu" },
+            { "text": "璀璨", "pinyin": "cuǐ càn" }
+          ],
+          "idioms": [
+            { "text": "琳琅满目", "pinyin": "lín láng mǎn mù", "meaning": "商品多而美好；联想到香港“万国市场”来自各地的商品。" },
+            { "text": "流光溢彩", "pinyin": "liú guāng yì cǎi", "meaning": "光彩流动、非常绚丽；联想到香港夜晚的霓虹灯和灯光音乐汇演。" },
+            { "text": "璀璨夺目", "pinyin": "cuǐ càn duó mù", "meaning": "光彩耀眼；联想到祖国南海之滨这颗明珠。" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u7",
+      "title": "第七单元 · 大自然",
+      "theme": "meadow",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "古诗三首",
+          "characters": [
+            { "char": "返", "pinyin": "fǎn", "words": ["返景", "返回"] },
+            { "char": "苔", "pinyin": "tái", "words": ["青苔", "苔藓"] },
+            { "char": "亦", "pinyin": "yì", "words": ["亦是", "亦然"] },
+            { "char": "抹", "pinyin": "mǒ", "words": ["淡妆浓抹", "抹布"] },
+            { "char": "宜", "pinyin": "yí", "words": ["相宜", "适宜"] }
+          ],
+          "words": [
+            { "text": "鹿柴", "pinyin": "lù zhài" },
+            { "text": "天门山", "pinyin": "tiān mén shān" },
+            { "text": "楚江", "pinyin": "chǔ jiāng" },
+            { "text": "西湖", "pinyin": "xī hú" },
+            { "text": "西子", "pinyin": "xī zǐ" }
+          ],
+          "idioms": [
+            { "text": "空山幽林", "pinyin": "kōng shān yōu lín", "meaning": "空旷幽静的山林；联想到《鹿柴》中“空山不见人，但闻人语响”。" },
+            { "text": "青山相对", "pinyin": "qīng shān xiāng duì", "meaning": "两岸青山互相对峙；联想到《望天门山》的壮阔景象。" },
+            { "text": "淡妆浓抹", "pinyin": "dàn zhuāng nóng mǒ", "meaning": "淡雅或浓艳的装扮都合适；联想到西湖晴天雨天都美。" }
+          ],
+          "poems": [
+            { "title": "鹿柴", "author": "王维", "dynasty": "唐", "lines": ["空山不见人", "但闻人语响", "返景入深林", "复照青苔上"] },
+            { "title": "望天门山", "author": "李白", "dynasty": "唐", "lines": ["天门中断楚江开", "碧水东流至此回", "两岸青山相对出", "孤帆一片日边来"] },
+            { "title": "饮湖上初晴后雨", "author": "苏轼", "dynasty": "宋", "lines": ["水光潋滟晴方好", "山色空蒙雨亦奇", "欲把西湖比西子", "淡妆浓抹总相宜"] }
+          ],
+          "questions": [
+            { "id": "q1", "prompt": "“但闻人语响”中“但”的意思是？", "options": ["只", "但是", "听到"], "answer": "只", "explain": "“但”在这里是“只、只是”的意思。" },
+            { "id": "q2", "prompt": "“欲把西湖比西子”中“西子”指？", "options": ["西施", "西湖", "西边的孩子"], "answer": "西施", "explain": "西子指春秋时代越国美女西施。" }
+          ]
+        },
+        {
+          "id": "l2",
+          "title": "大自然的声音",
+          "characters": [
+            { "char": "妙", "pinyin": "miào", "words": ["美妙", "奇妙"] },
+            { "char": "奏", "pinyin": "zòu", "words": ["演奏", "合奏"] },
+            { "char": "琴", "pinyin": "qín", "words": ["手风琴", "琴声"] },
+            { "char": "柔", "pinyin": "róu", "words": ["温柔", "柔软"] },
+            { "char": "威", "pinyin": "wēi", "words": ["威力", "威严"] }
+          ],
+          "words": [
+            { "text": "大自然", "pinyin": "dà zì rán" },
+            { "text": "美妙", "pinyin": "měi miào" },
+            { "text": "音乐家", "pinyin": "yīn yuè jiā" },
+            { "text": "手风琴", "pinyin": "shǒu fēng qín" },
+            { "text": "威力", "pinyin": "wēi lì" }
+          ],
+          "idioms": [
+            { "text": "天籁之音", "pinyin": "tiān lài zhī yīn", "meaning": "自然界美妙的声音；联想到风、水和动物都是大自然的音乐家。" },
+            { "text": "呢喃细语", "pinyin": "ní nán xì yǔ", "meaning": "轻声细语；联想到微风吹过时轻轻柔柔的声音。" },
+            { "text": "波澜壮阔", "pinyin": "bō lán zhuàng kuò", "meaning": "水面辽阔、声势浩大；联想到小溪、河流、大海汇成海洋大合唱。" }
+          ]
+        },
+        {
+          "id": "l3",
+          "title": "读不完的大书",
+          "characters": [
+            { "char": "麻", "pinyin": "má", "words": ["麻雀", "麻布"] },
+            { "char": "旋", "pinyin": "xuán", "words": ["盘旋", "旋转"] },
+            { "char": "序", "pinyin": "xù", "words": ["井然有序", "顺序"] },
+            { "char": "姿", "pinyin": "zī", "words": ["姿态", "姿势"] },
+            { "char": "奥", "pinyin": "ào", "words": ["奥秘", "深奥"] }
+          ],
+          "words": [
+            { "text": "昆虫", "pinyin": "kūn chóng" },
+            { "text": "万物", "pinyin": "wàn wù" },
+            { "text": "井然有序", "pinyin": "jǐng rán yǒu xù" },
+            { "text": "千姿百态", "pinyin": "qiān zī bǎi tài" },
+            { "text": "奥秘", "pinyin": "ào mì" }
+          ],
+          "idioms": [
+            { "text": "千姿百态", "pinyin": "qiān zī bǎi tài", "meaning": "姿态多种多样；联想到花儿颜色不同、草叶长短宽窄不同。" },
+            { "text": "井然有序", "pinyin": "jǐng rán yǒu xù", "meaning": "整齐有条理；联想到蚂蚁搬家排着队伍。" },
+            { "text": "超凡脱俗", "pinyin": "chāo fán tuō sú", "meaning": "与众不同、不落俗套；联想到池塘边高大挺拔的棕榈树。" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u8",
+      "title": "第八单元 · 美好品质",
+      "theme": "academy",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "司马光",
+          "characters": [
+            { "char": "司", "pinyin": "sī", "words": ["司马光", "公司"] },
+            { "char": "皆", "pinyin": "jiē", "words": ["皆弃去", "皆大欢喜"] },
+            { "char": "弃", "pinyin": "qì", "words": ["弃去", "放弃"] },
+            { "char": "登", "pinyin": "dēng", "words": ["登瓮", "登山"] },
+            { "char": "持", "pinyin": "chí", "words": ["持石", "坚持"] }
+          ],
+          "words": [
+            { "text": "庭院", "pinyin": "tíng yuàn" },
+            { "text": "登瓮", "pinyin": "dēng wèng" },
+            { "text": "弃去", "pinyin": "qì qù" },
+            { "text": "持石", "pinyin": "chí shí" }
+          ],
+          "idioms": [
+            { "text": "临危不惧", "pinyin": "lín wēi bù jù", "meaning": "面对危险毫不害怕；联想到司马光在同伴落水时没有慌乱。" },
+            { "text": "急中生智", "pinyin": "jí zhōng shēng zhì", "meaning": "紧急时想出办法；联想到司马光拿石头击破瓮。" },
+            { "text": "见义勇为", "pinyin": "jiàn yì yǒng wéi", "meaning": "看到正义的事情勇敢去做；联想到司马光救出落水儿童。" }
+          ]
+        },
+        {
+          "id": "l2",
+          "title": "一定要争气",
+          "characters": [
+            { "char": "裕", "pinyin": "yù", "words": ["富裕", "充裕"] },
+            { "char": "差", "pinyin": "chà", "words": ["基础差", "成绩差"] },
+            { "char": "均", "pinyin": "jūn", "words": ["平均", "均匀"] },
+            { "char": "资", "pinyin": "zī", "words": ["资助", "资历"] },
+            { "char": "励", "pinyin": "lì", "words": ["激励", "鼓励"] }
+          ],
+          "words": [
+            { "text": "生物", "pinyin": "shēng wù" },
+            { "text": "成就", "pinyin": "chéng jiù" },
+            { "text": "考试", "pinyin": "kǎo shì" },
+            { "text": "平均", "pinyin": "píng jūn" },
+            { "text": "努力", "pinyin": "nǔ lì" },
+            { "text": "刻苦", "pinyin": "kè kǔ" }
+          ],
+          "idioms": [
+            { "text": "发愤图强", "pinyin": "fā fèn tú qiáng", "meaning": "下定决心努力变强；联想到童第周在路灯下刻苦读书。" },
+            { "text": "勤能补拙", "pinyin": "qín néng bǔ zhuō", "meaning": "勤奋可以弥补不足；联想到童第周成绩从45分赶上来。" },
+            { "text": "坚持不懈", "pinyin": "jiān chí bù xiè", "meaning": "坚持到底、不松懈；联想到童第周反复实践剥离青蛙卵外膜。" }
+          ]
+        },
+        {
+          "id": "l3",
+          "title": "手术台就是阵地",
+          "characters": [
+            { "char": "棒", "pinyin": "bàng", "words": ["当头一棒", "棒子"] },
+            { "char": "伤", "pinyin": "shāng", "words": ["伤员", "受伤"] },
+            { "char": "陆", "pinyin": "lù", "words": ["陆续", "大陆"] },
+            { "char": "血", "pinyin": "xuè", "words": ["血丝", "血液"] },
+            { "char": "迅", "pinyin": "xùn", "words": ["迅速", "迅猛"] },
+            { "char": "秒", "pinyin": "miǎo", "words": ["秒针", "秒表"] }
+          ],
+          "words": [
+            { "text": "手术台", "pinyin": "shǒu shù tái" },
+            { "text": "阵地", "pinyin": "zhèn dì" },
+            { "text": "战斗", "pinyin": "zhàn dòu" },
+            { "text": "伤员", "pinyin": "shāng yuán" },
+            { "text": "陆续", "pinyin": "lù xù" },
+            { "text": "争分夺秒", "pinyin": "zhēng fēn duó miǎo" }
+          ],
+          "idioms": [
+            { "text": "救死扶伤", "pinyin": "jiù sǐ fú shāng", "meaning": "救活将死的人、照顾伤员；联想到白求恩在手术台旁救治伤员。" },
+            { "text": "临危不惧", "pinyin": "lín wēi bù jù", "meaning": "面对危险不害怕；联想到炮弹落在小庙前，白求恩仍然镇定。" },
+            { "text": "争分夺秒", "pinyin": "zhēng fēn duó miǎo", "meaning": "抓紧每一分每一秒；联想到白求恩做了一个又一个手术。" },
+            { "text": "舍生忘死", "pinyin": "shě shēng wàng sǐ", "meaning": "不顾个人生死；联想到白求恩连续工作六十九个小时。" }
+          ]
+        },
+        {
+          "id": "l4",
+          "title": "一个粗瓷大碗",
+          "characters": [
+            { "char": "瓷", "pinyin": "cí", "words": ["粗瓷", "陶瓷"] },
+            { "char": "赵", "pinyin": "zhào", "words": ["赵一曼", "赵国"] },
+            { "char": "抗", "pinyin": "kàng", "words": ["抗联", "抵抗"] },
+            { "char": "缸", "pinyin": "gāng", "words": ["搪瓷缸", "水缸"] },
+            { "char": "禁", "pinyin": "jìn", "words": ["不禁", "禁止"] }
+          ],
+          "words": [
+            { "text": "粗瓷", "pinyin": "cū cí" },
+            { "text": "通讯员", "pinyin": "tōng xùn yuán" },
+            { "text": "搪瓷缸", "pinyin": "táng cí gāng" },
+            { "text": "高粱米饭", "pinyin": "gāo liang mǐ fàn" },
+            { "text": "野菜粥", "pinyin": "yě cài zhōu" }
+          ],
+          "idioms": [
+            { "text": "艰苦朴素", "pinyin": "jiān kǔ pǔ sù", "meaning": "吃苦耐劳、生活简朴；联想到赵一曼和战士们一样吃野菜、草根。" },
+            { "text": "同甘共苦", "pinyin": "tóng gān gòng kǔ", "meaning": "同享幸福、共担艰苦；联想到赵一曼不肯独自吃高粱米饭。" },
+            { "text": "以身作则", "pinyin": "yǐ shēn zuò zé", "meaning": "用自己的行动做榜样；联想到赵一曼把米饭倒回锅里，只盛半碗野菜粥。" },
+            { "text": "严于律己", "pinyin": "yán yú lǜ jǐ", "meaning": "严格约束自己；联想到赵一曼把粗瓷大碗让给七班当菜盆。" }
+          ]
+        }
+      ]
+    }
+  ]
+}

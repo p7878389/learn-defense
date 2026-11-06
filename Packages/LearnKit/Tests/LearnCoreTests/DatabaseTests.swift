@@ -12,7 +12,7 @@ struct DatabaseTests {
         try db.syncContent(Self.packs)
 
         let stored = try db.packs(grade: .g3, subject: .chinese)
-        #expect(stored.map(\.id) == ["chinese-g3-sample"])
+        #expect(stored.map(\.id) == ["chinese-g3-up-pep"])
 
         // 和出题用的知识点一致（同一知识点在多课出现时，数据库里每课各一行）
         let poolKeys = Set(ItemPool(packs: Self.packs, selection: .all).items.map(\.key))
@@ -32,13 +32,13 @@ struct DatabaseTests {
         let db = try LearnDatabase(url: nil)
         try db.syncContent(Self.packs)
 
-        let hits = try db.items(containing: "晨")
-        #expect(hits.contains { $0.kind == "character" && $0.text == "晨" && $0.pinyin == "chén" })
-        #expect(hits.allSatisfy { $0.text.contains("晨") })
+        let hits = try db.items(containing: "庭")
+        #expect(hits.contains { $0.kind == "character" && $0.text == "庭" && $0.pinyin == "tíng" })
+        #expect(hits.allSatisfy { $0.text.contains("庭") })
 
         let poem = try db.items(key: "poem:山行#0")
         #expect(poem.count == 1)
-        #expect(poem.first?.packID == "chinese-g3-sample")
+        #expect(poem.first?.packID == "chinese-g3-up-pep")
     }
 
     @Test func mistakesSortedByWrongCount() throws {
