@@ -12,6 +12,7 @@ public final class AppModel: ObservableObject {
 
     /// 成长系统配置（节奏、徽章、外观），来自 LearnCore 内置 JSON
     let growthCatalog = GrowthCatalog.bundled
+    let gameRules: GameRules
 
     private let profileStore: ProfileStore
     private var progressStores: [UUID: ProgressStore] = [:]
@@ -30,6 +31,12 @@ public final class AppModel: ObservableObject {
             issues.append("本地数据库打开失败，本次的档案、成长和学习记录不会保存：\(error.localizedDescription)")
         }
         self.database = database
+        do {
+            gameRules = try database?.gameRules() ?? .defaults
+        } catch {
+            gameRules = .defaults
+            issues.append("运行规则读取失败，使用默认值：\(error.localizedDescription)")
+        }
         databaseIssues = issues
         speechLibrary = SpeechLibrary(database: database)
         speech = Speech(library: speechLibrary)
@@ -112,7 +119,7 @@ public final class AppModel: ObservableObject {
             profileID: profileID,
             database: database,
             legacyFile: AppPaths.growthFile(for: profileID),
-            catalog: growthCatalog
+            catalog: growthCatalog, rules: gameRules
         ) { [unowned self] in
             progress(for: profileID).stats.values.reduce(0) { $0 + $1.correct }
         }

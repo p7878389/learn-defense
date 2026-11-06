@@ -1,7 +1,7 @@
 import LearnCore
 import SwiftUI
 
-/// 题目和选项按钮。点错后标出正确答案，孩子要再点一次正确的。
+/// 题目和选项按钮。答错只标记已选错项，不揭晓答案。
 struct AnswerPanel: View {
     let question: Question?
     let wrongPicks: Set<Int>
@@ -22,11 +22,9 @@ struct AnswerPanel: View {
                     }
                 }
                 if revealed {
-                    Text(q.explanation.map { "正确答案：\(q.answer)　\($0)" } ?? "正确答案：\(q.answer)")
+                    Text("再想一想，试试其他选项")
                         .font(.title3.weight(.medium))
-                        .foregroundStyle(Theme.jade)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.7)
+                        .foregroundStyle(Theme.muted)
                 }
             } else {
                 Text("僵尸马上就来，准备答题！")
@@ -72,9 +70,8 @@ struct AnswerPanel: View {
         }
     }
 
-    private func state(of index: Int, in q: Question) -> OptionButton.State {
+    func state(of index: Int, in q: Question) -> OptionButton.State {
         if wrongPicks.contains(index) { return .wrong }
-        if revealed && index == q.answerIndex { return .reveal }
         return .normal
     }
 }

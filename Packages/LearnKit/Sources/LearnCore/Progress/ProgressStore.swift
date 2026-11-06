@@ -101,6 +101,7 @@ public final class ProgressStore {
 /// 挑下一个要出的知识点：没见过的、常错的更容易被选中，掌握了的少出，最近出过的不重复。
 public struct ItemScheduler: Sendable {
     private var recent: [String] = []
+    private var scheduled = 0
 
     public init() {}
 
@@ -114,11 +115,19 @@ public struct ItemScheduler: Sendable {
     public mutating func next<R: RandomNumberGenerator>(
         from items: [LearningItem],
         stats: [String: ItemStats],
-        using rng: inout R
+        using rng: inout R,
+        reviewEvery: Int = 3
     ) -> LearningItem? {
         guard !items.isEmpty else { return nil }
-        let avoid = Set(recent.suffix(min(4, items.count - 1)))
-        let candidates = items.filter { !avoid.contains($0.key) }
+        scheduled += 1
+        let review = items.filter { stats[$0.key]?.needsReview == true }
+        let fresh = items.filter { stats[$0.key]?.needsReview != true }
+        // 固定穿插复习，同时为新题保留位置；纯复习/纯新题均自然回退。
+        let pool = scheduled % max(2, reviewEvery) == 0
+            ? (review.isEmpty ? fresh : review)
+            : (fresh.isEmpty ? review : fresh)
+        let avoid = Set(recent.suffix(min(4, pool.count - 1)))
+        let candidates = pool.filter { !avoid.contains($0.key) }
         let weights = candidates.map { Self.weight(stats[$0.key]) }
         let total = weights.reduce(0, +)
         var roll = Double.random(in: 0..<total, using: &rng)

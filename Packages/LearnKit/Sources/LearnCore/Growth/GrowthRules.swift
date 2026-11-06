@@ -67,7 +67,22 @@ public struct GrowthResult: Sendable, Equatable {
     public var totalCoins: Int { coins + levelCoins + badgeCoins }
 }
 
+/// 每个孩子按本地自然日独立计数，所有常规积分入口统一限额。
+public enum CoinSource: String, CaseIterable, Sendable {
+    case answers, completion, firstWin, level, badge
+
+    public var dailyLimit: Int { GameRules.defaults.coinLimit(self) }
+}
+
 extension GrowthState {
+    private mutating func awardCoins(_ amount: Int, source: CoinSource, rules: GameRules) -> Int {
+        let used = max(0, stats.coinsToday[source.rawValue] ?? 0)
+        let awarded = min(max(0, amount), max(0, rules.coinLimit(source) - used))
+        stats.coinsToday[source.rawValue] = used + awarded
+        coins += awarded
+        return awarded
+    }
+
     /// 每日记录按设备所在时区的日期划分
     static func dayKey(_ date: Date, calendar: Calendar) -> String {
         let c = calendar.dateComponents([.year, .month, .day], from: date)
@@ -75,10 +90,16 @@ extension GrowthState {
     }
 
     /// 结算一局：更新统计、经验、积分、等级奖励和徽章，返回结算页要显示的内容
-    public mutating func settle(_ report: GameReport, catalog: GrowthCatalog, calendar: Calendar = .current) -> GrowthResult {
+    public mutating func settle(_ report: GameReport, catalog: GrowthCatalog, calendar: Calendar = .current, rules: GameRules = .defaults) -> GrowthResult {
         let pacing = catalog.pacing
         let curve = pacing.levelCurve
         let before = level(curve)
+        guard report.questions > 0 else {
+            return GrowthResult(xp: 0, coins: 0, levelCoins: 0, badgeCoins: 0,
+                                dailyFirstWin: false, reduced: false, fullXP: 0, fullCoins: 0,
+                                gamesToday: stats.gamesToday, before: before, after: before,
+                                gifts: [], unlocked: [], newBadges: [])
+        }
 
         // 当天第几局、是否每日首胜
         let today = Self.dayKey(report.date, calendar: calendar)
@@ -86,6 +107,7 @@ extension GrowthState {
             stats.day = today
             stats.gamesToday = 0
             stats.wonToday = false
+            stats.coinsToday = [:]
         }
         stats.gamesToday += 1
         let dailyFirstWin = report.won && !stats.wonToday
@@ -95,10 +117,16 @@ extension GrowthState {
 
         // 经验：正确率 + 通关 + 星级，乘难度倍率；每日首胜另加
         var rawXP = report.accuracy * Double(pacing.xp.accuracy)
-        var rawCoins = report.accuracy * Double(pacing.coins.accuracy)
+        // 少于六题按实际题量折算，单题高正确率不能领取整局答题奖励。
+        let participation = min(1, Double(report.questions) / 6)
+        rawXP *= participation
+        let answerCoins = report.accuracy * Double(pacing.coins.accuracy) * participation
+        var completionCoins = 0.0
+        var rawCoins = answerCoins
         if report.won {
             rawXP += Double(pacing.xp.win + report.stars * pacing.xp.perStar)
-            rawCoins += Double(pacing.coins.win[report.difficulty] + report.stars * pacing.coins.perStar)
+            completionCoins = Double(pacing.coins.win[report.difficulty] + report.stars * pacing.coins.perStar) * participation
+            rawCoins += completionCoins
         }
         rawXP *= pacing.xp.difficultyRate[report.difficulty]
         if dailyFirstWin {
@@ -108,7 +136,13 @@ extension GrowthState {
         let fullXP = Int(rawXP.rounded())
         let fullCoins = Int(rawCoins.rounded())
         let gainedXP = Int((rawXP * rate).rounded())
-        let gainedCoins = Int((rawCoins * rate).rounded())
+        // 分别扣除来源额度；四舍五入的差额留给过关奖励。
+        let answerAward = Int((answerCoins * rate).rounded())
+        let firstAward = dailyFirstWin ? Int((Double(pacing.daily.firstWinCoins) * rate).rounded()) : 0
+        let completionAward = max(0, Int((rawCoins * rate).rounded()) - answerAward - firstAward)
+        let gainedCoins = awardCoins(answerAward, source: .answers, rules: rules)
+            + awardCoins(completionAward, source: .completion, rules: rules)
+            + awardCoins(firstAward, source: .firstWin, rules: rules)
 
         // 累计统计
         stats.gamesPlayed += 1
@@ -133,27 +167,26 @@ extension GrowthState {
         }
 
         xp += gainedXP
-        coins += gainedCoins
         let after = level(curve)
 
         // 升级奖励：每升一级送积分；这几级解锁的外观，免费的直接拥有，收费的可以去买
-        let levelCoins = max(0, after.level - before.level) * pacing.coins.perLevel
-        coins += levelCoins
+        let levelCoins = awardCoins(max(0, after.level - before.level) * pacing.coins.perLevel, source: .level, rules: rules)
         let newlyUnlocked = catalog.cosmetics.filter {
             !$0.isOriginal && $0.unlockLevel > before.level && $0.unlockLevel <= after.level
         }
 
         // 徽章：每枚只发一次
         var newBadges: [BadgeKind] = []
+        var badgeCoins = 0
         for badge in catalog.badges where badges[badge.id] == nil && badge.isMet(stats: stats, level: after.level) {
             badges[badge.id] = report.date
-            coins += max(0, badge.coins)
+            badgeCoins += awardCoins(badge.coins, source: .badge, rules: rules)
             newBadges.append(badge)
         }
 
         return GrowthResult(
             xp: gainedXP, coins: gainedCoins, levelCoins: levelCoins,
-            badgeCoins: newBadges.reduce(0) { $0 + max(0, $1.coins) },
+            badgeCoins: badgeCoins,
             dailyFirstWin: dailyFirstWin, reduced: reduced, fullXP: fullXP, fullCoins: fullCoins,
             gamesToday: stats.gamesToday, before: before, after: after,
             gifts: newlyUnlocked.filter { $0.price == 0 },
@@ -182,6 +215,7 @@ extension GrowthState {
 public final class GrowthStore {
     public private(set) var state: GrowthState
     public let catalog: GrowthCatalog
+    public let rules: GameRules
     private let profileID: UUID
     private let database: LearnDatabase?
 
@@ -191,10 +225,11 @@ public final class GrowthStore {
     ///     导入后改名为 .json.migrated；文件坏了则改名为 .json.bak，从头开始
     ///   - legacyCorrectAnswers: 既没有成长档案也没有旧文件时，老学习记录里累计答对的次数，用来补发
     public init(profileID: UUID = UUID(), database: LearnDatabase? = nil, legacyFile: URL? = nil,
-                catalog: GrowthCatalog, legacyCorrectAnswers: () -> Int = { 0 }) {
+                catalog: GrowthCatalog, rules: GameRules = .defaults, legacyCorrectAnswers: () -> Int = { 0 }) {
         self.profileID = profileID
         self.database = database
         self.catalog = catalog
+        self.rules = rules.validated()
 
         if let database {
             do {
@@ -236,7 +271,7 @@ public final class GrowthStore {
     public var loadout: Loadout { state.loadout(catalog) }
 
     public func settle(_ report: GameReport) -> GrowthResult {
-        let result = state.settle(report, catalog: catalog)
+        let result = state.settle(report, catalog: catalog, rules: rules)
         save()
         return result
     }

@@ -45,7 +45,7 @@ struct ResultView: View {
     private var banner: some View {
         HStack(spacing: 12) {
             PictureView(emoji: won ? "🎉" : "💪", size: 38)
-            Text(won ? "闯关成功！" : "差一点就守住了！")
+            Text("本局结束 · 完成 \(session.completedRounds) 回合")
                 .font(.system(size: 34, weight: .heavy, design: .rounded))
             PictureView(emoji: won ? "🌟" : "📚", size: 38)
         }
@@ -119,11 +119,14 @@ struct ResultView: View {
             HStack(spacing: 12) {
                 rewardTile(icon: "⭐", title: "经验", value: g.xp, full: g.reduced ? g.fullXP : nil,
                            fill: Theme.jade, edge: GrowthColors.jadeDark, text: .white)
-                rewardTile(icon: nil, title: "积分", value: g.coins, full: g.reduced ? g.fullCoins : nil,
+                rewardTile(icon: nil, title: "总积分", value: g.totalCoins, full: nil,
                            fill: GrowthColors.gold, edge: GrowthColors.goldDark, text: Color(red: 0.36, green: 0.25, blue: 0))
             }
+            Text("每日上限：答题 \(session.rules.coinLimit(.answers)) · 过关 \(session.rules.coinLimit(.completion)) · 首胜 \(session.rules.coinLimit(.firstWin)) · 升级 \(session.rules.coinLimit(.level)) · 徽章 \(session.rules.coinLimit(.badge))")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(Theme.muted)
             if g.reduced {
-                HintCapsule(icon: "😴", text: "今天玩了 \(g.gamesToday) 局，奖励减半啦。休息一下眼睛，明天再来！", tint: GrowthColors.calm)
+                HintCapsule(icon: "😴", text: "今天玩了 \(g.gamesToday) 局，基础奖励减半，积分按每日剩余额度发放", tint: GrowthColors.calm)
             } else if g.dailyFirstWin {
                 let p = GrowthCatalog.bundled.pacing.daily
                 HintCapsule(icon: "🔥", text: "今天第一次通关：+\(p.firstWinXP) 经验 · +\(p.firstWinCoins) 积分（已计入）")
@@ -235,7 +238,7 @@ struct ResultView: View {
     private func badgeRow(_ badge: BadgeKind) -> some View {
         gainRow(title: badge.name,
                 tag: "新徽章！", tagText: GrowthColors.orangeDark, tagFill: GrowthColors.gold.opacity(0.3),
-                detail: "\(badge.summary) · 奖励 \(badge.coins) 积分", isNew: false) {
+                detail: "\(badge.summary) · 积分已按每日额度计入总额", isNew: false) {
             MedalView(icon: badge.icon, earned: true, size: 40)
                 .frame(width: 52, height: 52)
         }
@@ -318,7 +321,7 @@ struct MistakeNotebook: View {
             ForEach(mistakes) { m in
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     PictureView(emoji: m.missed ? "⏰" : "✏️", size: 22)
-                    Text(m.explanation ?? "\(m.prompt) → \(m.answer)")
+                    Text("\(m.prompt) · " + (m.missed ? "未作答" : "需要再练习"))
                         .foregroundStyle(Theme.ink)
                         .fixedSize(horizontal: false, vertical: true)
                 }

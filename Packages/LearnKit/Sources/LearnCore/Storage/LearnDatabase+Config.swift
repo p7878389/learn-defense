@@ -10,7 +10,7 @@ extension LearnDatabase {
     /// bundle 为 nil 时读 LearnCore 自带的 Resources/Config
     public func syncConfig(_ catalog: GrowthCatalog, bundle: Bundle? = nil) throws {
         let bundle = bundle ?? .module
-        for old in try context.fetch(FetchDescriptor<StoredConfigFile>()) { context.delete(old) }
+        for old in try context.fetch(FetchDescriptor<StoredConfigFile>()) where Self.configFileNames.contains(old.name) { context.delete(old) }
         for old in try context.fetch(FetchDescriptor<StoredBadge>()) { context.delete(old) }
         for old in try context.fetch(FetchDescriptor<StoredCosmetic>()) { context.delete(old) }
         try context.save()
@@ -50,5 +50,28 @@ extension LearnDatabase {
             predicate: #Predicate { $0.slot == s },
             sortBy: [SortDescriptor(\.position)]
         ))
+    }
+}
+
+extension LearnDatabase {
+    /// 独立于内置 JSON 的配置同步，不被 syncConfig 覆盖。
+    public func gameRules() throws -> GameRules {
+        if let row = try configFile(named: "game-rules.json") {
+            // 损坏时保留原数据供排查，本次使用默认值。
+            return (try? JSONDecoder().decode(GameRules.self, from: row.data))?.validated() ?? .defaults
+        }
+        try saveGameRules(.defaults)
+        return .defaults
+    }
+
+    public func saveGameRules(_ rules: GameRules) throws {
+        let data = try JSONEncoder().encode(rules.validated())
+        if let row = try configFile(named: "game-rules.json") {
+            row.data = data
+            row.syncedAt = Date()
+        } else {
+            context.insert(StoredConfigFile(name: "game-rules.json", data: data))
+        }
+        try context.save()
     }
 }
