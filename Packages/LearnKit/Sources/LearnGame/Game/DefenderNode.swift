@@ -8,17 +8,20 @@ final class DefenderNode: SKNode {
     let hitEffects: [any HitEffectStrategy]
     private let radius: CGFloat
     private let body: SKShapeNode
+    private let skin: CharacterSkin?
     /// 序列帧外观；自定义字灵没有，用矢量绘制
     private let rig: SpriteRig?
     private var sprite: SKSpriteNode? { rig?.sprite }
 
-    init(kind: DefenderKind, radius: CGFloat) {
+    init(kind: DefenderKind, radius: CGFloat, skin: CharacterSkin? = nil) {
         self.kind = kind
         self.radius = radius
         attack = kind.attack.makeStrategy()
         hitEffects = kind.effects.map { $0.makeStrategy() }
         body = DefenderArt.body(kind.look, radius: radius)
-        rig = UnitSprites.defender(kind, radius: radius)
+        let rig = UnitSprites.defender(kind, radius: radius, skin: skin)
+        self.rig = rig
+        self.skin = rig?.base.hasPrefix("skin-") == true ? skin : nil
         super.init()
         if let rig {
             addChild(rig.sprite)
@@ -27,6 +30,7 @@ final class DefenderNode: SKNode {
             if let accessory = DefenderArt.accessory(kind.look, radius: radius) { addChild(accessory) }
             addChild(DefenderArt.eyes(radius: radius))
         }
+        CharacterSkinEffects.decorate(self, skin: self.skin, radius: radius)
 
         run(.repeatForever(.sequence([
             .moveBy(x: 0, y: 4, duration: 0.8),
@@ -46,6 +50,13 @@ final class DefenderNode: SKNode {
 
     /// 发射：有发射动画的（大喷菇）播一遍再回到待机。不缩放守卫，避免画面出现晃动
     func shoot() {
+        if let skin, let rig {
+            CharacterSkinEffects.shoot(in: self, skin: skin, at: rig.muzzle ?? .zero)
+            rig.sprite.run(.sequence([
+                .rotate(toAngle: -0.10, duration: 0.06),
+                .rotate(toAngle: 0, duration: 0.16),
+            ]), withKey: "skinRecoil")
+        }
         guard let rig, let attack = rig.clip(for: "attack") else { return }
         rig.playOnce(attack)
     }
