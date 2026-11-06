@@ -6,6 +6,9 @@ import LearnCore
 @MainActor
 final class Speech: NSObject {
     let library: SpeechLibrary?
+    enum Channel { case question, guidance, preview }
+    private var preferences = ReaderPreferences()
+    var effectsVolume: Float { Float(preferences.effectsVolume) }
     private let synthesizer = AVSpeechSynthesizer()
     private let voice = Speech.bestSystemVoice(language: "zh-CN")
     /// 英语题库的音标是英式的，用英式发音
@@ -27,7 +30,19 @@ final class Speech: NSObject {
     }
 
     /// interrupt 为 true 时打断正在读的内容，否则排队读
-    func speak(_ text: String?, interrupt: Bool) {
+    func apply(_ value: ReaderPreferences) {
+        stop()
+        preferences = value.validated()
+        library?.setGenerationEnabled(preferences.source == .doubao)
+        #if os(iOS)
+        try? AVAudioSession.sharedInstance().setCategory(
+            preferences.readsWhenSilent ? .playback : .ambient,
+            mode: .default, options: [.duckOthers])
+        #endif
+    }
+
+    func speak(_ text: String?, interrupt: Bool, channel: Channel = .guidance) {
+        guard channel == .preview || (channel == .question ? preferences.readQuestions : preferences.readGuidance) else { return }
         guard let text = text.flatMap(SpeechText.normalize) else { return }
         if interrupt { stop() }
         queue.append(text)
@@ -47,13 +62,16 @@ final class Speech: NSObject {
     private func playNext() {
         guard !queue.isEmpty else { return }
         let text = queue.removeFirst()
-        if let url = library?.audioFile(for: text), let player = try? AVAudioPlayer(contentsOf: url) {
+        if preferences.source == .doubao, let url = library?.audioFile(for: text), let player = try? AVAudioPlayer(contentsOf: url) {
+            player.enableRate = true
+            player.rate = Float(preferences.rate / 0.46)
+            player.volume = Float(preferences.volume)
             player.delegate = self
             self.player = player
             if player.play() { return }
             self.player = nil
         }
-        library?.requestSoon(text)
+        if preferences.source == .doubao { library?.requestSoon(text) }
         speakWithSystemVoice(text)
     }
 
@@ -63,9 +81,10 @@ final class Speech: NSObject {
         for part in Self.segments(text) {
             let utterance = AVSpeechUtterance(string: part.text)
             utterance.voice = part.english ? englishVoice : voice
-            // 比默认（0.5）稍慢，方便孩子听清；不改音调，改了反而更像机器声
-            utterance.rate = 0.46
-            utterance.pitchMultiplier = 1.0
+            // 使用家长保存的系统朗读参数
+            utterance.rate = Float(preferences.rate)
+            utterance.pitchMultiplier = Float(preferences.pitch)
+            utterance.volume = Float(preferences.volume)
             synthesizer.speak(utterance)
             last = utterance
         }

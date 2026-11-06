@@ -35,10 +35,15 @@ final class GameSession: ObservableObject {
     /// 当前瞄准的怪物的题目
     @Published private(set) var current: Question?
     /// 当前题目已经点错的选项
+    /// 选择题是答错的选项；输入题是第几次答错（1、2、3…），个数就是答错次数
     @Published private(set) var wrongPicks: Set<Int> = []
+    /// 正在拼字块题：战场放慢，瞄准的怪物停下
+    @Published private(set) var typing = false
     @Published private(set) var ultimate: Question?
     @Published private(set) var ultimateWrongPicks: Set<Int> = []
     @Published private(set) var inventory = Inventory(capacity: 3)
+    /// 场上已经有一道铁栅门；碎了才能再放
+    @Published private(set) var barricadeDown = false
 
     private(set) var attempted = 0
     private(set) var firstTryCorrect = 0
@@ -61,8 +66,16 @@ final class GameSession: ObservableObject {
     /// 准备阶段给答题区预留高度用的样题：按本局出题方式出一道，不计入进度，也不影响出题顺序
     private(set) lazy var layoutSample: Question? = {
         var sampleRng = SystemRandomNumberGenerator()
-        for item in generator.pool.items.shuffled(using: &sampleRng).prefix(8) {
-            if let question = generator.makeQuestion(for: item, using: &sampleRng) { return question }
+        // 这一档会出字块题时按字块题量高度（比选择题高），切换题型时战场不会忽大忽小
+        let mix = generator.settings.answerMix
+        let mode: AnswerMode = mix.multi > 0 ? .multi : (mix.single > 0 ? .single : .choice)
+        let items = generator.pool.items.shuffled(using: &sampleRng).prefix(12)
+        for item in items {
+            if let question = generator.makeQuestion(for: item, mode: mode, using: &sampleRng),
+               mode == .choice || question.input != nil { return question }
+        }
+        for item in items {
+            if let question = generator.makeQuestion(for: item, mode: .choice, using: &sampleRng) { return question }
         }
         return nil
     }()
@@ -174,10 +187,37 @@ final class GameSession: ObservableObject {
     func answer(_ index: Int) {
         guard phase == .playing, ultimate == nil, let id = targetID, let entry = enemyQuestions[id] else { return }
         let question = entry.question
-        guard question.options.indices.contains(index) else { return }
+        guard question.input == nil, question.options.indices.contains(index) else { return }
+        submit(id: id, entry: entry, correct: index == question.answerIndex, pick: index) { [recorder] shownAt in
+            recorder?.recordAnswer(question, chosenIndex: index, shownAt: shownAt)
+        }
+    }
+
+    /// 字块题交卷：texts 依次是每个空放进去的字块
+    func answerInput(_ texts: [String]) {
+        guard phase == .playing, ultimate == nil, let id = targetID, let entry = enemyQuestions[id],
+              let spec = entry.question.input else { return }
+        let question = entry.question
+        let correct = spec.accepts(texts)
+        let typedText = spec.compose(texts)
+        submit(id: id, entry: entry, correct: correct, pick: (enemyWrongPicks[id]?.count ?? 0) + 1) { [recorder] shownAt in
+            recorder?.recordAnswer(question, typed: typedText, correct: correct, shownAt: shownAt)
+        }
+    }
+
+    /// 孩子开始点字块：战场放慢、瞄准的怪物停下；交卷或换目标后恢复
+    func setTyping(_ on: Bool) {
+        typing = on && phase == .playing && ultimate == nil && current?.input != nil
+    }
+
+    /// 选择题和输入题共用的判题：pick 是这次作答的标记（选项序号或第几次输入），
+    /// record 只在第一次作答时调用，记下这一题的成绩
+    private func submit(id: Int, entry: (item: LearningItem, question: Question), correct: Bool, pick index: Int,
+                        record: (Date?) -> Void) {
+        let question = entry.question
         var picks = enemyWrongPicks[id] ?? []
 
-        if index == question.answerIndex {
+        if correct {
             guard scene.canAttack(id) else {
                 scene.play(FloatingTextEffect(text: "先选卡片，再点草坪", color: Palette.hurt, fontSize: 28))
                 speech.speak(SpeechText.Line.plantFirst, interrupt: true)
@@ -190,11 +230,13 @@ final class GameSession: ObservableObject {
                 energy = min(energy + 1, tuning.ultimateEnergy)
                 tuner.record(correct: true)
                 progress.record(entry.item, correct: true)
-                recorder?.recordAnswer(question, chosenIndex: index, shownAt: shownAt[id])
+                record(shownAt[id])
             } else {
                 score += 2
             }
-            feedback.play(correct: true)
+            feedback.play(correct: true, volume: speech.effectsVolume)
+            typing = false
+            scene.noteCorrectAnswer()
 
             enemyQuestions[id] = nil
             enemyWrongPicks[id] = nil
@@ -210,7 +252,7 @@ final class GameSession: ObservableObject {
                     scene.setSign(id, next.question.signText)
                     current = next.question
                     wrongPicks = []
-                    speech.speak(next.question.promptSpeech, interrupt: false)
+                    speech.speak(next.question.promptSpeech, interrupt: false, channel: .question)
                 } else {
                     scene.fire(at: id, overwhelming: true)
                 }
@@ -223,18 +265,18 @@ final class GameSession: ObservableObject {
                 progress.record(entry.item, correct: false)
                 progress.save()
                 mistakes.append(Mistake(question: question, missed: false))
-                recorder?.recordAnswer(question, chosenIndex: index, shownAt: shownAt[id])
+                record(shownAt[id])
             }
             picks.insert(index)
             enemyWrongPicks[id] = picks
             wrongPicks = picks
-            feedback.play(correct: false)
+            feedback.play(correct: false, volume: speech.effectsVolume)
             scene.penalize(id)
         }
     }
 
     func replayPrompt() {
-        speech.speak((ultimate ?? current)?.promptSpeech, interrupt: true)
+        speech.speak((ultimate ?? current)?.promptSpeech, interrupt: true, channel: .preview)
     }
 
     // MARK: - 大招
@@ -243,10 +285,11 @@ final class GameSession: ObservableObject {
         guard ultimateReady, let pair = generator.makeUltimateQuestion(using: &rng) else { return }
         ultimateItem = pair.0
         ultimate = pair.1
+        typing = false
         ultimateWrongPicks = []
         ultimateShownAt = Date()
         scene.setGamePaused(true)
-        speech.speak(pair.1.promptSpeech, interrupt: true)
+        speech.speak(pair.1.promptSpeech, interrupt: true, channel: .question)
     }
 
     /// 不放大招了：关掉题目、继续战斗。还没作答就取消，能量留着下次再放；
@@ -270,7 +313,7 @@ final class GameSession: ObservableObject {
                 progress.record(item, correct: true)
                 recorder?.recordAnswer(question, chosenIndex: index, ultimate: true, shownAt: ultimateShownAt)
             }
-            feedback.play(correct: true)
+            feedback.play(correct: true, volume: speech.effectsVolume)
             ultimate = nil
             ultimateItem = nil
             energy = 0
@@ -291,7 +334,7 @@ final class GameSession: ObservableObject {
                 recorder?.recordAnswer(question, chosenIndex: index, ultimate: true, shownAt: ultimateShownAt)
             }
             ultimateWrongPicks.insert(index)
-            feedback.play(correct: false)
+            feedback.play(correct: false, volume: speech.effectsVolume)
         }
     }
 
@@ -312,7 +355,7 @@ final class GameSession: ObservableObject {
 
     /// 把拖到战场上的卡牌落到对应草坪；成功后立即扣除阳光
     func dropSeed(id: String, at point: CGPoint) -> Bool {
-        guard canUseShop, let kind = tuning.lineup.first(where: { $0.id == id }) else { return false }
+        guard canUseShop, let kind = tuning.plantable.first(where: { $0.id == id }) else { return false }
         guard sun >= kind.sunCost else {
             scene.play(FloatingTextEffect(text: "阳光不够", color: Palette.hurt, fontSize: 30))
             speech.speak(SpeechText.Line.notEnoughSun, interrupt: true)
@@ -330,6 +373,35 @@ final class GameSession: ObservableObject {
         }
         sun -= kind.sunCost
         speech.speak(SpeechText.Line.planted(kind.name), interrupt: true)
+        return true
+    }
+
+    /// 铁栅门卡能不能点：战斗中、场上还没有门、有正在答题的僵尸（阳光不够时卡片变灰，由界面判断）
+    var canDropBarricade: Bool {
+        tuning.barricade != nil && phase == .playing && ultimate == nil && !barricadeDown && targetID != nil
+    }
+
+    /// 花阳光在正在答题的僵尸面前放一道铁栅门，同一时间场上只有一道
+    @discardableResult
+    func dropBarricade() -> Bool {
+        guard let kind = tuning.barricade, phase == .playing, ultimate == nil else { return false }
+        guard !barricadeDown else {
+            speech.speak(SpeechText.Line.gateBusy, interrupt: true)
+            return false
+        }
+        guard let id = targetID else {
+            speech.speak(SpeechText.Line.gateNoTarget, interrupt: true)
+            return false
+        }
+        guard sun >= kind.sunCost else {
+            scene.play(FloatingTextEffect(text: "阳光不够", color: Palette.hurt, fontSize: 30))
+            speech.speak(SpeechText.Line.notEnoughSun, interrupt: true)
+            return false
+        }
+        guard scene.dropBarricade(kind, before: id) else { return false }
+        sun -= kind.sunCost
+        barricadeDown = true
+        speech.speak(SpeechText.Line.gateDown, interrupt: true)
         return true
     }
 
@@ -385,6 +457,7 @@ final class GameSession: ObservableObject {
         restRemaining = rules.restSeconds(afterRound: round)
         restUntil = Date().addingTimeInterval(Double(restRemaining))
         phase = .resting
+        typing = false
         ultimate = nil
         ultimateItem = nil
         current = nil
@@ -438,6 +511,7 @@ final class GameSession: ObservableObject {
     private func finish(won: Bool) {
         guard phase == .playing || phase == .paused || phase == .resting else { return }
         phase = won ? .won : .lost
+        typing = false
         ultimate = nil
         scene.setGamePaused(true)
         progress.save()
@@ -489,7 +563,9 @@ final class GameSession: ObservableObject {
 }
 
 extension GameSession: GameSceneDelegate {
-    var speedFactor: Double { tuner.speedFactor }
+    /// 拼字块题时战场放慢到一半
+    var speedFactor: Double { tuner.speedFactor * (typing ? 0.5 : 1) }
+    var holdsTarget: Bool { typing }
 
     func nextEnemy() -> EnemySpawn? {
         guard phase == .playing, spawned < totalEnemies else { return nil }
@@ -521,10 +597,11 @@ extension GameSession: GameSceneDelegate {
     func targetChanged(to id: Int?) {
         guard phase == .playing else { return }
         targetID = id
+        typing = false
         current = id.flatMap { enemyQuestions[$0]?.question }
         if let id, current != nil, shownAt[id] == nil { shownAt[id] = Date() }
         wrongPicks = id.flatMap { enemyWrongPicks[$0] } ?? []
-        speech.speak(current?.promptSpeech, interrupt: false)
+        speech.speak(current?.promptSpeech, interrupt: false, channel: .question)
     }
 
     func enemyReachedBase(_ id: Int) -> Bool {
@@ -574,6 +651,12 @@ extension GameSession: GameSceneDelegate {
         resolved += 1
         roundResolved = resolved
         checkFinished()
+    }
+}
+
+extension GameSession {
+    func barricadeRemoved() {
+        barricadeDown = false
     }
 }
 

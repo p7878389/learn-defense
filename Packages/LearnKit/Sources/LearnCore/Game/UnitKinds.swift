@@ -29,29 +29,59 @@ public struct EnemyKind: Identifiable, Hashable, Sendable {
         self.look = look
         self.drop = drop
     }
+
+    /// 会跳的僵尸能跳过矮的防御道具（坚果墙），跳不过高坚果
+    public var canVault: Bool {
+        if case .hop = movement { true } else { false }
+    }
 }
 
-/// 一种字灵 = 攻击方式 + 命中效果 + 外观 + 子弹外观
+/// 一种字灵 = 攻击方式 + 命中效果 + 外观 + 子弹外观。
+/// 坚果墙、土豆雷这类防御道具没有攻击方式，只有拦僵尸的方式（guardStyle）
 public struct DefenderKind: Identifiable, Hashable, Sendable {
     public var id: String
     public var name: String
-    public var attack: AttackStyle
+    /// 射手才有；防御道具为 nil，答对时不由它发射
+    public var attack: AttackStyle?
     public var effects: [HitEffect]
+    /// 防御道具才有：怎么拦僵尸
+    public var guardStyle: GuardStyle?
     public var look: DefenderLook
     public var projectile: ProjectileLook
     /// 种植需要的阳光
     public var sunCost: Int
 
-    public init(id: String, name: String, sunCost: Int = 50, attack: AttackStyle, effects: [HitEffect] = [],
-                look: DefenderLook, projectile: ProjectileLook) {
+    public init(id: String, name: String, sunCost: Int = 50, attack: AttackStyle? = nil, effects: [HitEffect] = [],
+                guardStyle: GuardStyle? = nil, look: DefenderLook,
+                projectile: ProjectileLook = ProjectileLook(shape: .orb, color: .gold)) {
         self.id = id
         self.name = name
         self.sunCost = max(0, sunCost)
         self.attack = attack
         self.effects = effects
+        self.guardStyle = guardStyle
         self.look = look
         self.projectile = projectile
     }
+
+    /// 答对时能不能发射
+    public var canShoot: Bool { attack != nil }
+
+    /// 换一种拦法（按难度调耐久、出土题数），其他不变
+    public func guarding(_ style: GuardStyle) -> DefenderKind {
+        var kind = self
+        kind.guardStyle = style
+        return kind
+    }
+}
+
+/// 防御道具拦僵尸的方式，实现在 LearnGame 的 GuardStrategy
+public enum GuardStyle: Hashable, Sendable {
+    /// 僵尸走到面前停下来啃，啃 seconds 秒后碎掉。
+    /// tall 为 false 时，会跳的僵尸（走法 .hop）在允许跳墙的难度里能跳过去
+    case wall(seconds: Double, tall: Bool)
+    /// 答对 armAfter 题后出土；出土后第一个踩上的僵尸直接倒下，首领只扣 bossDamage 血并被弹开
+    case mine(armAfter: Int, bossDamage: Int)
 }
 
 /// 攻击方式的配置，动画由 LearnGame 里对应的策略实现

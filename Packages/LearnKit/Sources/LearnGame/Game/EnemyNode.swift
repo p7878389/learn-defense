@@ -19,6 +19,8 @@ final class EnemyNode: SKNode {
     private var slowRemaining = 0.0
     /// 当前动作速度，跟着减速变化
     private var tempo: CGFloat = 1
+    /// 正被防御道具挡住、在啃它
+    private(set) var isChewing = false
 
     /// figure 负责跳起的高度，squash 负责身体一压一伸
     private let figure = SKNode()
@@ -130,6 +132,18 @@ final class EnemyNode: SKNode {
         return CGFloat(motion.dx)
     }
 
+    /// 啃防御道具的快慢：跟着减速变慢，冻住时不啃
+    var chewRate: Double { doomed ? 0 : slowFactor }
+
+    /// 被挡住时停下来啃，离开（被击退、挡的东西碎了）时接着走
+    func setChewing(_ on: Bool) {
+        guard on != isChewing else { return }
+        isChewing = on
+        removeAction(forKey: "chomp")
+        guard let rig, let clip = on ? biteClip : walkClip else { return }
+        rig.loop(clip)
+    }
+
     func slow(factor: Double, seconds: Double) {
         slowFactor = min(slowFactor, factor)
         slowRemaining = max(slowRemaining, seconds)
@@ -220,7 +234,7 @@ final class EnemyNode: SKNode {
               let rig, let bare = rig.clip(for: "bare") else { return }
         armorShed = true
         // 正在咬人时先不换，咬完回到走路时自然换成普通僵尸
-        if action(forKey: "chomp") == nil { rig.loop(bare) }
+        if action(forKey: "chomp") == nil { rig.loop(isChewing ? biteClip ?? bare : bare) }
         if let parent {
             let head = CGPoint(x: center.x, y: center.y + halfHeight * CGFloat(kind.look.scale) * 0.5 * yScale)
             InkBurstEffect(color: SKColor(white: 0.6, alpha: 1), scale: 0.6, count: 6).play(at: head, in: parent)
@@ -271,21 +285,22 @@ final class EnemyNode: SKNode {
         run(.moveBy(x: distance, y: 0, duration: 0.18))
     }
 
-    /// 答错：往前冲一小段，张嘴咬一下
+    /// 答错：往前冲一小段，张嘴咬一下。被挡住时不往前冲，原地狠咬一口
     func lunge() {
-        position.x -= 36
+        if !isChewing { position.x -= 36 }
         run(.sequence([
             .moveBy(x: -6, y: 0, duration: 0.05),
             .moveBy(x: 12, y: 0, duration: 0.08),
             .moveBy(x: -6, y: 0, duration: 0.05),
         ]))
-        guard let rig, let bite = biteClip else { return }
+        guard let rig, let bite = biteClip, !isChewing else { return }
         rig.loop(bite)
         run(.sequence([
             .wait(forDuration: 0.6),
             .run { [weak self] in
-                guard let self, let rig = self.rig, let walk = self.walkClip else { return }
-                rig.loop(walk)
+                guard let self, let rig = self.rig,
+                      let clip = self.isChewing ? self.biteClip : self.walkClip else { return }
+                rig.loop(clip)
             },
         ]), withKey: "chomp")
     }

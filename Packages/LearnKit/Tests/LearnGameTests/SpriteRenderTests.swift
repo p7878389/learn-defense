@@ -13,12 +13,12 @@ struct SpriteRenderTests {
         let scene = SKScene(size: CGSize(width: 1200, height: 620))
         scene.backgroundColor = SKColor(red: 0.93, green: 0.96, blue: 0.87, alpha: 1)
         for (index, kind) in UnitCatalog.defenders.enumerated() {
-            let x = CGFloat(index) * 220 + 150
+            let x = CGFloat(index) * 1000 / CGFloat(UnitCatalog.defenders.count - 1) + 100
             let node = DefenderNode(kind: kind, radius: 34)
             node.position = CGPoint(x: x, y: 465)
             scene.addChild(node)
             scene.addChild(label(kind.name, at: CGPoint(x: x, y: 395)))
-            if let bullet = UnitSprites.projectile(kind.projectile) {
+            if kind.canShoot, let bullet = UnitSprites.projectile(kind.projectile) {
                 bullet.position = CGPoint(x: x, y: 350)
                 scene.addChild(bullet)
             }

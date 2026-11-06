@@ -6,10 +6,10 @@ import Foundation
 final class AnswerFeedback {
     private var player: AVAudioPlayer?
 
-    func play(correct: Bool) {
+    func play(correct: Bool, volume: Float = 0.45) {
         do {
             let player = try AVAudioPlayer(data: Self.wave(correct: correct))
-            player.volume = 0.45
+            player.volume = volume
             self.player = player
             player.play()
         } catch {

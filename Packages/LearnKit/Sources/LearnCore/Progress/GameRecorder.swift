@@ -7,7 +7,7 @@ public enum GameOutcome: String, Codable, Sendable {
 }
 
 /// 一道题的第一次作答
-public struct AnswerRecord: Sendable, Equatable {
+public struct AnswerRecord: Codable, Sendable, Equatable {
     public var itemKey: String
     public var kind: QuestionKind
     public var prompt: String
@@ -30,6 +30,14 @@ public struct AnswerRecord: Sendable, Equatable {
         self.ultimate = ultimate
         responseMs = shownAt.map { max(0, Int(answeredAt.timeIntervalSince($0) * 1000)) }
         self.answeredAt = answeredAt
+    }
+
+    /// 输入题：记下孩子写的内容
+    public init(question: Question, typed: String, correct: Bool, ultimate: Bool, shownAt: Date?, answeredAt: Date) {
+        self.init(question: question, chosenIndex: nil, ultimate: ultimate, shownAt: shownAt, answeredAt: answeredAt)
+        chosen = typed
+        self.correct = correct
+        missed = false
     }
 }
 
@@ -65,7 +73,7 @@ public struct GameSummary: Sendable, Equatable {
 }
 
 /// 写进数据库的一局
-public struct GameRecord: Sendable, Equatable {
+public struct GameRecord: Codable, Sendable, Equatable {
     public var id: UUID
     public var profileID: UUID
     public var outcome: GameOutcome
@@ -121,6 +129,13 @@ public final class GameRecorder {
                              shownAt: Date?, at date: Date = Date()) {
         guard record == nil else { return }
         answers.append(AnswerRecord(question: question, chosenIndex: chosenIndex, ultimate: ultimate,
+                                    shownAt: shownAt, answeredAt: date))
+    }
+
+    public func recordAnswer(_ question: Question, typed: String, correct: Bool, ultimate: Bool = false,
+                             shownAt: Date?, at date: Date = Date()) {
+        guard record == nil else { return }
+        answers.append(AnswerRecord(question: question, typed: typed, correct: correct, ultimate: ultimate,
                                     shownAt: shownAt, answeredAt: date))
     }
 

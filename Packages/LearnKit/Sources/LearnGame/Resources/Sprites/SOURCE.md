@@ -3,7 +3,7 @@
 - 上游：[wszqkzqk/pypvz](https://github.com/wszqkzqk/pypvz)
 - 固定版本：`c88a018209ca48457e24db124f6532aea350f60d`
 - 目录：`resources/graphics/Plants`、`resources/graphics/Zombies`、`resources/graphics/Bullets`
-- 本项目仅复制 29 组、394 张必要的原始 PNG（待机/行走，以及啃咬、倒下、掉头、烧焦、发射、豌豆和星星命中、孢子烟）；未重新编码、未删除透明通道。各组源目录记录在 `clips.json`，原始文件校验和记录在 `sha256.json`。
+- 本项目仅复制 38 组、492 张必要的原始 PNG（待机/行走，以及啃咬、倒下、掉头、烧焦、发射、豌豆和星星命中、孢子烟，坚果墙和高坚果的裂纹、土豆雷的埋土与爆炸）；未重新编码、未删除透明通道。各组源目录记录在 `clips.json`，原始文件校验和记录在 `sha256.json`。
 - 可复现导入：`python3 scripts/import-pvz-sprites.py /path/to/pypvz`，需先将上游检出到上述版本；上游检出没有提交记录时，脚本改为核对已导入帧的 sha256，一致才继续。
 
 上游 README 声明：

@@ -7,12 +7,16 @@ public struct GeneratorSettings: Sendable {
     public var showHint: Bool
     /// 幼儿园：听音题，不出需要识字的题
     public var preschool: Bool
+    /// 选择、单空、多空各占多少
+    public var answerMix: AnswerMix
 
-    public init(optionCount: Int, strategy: DistractorStrategy, showHint: Bool, preschool: Bool) {
+    public init(optionCount: Int, strategy: DistractorStrategy, showHint: Bool, preschool: Bool,
+                answerMix: AnswerMix = .choiceOnly) {
         self.optionCount = optionCount
         self.strategy = strategy
         self.showHint = showHint
         self.preschool = preschool
+        self.answerMix = answerMix
     }
 }
 
@@ -26,7 +30,22 @@ public struct QuestionGenerator: Sendable {
         self.settings = settings
     }
 
+    /// 按难度的作答方式比例出题
     public func makeQuestion<R: RandomNumberGenerator>(for item: LearningItem, using rng: inout R) -> Question? {
+        makeQuestion(for: item, mode: settings.answerMix.pick(using: &rng), using: &rng)
+    }
+
+    /// 指定作答方式出题。没有多空写法的题退成单空，也没有单空写法的（自定义选择题）保持选择
+    public func makeQuestion<R: RandomNumberGenerator>(for item: LearningItem, mode: AnswerMode, using rng: inout R) -> Question? {
+        guard let base = choiceQuestion(for: item, using: &rng) else { return nil }
+        switch mode {
+        case .choice: return base
+        case .single: return typed(base, item: item, multi: false, &rng) ?? base
+        case .multi: return typed(base, item: item, multi: true, &rng) ?? typed(base, item: item, multi: false, &rng) ?? base
+        }
+    }
+
+    private func choiceQuestion<R: RandomNumberGenerator>(for item: LearningItem, using rng: inout R) -> Question? {
         switch item {
         case .character(let c):
             return settings.preschool ? listenPickChar(c, item.key, &rng) : character(c, item.key, &rng)
@@ -51,7 +70,8 @@ public struct QuestionGenerator: Sendable {
     public func makeUltimateQuestion<R: RandomNumberGenerator>(using rng: inout R) -> (LearningItem, Question)? {
         let candidates = settings.preschool ? pool.items : (pool.ultimateItems.isEmpty ? pool.items : pool.ultimateItems)
         for item in candidates.shuffled(using: &rng) {
-            if let q = makeQuestion(for: item, using: &rng) { return (item, q) }
+            // 大招要快，始终是选择题
+            if let q = makeQuestion(for: item, mode: .choice, using: &rng) { return (item, q) }
         }
         return nil
     }
@@ -273,7 +293,7 @@ public struct QuestionGenerator: Sendable {
     }
 
     /// 读音相近的字更容易混淆，难度越高越优先选
-    private func similarChars<R: RandomNumberGenerator>(to c: CharacterItem, _ rng: inout R) -> [String] {
+    func similarChars<R: RandomNumberGenerator>(to c: CharacterItem, _ rng: inout R) -> [String] {
         let target = Pinyin.parse(c.pinyin)
         let (ini, fin) = Pinyin.split(target.base)
         let candidates = pool.characters.filter {

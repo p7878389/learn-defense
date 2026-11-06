@@ -7,11 +7,11 @@ import LearnCore
 @Suite("无限回合")
 @MainActor
 struct EndlessRoundTests {
-    func session() -> GameSession {
+    func session(_ difficulty: Difficulty = .normal) -> GameSession {
         let library = ContentLibrary.load(userDirectory: nil)
         let pack = library.packs.first { $0.grade == .g3 }!
         let s = GameSession(config: GameConfig(profileID: UUID(), grade: .g3, packIDs: [pack.id],
-                                               selection: .all, difficulty: .normal),
+                                               selection: .all, difficulty: difficulty),
                             library: library, progress: ProgressStore(), speech: Speech(),
                             growth: GrowthStore(catalog: .bundled))
         _ = s.scene.plant(.inkling, in: DefenderCell(lane: 0, column: 0))
@@ -64,7 +64,8 @@ struct EndlessRoundTests {
     }
 
     @Test func switchingTargetsKeepsWrongChoicesAndPauseBlocksAnswers() throws {
-        let s = session()
+        // 入门只出选择题，这里要点选项
+        let s = session(.easy)
         for lane in 1..<s.tuning.lanes { _ = s.scene.plant(.inkling, in: DefenderCell(lane: lane, column: 0)) }
         // 推进真实场景主循环，让两只僵尸入场。
         for tick in 1...140 { s.scene.update(Double(tick) / 10) }
@@ -96,7 +97,7 @@ struct EndlessRoundTests {
     }
 
     @Test func wrongAnswerDoesNotRevealCorrectOption() throws {
-        let s = session()
+        let s = session(.easy)
         let enemy = try #require(s.nextEnemy())
         s.targetChanged(to: enemy.id)
         let q = try #require(s.current)
