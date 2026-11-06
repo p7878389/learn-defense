@@ -11,6 +11,8 @@ struct GameView: View {
     @State private var answerPanelHeight: CGFloat = 0
     /// 卡牌栏叠在战场上，在它上面松手（含只点一下）算取消
     @State private var seedStripFrame: CGRect = .zero
+    /// iPad 竖着拿时屏幕窄，卡牌栏和状态栏并排放不下，状态栏挪到战场上方
+    @State private var isPortrait = false
     let onReplay: () -> Void
     let onExit: () -> Void
     let onOpenCollection: () -> Void
@@ -76,6 +78,11 @@ struct GameView: View {
             } else {
                 // 战场铺满宽度；卡牌栏、状态栏叠在顶部篱笆上，道具和大招叠在左边房子前，不占草坪
                 VStack(spacing: 6) {
+                    if isPortrait {
+                        GameHUD(session: session, onExit: onExit)
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                            .padding(.horizontal, 10)
+                    }
                     BattlefieldView(session: session, debugOptions: debugOptions)
                         .background(
                             // 直接记下战场位置；用 PreferenceKey 传到外层时真机上一直是 .zero
@@ -96,7 +103,9 @@ struct GameView: View {
                             seedPackets.padding(6)
                         }
                         .overlay(alignment: .topTrailing) {
-                            GameHUD(session: session, onExit: onExit).padding(6)
+                            if !isPortrait {
+                                GameHUD(session: session, onExit: onExit).padding(6)
+                            }
                         }
                         .overlay(alignment: .bottomLeading) {
                             VStack(spacing: 8) {
@@ -165,7 +174,10 @@ struct GameView: View {
                     .padding(10)
                     .background(Color(red: 0.98, green: 0.94, blue: 0.80), in: RoundedRectangle(cornerRadius: 12))
                     .padding(.horizontal, 10)
-                    Spacer(minLength: 0)
+                    // 竖屏时战场宽度到头，下面会空出一大块，去掉占位让战场和答题区整体居中
+                    if !isPortrait {
+                        Spacer(minLength: 0)
+                    }
                 }
             }
 
@@ -199,6 +211,12 @@ struct GameView: View {
             }
         }
         .coordinateSpace(name: "gameLayout")
+        .background(
+            GeometryReader { proxy in
+                Color.clear.onChange(of: proxy.size, initial: true) { _, size in
+                    isPortrait = size.height > size.width
+                }
+            })
         .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { session.updateRest(now: $0) }
         .onDisappear { session.end() }
         #if os(iOS)
