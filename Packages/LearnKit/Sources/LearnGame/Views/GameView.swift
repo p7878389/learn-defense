@@ -120,7 +120,9 @@ struct GameView: View {
                                     if let sample = session.layoutSample {
                                         AnswerPanel(
                                             question: sample,
-                                            wrongPicks: Set(sample.options.indices.filter { $0 != sample.answerIndex }.prefix(1)),
+                                            // 字块题按答错一次量（多一行提示）
+                                            wrongPicks: sample.input != nil ? [1]
+                                                : Set(sample.options.indices.filter { $0 != sample.answerIndex }.prefix(1)),
                                             onAnswer: { _ in },
                                             onReplay: {})
                                             .fixedSize(horizontal: false, vertical: true)
@@ -150,7 +152,9 @@ struct GameView: View {
                                     question: session.current,
                                     wrongPicks: session.wrongPicks,
                                     onAnswer: session.answer,
-                                    onReplay: session.replayPrompt)
+                                    onReplay: session.replayPrompt,
+                                    onStartInput: { session.setTyping(true) },
+                                    onSubmitInput: session.answerInput)
                                 .disabled(session.phase != .playing || session.ultimate != nil)
                             }
                             .modifier(MaxHeightReader(height: $answerPanelHeight))

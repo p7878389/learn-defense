@@ -27,6 +27,13 @@ protocol GameSceneDelegate: AnyObject {
     /// 战斗中放下的路障（铁栅门）被啃碎了
     func barricadeRemoved()
     var speedFactor: Double { get }
+    /// 孩子正在拼瞄准的这道字块题：这只怪物原地等着
+    var holdsTarget: Bool { get }
+}
+
+extension GameSceneDelegate {
+    /// 默认不定住目标（测试里的简单代理不用实现）
+    var holdsTarget: Bool { false }
 }
 
 /// 游戏画面：负责怪物移动、瞄准、战斗结算和动画；答题规则在 GameSession 里。
@@ -142,7 +149,9 @@ final class GameScene: SKScene {
         }
 
         let speed = Double(spawnX - baseX) / tuning.crossSeconds * factor
-        for (id, enemy) in enemies where !enemy.doomed {
+        // 孩子在拼瞄准的这道字块题：这只怪物原地等着（也不啃、不踩雷）
+        let held = delegate.holdsTarget ? targetID : nil
+        for (id, enemy) in enemies where !enemy.doomed && id != held {
             let step = enemy.advance(dt: dt, speed: speed * enemy.kind.speed)
             move(enemy, by: step, chew: dt * factor * enemy.chewRate)
             triggerMines(under: enemy)

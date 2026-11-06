@@ -80,7 +80,8 @@ public struct GameTuning: Sendable {
                 ultimateEnergy: 4,
                 ultimate: .rainbow,
                 generator: GeneratorSettings(
-                    optionCount: [2, 3, 3][i], strategy: .easy, showHint: true, preschool: true),
+                    optionCount: [2, 3, 3][i], strategy: .easy, showHint: true, preschool: true,
+                    answerMix: .make(for: difficulty)),
                 lineup: [.starling, .inkling, .frost],
                 // 幼儿园不会失败，只给坚果墙和土豆雷，也不让僵尸跳墙
                 guards: GuardNumbers(wall: 20, tallWall: 40, mineArmAfter: 1, gate: 12).guards(tall: false),
@@ -103,7 +104,8 @@ public struct GameTuning: Sendable {
             return GameTuning(
                 lanes: 5, questions: questions, crossSeconds: 30, spawnInterval: 7, hearts: 5,
                 startingSun: 250, ultimateEnergy: 5, ultimate: .inkStorm,
-                generator: GeneratorSettings(optionCount: 3, strategy: .easy, showHint: true, preschool: false),
+                generator: GeneratorSettings(optionCount: 3, strategy: .easy, showHint: true, preschool: false,
+                                              answerMix: .make(for: difficulty)),
                 lineup: lineup,
                 guards: numbers.guards(tall: true),
                 barricade: numbers.barricade,
@@ -117,7 +119,8 @@ public struct GameTuning: Sendable {
             return GameTuning(
                 lanes: 5, questions: questions, crossSeconds: 22, spawnInterval: 5.5, hearts: 3,
                 startingSun: 300, ultimateEnergy: 5, ultimate: .inkStorm,
-                generator: GeneratorSettings(optionCount: 4, strategy: .normal, showHint: false, preschool: false),
+                generator: GeneratorSettings(optionCount: 4, strategy: .normal, showHint: false, preschool: false,
+                                              answerMix: .make(for: difficulty)),
                 lineup: lineup,
                 guards: numbers.guards(tall: true),
                 barricade: numbers.barricade,
@@ -132,7 +135,8 @@ public struct GameTuning: Sendable {
             return GameTuning(
                 lanes: 5, questions: questions, crossSeconds: 16, spawnInterval: 4.2, hearts: 3,
                 startingSun: 350, ultimateEnergy: 5, ultimate: .inkStorm,
-                generator: GeneratorSettings(optionCount: 4, strategy: .hard, showHint: false, preschool: false),
+                generator: GeneratorSettings(optionCount: 4, strategy: .hard, showHint: false, preschool: false,
+                                              answerMix: .make(for: difficulty)),
                 lineup: lineup,
                 guards: numbers.guards(tall: true),
                 barricade: numbers.barricade,

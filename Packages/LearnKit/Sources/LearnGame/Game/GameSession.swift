@@ -34,7 +34,10 @@ final class GameSession: ObservableObject {
     /// 当前瞄准的怪物的题目
     @Published private(set) var current: Question?
     /// 当前题目已经点错的选项
+    /// 选择题是答错的选项；输入题是第几次答错（1、2、3…），个数就是答错次数
     @Published private(set) var wrongPicks: Set<Int> = []
+    /// 正在拼字块题：战场放慢，瞄准的怪物停下
+    @Published private(set) var typing = false
     @Published private(set) var ultimate: Question?
     @Published private(set) var ultimateWrongPicks: Set<Int> = []
     @Published private(set) var inventory = Inventory(capacity: 3)
@@ -62,8 +65,16 @@ final class GameSession: ObservableObject {
     /// 准备阶段给答题区预留高度用的样题：按本局出题方式出一道，不计入进度，也不影响出题顺序
     private(set) lazy var layoutSample: Question? = {
         var sampleRng = SystemRandomNumberGenerator()
-        for item in generator.pool.items.shuffled(using: &sampleRng).prefix(8) {
-            if let question = generator.makeQuestion(for: item, using: &sampleRng) { return question }
+        // 这一档会出字块题时按字块题量高度（比选择题高），切换题型时战场不会忽大忽小
+        let mix = generator.settings.answerMix
+        let mode: AnswerMode = mix.multi > 0 ? .multi : (mix.single > 0 ? .single : .choice)
+        let items = generator.pool.items.shuffled(using: &sampleRng).prefix(12)
+        for item in items {
+            if let question = generator.makeQuestion(for: item, mode: mode, using: &sampleRng),
+               mode == .choice || question.input != nil { return question }
+        }
+        for item in items {
+            if let question = generator.makeQuestion(for: item, mode: .choice, using: &sampleRng) { return question }
         }
         return nil
     }()
@@ -175,10 +186,37 @@ final class GameSession: ObservableObject {
     func answer(_ index: Int) {
         guard phase == .playing, ultimate == nil, let id = targetID, let entry = enemyQuestions[id] else { return }
         let question = entry.question
-        guard question.options.indices.contains(index) else { return }
+        guard question.input == nil, question.options.indices.contains(index) else { return }
+        submit(id: id, entry: entry, correct: index == question.answerIndex, pick: index) { [recorder] shownAt in
+            recorder?.recordAnswer(question, chosenIndex: index, shownAt: shownAt)
+        }
+    }
+
+    /// 字块题交卷：texts 依次是每个空放进去的字块
+    func answerInput(_ texts: [String]) {
+        guard phase == .playing, ultimate == nil, let id = targetID, let entry = enemyQuestions[id],
+              let spec = entry.question.input else { return }
+        let question = entry.question
+        let correct = spec.accepts(texts)
+        let typedText = spec.compose(texts)
+        submit(id: id, entry: entry, correct: correct, pick: (enemyWrongPicks[id]?.count ?? 0) + 1) { [recorder] shownAt in
+            recorder?.recordAnswer(question, typed: typedText, correct: correct, shownAt: shownAt)
+        }
+    }
+
+    /// 孩子开始点字块：战场放慢、瞄准的怪物停下；交卷或换目标后恢复
+    func setTyping(_ on: Bool) {
+        typing = on && phase == .playing && ultimate == nil && current?.input != nil
+    }
+
+    /// 选择题和输入题共用的判题：pick 是这次作答的标记（选项序号或第几次输入），
+    /// record 只在第一次作答时调用，记下这一题的成绩
+    private func submit(id: Int, entry: (item: LearningItem, question: Question), correct: Bool, pick index: Int,
+                        record: (Date?) -> Void) {
+        let question = entry.question
         var picks = enemyWrongPicks[id] ?? []
 
-        if index == question.answerIndex {
+        if correct {
             guard scene.canAttack(id) else {
                 scene.play(FloatingTextEffect(text: "先选卡片，再点草坪", color: Palette.hurt, fontSize: 28))
                 speech.speak(SpeechText.Line.plantFirst, interrupt: true)
@@ -191,11 +229,12 @@ final class GameSession: ObservableObject {
                 energy = min(energy + 1, tuning.ultimateEnergy)
                 tuner.record(correct: true)
                 progress.record(entry.item, correct: true)
-                recorder?.recordAnswer(question, chosenIndex: index, shownAt: shownAt[id])
+                record(shownAt[id])
             } else {
                 score += 2
             }
             feedback.play(correct: true, volume: speech.effectsVolume)
+            typing = false
             scene.noteCorrectAnswer()
 
             enemyQuestions[id] = nil
@@ -225,7 +264,7 @@ final class GameSession: ObservableObject {
                 progress.record(entry.item, correct: false)
                 progress.save()
                 mistakes.append(Mistake(question: question, missed: false))
-                recorder?.recordAnswer(question, chosenIndex: index, shownAt: shownAt[id])
+                record(shownAt[id])
             }
             picks.insert(index)
             enemyWrongPicks[id] = picks
@@ -245,6 +284,7 @@ final class GameSession: ObservableObject {
         guard ultimateReady, let pair = generator.makeUltimateQuestion(using: &rng) else { return }
         ultimateItem = pair.0
         ultimate = pair.1
+        typing = false
         ultimateWrongPicks = []
         ultimateShownAt = Date()
         scene.setGamePaused(true)
@@ -403,6 +443,7 @@ final class GameSession: ObservableObject {
         restRemaining = rules.restSeconds(afterRound: round)
         restUntil = Date().addingTimeInterval(Double(restRemaining))
         phase = .resting
+        typing = false
         ultimate = nil
         ultimateItem = nil
         current = nil
@@ -456,6 +497,7 @@ final class GameSession: ObservableObject {
     private func finish(won: Bool) {
         guard phase == .playing || phase == .paused || phase == .resting else { return }
         phase = won ? .won : .lost
+        typing = false
         ultimate = nil
         scene.setGamePaused(true)
         progress.save()
@@ -507,7 +549,9 @@ final class GameSession: ObservableObject {
 }
 
 extension GameSession: GameSceneDelegate {
-    var speedFactor: Double { tuner.speedFactor }
+    /// 拼字块题时战场放慢到一半
+    var speedFactor: Double { tuner.speedFactor * (typing ? 0.5 : 1) }
+    var holdsTarget: Bool { typing }
 
     func nextEnemy() -> EnemySpawn? {
         guard phase == .playing, spawned < totalEnemies else { return nil }
@@ -539,6 +583,7 @@ extension GameSession: GameSceneDelegate {
     func targetChanged(to id: Int?) {
         guard phase == .playing else { return }
         targetID = id
+        typing = false
         current = id.flatMap { enemyQuestions[$0]?.question }
         if let id, current != nil, shownAt[id] == nil { shownAt[id] = Date() }
         wrongPicks = id.flatMap { enemyWrongPicks[$0] } ?? []
