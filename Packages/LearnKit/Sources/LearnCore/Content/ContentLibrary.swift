@@ -11,31 +11,61 @@ public final class ContentLibrary {
         self.issues = issues
     }
 
-    public static func load(userDirectory: URL?) -> ContentLibrary {
-        var byID: [String: ContentPack] = [:]
-        var order: [String] = []
-        var issues: [String] = []
+    /// App 内置题库目录（Resources/Packs）
+    public static var bundledDirectory: URL? {
+        Bundle.module.url(forResource: "Packs", withExtension: nil)
+    }
 
-        func add(from directory: URL, source: String) {
-            let files = (try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)) ?? []
-            for file in files.sorted(by: { $0.lastPathComponent < $1.lastPathComponent })
-            where file.pathExtension.lowercased() == "json" {
+    /// 直接读 JSON 文件加载。App 平时用 LearnDatabase.loadContent（只在文件有变化时读 JSON）；
+    /// 数据库不可用时、命令行工具和测试用这里
+    public static func load(userDirectory: URL?) -> ContentLibrary {
+        var entries: [(pack: ContentPack?, issues: [String])] = []
+        for (source, directory) in sources(userDirectory: userDirectory) {
+            for file in jsonFiles(in: directory) {
+                let label = "\(source)/\(file.lastPathComponent)"
                 do {
-                    let pack = try decode(Data(contentsOf: file))
-                    issues += validate(pack).map { "\(source)/\(file.lastPathComponent)：\($0)" }
-                    if byID[pack.id] == nil { order.append(pack.id) }
-                    byID[pack.id] = pack
+                    entries.append(read(try Data(contentsOf: file), label: label))
                 } catch {
-                    issues.append("\(source)/\(file.lastPathComponent) 读取失败：\(describe(error))")
+                    entries.append((nil, ["\(label) 读取失败：\(describe(error))"]))
                 }
             }
         }
+        return assemble(entries)
+    }
 
-        if let bundled = Bundle.module.url(forResource: "Packs", withExtension: nil) {
-            add(from: bundled, source: "内置")
+    /// 题库来源，按加载顺序：内置在前，导入在后（同 id 时导入的覆盖内置的）
+    static func sources(userDirectory: URL?) -> [(source: String, directory: URL)] {
+        [bundledDirectory.map { ("内置", $0) }, userDirectory.map { ("导入", $0) }].compactMap { $0 }
+    }
+
+    /// 目录下的题库 JSON 文件，按文件名排序
+    static func jsonFiles(in directory: URL, keys: [URLResourceKey] = []) -> [URL] {
+        let files = (try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: keys)) ?? []
+        return files
+            .filter { $0.pathExtension.lowercased() == "json" }
+            .sorted { $0.lastPathComponent < $1.lastPathComponent }
+    }
+
+    /// 解析并校验一个题库文件的内容。label 形如「内置/xxx.json」，用在问题说明里
+    static func read(_ data: Data, label: String) -> (pack: ContentPack?, issues: [String]) {
+        do {
+            let pack = try decode(data)
+            return (pack, validate(pack).map { "\(label)：\($0)" })
+        } catch {
+            return (nil, ["\(label) 读取失败：\(describe(error))"])
         }
-        if let userDirectory {
-            add(from: userDirectory, source: "导入")
+    }
+
+    /// 按加载顺序合成题库列表：同 id 的后来者覆盖先来的，位置保持第一次出现的地方
+    static func assemble(_ entries: [(pack: ContentPack?, issues: [String])]) -> ContentLibrary {
+        var byID: [String: ContentPack] = [:]
+        var order: [String] = []
+        var issues: [String] = []
+        for entry in entries {
+            issues += entry.issues
+            guard let pack = entry.pack else { continue }
+            if byID[pack.id] == nil { order.append(pack.id) }
+            byID[pack.id] = pack
         }
         return ContentLibrary(packs: order.compactMap { byID[$0] }, issues: issues)
     }

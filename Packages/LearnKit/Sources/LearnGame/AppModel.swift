@@ -35,30 +35,32 @@ public final class AppModel: ObservableObject {
         speech = Speech(library: speechLibrary)
         profileStore = ProfileStore(database: database, legacyFile: AppPaths.profilesFile)
         profiles = profileStore.profiles
-        library = ContentLibrary.load(userDirectory: AppPaths.userPacksDirectory)
-        syncContent()
+        library = Self.loadLibrary(database: database)
         syncConfig()
         prepareSpeech()
     }
 
     func reloadLibrary() {
-        library = ContentLibrary.load(userDirectory: AppPaths.userPacksDirectory)
-        syncContent()
+        library = Self.loadLibrary(database: database)
         prepareSpeech()
+    }
+
+    /// 题库从数据库加载，JSON 文件只在第一次或有变化时读；数据库不可用时直接读 JSON
+    private static func loadLibrary(database: LearnDatabase?) -> ContentLibrary {
+        let userDirectory = AppPaths.userPacksDirectory
+        if let database {
+            do {
+                return try database.loadContent(userDirectory: userDirectory)
+            } catch {
+                print("从数据库加载题库失败，改为直接读 JSON：\(error)")
+            }
+        }
+        return ContentLibrary.load(userDirectory: userDirectory)
     }
 
     /// 配置了语音合成时，在后台把题库和固定提示语里还没有音频的句子生成好（已有的跳过）
     func prepareSpeech() {
         speechLibrary.prepare(SpeechText.gameLines + SpeechText.texts(in: library.packs))
-    }
-
-    /// 把题库同步进数据库，供查询用；失败不影响出题
-    private func syncContent() {
-        do {
-            try database?.syncContent(library.packs)
-        } catch {
-            print("题库同步到数据库失败：\(error)")
-        }
     }
 
     /// 把系统配置同步进数据库，供查询用；运行时仍用 growthCatalog

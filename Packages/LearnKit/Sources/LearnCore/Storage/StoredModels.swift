@@ -3,7 +3,7 @@ import SwiftData
 
 // SwiftData 表结构。学科、年级等枚举存 rawValue 字符串，方便在 #Predicate 里比较。
 
-/// 题库包（题库 JSON 仍是来源，这里是同步过来的索引，方便查询）
+/// 题库包的查询索引（题库内容在 StoredPackFile，变化时重建这里，方便查询）
 @Model
 public final class StoredPack {
     @Attribute(.unique) public var id: String
