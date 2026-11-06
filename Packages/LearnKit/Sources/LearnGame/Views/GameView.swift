@@ -11,6 +11,8 @@ struct GameView: View {
     @State private var answerPanelHeight: CGFloat = 0
     /// 卡牌栏叠在战场上，在它上面松手（含只点一下）算取消
     @State private var seedStripFrame: CGRect = .zero
+    /// iPad 竖着拿时屏幕窄，卡牌栏和状态栏并排放不下，状态栏挪到战场上方
+    @State private var isPortrait = false
     let onReplay: () -> Void
     let onExit: () -> Void
     let onOpenCollection: () -> Void
@@ -64,6 +66,34 @@ struct GameView: View {
                 })
     }
 
+    /// 横屏时左边竖排切题栏的宽度
+    private static let sideTabsWidth: CGFloat = 96
+
+    private var canAnswer: Bool { session.phase == .playing && session.ultimate == nil }
+
+    /// 场上每只僵尸一道题，点了切到那道
+    private var questionTabs: some View {
+        ForEach(Array(session.questionIDs.enumerated()), id: \.element) { offset, id in
+            Button("题目 \(offset + 1)") { session.selectQuestion(id) }
+                .font(.headline)
+                .padding(.horizontal, 14).padding(.vertical, 8)
+                .background(session.selectedQuestionID == id ? Theme.jade : Theme.card, in: Capsule())
+                .foregroundStyle(session.selectedQuestionID == id ? .white : Theme.ink)
+        }
+    }
+
+    private var answerPanel: some View {
+        AnswerPanel(
+            question: session.current,
+            wrongPicks: session.wrongPicks,
+            onAnswer: session.answer,
+            onReplay: session.replayPrompt,
+            onStartInput: { session.setTyping(true) },
+            onSubmitInput: session.answerInput,
+            compact: !isPortrait)
+        .disabled(!canAnswer)
+    }
+
     var body: some View {
         ZStack {
             Color(red: 0.24, green: 0.31, blue: 0.12).ignoresSafeArea()
@@ -74,8 +104,13 @@ struct GameView: View {
                     Button("返回", action: onExit).font(.title2)
                 }
             } else {
-                // 战场铺满宽度；卡牌栏、状态栏叠在顶部篱笆上，道具和大招叠在左边房子前，不占草坪
+                // 战场铺满宽度；卡牌栏、状态栏叠在顶部篱笆上，道具挂在卡牌栏下面、大招在左下角，都叠在左边房子前，不占草坪
                 VStack(spacing: 6) {
+                    if isPortrait {
+                        GameHUD(session: session, onExit: onExit)
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                            .padding(.horizontal, 10)
+                    }
                     BattlefieldView(session: session, debugOptions: debugOptions)
                         .background(
                             // 直接记下战场位置；用 PreferenceKey 传到外层时真机上一直是 .zero
@@ -93,24 +128,28 @@ struct GameView: View {
                             }
                         }
                         .overlay(alignment: .topLeading) {
-                            seedPackets.padding(6)
-                        }
-                        .overlay(alignment: .topTrailing) {
-                            GameHUD(session: session, onExit: onExit).padding(6)
-                        }
-                        .overlay(alignment: .bottomLeading) {
-                            VStack(spacing: 8) {
-                                UltimateButton(
-                                    energy: session.energy,
-                                    maxEnergy: session.tuning.ultimateEnergy,
-                                    ready: session.ultimateReady,
-                                    action: session.startUltimate)
+                            VStack(alignment: .leading, spacing: 8) {
+                                seedPackets
                                 ItemBar(
                                     inventory: session.inventory,
                                     enabled: session.canUseItems,
                                     onUse: session.useItem(at:))
+                                    .padding(.leading, 2)
                             }
-                            .padding(8)
+                            .padding(6)
+                        }
+                        .overlay(alignment: .topTrailing) {
+                            if !isPortrait {
+                                GameHUD(session: session, onExit: onExit).padding(6)
+                            }
+                        }
+                        .overlay(alignment: .bottomLeading) {
+                            UltimateButton(
+                                energy: session.energy,
+                                maxEnergy: session.tuning.ultimateEnergy,
+                                ready: session.ultimateReady,
+                                action: session.startUltimate)
+                                .padding(8)
                         }
                         .layoutPriority(-1)
                     Group {
@@ -125,48 +164,61 @@ struct GameView: View {
                                             wrongPicks: sample.input != nil ? [1]
                                                 : Set(sample.options.indices.filter { $0 != sample.answerIndex }.prefix(1)),
                                             onAnswer: { _ in },
-                                            onReplay: {})
+                                            onReplay: {},
+                                            compact: !isPortrait)
                                             .fixedSize(horizontal: false, vertical: true)
-                                            .padding(.top, 52) // 预留切题栏，开局时战场不缩放
-                                            .modifier(MaxHeightReader(height: $answerPanelHeight))
+                                            // 预留切题栏（竖屏在上面，横屏在左边），开局时战场不缩放
+                                            .padding(.top, isPortrait ? 52 : 0)
+                                            .padding(.leading, isPortrait ? 0 : Self.sideTabsWidth + 12)
+                                            .modifier(MaxHeightReader(height: $answerPanelHeight, resetKey: isPortrait))
                                             .opacity(0)
                                             .allowsHitTesting(false)
                                             .accessibilityHidden(true)
                                     }
                                 }
                         } else {
-                            VStack(spacing: 8) {
-                                ScrollView(.horizontal) {
-                                    HStack(spacing: 10) {
-                                        ForEach(Array(session.questionIDs.enumerated()), id: \.element) { offset, id in
-                                            Button("题目 \(offset + 1)") { session.selectQuestion(id) }
-                                                .font(.headline)
-                                                .padding(.horizontal, 14).padding(.vertical, 8)
-                                                .background(session.selectedQuestionID == id ? Theme.jade : Theme.card, in: Capsule())
-                                                .foregroundStyle(session.selectedQuestionID == id ? .white : Theme.ink)
+                            Group {
+                                if isPortrait {
+                                    VStack(spacing: 8) {
+                                        ScrollView(.horizontal) {
+                                            HStack(spacing: 10) { questionTabs }
                                         }
+                                        .frame(height: 44)
+                                        .disabled(!canAnswer)
+                                        answerPanel
+                                    }
+                                } else {
+                                    // 横屏高度紧：切题栏竖排在左边，答题区少占一行，战场才能铺满宽度。
+                                    // 切题栏放在 overlay 里，高度跟着答题区走，题多了就上下滚
+                                    HStack(alignment: .top, spacing: 12) {
+                                        Color.clear.frame(width: Self.sideTabsWidth, height: 0)
+                                        answerPanel
+                                    }
+                                    .overlay(alignment: .topLeading) {
+                                        ScrollView(.vertical) {
+                                            VStack(alignment: .leading, spacing: 8) { questionTabs }
+                                        }
+                                        .frame(width: Self.sideTabsWidth)
+                                        .disabled(!canAnswer)
                                     }
                                 }
-                                .frame(height: 44)
-                                .disabled(session.phase != .playing || session.ultimate != nil)
-                                AnswerPanel(
-                                    question: session.current,
-                                    wrongPicks: session.wrongPicks,
-                                    onAnswer: session.answer,
-                                    onReplay: session.replayPrompt,
-                                    onStartInput: { session.setTyping(true) },
-                                    onSubmitInput: session.answerInput)
-                                .disabled(session.phase != .playing || session.ultimate != nil)
                             }
-                            .modifier(MaxHeightReader(height: $answerPanelHeight))
+                            .modifier(MaxHeightReader(height: $answerPanelHeight, resetKey: isPortrait))
                         }
                     }
                     .frame(maxWidth: .infinity, minHeight: answerPanelHeight)
-                    .padding(10)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, isPortrait ? 10 : 6)
                     .background(Color(red: 0.98, green: 0.94, blue: 0.80), in: RoundedRectangle(cornerRadius: 12))
                     .padding(.horizontal, 10)
-                    Spacer(minLength: 0)
+                    .padding(.bottom, isPortrait ? 0 : 6)
+                    // 竖屏时战场宽度到头，下面会空出一大块，去掉占位让战场和答题区整体居中
+                    if !isPortrait {
+                        Spacer(minLength: 0)
+                    }
                 }
+                // 横屏高度紧：底部的系统安全区也给答题区用（横条已隐藏），多出来的高度让给战场
+                .ignoresSafeArea(.container, edges: isPortrait ? [] : .bottom)
             }
 
             if let drag = activeDrag {
@@ -199,6 +251,12 @@ struct GameView: View {
             }
         }
         .coordinateSpace(name: "gameLayout")
+        .background(
+            GeometryReader { proxy in
+                Color.clear.onChange(of: proxy.size, initial: true) { _, size in
+                    isPortrait = size.height > size.width
+                }
+            })
         .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { session.updateRest(now: $0) }
         .onDisappear { session.end() }
         #if os(iOS)
@@ -260,7 +318,7 @@ struct GameHUD: View {
     @ObservedObject var session: GameSession
     let onExit: () -> Void
 
-    /// 叠在战场右上角的状态：暂停、生命、进度、得分。阳光在卡牌栏里，道具和大招在战场左下角
+    /// 叠在战场右上角的状态：暂停、生命、进度、得分。阳光在卡牌栏里，道具在卡牌栏下面，大招在战场左下角
     var body: some View {
         HStack(spacing: 18) {
             if session.phase == .preparing {
@@ -336,42 +394,73 @@ struct PreparationPanel: View {
 /// 量出视图的自然高度，只记下更大的值
 private struct MaxHeightReader: ViewModifier {
     @Binding var height: CGFloat
+    /// 转屏后布局换了，之前量的最高值不再适用：这个值一变就按新布局重新记
+    var resetKey = false
 
     func body(content: Content) -> some View {
         content.background(
             GeometryReader { proxy in
-                Color.clear.onChange(of: proxy.size.height, initial: true) { _, newHeight in
-                    height = max(height, newHeight)
-                }
+                Color.clear
+                    .onChange(of: proxy.size.height, initial: true) { _, newHeight in
+                        height = max(height, newHeight)
+                    }
+                    .onChange(of: resetKey) { _, _ in
+                        height = proxy.size.height
+                    }
             })
     }
 }
 
-/// 道具栏：捡到的道具，点一下就用。竖着排在战场左边房子前
+/// 道具栏：捡到的道具，点一下就用。挂在卡牌栏下面，只显示手里有的道具；
+/// 不止一个时折叠成一个按钮，点开向下展开，免得一长条挡住左边的僵尸和血量
 struct ItemBar: View {
     let inventory: Inventory
     let enabled: Bool
     let onUse: (Int) -> Void
+    @State private var expanded = false
+
+    private var folds: Bool { inventory.items.count > 1 }
 
     var body: some View {
-        VStack(spacing: 8) {
-            ForEach(0..<inventory.capacity, id: \.self) { i in
-                let item = i < inventory.items.count ? inventory.items[i] : nil
-                Button { onUse(i) } label: {
-                    Group {
-                        if let item { PictureView(emoji: item.icon, size: 38) } else { Color.clear }
+        VStack(alignment: .leading, spacing: 8) {
+            if folds {
+                Button { expanded.toggle() } label: {
+                    HStack(spacing: 4) {
+                        PictureView(emoji: "🎒", size: 30)
+                        Text("×\(inventory.items.count)")
+                            .font(.system(size: 18, weight: .heavy, design: .rounded).monospacedDigit())
+                        Image(systemName: expanded ? "chevron.up" : "chevron.down")
+                            .font(.system(size: 14, weight: .heavy))
                     }
-                        .frame(width: 54, height: 54)
-                        .background(RoundedRectangle(cornerRadius: 14).fill(item == nil ? Theme.card.opacity(0.5) : Theme.card))
-                        .overlay(RoundedRectangle(cornerRadius: 14).stroke(item == nil ? .clear : Theme.jade, lineWidth: 3))
+                    .foregroundStyle(Theme.ink)
+                    .padding(.horizontal, 10)
+                    .frame(height: 54)
+                    .background(RoundedRectangle(cornerRadius: 14).fill(Theme.card))
+                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.jade, lineWidth: 3))
                 }
                 .buttonStyle(PressableStyle())
-                .disabled(item == nil || !enabled)
-                .accessibilityLabel(item.map { "\($0.name)，\($0.summary)" } ?? "空道具格")
-                .transition(.scale)
+                .accessibilityLabel(expanded ? "收起道具" : "展开道具，共 \(inventory.items.count) 个")
+            }
+            if !folds || expanded {
+                ForEach(Array(inventory.items.enumerated()), id: \.offset) { i, item in
+                    Button { onUse(i) } label: {
+                        PictureView(emoji: item.icon, size: 38)
+                            .frame(width: 54, height: 54)
+                            .background(RoundedRectangle(cornerRadius: 14).fill(Theme.card))
+                            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.jade, lineWidth: 3))
+                    }
+                    .buttonStyle(PressableStyle())
+                    .disabled(!enabled)
+                    .accessibilityLabel("\(item.name)，\(item.summary)")
+                    .transition(.scale(scale: 0.6, anchor: .top).combined(with: .opacity))
+                }
             }
         }
         .animation(.spring(response: 0.3, dampingFraction: 0.6), value: inventory)
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: expanded)
+        .onChange(of: folds) { _, nowFolds in
+            if !nowFolds { expanded = false }
+        }
     }
 }
 
