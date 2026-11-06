@@ -60,7 +60,7 @@ struct GeneratorTests {
 
     @Test func bundledPacksLoadWithoutIssues() {
         #expect(Self.library.issues.isEmpty, "\(Self.library.issues)")
-        #expect(Self.library.pack(id: "chinese-g3-sample") != nil)
+        #expect(Self.library.pack(id: "chinese-g3-up-pep") != nil)
         #expect(Self.library.pack(id: "chinese-k2-sample") != nil)
     }
 
@@ -97,13 +97,13 @@ struct GeneratorTests {
     @Test func unitSelectionAndReview() {
         let packs = Self.library.packs(grade: .g3, subject: .chinese)
         let all = ItemPool(packs: packs, selection: .all)
-        let unit1 = ItemPool(packs: packs, selection: .units(["chinese-g3-sample/u1"]))
+        let unit1 = ItemPool(packs: packs, selection: .units(["chinese-g3-up-pep/u1"]))
         #expect(unit1.items.count < all.items.count)
-        #expect(unit1.items.contains { $0.key == "char:晨" })
-        #expect(!unit1.items.contains { $0.key == "char:霜" })
+        #expect(unit1.items.contains { $0.key == "char:绒" })
+        #expect(!unit1.items.contains { $0.key == "char:庭" })
 
-        let review = ItemPool(packs: packs, selection: .review(["char:霜", "poem:山行#0"]))
-        #expect(Set(review.items.map(\.key)) == ["char:霜", "poem:山行#0"])
+        let review = ItemPool(packs: packs, selection: .review(["char:庭", "poem:山行#0"]))
+        #expect(Set(review.items.map(\.key)) == ["char:庭", "poem:山行#0"])
     }
 
     @Test func invalidPackReported() throws {
@@ -330,7 +330,7 @@ struct SceneThemeTests {
 
         let g3 = Self.library.packs(grade: .g3, subject: .chinese)
         #expect(SceneTheme.choose(packs: g3, selection: .all, grade: .g3) == .academy)
-        #expect(SceneTheme.choose(packs: g3, selection: .units(["chinese-g3-sample/u2"]), grade: .g3) == .orchard)
+        #expect(SceneTheme.choose(packs: g3, selection: .units(["chinese-g3-up-pep/u2"]), grade: .g3) == .orchard)
     }
 
     @Test func unknownThemeIgnored() throws {
