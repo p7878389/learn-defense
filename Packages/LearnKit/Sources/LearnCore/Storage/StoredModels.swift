@@ -36,10 +36,11 @@ public final class StoredItem {
     @Attribute(.unique) public var uid: String
     /// LearningItem.key，和学习记录 StoredItemStats.key 对应
     public var key: String
-    /// character / word / idiom / poem / choice / picture
+    /// character / word / idiom / poem / choice / picture / englishWord / sentence
     public var kind: String
-    /// 生字、词语、成语、图片词本身；古诗为诗题；选择题为题干
+    /// 生字、词语、成语、图片词、英语单词和句子本身；古诗为诗题；选择题为题干
     public var text: String
+    /// 拼音；英语单词为音标
     public var pinyin: String?
     public var summary: String
     public var packID: String
@@ -78,6 +79,9 @@ public final class StoredItem {
         case .poemLine(let p, _): ("poem", p.title, nil)
         case .choice(let q, _): ("choice", q.prompt, nil)
         case .picture(let p): ("picture", p.text, p.pinyin)
+        // 英语的 pinyin 列存音标
+        case .englishWord(let w): ("englishWord", w.word, w.phonetic)
+        case .sentence(let s): ("sentence", s.sentence, nil)
         }
     }
 }

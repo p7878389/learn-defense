@@ -62,12 +62,14 @@ struct GeneratorTests {
         #expect(Self.library.issues.isEmpty, "\(Self.library.issues)")
         #expect(Self.library.pack(id: "chinese-g3-sample") != nil)
         #expect(Self.library.pack(id: "chinese-k2-sample") != nil)
+        #expect(Self.library.pack(id: "english-g3-up-jingtong") != nil)
+        #expect(Self.library.pack(id: "english-g3-up-pep") != nil)
     }
 
     @Test(arguments: Difficulty.allCases)
     func everyItemProducesValidQuestion(difficulty: Difficulty) throws {
-        for grade in [Grade.g3, .k2] {
-            let packs = Self.library.packs(grade: grade, subject: .chinese)
+        for (grade, subject) in [(Grade.g3, Subject.chinese), (.k2, .chinese), (.g3, .english)] {
+            let packs = Self.library.packs(grade: grade, subject: subject)
             let pool = ItemPool(packs: packs, selection: .all)
             #expect(!pool.isEmpty)
             let tuning = GameTuning.make(grade: grade, difficulty: difficulty)

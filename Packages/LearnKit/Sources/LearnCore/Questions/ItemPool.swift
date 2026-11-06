@@ -9,6 +9,8 @@ public enum LearningItem: Sendable {
     case poemLine(PoemItem, index: Int)
     case choice(ChoiceItem, scope: String)
     case picture(PictureItem)
+    case englishWord(EnglishWordItem)
+    case sentence(SentenceItem)
 
     public var key: String {
         switch self {
@@ -18,6 +20,8 @@ public enum LearningItem: Sendable {
         case .poemLine(let p, let index): "poem:\(p.title)#\(index)"
         case .choice(let q, let scope): "choice:\(scope):\(q.id ?? q.prompt)"
         case .picture(let p): "pic:\(p.text)"
+        case .englishWord(let w): "en:\(w.word)"
+        case .sentence(let s): "sentence:\(s.sentence)"
         }
     }
 
@@ -37,6 +41,10 @@ public enum LearningItem: Sendable {
             return "\(q.prompt) 答案：\(q.answer)"
         case .picture(let p):
             return "\(p.emoji) \(p.text)"
+        case .englishWord(let w):
+            return [w.word, w.phonetic, w.meaning].compactMap { $0 }.joined(separator: " ")
+        case .sentence(let s):
+            return "\(s.sentence) \(s.meaning)"
         }
     }
 
@@ -65,6 +73,8 @@ public struct ItemPool: Sendable {
     let idioms: [IdiomItem]
     let poems: [PoemItem]
     let pictures: [PictureItem]
+    let englishWords: [EnglishWordItem]
+    let sentences: [SentenceItem]
 
     public var isEmpty: Bool { items.isEmpty }
 
@@ -77,6 +87,8 @@ public struct ItemPool: Sendable {
         var idioms: [String: IdiomItem] = [:]
         var poems: [String: PoemItem] = [:]
         var pictures: [String: PictureItem] = [:]
+        var englishWords: [String: EnglishWordItem] = [:]
+        var sentences: [String: SentenceItem] = [:]
 
         for pack in packs {
             for unit in pack.units {
@@ -100,6 +112,8 @@ public struct ItemPool: Sendable {
                     for i in lesson.idioms { idioms[i.text] = idioms[i.text] ?? i }
                     for p in lesson.poems { poems[p.title] = poems[p.title] ?? p }
                     for p in lesson.pictures { pictures[p.text] = pictures[p.text] ?? p }
+                    for w in lesson.englishWords { englishWords[w.word] = englishWords[w.word] ?? w }
+                    for s in lesson.sentences { sentences[s.sentence] = sentences[s.sentence] ?? s }
                 }
             }
         }
@@ -111,6 +125,8 @@ public struct ItemPool: Sendable {
         self.idioms = Array(idioms.values)
         self.poems = Array(poems.values)
         self.pictures = Array(pictures.values)
+        self.englishWords = Array(englishWords.values)
+        self.sentences = Array(sentences.values)
     }
 
     /// 一课里能出题的知识点。scope 为 "题库id/单元id/课id"，手写选择题的 key 里要用
@@ -124,6 +140,8 @@ public struct ItemPool: Sendable {
         }
         items += lesson.questions.filter { $0.options.contains($0.answer) }.map { .choice($0, scope: scope) }
         items += lesson.pictures.map { .picture($0) }
+        items += lesson.englishWords.filter { !$0.word.isEmpty && !$0.meaning.isEmpty }.map { .englishWord($0) }
+        items += lesson.sentences.filter { !$0.sentence.isEmpty && !$0.meaning.isEmpty }.map { .sentence($0) }
         return items
     }
 

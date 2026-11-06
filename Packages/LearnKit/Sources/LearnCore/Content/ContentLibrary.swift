@@ -73,6 +73,12 @@ public final class ContentLibrary {
                 for q in lesson.questions where !q.options.contains(q.answer) {
                     problems.append("\(at)：选择题「\(q.prompt)」的答案不在选项里")
                 }
+                for w in lesson.englishWords where w.word.isEmpty || w.meaning.isEmpty {
+                    problems.append("\(at)：英语单词「\(w.word)」缺少单词或中文意思")
+                }
+                for s in lesson.sentences where s.sentence.isEmpty || s.meaning.isEmpty {
+                    problems.append("\(at)：英语句子「\(s.sentence)」缺少句子或中文意思")
+                }
             }
         }
         return problems

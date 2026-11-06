@@ -47,6 +47,27 @@ public struct ContentUnit: Codable, Identifiable, Sendable {
         self.theme = theme
         self.lessons = lessons
     }
+
+    /// 英语题库可以不分课，把单词和句子直接放在单元下（"words"、"sentences"），
+    /// 读取时合成一课：没有 lessons 时课 id 为 l1，和 lessons 并存时为 unit
+    private enum UnitLevelKeys: String, CodingKey {
+        case words, sentences
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        title = try c.decode(String.self, forKey: .title)
+        theme = try c.decodeIfPresent(String.self, forKey: .theme)
+        lessons = try c.decodeIfPresent([Lesson].self, forKey: .lessons) ?? []
+        let unitLevel = try decoder.container(keyedBy: UnitLevelKeys.self)
+        let words = try unitLevel.decodeIfPresent([EnglishWordItem].self, forKey: .words) ?? []
+        let sentences = try unitLevel.decodeIfPresent([SentenceItem].self, forKey: .sentences) ?? []
+        if !words.isEmpty || !sentences.isEmpty {
+            lessons.append(Lesson(id: lessons.isEmpty ? "l1" : "unit", title: title,
+                                  englishWords: words, sentences: sentences))
+        }
+    }
 }
 
 public struct Lesson: Codable, Identifiable, Sendable {
@@ -58,6 +79,10 @@ public struct Lesson: Codable, Identifiable, Sendable {
     public var poems: [PoemItem]
     public var pictures: [PictureItem]
     public var questions: [ChoiceItem]
+    /// 英语单词
+    public var englishWords: [EnglishWordItem]
+    /// 英语句子
+    public var sentences: [SentenceItem]
 
     public init(
         id: String,
@@ -67,7 +92,9 @@ public struct Lesson: Codable, Identifiable, Sendable {
         idioms: [IdiomItem] = [],
         poems: [PoemItem] = [],
         pictures: [PictureItem] = [],
-        questions: [ChoiceItem] = []
+        questions: [ChoiceItem] = [],
+        englishWords: [EnglishWordItem] = [],
+        sentences: [SentenceItem] = []
     ) {
         self.id = id
         self.title = title
@@ -77,6 +104,8 @@ public struct Lesson: Codable, Identifiable, Sendable {
         self.poems = poems
         self.pictures = pictures
         self.questions = questions
+        self.englishWords = englishWords
+        self.sentences = sentences
     }
 
     // 课里的各类素材都可以省略
@@ -90,6 +119,32 @@ public struct Lesson: Codable, Identifiable, Sendable {
         poems = try c.decodeIfPresent([PoemItem].self, forKey: .poems) ?? []
         pictures = try c.decodeIfPresent([PictureItem].self, forKey: .pictures) ?? []
         questions = try c.decodeIfPresent([ChoiceItem].self, forKey: .questions) ?? []
+        englishWords = try c.decodeIfPresent([EnglishWordItem].self, forKey: .englishWords) ?? []
+        sentences = try c.decodeIfPresent([SentenceItem].self, forKey: .sentences) ?? []
+    }
+}
+
+/// 英语单词：单词、音标、中文意思（几个意思用「；」隔开）
+public struct EnglishWordItem: Codable, Hashable, Sendable {
+    public var word: String
+    public var phonetic: String?
+    public var meaning: String
+
+    public init(word: String, phonetic: String? = nil, meaning: String) {
+        self.word = word
+        self.phonetic = phonetic
+        self.meaning = meaning
+    }
+}
+
+/// 英语句子和中文意思
+public struct SentenceItem: Codable, Hashable, Sendable {
+    public var sentence: String
+    public var meaning: String
+
+    public init(sentence: String, meaning: String) {
+        self.sentence = sentence
+        self.meaning = meaning
     }
 }
 

@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 1,
+  "id": "english-g3-up-pep",
+  "title": "英语（PEP）（三年级起点）三年级上册",
+  "subject": "english",
+  "grade": "g3",
+  "term": "up",
+  "edition": "人民教育出版社（PEP版）",
+  "units": [
+    {
+      "id": "u1",
+      "title": "Unit 1 Making friends",
+      "theme": "academy",
+      "associations": {
+        "daily_scene": "开学第一天交新朋友，学习如何友好地打招呼并认识身体部位。",
+        "idioms": ["Nice to meet you", "Wave your hand", "We can share"]
+      },
+      "words": [
+        { "word": "name", "phonetic": "/neɪm/", "meaning": "名字" },
+        { "word": "nice", "phonetic": "/naɪs/", "meaning": "令人愉快的" },
+        { "word": "ear", "phonetic": "/ɪə(r)/", "meaning": "耳朵" },
+        { "word": "hand", "phonetic": "/hænd/", "meaning": "手" },
+        { "word": "eye", "phonetic": "/aɪ/", "meaning": "眼睛" },
+        { "word": "mouth", "phonetic": "/maʊθ/", "meaning": "嘴" },
+        { "word": "arm", "phonetic": "/ɑːm/", "meaning": "胳膊" },
+        { "word": "share", "phonetic": "/ʃeə(r)/", "meaning": "分享" },
+        { "word": "smile", "phonetic": "/smaɪl/", "meaning": "微笑" },
+        { "word": "listen", "phonetic": "/ˈlɪsn/", "meaning": "听" },
+        { "word": "help", "phonetic": "/help/", "meaning": "帮助" }
+      ],
+      "sentences": [
+        { "sentence": "Hello! I'm Mike Black.", "meaning": "你好！我是迈克·布莱克。" },
+        { "sentence": "Nice to meet you.", "meaning": "见到你很高兴。" },
+        { "sentence": "Nice to meet you too.", "meaning": "见到你我也很高兴。" },
+        { "sentence": "We can share.", "meaning": "我们可以分享。" }
+      ],
+      "phonics": "A a, B b, C c, D d (apple, bag, bed, Bob, cat, can, dog, sad)"
+    },
+    {
+      "id": "u2",
+      "title": "Unit 2 Different families",
+      "theme": "meadow",
+      "associations": {
+        "daily_scene": "向朋友介绍自己的家庭成员，或者通过照片询问对方照片里的人是谁。",
+        "idioms": ["This is my ...", "Is this your ...?", "They love each other"]
+      },
+      "words": [
+        { "word": "mum", "phonetic": "/mʌm/", "meaning": "妈妈" },
+        { "word": "dad", "phonetic": "/dæd/", "meaning": "爸爸" },
+        { "word": "grandma", "phonetic": "/ˈɡrænmɑː/", "meaning": "奶奶；姥姥" },
+        { "word": "grandpa", "phonetic": "/ˈɡrænpɑː/", "meaning": "爷爷；姥爷" },
+        { "word": "grandfather", "phonetic": "/ˈɡrænfɑːðə(r)/", "meaning": "祖父；外祖父" },
+        { "word": "grandmother", "phonetic": "/ˈɡrænmʌðə(r)/", "meaning": "祖母；外祖母" },
+        { "word": "mother", "phonetic": "/ˈmʌðə(r)/", "meaning": "母亲" },
+        { "word": "father", "phonetic": "/ˈfɑːðə(r)/", "meaning": "父亲" },
+        { "word": "sister", "phonetic": "/ˈsɪstə(r)/", "meaning": "姐；妹" },
+        { "word": "brother", "phonetic": "/ˈbrʌðə(r)/", "meaning": "哥；弟" },
+        { "word": "cousin", "phonetic": "/ˈkʌzn/", "meaning": "堂/表兄弟姐妹" },
+        { "word": "uncle", "phonetic": "/ˈʌŋkl/", "meaning": "叔叔；舅舅" },
+        { "word": "aunt", "phonetic": "/ɑːnt/", "meaning": "阿姨；姑姑" }
+      ],
+      "sentences": [
+        { "sentence": "This is my friend, Sarah Miller.", "meaning": "这是我的朋友，萨拉·米勒。" },
+        { "sentence": "Is that your brother?", "meaning": "那是你弟弟吗？" },
+        { "sentence": "Yes, it is. / No, it's my cousin.", "meaning": "是的。/ 不，是我的堂/表兄弟。" },
+        { "sentence": "This family is big. They love each other.", "meaning": "这个家庭很大。他们彼此相爱。" }
+      ],
+      "phonics": "E e, F f, G g, H h (egg, nest, fish, beef, girl, pig, hot, hat)"
+    },
+    {
+      "id": "u3",
+      "title": "Unit 3 Our animal friends",
+      "theme": "meadow",
+      "associations": {
+        "daily_scene": "讨论家里养的宠物，或者去动物园看野生动物，学习如何分类动物。",
+        "idioms": ["Do you have a pet?", "Let's go to the zoo", "It's fast/tall/big/small"]
+      },
+      "words": [
+        { "word": "like", "phonetic": "/laɪk/", "meaning": "喜欢" },
+        { "word": "dog", "phonetic": "/dɒɡ/", "meaning": "狗" },
+        { "word": "pet", "phonetic": "/pet/", "meaning": "宠物" },
+        { "word": "cat", "phonetic": "/kæt/", "meaning": "猫" },
+        { "word": "fish", "phonetic": "/fɪʃ/", "meaning": "鱼" },
+        { "word": "bird", "phonetic": "/bɜːd/", "meaning": "鸟" },
+        { "word": "rabbit", "phonetic": "/ˈræbɪt/", "meaning": "兔子" },
+        { "word": "panda", "phonetic": "/ˈpændə/", "meaning": "大熊猫" },
+        { "word": "monkey", "phonetic": "/ˈmʌŋki/", "meaning": "猴子" },
+        { "word": "tiger", "phonetic": "/ˈtaɪɡə(r)/", "meaning": "老虎" },
+        { "word": "elephant", "phonetic": "/ˈelɪfənt/", "meaning": "大象" },
+        { "word": "lion", "phonetic": "/ˈlaɪən/", "meaning": "狮子" },
+        { "word": "giraffe", "phonetic": "/dʒəˈrɑːf/", "meaning": "长颈鹿" }
+      ],
+      "sentences": [
+        { "sentence": "Do you have a pet?", "meaning": "你有宠物吗？" },
+        { "sentence": "Yes, I do. I have a cat.", "meaning": "是的，我有。我有一只猫。" },
+        { "sentence": "What's this? It's a panda.", "meaning": "这是什么？是一只大熊猫。" },
+        { "sentence": "The giraffe is tall! The lion is fast!", "meaning": "长颈鹿很高！狮子跑得很快！" }
+      ],
+      "phonics": "I i, J j, K k, L l (ill, kid, job, jet, Kim, kite, leg, lion)"
+    },
+    {
+      "id": "u4",
+      "title": "Unit 4 Plants around us",
+      "theme": "orchard",
+      "associations": {
+        "daily_scene": "去果园摘水果，了解植物生长的条件（空气、水、阳光），思考如何保护植物。",
+        "idioms": ["Do you like ...?", "Plants need ...", "We can help"]
+      },
+      "words": [
+        { "word": "apple", "phonetic": "/ˈæpl/", "meaning": "苹果" },
+        { "word": "banana", "phonetic": "/bəˈnɑːnə/", "meaning": "香蕉" },
+        { "word": "orange", "phonetic": "/ˈɒrɪndʒ/", "meaning": "橙子" },
+        { "word": "grape", "phonetic": "/ɡreɪp/", "meaning": "葡萄" },
+        { "word": "air", "phonetic": "/eə(r)/", "meaning": "空气" },
+        { "word": "water", "phonetic": "/ˈwɔːtə(r)/", "meaning": "水" },
+        { "word": "sun", "phonetic": "/sʌn/", "meaning": "阳光；太阳" },
+        { "word": "tree", "phonetic": "/triː/", "meaning": "树" },
+        { "word": "flower", "phonetic": "/ˈflaʊə(r)/", "meaning": "花" },
+        { "word": "grass", "phonetic": "/ɡrɑːs/", "meaning": "草" },
+        { "word": "plant", "phonetic": "/plɑːnt/", "meaning": "种植；植物" }
+      ],
+      "sentences": [
+        { "sentence": "Do you like apples?", "meaning": "你喜欢苹果吗？" },
+        { "sentence": "Yes, I do. And you?", "meaning": "是的，我喜欢。你呢？" },
+        { "sentence": "Plants need air, water and sun.", "meaning": "植物需要空气、水和阳光。" },
+        { "sentence": "We can plant new trees.", "meaning": "我们可以种新树。" }
+      ],
+      "phonics": "M m, N n, O o, P p (map, mum, new, fan, orange, fox, pen, cup)"
+    },
+    {
+      "id": "u5",
+      "title": "Unit 5 The colourful world",
+      "theme": "starry",
+      "associations": {
+        "daily_scene": "用英语描述身边物品的颜色，探索颜色混合的奥秘（如红+蓝=紫），了解颜色在生活中的实际意义（如红灯停绿灯行）。",
+        "idioms": ["What colour is it?", "Red and blue make purple", "Be careful!"]
+      },
+      "words": [
+        { "word": "colour", "phonetic": "/ˈkʌlə(r)/", "meaning": "颜色" },
+        { "word": "red", "phonetic": "/red/", "meaning": "红色" },
+        { "word": "blue", "phonetic": "/bluː/", "meaning": "蓝色" },
+        { "word": "green", "phonetic": "/ɡriːn/", "meaning": "绿色" },
+        { "word": "yellow", "phonetic": "/ˈjeləʊ/", "meaning": "黄色" },
+        { "word": "pink", "phonetic": "/pɪŋk/", "meaning": "粉色" },
+        { "word": "purple", "phonetic": "/ˈpɜːpl/", "meaning": "紫色" },
+        { "word": "brown", "phonetic": "/braʊn/", "meaning": "棕色" },
+        { "word": "black", "phonetic": "/blæk/", "meaning": "黑色" },
+        { "word": "white", "phonetic": "/waɪt/", "meaning": "白色" }
+      ],
+      "sentences": [
+        { "sentence": "What colour is it?", "meaning": "它是什么颜色的？" },
+        { "sentence": "It's green.", "meaning": "它是绿色的。" },
+        { "sentence": "Red and blue make purple.", "meaning": "红色加蓝色变成紫色。" },
+        { "sentence": "What colours do you like?", "meaning": "你喜欢什么颜色？" }
+      ],
+      "phonics": "Q q, R r, S s, T t, U u (quiet, queen, red, ruler, see, bus, Ted, sit, up, run)"
+    },
+    {
+      "id": "u6",
+      "title": "Unit 6 Useful numbers",
+      "theme": "academy",
+      "associations": {
+        "daily_scene": "去商店买东西询价和找零，询问年龄，或者在生活中寻找数字（如电话、车牌、时钟）。",
+        "idioms": ["How old are you?", "How many ...?", "That's ten yuan, please."]
+      },
+      "words": [
+        { "word": "one", "phonetic": "/wʌn/", "meaning": "一" },
+        { "word": "two", "phonetic": "/tuː/", "meaning": "二" },
+        { "word": "three", "phonetic": "/θriː/", "meaning": "三" },
+        { "word": "four", "phonetic": "/fɔː(r)/", "meaning": "四" },
+        { "word": "five", "phonetic": "/faɪv/", "meaning": "五" },
+        { "word": "six", "phonetic": "/sɪks/", "meaning": "六" },
+        { "word": "seven", "phonetic": "/ˈsevn/", "meaning": "七" },
+        { "word": "eight", "phonetic": "/eɪt/", "meaning": "八" },
+        { "word": "nine", "phonetic": "/naɪn/", "meaning": "九" },
+        { "word": "ten", "phonetic": "/ten/", "meaning": "十" },
+        { "word": "old", "phonetic": "/əʊld/", "meaning": "岁；旧的" },
+        { "word": "year", "phonetic": "/jɪə(r)/", "meaning": "年；岁" }
+      ],
+      "sentences": [
+        { "sentence": "How old are you?", "meaning": "你几岁了？" },
+        { "sentence": "I'm five years old.", "meaning": "我五岁了。" },
+        { "sentence": "How many apples?", "meaning": "几个苹果？" },
+        { "sentence": "Two. And one orange.", "meaning": "两个。还有一个橙子。" },
+        { "sentence": "That's ten yuan, please.", "meaning": "（共）十元，谢谢。" }
+      ],
+      "phonics": "V v, W w, X x, Y y, Z z (van, vet, we, win, box, six, yellow, yo-yo, Zip, quiz)"
+    }
+  ]
+}

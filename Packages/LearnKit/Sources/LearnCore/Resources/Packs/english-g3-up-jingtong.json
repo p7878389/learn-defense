@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 1,
+  "id": "english-g3-up-jingtong",
+  "title": "英语（精通）（三年级起点）三年级上册",
+  "subject": "english",
+  "grade": "g3",
+  "term": "up",
+  "edition": "人民教育出版社（精通版）",
+  "units": [
+    {
+      "id": "u1",
+      "title": "Unit 1 Greetings",
+      "theme": "academy",
+      "associations": {
+        "daily_scene": "早晨在校门口遇见老师和同学，主动打招呼并互相介绍姓名。",
+        "idioms": ["Good morning", "Nice to meet you", "What's your name"]
+      },
+      "words": [
+        { "word": "hello", "phonetic": "/həˈləʊ/", "meaning": "喂；你好" },
+        { "word": "hi", "phonetic": "/haɪ/", "meaning": "嗨；你好" },
+        { "word": "name", "phonetic": "/neɪm/", "meaning": "名字" },
+        { "word": "morning", "phonetic": "/ˈmɔːnɪŋ/", "meaning": "早晨；上午" },
+        { "word": "afternoon", "phonetic": "/ˌɑːftəˈnuːn/", "meaning": "下午" },
+        { "word": "evening", "phonetic": "/ˈiːvnɪŋ/", "meaning": "晚上" },
+        { "word": "night", "phonetic": "/naɪt/", "meaning": "夜晚" }
+      ],
+      "sentences": [
+        { "sentence": "Hello! I'm Miss Wu. What's your name?", "meaning": "你好！我是吴老师。你叫什么名字？" },
+        { "sentence": "Good morning, boys and girls!", "meaning": "早上好，孩子们！" },
+        { "sentence": "Good afternoon, Yaoyao!", "meaning": "下午好，瑶瑶！" },
+        { "sentence": "Goodbye! / Bye!", "meaning": "再见！" }
+      ]
+    },
+    {
+      "id": "u2",
+      "title": "Unit 2 School things",
+      "theme": "academy",
+      "associations": {
+        "daily_scene": "向同学展示自己的新文具，或者礼貌地借用别人的文具。",
+        "idioms": ["I have a ...", "Can I use your ...?", "Here you are"]
+      },
+      "words": [
+        { "word": "pencil", "phonetic": "/ˈpensl/", "meaning": "铅笔" },
+        { "word": "sharpener", "phonetic": "/ˈʃɑːpnə(r)/", "meaning": "卷笔刀" },
+        { "word": "pencil box", "phonetic": "/ˈpensl bɒks/", "meaning": "文具盒" },
+        { "word": "schoolbag", "phonetic": "/ˈskuːlbæɡ/", "meaning": "书包" },
+        { "word": "eraser", "phonetic": "/ɪˈreɪzə(r)/", "meaning": "橡皮" },
+        { "word": "crayon", "phonetic": "/ˈkreɪən/", "meaning": "蜡笔" },
+        { "word": "pen", "phonetic": "/pen/", "meaning": "钢笔" },
+        { "word": "ruler", "phonetic": "/ˈruːlə(r)/", "meaning": "直尺" }
+      ],
+      "sentences": [
+        { "sentence": "I have a new pencil.", "meaning": "我有一支新铅笔。" },
+        { "sentence": "Can I use your ruler?", "meaning": "我能用一下你的尺子吗？" },
+        { "sentence": "Sure, here you are.", "meaning": "当然，给你。" },
+        { "sentence": "Thank you! / You're welcome!", "meaning": "谢谢你！/ 不客气！" }
+      ]
+    },
+    {
+      "id": "u3",
+      "title": "Unit 3 Toys",
+      "theme": "starry",
+      "associations": {
+        "daily_scene": "过生日收到玩具礼物，或者和好朋友分享自己喜欢的玩具。",
+        "idioms": ["What's this?", "Can I play with ...?", "Let's share"]
+      },
+      "words": [
+        { "word": "ball", "phonetic": "/bɔːl/", "meaning": "球" },
+        { "word": "doll", "phonetic": "/dɒl/", "meaning": "玩偶" },
+        { "word": "kite", "phonetic": "/kaɪt/", "meaning": "风筝" },
+        { "word": "jigsaw", "phonetic": "/ˈdʒɪɡsɔː/", "meaning": "拼图" },
+        { "word": "toy cat", "phonetic": "/tɔɪ kæt/", "meaning": "玩具猫" },
+        { "word": "toy dog", "phonetic": "/tɔɪ dɒɡ/", "meaning": "玩具狗" }
+      ],
+      "sentences": [
+        { "sentence": "What's this? It's a ball.", "meaning": "这是什么？它是一个球。" },
+        { "sentence": "I have a new toy cat!", "meaning": "我有一只新玩具猫！" },
+        { "sentence": "Can I play with it?", "meaning": "我能玩一下吗？" },
+        { "sentence": "We often share our toys.", "meaning": "我们经常分享我们的玩具。" }
+      ]
+    },
+    {
+      "id": "u4",
+      "title": "Unit 4 Friends",
+      "theme": "meadow",
+      "associations": {
+        "daily_scene": "向家人或同学描述自己的新朋友，介绍他/她的长相特征。",
+        "idioms": ["long hair", "short hair", "big eyes", "This is my friend"]
+      },
+      "words": [
+        { "word": "face", "phonetic": "/feɪs/", "meaning": "脸" },
+        { "word": "hair", "phonetic": "/heə(r)/", "meaning": "头发" },
+        { "word": "eye", "phonetic": "/aɪ/", "meaning": "眼睛" },
+        { "word": "ear", "phonetic": "/ɪə(r)/", "meaning": "耳朵" },
+        { "word": "nose", "phonetic": "/nəʊz/", "meaning": "鼻子" },
+        { "word": "mouth", "phonetic": "/maʊθ/", "meaning": "嘴" },
+        { "word": "long", "phonetic": "/lɒŋ/", "meaning": "长的" },
+        { "word": "short", "phonetic": "/ʃɔːt/", "meaning": "短的；矮的" }
+      ],
+      "sentences": [
+        { "sentence": "This is his hair. And this is his mouth.", "meaning": "这是他的头发。这是他的嘴。" },
+        { "sentence": "She has big eyes and long hair.", "meaning": "她有大眼睛和长头发。" },
+        { "sentence": "A boy or a girl?", "meaning": "男孩还是女孩？" },
+        { "sentence": "We are good friends. We help each other.", "meaning": "我们是好朋友。我们互相帮助。" }
+      ]
+    },
+    {
+      "id": "u5",
+      "title": "Unit 5 Drinks and fruits",
+      "theme": "orchard",
+      "associations": {
+        "daily_scene": "去超市购买饮料和水果，或者询问朋友喜欢吃什么水果。",
+        "idioms": ["Do you like ...?", "Let's buy some ...", "Yes, I do. / No, I don't"]
+      },
+      "words": [
+        { "word": "milk", "phonetic": "/mɪlk/", "meaning": "牛奶" },
+        { "word": "water", "phonetic": "/ˈwɔːtə(r)/", "meaning": "水" },
+        { "word": "tea", "phonetic": "/tiː/", "meaning": "茶" },
+        { "word": "juice", "phonetic": "/dʒuːs/", "meaning": "果汁" },
+        { "word": "cola", "phonetic": "/ˈkəʊlə/", "meaning": "可乐" },
+        { "word": "apple", "phonetic": "/ˈæpl/", "meaning": "苹果" },
+        { "word": "banana", "phonetic": "/bəˈnɑːnə/", "meaning": "香蕉" },
+        { "word": "orange", "phonetic": "/ˈɒrɪndʒ/", "meaning": "橙子" },
+        { "word": "grape", "phonetic": "/ɡreɪp/", "meaning": "葡萄" },
+        { "word": "lemon", "phonetic": "/ˈlemən/", "meaning": "柠檬" }
+      ],
+      "sentences": [
+        { "sentence": "Let's buy some milk and water.", "meaning": "让我们买一些牛奶和水吧。" },
+        { "sentence": "Do you like apples?", "meaning": "你喜欢苹果吗？" },
+        { "sentence": "Yes, I do. / No, I don't.", "meaning": "是的，我喜欢。/ 不，我不喜欢。" }
+      ]
+    },
+    {
+      "id": "u6",
+      "title": "Unit 6 Food",
+      "theme": "orchard",
+      "associations": {
+        "daily_scene": "餐桌上与家人讨论晚餐想吃什么，或者招待朋友吃饭。",
+        "idioms": ["Have some ...", "What do you want for dinner?", "I want ..."]
+      },
+      "words": [
+        { "word": "cake", "phonetic": "/keɪk/", "meaning": "蛋糕" },
+        { "word": "bread", "phonetic": "/bred/", "meaning": "面包" },
+        { "word": "rice", "phonetic": "/raɪs/", "meaning": "米饭" },
+        { "word": "noodles", "phonetic": "/ˈnuːdlz/", "meaning": "面条" },
+        { "word": "soup", "phonetic": "/suːp/", "meaning": "汤" },
+        { "word": "egg", "phonetic": "/eɡ/", "meaning": "鸡蛋" },
+        { "word": "chicken", "phonetic": "/ˈtʃɪkɪn/", "meaning": "鸡肉" },
+        { "word": "fish", "phonetic": "/fɪʃ/", "meaning": "鱼肉" },
+        { "word": "tomato", "phonetic": "/təˈmɑːtəʊ/", "meaning": "西红柿" },
+        { "word": "potato", "phonetic": "/pəˈteɪtəʊ/", "meaning": "土豆" }
+      ],
+      "sentences": [
+        { "sentence": "Have some noodles, Xinxin.", "meaning": "鑫鑫，吃些面条吧。" },
+        { "sentence": "I like noodles. But I don't like eggs.", "meaning": "我喜欢面条。但是我不喜欢鸡蛋。" },
+        { "sentence": "What do you want for dinner?", "meaning": "你晚饭想吃什么？" },
+        { "sentence": "I want some fish and rice.", "meaning": "我想要一些鱼肉和米饭。" }
+      ]
+    }
+  ]
+}
