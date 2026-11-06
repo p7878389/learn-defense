@@ -54,7 +54,7 @@ struct CharacterSkinAnimationTests {
 
     @Test func sceneUsesEquippedSkinAndShotEffectsExpire() throws {
         let scene = GameScene(tuning: GameTuning.make(grade: .g1, difficulty: .easy), theme: .academy,
-                              loadout: Loadout(defenderSkin: .pixel))
+                              loadout: Loadout(defenderSkins: ["inkling": .pixel, "frost": .bamboo]))
         let planted = scene.plant(.inkling, in: DefenderCell(lane: 0, column: 0))
         #expect(planted)
         let defender = try #require(scene.children.compactMap { $0 as? DefenderNode }.first)
@@ -115,10 +115,22 @@ struct CharacterSkinAnimationTests {
         #expect(CGImageDestinationFinalize(gif))
     }
 
+    /// 植物卡、拖动预览、收藏馆卡片：穿着皮肤的第一帧；这种射手还没有这套素材时是原版
+    @Test func portraitsFollowEquippedSkin() throws {
+        let bamboo = try #require(UnitSprites.portrait(of: .inkling, skin: .bamboo))
+        let original = try #require(UnitSprites.portrait(of: .inkling, skin: nil))
+        #expect(bamboo.width == original.width * 3)
+        let frost = try #require(UnitSprites.portrait(of: .frost, skin: .bamboo))
+        let frostOriginal = try #require(UnitSprites.portrait(of: .frost, skin: nil))
+        #expect(frost.width == frostOriginal.width)
+        #expect(UnitSprites.defender(.frost, radius: 34, skin: .bamboo)?.base == "plant-frost")
+    }
+
     /// 收藏馆试穿：每种皮肤、每个角色的舞台身份各不相同，切换时 SpriteView 才会换成新场景
     @Test func previewStageIdentityFollowsSkinAndRole() {
         let skins: [CharacterSkin?] = [nil] + CharacterSkin.allCases.map { Optional($0) }
-        let ids = [false, true].flatMap { enemy in skins.map { CharacterSkinPreview.stageID(skin: $0, enemy: enemy) } }
+        let ids = UnitCatalog.defenders.filter(\.canShoot).flatMap { kind in skins.map { CharacterSkinPreview.stageID(kind: kind, skin: $0, enemy: false) } }
+            + skins.map { CharacterSkinPreview.stageID(skin: $0, enemy: true) }
         #expect(Set(ids).count == ids.count)
     }
 

@@ -39,6 +39,7 @@ struct GameView: View {
             sun: session.sun,
             enabled: session.canUseShop,
             draggingID: activeDrag?.kind.id,
+            skins: session.loadout.defenderSkins,
             onDragChanged: { kind, location in
                 activeDrag = PlantDrag(kind: kind, location: location)
                 session.previewSeed(at: GameScene.scenePoint(at: location, in: battlefieldFrame))
@@ -169,7 +170,7 @@ struct GameView: View {
             }
 
             if let drag = activeDrag {
-                PlantDragGhost(kind: drag.kind)
+                PlantDragGhost(kind: drag.kind, skin: session.loadout.defenderSkins[drag.kind.id])
                     .position(drag.location)
                     .allowsHitTesting(false)
                     .zIndex(20)
@@ -236,11 +237,12 @@ private struct PlantDrag: Equatable {
 
 private struct PlantDragGhost: View {
     let kind: DefenderKind
+    let skin: CharacterSkin?
 
     var body: some View {
         HStack(spacing: 8) {
-            if let texture = UnitSprites.frames(named: "plant-\(kind.id)").first {
-                Image(decorative: texture.cgImage(), scale: 1)
+            if let image = UnitSprites.portrait(of: kind, skin: skin) {
+                Image(decorative: image, scale: 1)
                     .resizable().scaledToFit().frame(width: 54, height: 50)
             }
             Text(kind.name)

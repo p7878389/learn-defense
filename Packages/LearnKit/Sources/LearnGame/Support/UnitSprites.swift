@@ -126,8 +126,18 @@ enum UnitSprites {
     }
 
     static func defender(_ kind: DefenderKind, radius: CGFloat, skin: CharacterSkin? = nil) -> SpriteRig? {
-        SpriteRig(named: characterName("plant-\(kind.id)", skin: kind.id == "inkling" ? skin : nil),
+        // 哪种射手有哪套皮肤由素材决定；没有整套素材的回退原版
+        SpriteRig(named: characterName("plant-\(kind.id)", skin: skin),
                   fitting: CGSize(width: radius * 2.3, height: radius * 2.3))
+    }
+
+    /// 植物卡、拖动预览、收藏馆卡片用的静态形象：穿着皮肤的第一帧，缺素材时是原版
+    static func portrait(of kind: DefenderKind, skin: CharacterSkin?) -> CGImage? {
+        frames(named: characterName("plant-\(kind.id)", skin: skin)).first?.cgImage()
+    }
+
+    static func portrait(of kind: EnemyKind, skin: CharacterSkin?) -> CGImage? {
+        frames(named: characterName("zombie-\(kind.id)", skin: kind.id == "blob" ? skin : nil)).first?.cgImage()
     }
 
     static func enemy(_ kind: EnemyKind, skin: CharacterSkin? = nil) -> SpriteRig? {

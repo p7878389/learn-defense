@@ -175,7 +175,7 @@ public struct GrowthState: Codable, Sendable, Equatable {
         var loadout = Loadout()
         for (key, id) in equipped {
             guard let item = catalog.cosmetic(id: id), item.equipKey == key, owns(item, level: current) else { continue }
-            if item.slot == .defenderSkin { loadout.defenderSkin = item.characterSkin }
+            if item.slot == .defenderSkin { loadout.defenderSkins[item.shooterID] = item.characterSkin }
             if item.slot == .enemySkin { loadout.enemySkin = item.characterSkin }
             if let p = item.projectile { loadout.projectile = p.look }
             if let d = item.defeat { loadout.defeat = d }
@@ -187,7 +187,8 @@ public struct GrowthState: Codable, Sendable, Equatable {
 
 /// 一局里用到的外观。场景照旧走子弹、退场特效和道具的现有接口，只是先问这里用哪一款
 public struct Loadout: Sendable, Equatable {
-    public var defenderSkin: CharacterSkin?
+    /// 射手 id → 穿的皮肤；没有记录就是原版
+    public var defenderSkins: [String: CharacterSkin] = [:]
     public var enemySkin: CharacterSkin?
     /// 替换普通豌豆类（orb）子弹；寒冰射手、杨桃的子弹保持原样，免得孩子分不清哪个会减速
     public var projectile: ProjectileLook?
@@ -197,8 +198,8 @@ public struct Loadout: Sendable, Equatable {
     public var itemSkins: [String: ItemSkin] = [:]
 
     public init(projectile: ProjectileLook? = nil, defeat: DefeatEffect? = nil, itemSkins: [String: ItemSkin] = [:],
-                defenderSkin: CharacterSkin? = nil, enemySkin: CharacterSkin? = nil) {
-        self.defenderSkin = defenderSkin
+                defenderSkins: [String: CharacterSkin] = [:], enemySkin: CharacterSkin? = nil) {
+        self.defenderSkins = defenderSkins
         self.enemySkin = enemySkin
         self.projectile = projectile
         self.defeat = defeat

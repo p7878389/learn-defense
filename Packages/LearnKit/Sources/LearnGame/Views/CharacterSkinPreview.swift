@@ -4,25 +4,26 @@ import SwiftUI
 
 /// 使用同一套 SpriteRig 试穿；试看不写入孩子的装备。
 struct CharacterSkinPreview: View {
+    var kind: DefenderKind = .inkling
     let skin: CharacterSkin?
     let enemy: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// 试穿舞台的身份：换皮肤或换角色时整块舞台重建
-    static func stageID(skin: CharacterSkin?, enemy: Bool) -> String {
-        "\(enemy ? "enemy" : "defender")-\(skin?.rawValue ?? "original")"
+    static func stageID(kind: DefenderKind = .inkling, skin: CharacterSkin?, enemy: Bool) -> String {
+        "\(enemy ? "enemy" : kind.id)-\(skin?.rawValue ?? "original")"
     }
 
     var body: some View {
         HStack(spacing: 12) {
             // SpriteView 只展示创建时拿到的场景，之后换参数不会重新展示；
             // 所以按皮肤给舞台独立身份，切换时连同场景一起重建。
-            CharacterSkinStage(skin: skin, enemy: enemy, paused: reduceMotion)
-                .id(Self.stageID(skin: skin, enemy: enemy))
+            CharacterSkinStage(kind: kind, skin: skin, enemy: enemy, paused: reduceMotion)
+                .id(Self.stageID(kind: kind, skin: skin, enemy: enemy))
                 .frame(width: 280, height: 130)
-                .accessibilityLabel("\(enemy ? "普通僵尸" : "豌豆射手")\(skin == nil ? "原版" : "动画皮肤")试穿")
+                .accessibilityLabel("\(enemy ? "普通僵尸" : kind.name)\(skin == nil ? "原版" : "动画皮肤")试穿")
             VStack(alignment: .leading, spacing: 8) {
-                Text(enemy ? "普通僵尸 · 行走 / 啃咬" : "豌豆射手 · 待机 / 发射")
+                Text(enemy ? "普通僵尸 · 行走 / 啃咬" : "\(kind.name) · 待机 / 发射")
                     .font(.system(size: 18, weight: .heavy, design: .rounded))
                 Text("点选试看，装备后下局生效")
                     .font(.system(size: 15, weight: .medium, design: .rounded))
@@ -34,6 +35,7 @@ struct CharacterSkinPreview: View {
 
 /// 每个身份只建一次场景；出现时才建，父视图刷新不会白建场景
 private struct CharacterSkinStage: View {
+    let kind: DefenderKind
     let skin: CharacterSkin?
     let enemy: Bool
     let paused: Bool
@@ -46,14 +48,14 @@ private struct CharacterSkinStage: View {
             }
         }
         .onAppear {
-            if scene == nil { scene = CharacterSkinPreviewScene(skin: skin, enemy: enemy) }
+            if scene == nil { scene = CharacterSkinPreviewScene(kind: kind, skin: skin, enemy: enemy) }
         }
     }
 }
 
 @MainActor
 final class CharacterSkinPreviewScene: SKScene {
-    init(skin: CharacterSkin?, enemy: Bool) {
+    init(kind: DefenderKind = .inkling, skin: CharacterSkin?, enemy: Bool) {
         super.init(size: CGSize(width: 280, height: 130))
         scaleMode = .aspectFit
         backgroundColor = .clear
@@ -66,7 +68,7 @@ final class CharacterSkinPreviewScene: SKScene {
             ])))
             node = zombie
         } else {
-            let shooter = DefenderNode(kind: .inkling, radius: 44, skin: skin)
+            let shooter = DefenderNode(kind: kind, radius: 44, skin: skin)
             shooter.run(.repeatForever(.sequence([
                 .wait(forDuration: 2), .run { [weak shooter] in shooter?.shoot() },
             ])))
