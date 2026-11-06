@@ -26,7 +26,10 @@ enum UnitSprites {
         guard let url = Bundle.module.url(forResource: "clips", withExtension: "json", subdirectory: "Sprites"),
               let data = try? Data(contentsOf: url),
               let clips = try? JSONDecoder().decode([String: Clip].self, from: data) else { return [:] }
-        return clips
+        guard let skinURL = Bundle.module.url(forResource: "skins", withExtension: "json", subdirectory: "Sprites"),
+              let skinData = try? Data(contentsOf: skinURL),
+              let skins = try? JSONDecoder().decode([String: Clip].self, from: skinData) else { return clips }
+        return clips.merging(skins) { original, _ in original }
     }()
     private static var cachedFrames: [String: [SKTexture]] = [:]
 
@@ -70,7 +73,7 @@ enum UnitSprites {
             let rect = CGRect(x: c[0] / size.width, y: 1 - (c[1] + c[3]) / size.height,
                               width: c[2] / size.width, height: c[3] / size.height)
             let texture = SKTexture(rect: rect, in: full)
-            texture.filteringMode = .linear
+            texture.filteringMode = name.hasPrefix("skin-pixel-") ? .nearest : .linear
             frames.append(texture)
         }
         cachedFrames[name] = frames
@@ -122,12 +125,23 @@ enum UnitSprites {
         return node
     }
 
-    static func defender(_ kind: DefenderKind, radius: CGFloat) -> SpriteRig? {
-        SpriteRig(named: "plant-\(kind.id)", fitting: CGSize(width: radius * 2.3, height: radius * 2.3))
+    static func defender(_ kind: DefenderKind, radius: CGFloat, skin: CharacterSkin? = nil) -> SpriteRig? {
+        SpriteRig(named: characterName("plant-\(kind.id)", skin: kind.id == "inkling" ? skin : nil),
+                  fitting: CGSize(width: radius * 2.3, height: radius * 2.3))
     }
 
-    static func enemy(_ kind: EnemyKind) -> SpriteRig? {
-        SpriteRig(named: "zombie-\(kind.id)", fitting: CGSize(width: 88, height: 80))
+    static func enemy(_ kind: EnemyKind, skin: CharacterSkin? = nil) -> SpriteRig? {
+        SpriteRig(named: characterName("zombie-\(kind.id)", skin: kind.id == "blob" ? skin : nil),
+                  fitting: CGSize(width: 88, height: 80))
+    }
+
+    /// 整套状态完整才换皮，避免行走穿着皮肤，攻击或倒下却突然变回原版。
+    static func characterName(_ base: String, skin: CharacterSkin?) -> String {
+        guard let skin else { return base }
+        let name = "skin-\(skin.rawValue)-\(base)"
+        guard let clip = clips[name], !frames(named: name).isEmpty,
+              (clip.states ?? [:]).values.allSatisfy({ !frames(named: $0).isEmpty }) else { return base }
+        return name
     }
 
     private static func projectileName(_ look: ProjectileLook) -> String? {

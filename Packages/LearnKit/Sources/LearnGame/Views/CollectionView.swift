@@ -7,7 +7,7 @@ struct CollectionView: View {
     let profileID: UUID
     let onClose: () -> Void
 
-    @State private var slot: CosmeticSlot = .projectile
+    @State private var slot: CosmeticSlot = .defenderSkin
     /// 点过的卡片，在预览舞台上试看
     @State private var previewID: String?
     @State private var confirming: CosmeticKind?
@@ -114,6 +114,9 @@ struct CollectionView: View {
     @ViewBuilder
     private func stageContent(_ item: CosmeticKind?) -> some View {
         switch slot {
+        case .defenderSkin, .enemySkin:
+            CharacterSkinPreview(skin: item?.characterSkin, enemy: slot == .enemySkin)
+                .padding(.top, 30)
         case .projectile:
             HStack {
                 PictureView(emoji: "🌱", size: 70)

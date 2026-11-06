@@ -159,7 +159,8 @@ final class GameScene: SKScene {
             return
         }
         let lane = chooseLane()
-        let enemy = EnemyNode(id: spec.id, kind: spec.kind, sign: spec.sign, lane: lane, scale: min(1.2, laneHeight / 104))
+        let enemy = EnemyNode(id: spec.id, kind: spec.kind, sign: spec.sign, lane: lane,
+                              scale: min(1.2, laneHeight / 104), skin: loadout.enemySkin)
         enemy.position = CGPoint(x: spawnX, y: laneY(lane))
         enemy.zPosition = 10 + CGFloat(tuning.lanes - lane)
         addChild(enemy)
@@ -217,7 +218,7 @@ final class GameScene: SKScene {
         guard cell.lane >= 0, cell.lane < tuning.lanes,
               cell.column >= 0, cell.column < Lawn.columns,
               defenders[cell] == nil else { return false }
-        let defender = DefenderNode(kind: kind, radius: min(34, laneHeight * 0.32))
+        let defender = DefenderNode(kind: kind, radius: min(34, laneHeight * 0.32), skin: loadout.defenderSkin)
         IceCombatEffects.decorate(defender, projectile: loadout.projectile(for: kind), radius: min(34, laneHeight * 0.32))
         defender.position = CGPoint(x: lawn.columnX(cell.column), y: laneY(cell.lane))
         defender.zPosition = 5

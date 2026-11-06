@@ -39,7 +39,7 @@ final class EnemyNode: SKNode {
     private var signPicture: SKNode?
     private let pips = SKNode()
 
-    init(id: Int, kind: EnemyKind, sign text: String, lane: Int, scale: CGFloat) {
+    init(id: Int, kind: EnemyKind, sign text: String, lane: Int, scale: CGFloat, skin: CharacterSkin? = nil) {
         enemyID = id
         self.lane = lane
         self.kind = kind
@@ -49,7 +49,7 @@ final class EnemyNode: SKNode {
         let look = kind.look
         let s = CGFloat(look.scale)
         let extent = EnemyArt.extent(of: look.body)
-        rig = UnitSprites.enemy(kind)
+        rig = UnitSprites.enemy(kind, skin: skin)
         // 不管多大，脚底都在同一高度，牌子挡住下半身
         let halfHeight = rig.map { $0.sprite.size.height / 2 } ?? extent.height
         self.halfHeight = halfHeight
@@ -65,6 +65,8 @@ final class EnemyNode: SKNode {
             if let accessory = EnemyArt.accessory(look) { squash.addChild(accessory) }
         }
         figure.addChild(squash)
+        CharacterSkinEffects.decorate(squash, skin: rig?.base.hasPrefix("skin-") == true ? skin : nil,
+                                      radius: halfHeight * 0.85)
         figure.setScale(s)
         figure.position.y = figureBaseY
         addChild(figure)
@@ -161,6 +163,10 @@ final class EnemyNode: SKNode {
         guard tempo != self.tempo else { return }
         self.tempo = tempo
         rig?.tempo = tempo
+        if let effects = squash.childNode(withName: CharacterSkinEffects.nodeName) {
+            effects.speed = tempo
+            effects.isPaused = tempo == 0
+        }
         if !doomed { breathe(speed: tempo) }
     }
 
