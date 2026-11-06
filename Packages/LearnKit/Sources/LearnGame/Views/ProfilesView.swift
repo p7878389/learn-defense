@@ -21,6 +21,7 @@ struct ProfilesView: View {
     @EnvironmentObject private var model: AppModel
     @State private var editing: EditingProfile?
     @State private var deleting: Profile?
+    @State private var showingVoiceSettings = false
 
     var body: some View {
         ScrollView {
@@ -67,6 +68,18 @@ struct ProfilesView: View {
         }
         .sheet(item: $editing) { item in
             ProfileEditor(profile: item.profile, isNew: item.isNew) { model.save($0) }
+        }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    showingVoiceSettings = true
+                } label: {
+                    Label("语音设置", systemImage: "speaker.wave.2.fill")
+                }
+            }
+        }
+        .sheet(isPresented: $showingVoiceSettings) {
+            VoiceSettingsView(library: model.speechLibrary)
         }
         .confirmationDialog(
             "删除「\(deleting?.name ?? "")」的档案？学习记录也会一起删除。",

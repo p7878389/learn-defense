@@ -330,7 +330,7 @@ struct CollectionView: View {
                         // 买完直接穿上，孩子马上能看到效果；随时可以换回原版
                         if model.purchase(item, for: profileID) == .bought {
                             model.equip(item, for: profileID)
-                            model.speech.speak("买到\(item.name)啦，已经换上了！", interrupt: true)
+                            model.speech.speak(SpeechText.Line.bought(item.name), interrupt: true)
                         }
                         confirming = nil
                     } label: {

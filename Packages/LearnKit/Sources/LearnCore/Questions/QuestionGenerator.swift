@@ -56,14 +56,56 @@ public struct QuestionGenerator: Sendable {
         return nil
     }
 
+    // MARK: - 朗读文本
+
+    /// 这个知识点出题时可能朗读的全部文本（各题型的题目和答案），用来预先生成高质量语音。
+    /// 与下面各题型里的 promptSpeech / answerSpeech 保持一致，测试会逐题核对。
+    public static func speechTexts(for item: LearningItem) -> [String] {
+        switch item {
+        case .character(let c):
+            let speech = charSpeech(c)
+            return [speech, "找一找，\(speech)", c.char] + charWords(c)
+        case .word(let w):
+            return [w.text]
+        case .idiom(let i):
+            return [i.text]
+        case .poemLine(let p, let index):
+            guard index + 1 < p.lines.count else { return [] }
+            return ["\(p.lines[index])，\(p.lines[index + 1])"]
+        case .choice(let q, _):
+            return [q.answer]
+        case .picture(let p):
+            return ["找一找，\(p.text)", p.text]
+        case .englishWord(let w):
+            return [w.word, englishWordSpeech(w)]
+        case .sentence(let s):
+            return [s.sentence]
+        }
+    }
+
+    /// 英语单词答对后读「apple，苹果」
+    static func englishWordSpeech(_ w: EnglishWordItem) -> String {
+        "\(w.word)，\(w.meaning)"
+    }
+
+    /// 生字的组词（含这个字、两个字以上）
+    static func charWords(_ c: CharacterItem) -> [String] {
+        (c.words ?? []).filter { $0.contains(c.char) && $0.count > 1 }
+    }
+
+    /// 生字读法：有组词时读「晨，早晨的晨」，避免单字读错音
+    static func charSpeech(_ c: CharacterItem) -> String {
+        charWords(c).first.map { "\(c.char)，\($0)的\(c.char)" } ?? c.char
+    }
+
     // MARK: - 各题型
 
     private func character<R: RandomNumberGenerator>(_ c: CharacterItem, _ key: String, _ rng: inout R) -> Question? {
-        let words = (c.words ?? []).filter { $0.contains(c.char) && $0.count > 1 }
+        let words = Self.charWords(c)
         var kinds: [QuestionKind] = [.charToPinyin, .pinyinToChar]
         if !words.isEmpty { kinds.append(.fillCharInWord) }
         let kind = kinds.randomElement(using: &rng)!
-        let speech = words.first.map { "\(c.char)，\($0)的\(c.char)" } ?? c.char
+        let speech = Self.charSpeech(c)
         let explanation = ([c.char + " " + c.pinyin] + words).joined(separator: "  ")
         let card = charCard(c)
 
@@ -95,8 +137,7 @@ public struct QuestionGenerator: Sendable {
     }
 
     private func listenPickChar<R: RandomNumberGenerator>(_ c: CharacterItem, _ key: String, _ rng: inout R) -> Question? {
-        let word = c.words?.first { $0.contains(c.char) && $0.count > 1 }
-        let speech = word.map { "\(c.char)，\($0)的\(c.char)" } ?? c.char
+        let speech = Self.charSpeech(c)
         let others = pool.characters.map(\.char).filter { $0 != c.char }.shuffled(using: &rng)
         return build(
             kind: .listenPickChar, key: key, instruction: "听一听，是哪个字？", prompt: "🔊", hint: nil,
@@ -177,7 +218,7 @@ public struct QuestionGenerator: Sendable {
         let others = pool.englishWords.filter {
             $0.word.lowercased() != w.word.lowercased() && !Self.sharesMeaning($0.meaning, w.meaning)
         }.shuffled(using: &rng)
-        let answerSpeech = "\(w.word)，\(w.meaning)"
+        let answerSpeech = Self.englishWordSpeech(w)
         let explanation = [w.word, w.phonetic, w.meaning].compactMap { $0 }.joined(separator: " ")
         let card = WordCard(text: w.word, pinyin: w.phonetic, detail: w.meaning)
 

@@ -6,7 +6,9 @@ import LearnCore
 public final class AppModel: ObservableObject {
     @Published public private(set) var profiles: [Profile]
     @Published public private(set) var library: ContentLibrary
-    let speech = Speech()
+    let speech: Speech
+    /// 高质量语音：预先生成的音频 + 火山引擎运行时生成的缓存
+    let speechLibrary: SpeechLibrary
 
     /// 成长系统配置（节奏、徽章、外观），来自 LearnCore 内置 JSON
     let growthCatalog = GrowthCatalog.bundled
@@ -29,16 +31,25 @@ public final class AppModel: ObservableObject {
         }
         self.database = database
         databaseIssues = issues
+        speechLibrary = SpeechLibrary(database: database)
+        speech = Speech(library: speechLibrary)
         profileStore = ProfileStore(database: database, legacyFile: AppPaths.profilesFile)
         profiles = profileStore.profiles
         library = ContentLibrary.load(userDirectory: AppPaths.userPacksDirectory)
         syncContent()
         syncConfig()
+        prepareSpeech()
     }
 
     func reloadLibrary() {
         library = ContentLibrary.load(userDirectory: AppPaths.userPacksDirectory)
         syncContent()
+        prepareSpeech()
+    }
+
+    /// 配置了语音合成时，在后台把题库和固定提示语里还没有音频的句子生成好（已有的跳过）
+    func prepareSpeech() {
+        speechLibrary.prepare(SpeechText.gameLines + SpeechText.texts(in: library.packs))
     }
 
     /// 把题库同步进数据库，供查询用；失败不影响出题

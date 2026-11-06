@@ -5,12 +5,14 @@ import SwiftData
 /// - 题库、系统配置：JSON 仍是来源，每次加载后整份同步过来，用来查询
 /// - 孩子档案、成长档案、学习记录：数据库是唯一存储，旧版 JSON 第一次读取时迁移进来
 /// - 对局记录、答题明细：每局结束（或中途退出）时写入
+/// - 语音缓存：运行时用火山引擎生成的音频索引（音频文件在 AppPaths.speechCacheDirectory）
 public final class LearnDatabase {
     public static let schema = Schema([
         StoredPack.self, StoredItem.self, StoredItemStats.self,
         StoredProfile.self, StoredGrowth.self,
         StoredGame.self, StoredAnswer.self,
         StoredConfigFile.self, StoredBadge.self, StoredCosmetic.self,
+        StoredSpeechClip.self,
     ])
 
     public let container: ModelContainer

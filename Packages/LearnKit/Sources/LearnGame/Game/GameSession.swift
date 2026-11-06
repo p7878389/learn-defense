@@ -160,7 +160,7 @@ final class GameSession: ObservableObject {
         if index == question.answerIndex {
             guard scene.canAttack(id) else {
                 scene.play(FloatingTextEffect(text: "先选卡片，再点草坪", color: Palette.hurt, fontSize: 28))
-                speech.speak("先种下一个字灵，再答题打僵尸", interrupt: true)
+                speech.speak(SpeechText.Line.plantFirst, interrupt: true)
                 return
             }
             if picks.isEmpty {
@@ -268,7 +268,7 @@ final class GameSession: ObservableObject {
         phase = .playing
         battleStartedAt = Date()
         scene.setPreparing(false)
-        speech.speak("准备完成，第一只僵尸来了！", interrupt: true)
+        speech.speak(SpeechText.Line.battleStart, interrupt: true)
     }
 
     /// 拖动卡牌时在草坪上标出落点格，point 为 nil 时收起
@@ -281,21 +281,21 @@ final class GameSession: ObservableObject {
         guard canUseShop, let kind = tuning.lineup.first(where: { $0.id == id }) else { return false }
         guard sun >= kind.sunCost else {
             scene.play(FloatingTextEffect(text: "阳光不够", color: Palette.hurt, fontSize: 30))
-            speech.speak("阳光不够", interrupt: true)
+            speech.speak(SpeechText.Line.notEnoughSun, interrupt: true)
             return false
         }
         guard scene.plant(kind, at: point) else {
             if scene.isPlantable(point) {
                 scene.play(FloatingTextEffect(text: "这里已经有植物了", color: Palette.hurt, fontSize: 26))
-                speech.speak("这里已经有植物了，换个空格吧", interrupt: true)
+                speech.speak(SpeechText.Line.cellTaken, interrupt: true)
             } else {
                 scene.play(FloatingTextEffect(text: "只能种在空的草坪位置", color: Palette.hurt, fontSize: 26))
-                speech.speak("这里不能种，换个空的草坪位置", interrupt: true)
+                speech.speak(SpeechText.Line.cellBlocked, interrupt: true)
             }
             return false
         }
         sun -= kind.sunCost
-        speech.speak("\(kind.name)种下了", interrupt: true)
+        speech.speak(SpeechText.Line.planted(kind.name), interrupt: true)
         return true
     }
 
@@ -354,7 +354,7 @@ final class GameSession: ObservableObject {
         scene.setGamePaused(true)
         progress.save()
         playSeconds = battleStartedAt.map { Int(Date().timeIntervalSince($0)) } ?? 0
-        speech.speak(won ? "太棒了，书本守住了！" : "没关系，再来一次吧！", interrupt: false)
+        speech.speak(won ? SpeechText.Line.won : SpeechText.Line.lost, interrupt: false)
         settleGrowth()
         recordGame(won ? .won : .lost)
     }
