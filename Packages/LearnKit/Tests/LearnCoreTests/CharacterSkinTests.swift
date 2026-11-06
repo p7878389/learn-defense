@@ -47,6 +47,31 @@ struct CharacterSkinTests {
         #expect(state.loadout(catalog).enemySkin == nil)
     }
 
+    /// 萤火精灵要到等级、花积分买了才能装备；只给射手，僵尸没有这款
+    @Test func fireflyMustBeUnlockedAndBought() throws {
+        let catalog = GrowthCatalog.bundled
+        #expect(catalog.issues.isEmpty)
+        let item = try #require(catalog.cosmetic(id: "defender.firefly"))
+        #expect(item.slot == .defenderSkin)
+        #expect(item.characterSkin == .firefly)
+        #expect(item.characterSkin?.isEffectOnly == true)
+        #expect(item.price > 0)
+        #expect(!catalog.cosmetics.contains { $0.slot == .enemySkin && $0.characterSkin == .firefly })
+
+        var state = GrowthState()
+        state.coins = item.price
+        let tooEarly = state.purchase(item, level: item.unlockLevel - 1)
+        #expect(tooEarly == .locked(level: item.unlockLevel))
+        let equippedBeforeBuying = state.equip(item, level: item.unlockLevel)
+        #expect(!equippedBeforeBuying)
+        let bought = state.purchase(item, level: item.unlockLevel)
+        #expect(bought == .bought)
+        #expect(state.coins == 0)
+        let equipped = state.equip(item, level: item.unlockLevel)
+        #expect(equipped)
+        #expect(state.equipped[item.equipKey] == item.id)
+    }
+
     /// 每种射手一个装备位；豌豆射手沿用旧键，老存档照常生效
     @Test func eachShooterHasItsOwnSlot() throws {
         let catalog = GrowthCatalog.bundled
