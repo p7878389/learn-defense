@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>字灵守卫 - 魔法书架绘本馆</title>
+<!-- Tailwind CSS CDN with plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: ZCOOL KuaiLe, Nunito & Noto Sans SC -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&amp;family=Nunito:wght@700;800;900&amp;family=Noto+Sans+SC:wght@500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            paper: '#FAF2DE',
+            woodDark: '#8F5325',
+            woodBase: '#BA7A3E',
+            woodLight: '#DFC08F',
+            woodBack: '#EAD7B5',
+            brandOrange: '#F28C2E',
+            inkText: '#3B291A',
+          },
+          fontFamily: {
+            game: ['"ZCOOL KuaiLe"', '"Noto Sans SC"', 'sans-serif'],
+            sans: ['"Noto Sans SC"', '"Nunito"', 'sans-serif']
+          },
+          boxShadow: {
+            'book-stand': '0 18px 24px -6px rgba(84, 45, 14, 0.28), 0 6px 0 #7A421A',
+            'book-hover': '0 24px 30px -4px rgba(84, 45, 14, 0.35), 0 8px 0 #5E3113',
+            'wood-shelf': '0 12px 0 #6C3D17, 0 16px 20px rgba(50, 24, 6, 0.25)',
+            'btn-candy': '0 6px 0 #C26117, 0 10px 15px rgba(194, 97, 23, 0.3)',
+            'btn-candy-active': '0 2px 0 #C26117, 0 4px 6px rgba(194, 97, 23, 0.3)',
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    /* 游戏字灵专属立体浮雕质感文字 */
+    .game-logo-title {
+      font-family: 'ZCOOL KuaiLe', 'Noto Sans SC', sans-serif;
+      color: #F28C2E;
+      text-shadow:
+        -3px -3px 0 #FFFFFF,
+         3px -3px 0 #FFFFFF,
+        -3px  3px 0 #FFFFFF,
+         3px  3px 0 #FFFFFF,
+        -4px  0   0 #FFFFFF,
+         4px  0   0 #FFFFFF,
+         0   -4px 0 #FFFFFF,
+         0    4px 0 #FFFFFF,
+         0    7px 0 #B9530A,
+         0    12px 6px rgba(74, 30, 2, 0.25);
+    }
+
+    /* 实木板纹质感 */
+    .wood-board {
+      background: linear-gradient(180deg, #CE8C4C 0%, #B8763A 60%, #9C5F2A 100%);
+      border-top: 3px solid #E4AC74;
+      border-bottom: 5px solid #633714;
+    }
+
+    /* 绘本精装硬皮封皮立体侧脊 */
+    .book-spine-gold {
+      border-left: 10px solid #D97706;
+      border-radius: 20px 24px 24px 16px;
+    }
+    .book-spine-pink {
+      border-left: 10px solid #DB2777;
+      border-radius: 20px 24px 24px 16px;
+    }
+    .book-spine-green {
+      border-left: 10px solid #059669;
+      border-radius: 20px 24px 24px 16px;
+    }
+    .book-spine-kraft {
+      border-left: 10px solid #A16207;
+      border-radius: 20px 24px 24px 16px;
+    }
+
+    /* 浮动与打瞌睡微动效 */
+    @keyframes gentleSway {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-5px) rotate(1deg); }
+    }
+    .animate-sway {
+      animation: gentleSway 3.6s ease-in-out infinite;
+    }
+
+    @keyframes featherGlow {
+      0%, 100% { transform: rotate(-12deg) translateY(0); filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.6)); }
+      50% { transform: rotate(-8deg) translateY(-4px); filter: drop-shadow(0 0 12px rgba(251, 191, 36, 0.9)); }
+    }
+    .animate-feather {
+      animation: featherGlow 3s ease-in-out infinite;
+    }
+
+    @keyframes snoozeSleep {
+      0%, 100% { transform: translateY(0) rotate(2deg); }
+      50% { transform: translateY(-3px) rotate(-1deg); }
+    }
+    .animate-snooze {
+      animation: snoozeSleep 3.2s ease-in-out infinite;
+    }
+
+    @keyframes zzzFloat {
+      0% { opacity: 0; transform: translate(0, 0) scale(0.6); }
+      50% { opacity: 0.9; transform: translate(6px, -12px) scale(1); }
+      100% { opacity: 0; transform: translate(14px, -24px) scale(1.2); }
+    }
+    .animate-zzz1 { animation: zzzFloat 2.4s ease-out infinite; }
+    .animate-zzz2 { animation: zzzFloat 2.4s 1.2s ease-out infinite; }
+  </style>
+</head>
+<body class="bg-paper text-inkText w-screen h-screen overflow-hidden select-none flex flex-col justify-between relative font-sans">
+<!-- ==================== 魔法书房环境背景（柔和壁纸、垂挂藤蔓、暖光） ==================== -->
+<div class="absolute inset-0 bg-[radial-gradient(#EDE0C5_1.5px,transparent_1.5px)] [background-size:24px_24px] opacity-45 pointer-events-none"></div>
+<!-- 顶部暖色书房灯光光晕 -->
+<div class="absolute top-0 inset-x-0 h-80 bg-gradient-to-b from-[#FDE8B5]/50 via-[#FAF2DE]/30 to-transparent pointer-events-none"></div>
+<!-- 顶部轻垂绿植小叶片装饰 -->
+<div class="absolute -top-1 left-28 pointer-events-none flex gap-2 opacity-80 z-10">
+<span class="text-2xl filter drop-shadow">🌿</span>
+<span class="text-lg filter drop-shadow -mt-1">🍃</span>
+</div>
+<div class="absolute -top-1 right-36 pointer-events-none flex gap-2 opacity-80 z-10">
+<span class="text-xl filter drop-shadow">🍃</span>
+<span class="text-2xl filter drop-shadow">🌿</span>
+</div>
+<!-- ==================== 顶部导航栏 ==================== -->
+<header class="w-full pt-5 px-10 flex justify-between items-center z-30 relative shrink-0">
+<!-- 左侧：童话木牌标签 -->
+<div class="flex items-center">
+<div class="flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#E8CCA0] border-2 border-[#945A2B] shadow-[0_4px_0_#75441D] text-[#522E10] font-black text-sm tracking-wide transform -rotate-1 hover:rotate-0 transition-transform">
+<span class="text-lg">📖</span>
+<span class="font-game tracking-wider">字灵童话书房</span>
+</div>
+</div>
+<!-- 中间上方：立体浮雕质感 Logo 与 副标题 -->
+<div class="flex flex-col items-center justify-center text-center">
+<h1 class="game-logo-title text-[52px] tracking-wide select-none leading-none">
+        字灵守卫
+      </h1>
+<p class="mt-2 text-lg font-black text-stone-700 tracking-wide flex items-center gap-1.5 select-none bg-[#F7EACD]/90 px-4 py-1 rounded-full border border-[#DFC392] shadow-xs">
+<span>📚</span> 每本绘本里住着一位小守卫，今天要翻开哪一本？ <span>✨</span>
+</p>
+</div>
+<!-- 右上角：精致亲子锁木牌 -->
+<div class="flex items-center">
+<button class="group flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#E8CCA0] hover:bg-[#F2DCB9] active:translate-y-1 active:shadow-[0_1px_0_#75441D] border-2 border-[#945A2B] shadow-[0_4px_0_#75441D] text-[#522E10] text-sm font-black transition-all cursor-pointer">
+<span class="text-lg group-hover:scale-110 transition-transform">👨‍👩‍👧</span>
+<span>家长专区</span>
+<span class="text-xs bg-[#BF7C41] text-amber-50 px-1.5 py-0.5 rounded-md font-bold">🔒安全锁</span>
+</button>
+</div>
+</header>
+<!-- ==================== 核心区：魔法大书架 + 绘本立体卡片 ==================== -->
+<main class="w-full max-w-[1140px] mx-auto px-4 z-20 flex-1 flex flex-col justify-center items-center relative my-1">
+<!-- 书架背墙多宝格木构架 -->
+<div class="w-full relative rounded-3xl p-5 bg-[#EEDBBD]/85 border-4 border-[#A36631] shadow-[inset_0_4px_16px_rgba(100,55,18,0.25),0_12px_24px_rgba(80,45,15,0.15)] flex flex-col items-center">
+<!-- 书架左右书档小立柱装饰纹理 -->
+<div class="absolute left-3 top-4 bottom-16 w-2.5 rounded-full bg-[#BF7C41] opacity-60"></div>
+<div class="absolute right-3 top-4 bottom-16 w-2.5 rounded-full bg-[#BF7C41] opacity-60"></div>
+<!-- ==================== 绘本陈列区（4 本精装书立在书架层板上） ==================== -->
+<div class="w-full flex items-end justify-center gap-5 pt-3 pb-3 relative z-10">
+<!-- 左侧陈列装饰：魔法墨水瓶、发光羽毛笔、小绿植盆栽 -->
+<div class="hidden xl:flex flex-col items-center justify-end h-72 mr-1 pb-1 select-none pointer-events-none shrink-0">
+<!-- 发光知识羽毛笔 -->
+<div class="animate-feather text-3xl mb-[-6px] ml-4">
+            🪶
+          </div>
+<!-- 魔法墨水瓶 + 小药水光效 -->
+<div class="relative flex items-center justify-center">
+<span class="text-4xl filter drop-shadow">🧪</span>
+<span class="absolute -top-1 -right-1 text-xs animate-ping">✨</span>
+</div>
+<!-- 质感多肉小盆栽 -->
+<div class="text-3xl mt-1 filter drop-shadow">🪴</div>
+<span class="text-[10px] font-black text-amber-900/70 bg-[#DFC499] px-2 py-0.5 rounded-full mt-1">智慧魔药</span>
+</div>
+<!-- 绘本 1（上次读过·小虎的英雄志）：封面金边浮雕，微微前倾抽出展示，缎带书签，大号进入按键 -->
+<div class="relative group cursor-pointer flex flex-col items-center">
+<!-- 顶部垂落金色丝带书签 -->
+<div class="absolute -top-5 left-8 z-30 flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-white text-xs font-black rounded-b-xl shadow-md border-t-0 border-x-2 border-b-2 border-amber-300 transform group-hover:-translate-y-1 transition-transform animate-sway">
+<span>👑</span>
+<span>上次读这本</span>
+</div>
+<!-- 精装绘本本体（略抽出前凸，金光高亮边） -->
+<div class="w-[238px] h-[308px] bg-gradient-to-b from-[#FFFDF9] via-[#FFF9ED] to-[#FEF3D6] rounded-[24px] border-[3.5px] border-amber-400 book-spine-gold shadow-book-stand group-hover:shadow-book-hover group-hover:-translate-y-2 transition-all duration-200 p-4 flex flex-col justify-between relative overflow-hidden">
+<!-- 绘本内页烫金华丽角花纹理 -->
+<div class="absolute top-2 right-2 text-amber-300 text-xs font-serif opacity-75">❖ 卷一 ❖</div>
+<div class="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-amber-200/35 to-transparent pointer-events-none rounded-t-[20px]"></div>
+<!-- 书籍头部信息：大号立体小虎头像 -->
+<div class="flex flex-col items-center mt-3">
+<div class="relative">
+<div class="w-[88px] h-[88px] rounded-2xl bg-gradient-to-b from-amber-100 to-amber-300 border-[3px] border-amber-400 flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform duration-200">
+<span class="text-5xl filter drop-shadow">🐯</span>
+</div>
+<span class="absolute -bottom-1 -right-1 px-2 py-0.5 rounded-full bg-amber-600 text-white font-black text-xs border-2 border-white shadow-sm flex items-center gap-0.5">
+                  Lv.5
+                </span>
+</div>
+<!-- 绘本名与儿童身份 -->
+<h2 class="mt-2 text-2xl font-black text-amber-950 tracking-tight font-game">
+                小虎的英雄志
+              </h2>
+<div class="mt-0.5 px-3 py-0.5 rounded-full bg-amber-100 text-amber-900 text-xs font-bold border border-amber-300">
+                三年级 · 已闯关 12 次
+              </div>
+</div>
+<!-- 下方突出大按键：翻开小虎的绘本 (进入冒险) -->
+<div class="w-full mt-2">
+<button class="w-full py-2.5 px-3 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 text-white font-black text-sm tracking-wide shadow-btn-candy active:translate-y-1 active:shadow-btn-candy-active flex items-center justify-center gap-1.5 transition-all">
+<span>📖</span>
+<span>翻开绘本 · 启程！</span>
+</button>
+</div>
+</div>
+<!-- 书本投在搁板上的接触阴影 -->
+<div class="w-48 h-3 bg-[#693913]/35 rounded-full filter blur-[2px] mt-1"></div>
+</div>
+<!-- 绘本 2（朵朵的字灵记）：粉色樱花精装皮，可爱兔子头像 -->
+<div class="relative group cursor-pointer flex flex-col items-center">
+<!-- 垂落粉色丝带书签 -->
+<div class="absolute -top-4 left-6 z-20 flex items-center gap-1 px-2.5 py-0.5 bg-pink-500 text-white text-xs font-black rounded-b-lg shadow-sm border-b-2 border-x-2 border-pink-300">
+<span>🌸</span>
+<span>点击翻开</span>
+</div>
+<!-- 精装绘本本体 -->
+<div class="w-[216px] h-[290px] bg-gradient-to-b from-[#FFFDFC] via-[#FFF5F8] to-[#FCE7F0] rounded-[24px] border-[3px] border-pink-300 book-spine-pink shadow-book-stand group-hover:shadow-book-hover group-hover:-translate-y-2 transition-all duration-200 p-4 flex flex-col justify-between relative overflow-hidden">
+<div class="absolute top-2 right-2 text-pink-300 text-xs font-serif opacity-75">❖ 卷二 ❖</div>
+<div class="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-pink-200/35 to-transparent pointer-events-none rounded-t-[20px]"></div>
+<div class="flex flex-col items-center mt-3">
+<div class="relative">
+<div class="w-20 h-20 rounded-2xl bg-gradient-to-b from-pink-100 to-pink-200 border-2 border-pink-300 flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform duration-200">
+<span class="text-4xl filter drop-shadow">🐰</span>
+</div>
+<span class="absolute -bottom-1 -right-1 px-2 py-0.5 rounded-full bg-pink-500 text-white font-black text-xs border-2 border-white shadow-sm flex items-center gap-0.5">
+                  Lv.3
+                </span>
+</div>
+<h2 class="mt-2 text-xl font-black text-pink-950 tracking-tight font-game">
+                朵朵的字灵记
+              </h2>
+<div class="mt-0.5 px-3 py-0.5 rounded-full bg-pink-100 text-pink-800 text-xs font-bold border border-pink-200">
+                大班 · 昨天读过
+              </div>
+</div>
+<!-- 轻量阅读操作栏 -->
+<div class="w-full mt-2">
+<div class="w-full py-2 px-2 rounded-xl bg-pink-500/90 hover:bg-pink-500 text-white font-black text-xs text-center shadow-sm flex items-center justify-center gap-1">
+<span>📖</span> 翻开朵朵的书
+              </div>
+</div>
+</div>
+<div class="w-44 h-3 bg-[#693913]/30 rounded-full filter blur-[2px] mt-1"></div>
+</div>
+<!-- 绘本 3（圆圆的汉字宝典）：清爽竹绿精装皮，熊猫头像 -->
+<div class="relative group cursor-pointer flex flex-col items-center">
+<!-- 垂落竹青丝带书签 -->
+<div class="absolute -top-4 left-6 z-20 flex items-center gap-1 px-2.5 py-0.5 bg-emerald-600 text-white text-xs font-black rounded-b-lg shadow-sm border-b-2 border-x-2 border-emerald-400">
+<span>🎋</span>
+<span>点击翻开</span>
+</div>
+<!-- 精装绘本本体 -->
+<div class="w-[216px] h-[290px] bg-gradient-to-b from-[#FDFFFC] via-[#F4FBF6] to-[#E3F5EB] rounded-[24px] border-[3px] border-emerald-300 book-spine-green shadow-book-stand group-hover:shadow-book-hover group-hover:-translate-y-2 transition-all duration-200 p-4 flex flex-col justify-between relative overflow-hidden">
+<div class="absolute top-2 right-2 text-emerald-400 text-xs font-serif opacity-75">❖ 卷三 ❖</div>
+<div class="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-emerald-200/35 to-transparent pointer-events-none rounded-t-[20px]"></div>
+<div class="flex flex-col items-center mt-3">
+<div class="relative">
+<div class="w-20 h-20 rounded-2xl bg-gradient-to-b from-emerald-100 to-emerald-200 border-2 border-emerald-300 flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform duration-200">
+<span class="text-4xl filter drop-shadow">🐼</span>
+</div>
+<span class="absolute -bottom-1 -right-1 px-2 py-0.5 rounded-full bg-emerald-600 text-white font-black text-xs border-2 border-white shadow-sm flex items-center gap-0.5">
+                  Lv.4
+                </span>
+</div>
+<h2 class="mt-2 text-xl font-black text-emerald-950 tracking-tight font-game">
+                圆圆的汉字宝典
+              </h2>
+<div class="mt-0.5 px-3 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-200">
+                一年级 · 已读 45 字
+              </div>
+</div>
+<!-- 轻量阅读操作栏 -->
+<div class="w-full mt-2">
+<div class="w-full py-2 px-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs text-center shadow-sm flex items-center justify-center gap-1">
+<span>📖</span> 翻开圆圆的书
+              </div>
+</div>
+</div>
+<div class="w-44 h-3 bg-[#693913]/30 rounded-full filter blur-[2px] mt-1"></div>
+</div>
+<!-- 绘本 4（空白羊皮纸绘本 / 添加孩子）：牛皮纸与红缎带绑着的新书 -->
+<div class="relative group cursor-pointer flex flex-col items-center">
+<!-- 红丝带封册绳结 -->
+<div class="absolute -top-3 inset-x-0 flex justify-center z-20">
+<span class="px-2.5 py-0.5 bg-rose-500 text-white text-[11px] font-black rounded-full shadow-sm border border-rose-300 flex items-center gap-1">
+              🎀 未拆封新书
+            </span>
+</div>
+<!-- 空白牛皮纸新绘本卡片 -->
+<div class="w-[216px] h-[290px] bg-gradient-to-b from-[#FAF4E6] to-[#F1E5CB] rounded-[24px] border-[3px] border-dashed border-[#B8874E] book-spine-kraft shadow-book-stand group-hover:shadow-book-hover group-hover:-translate-y-2 group-hover:border-amber-500 transition-all duration-200 p-4 flex flex-col items-center justify-center text-center relative overflow-hidden">
+<!-- 大「＋」号圆形魔法印章 -->
+<div class="w-[72px] h-[72px] rounded-full bg-white/90 border-2 border-dashed border-[#A9743D] group-hover:border-amber-500 group-hover:bg-amber-500 group-hover:text-white text-[#945C27] flex items-center justify-center shadow-sm group-hover:scale-110 transition-all duration-200">
+<svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="3" viewbox="0 0 24 24">
+<path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<h2 class="mt-3 text-xl font-black text-[#5C3615] group-hover:text-amber-700 transition-colors font-game">
+              制作新绘本
+            </h2>
+<p class="mt-1 text-xs font-bold text-[#8A5B2E]/80 px-2 leading-relaxed">
+              加入新的小读者<br/>
+<span class="text-[11px] text-stone-400 font-normal">长按书本可管理</span>
+</p>
+<div class="mt-3 px-3 py-1 rounded-xl bg-[#E8CCA0]/70 text-[#593411] text-xs font-black border border-[#D1AD78]">
+              ✨ 开启新档案
+            </div>
+</div>
+<div class="w-44 h-3 bg-[#693913]/30 rounded-full filter blur-[2px] mt-1"></div>
+</div>
+<!-- 右侧陈列装饰：几本立着的小古籍 + 趴在书顶打瞌睡的憨萌小僵尸 -->
+<div class="hidden xl:flex flex-col items-center justify-end h-72 ml-1 pb-1 select-none pointer-events-none shrink-0 relative">
+<!-- 瞌睡打呼噜 zZZ 动画浮出 -->
+<div class="absolute top-2 left-6 text-indigo-700 font-black text-xs animate-zzz1 pointer-events-none">zZZ</div>
+<div class="absolute top-6 left-10 text-indigo-500 font-black text-[10px] animate-zzz2 pointer-events-none">zZ</div>
+<!-- 趴在书顶打瞌睡的小僵尸 -->
+<div class="animate-snooze flex flex-col items-center mb-[-8px] z-20">
+<div class="px-2 py-0.5 bg-white/95 rounded-full border border-stone-300 text-[10px] font-black text-stone-700 shadow-xs mb-1 flex items-center gap-1">
+<span>💤</span> 听故事睡着了…
+            </div>
+<div class="w-[52px] h-[52px] rounded-2xl bg-teal-100 border-2 border-teal-400 flex items-center justify-center shadow-md">
+<span class="text-3xl filter drop-shadow">🧟‍♂️</span>
+</div>
+</div>
+<!-- 书顶支撑厚叠古籍 -->
+<div class="flex items-end gap-1 bg-[#854E20] p-1.5 rounded-lg border-2 border-[#5E3310] shadow-md">
+<div class="w-4 h-14 bg-sky-600 rounded-t border border-sky-700 text-[9px] text-white font-black [writing-mode:vertical-rl] flex items-center justify-center">寓言</div>
+<div class="w-4 h-16 bg-purple-600 rounded-t border border-purple-700 text-[9px] text-white font-black [writing-mode:vertical-rl] flex items-center justify-center">千字文</div>
+<div class="w-4 h-12 bg-amber-600 rounded-t border border-amber-700 text-[9px] text-white font-black [writing-mode:vertical-rl] flex items-center justify-center">山海经</div>
+</div>
+<span class="text-[10px] font-black text-amber-900/70 bg-[#DFC499] px-2 py-0.5 rounded-full mt-1">书灵小憩</span>
+</div>
+</div>
+<!-- ==================== 宽大厚实的实木大层板（Wood Shelf Planking） ==================== -->
+<div class="w-full h-7 rounded-2xl wood-board shadow-wood-shelf relative flex items-center justify-between px-6 z-20">
+<!-- 层板左边垂下的小绿叶 -->
+<div class="flex items-center gap-1.5 text-xs text-amber-100/90 font-bold">
+<span>🍃</span>
+<span class="opacity-90">魔法书架 · 守护书库已安全运行 128 天</span>
+</div>
+<!-- 层板右边小花与书签装饰 -->
+<div class="flex items-center gap-2 text-xs">
+<span>🌼</span>
+<span class="px-2 py-0.5 rounded-md bg-[#663610]/70 text-amber-200 text-[11px] font-bold">
+            🔖 藏书：300+ 汉字秘境
+          </span>
+<span>🍀</span>
+</div>
+</div>
+</div>
+<!-- ==================== 底部木质长条告示牌 ==================== -->
+<div class="mt-4 flex items-center gap-3 px-6 py-2.5 rounded-2xl bg-[#E8CCA0] border-2 border-[#945A2B] shadow-[0_4px_0_#75441D] text-[#4A260A] text-sm font-black tracking-wide">
+<span class="text-lg">💡</span>
+<span>翻开属于你的字灵故事书，收集汉字守护古老故事！</span>
+<span class="ml-2 text-xs bg-amber-100/80 text-amber-900 px-2.5 py-0.5 rounded-full border border-amber-300/80">
+        轻触绘本即可展开探索
+      </span>
+</div>
+</main>
+<!-- ==================== 底部微信息栏（保留纯净设计规范） ==================== -->
+<footer class="w-full pb-3 px-8 text-center text-[11px] font-bold text-stone-500/80 z-20 shrink-0">
+<span>图片来自 Microsoft Fluent Emoji（MIT 许可） · 专为 4~12 岁儿童设计 · 纯净无广告 · iPad 专属交互</span>
+</footer>
+</body></html>

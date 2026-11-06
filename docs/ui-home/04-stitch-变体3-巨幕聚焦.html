@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>字灵守卫 - 角色殿堂 (巨幕聚焦舞台)</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: ZCOOL KuaiLe & Nunito & Noto Sans SC -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&amp;family=Nunito:wght@700;800;900&amp;family=Noto+Sans+SC:wght@500;700;900&amp;display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            paper: '#FDF8EC',
+            brandOrange: '#F28C2E',
+            inkText: '#2B2B38',
+            grassGreen: '#78C257',
+            skyBlue: '#DDF1FF'
+          },
+          fontFamily: {
+            game: ['"ZCOOL KuaiLe"', '"Noto Sans SC"', 'sans-serif'],
+            sans: ['"Noto Sans SC"', '"Nunito"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    /* 游戏字灵专属厚重立体文字样式 */
+    .game-logo-title {
+      font-family: 'ZCOOL KuaiLe', 'Noto Sans SC', sans-serif;
+      color: #F28C2E;
+      text-shadow:
+        -3px -3px 0 #FFFFFF,
+         3px -3px 0 #FFFFFF,
+        -3px  3px 0 #FFFFFF,
+         3px  3px 0 #FFFFFF,
+        -5px  0   0 #FFFFFF,
+         5px  0   0 #FFFFFF,
+         0   -5px 0 #FFFFFF,
+         0    5px 0 #FFFFFF,
+         0    8px 0 #C26117,
+         0    14px 6px rgba(74, 30, 2, 0.3);
+    }
+
+    /* 聚光灯舞台光芒 */
+    .spotlight-cone {
+      background: radial-gradient(ellipse 65% 55% at 50% 30%, rgba(255, 238, 168, 0.55) 0%, rgba(254, 243, 199, 0.25) 50%, rgba(253, 248, 236, 0) 100%);
+    }
+
+    /* 舞台立体发光地台底盘 */
+    .stage-podium {
+      background: radial-gradient(ellipse at center, #FDE68A 0%, #F59E0B 70%, #D97706 100%);
+      box-shadow: 0 12px 0 #B45309, 0 24px 35px rgba(180, 83, 9, 0.3);
+    }
+
+    /* 主角 C 位超级卡片质感 */
+    .hero-candy-card {
+      box-shadow: 0 14px 0 #D97706, 0 28px 45px -8px rgba(245, 158, 11, 0.45);
+      transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .hero-candy-card:hover {
+      transform: translateY(-6px) scale(1.01);
+      box-shadow: 0 18px 0 #B45309, 0 34px 55px -6px rgba(245, 158, 11, 0.5);
+    }
+
+    /* 左右候补侧翼卡片 */
+    .sub-candy-card {
+      box-shadow: 0 8px 0 #E2D7C2, 0 14px 20px -2px rgba(100, 70, 30, 0.08);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .sub-candy-card:hover {
+      transform: translateY(-4px) scale(1.04);
+      box-shadow: 0 12px 0 #D9CEB7, 0 18px 26px -2px rgba(100, 70, 30, 0.15);
+    }
+    .sub-candy-card:active {
+      transform: translateY(3px) scale(0.98);
+      box-shadow: 0 3px 0 #D9CEB7;
+    }
+
+    /* 超大糖果厚底主行动 CTA 按钮 */
+    .btn-candy-action {
+      background: linear-gradient(180deg, #34D399 0%, #10B981 48%, #059669 100%);
+      box-shadow: 0 8px 0 #047857, 0 16px 25px rgba(5, 150, 105, 0.4);
+      transition: all 0.15s ease-out;
+    }
+    .btn-candy-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 0 #047857, 0 20px 30px rgba(5, 150, 105, 0.48);
+      filter: brightness(1.05);
+    }
+    .btn-candy-action:active {
+      transform: translateY(6px);
+      box-shadow: 0 2px 0 #047857, 0 6px 12px rgba(5, 150, 105, 0.3);
+    }
+
+    /* 左右切换箭头糖果键 */
+    .btn-candy-arrow {
+      box-shadow: 0 5px 0 #D9CEB7, 0 8px 15px rgba(0,0,0,0.06);
+      transition: all 0.16s ease;
+    }
+    .btn-candy-arrow:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 7px 0 #C9BEA7, 0 12px 20px rgba(0,0,0,0.09);
+    }
+    .btn-candy-arrow:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #C9BEA7;
+    }
+
+    /* 柔和呼吸浮动动画 */
+    @keyframes heroFloat {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+    .animate-hero-float {
+      animation: heroFloat 4.2s ease-in-out infinite;
+    }
+
+    @keyframes shineLight {
+      0% { opacity: 0.65; transform: scale(1); }
+      50% { opacity: 0.95; transform: scale(1.04); }
+      100% { opacity: 0.65; transform: scale(1); }
+    }
+    .animate-stage-shine {
+      animation: shineLight 3.6s ease-in-out infinite;
+    }
+
+    @keyframes sway {
+      0%, 100% { transform: rotate(-3deg); }
+      50% { transform: rotate(3deg); }
+    }
+    .animate-sway {
+      animation: sway 3s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="bg-paper text-inkText w-screen h-screen overflow-hidden select-none flex flex-col justify-between relative font-sans">
+<!-- ==================== 聚光灯舞台光芒背景层 ==================== -->
+<div class="absolute inset-0 spotlight-cone pointer-events-none z-0 animate-stage-shine"></div>
+<!-- 顶部轻柔天空微蓝渐变与小云彩 -->
+<div class="absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-[#DDF1FF]/70 via-[#EDF7FF]/30 to-transparent pointer-events-none z-0"></div>
+<div class="absolute top-6 left-12 opacity-75 pointer-events-none z-0">
+<svg fill="none" height="38" viewbox="0 0 140 48" width="110">
+<path d="M25 40C15 40 8 33 8 24C8 16 14 10 22 9C26 4 33 0 42 0C53 0 62 7 64 16C68 14 73 13 78 13C90 13 100 22 100 33C105 33 110 37 110 42C110 42 25 42 25 40Z" fill="white" fill-opacity="0.85"></path>
+<circle cx="112" cy="30" fill="white" fill-opacity="0.7" r="14"></circle>
+</svg>
+</div>
+<div class="absolute top-5 right-28 opacity-70 pointer-events-none z-0">
+<svg fill="none" height="42" viewbox="0 0 170 56" width="130">
+<path d="M30 46C18 46 10 38 10 27C10 18 17 11 27 10C31 4 40 0 51 0C64 0 75 8 77 18C82 16 88 15 94 15C108 15 120 25 120 38C126 38 132 42 132 48C132 48 30 48 30 46Z" fill="white" fill-opacity="0.85"></path>
+<circle cx="134" cy="36" fill="white" fill-opacity="0.75" r="16"></circle>
+</svg>
+</div>
+<!-- ==================== 顶部导航栏 ==================== -->
+<header class="w-full pt-5 px-10 flex justify-between items-center z-20 relative shrink-0">
+<!-- 左侧：生动小胶囊「🌟 字灵守卫 · 角色殿堂」 -->
+<div class="w-60 flex items-center">
+<div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-100/90 border-2 border-amber-300 text-amber-900 font-extrabold text-xs shadow-sm">
+<span class="text-sm animate-pulse">🌟</span>
+<span>字灵守卫 · 角色殿堂</span>
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+</div>
+</div>
+<!-- 中间上方：跳跃发光的大 Logo + 副标题 -->
+<div class="flex flex-col items-center justify-center text-center">
+<h1 class="game-logo-title text-5xl tracking-wide select-none transform hover:scale-105 transition-transform cursor-pointer">
+        字灵守卫
+      </h1>
+<p class="mt-1.5 text-base lg:text-lg font-black text-amber-900/90 tracking-wide flex items-center gap-1.5 select-none drop-shadow-xs">
+<span class="animate-bounce">✨</span> 准备好了吗？今天的小主角已就位！ <span>✨</span>
+</p>
+</div>
+<!-- 右上角：大药丸按钮「👨‍👩‍👧 家长专区」 -->
+<div class="w-60 flex justify-end">
+<button class="group flex items-center gap-2.5 px-6 py-2.5 rounded-full bg-white/95 hover:bg-amber-50 active:translate-y-1 border-[3px] border-amber-200 text-stone-700 font-extrabold text-sm shadow-md transition-all min-h-[48px] cursor-pointer">
+<span class="text-lg group-hover:scale-[1.15] transition-transform">👨‍👩‍👧</span>
+<span class="tracking-wide">家长专区</span>
+</button>
+</div>
+</header>
+<!-- ==================== 中央舞台巨幕（Spotlight Stage / 轮播聚焦） ==================== -->
+<main class="w-full max-w-6xl mx-auto px-6 z-20 my-auto flex items-center justify-between relative">
+<!-- 舞台底部透视光环椭圆底座 -->
+<div class="absolute left-1/2 -bottom-4 -translate-x-1/2 w-[520px] h-[36px] bg-amber-400/35 rounded-[100%] blur-md pointer-events-none z-0"></div>
+<!-- ================= 左侧快捷切换翼：朵朵 ================= -->
+<div class="flex flex-col items-center justify-center gap-3 w-52 z-10">
+<!-- 朵朵小卡 -->
+<div class="w-48 bg-white/95 rounded-[26px] border-[3px] border-pink-200 p-4 flex flex-col items-center sub-candy-card cursor-pointer group relative overflow-hidden">
+<!-- 装饰渐变顶 -->
+<div class="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-pink-100/70 to-transparent pointer-events-none"></div>
+<!-- 头像与徽章 -->
+<div class="relative mt-1">
+<div class="w-[72px] h-[72px] rounded-full bg-gradient-to-b from-pink-100 to-pink-200 border-2 border-pink-300 flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform">
+<span class="text-4xl filter drop-shadow">🐰</span>
+</div>
+<span class="absolute -bottom-1 -right-1 px-2 py-0.5 rounded-full bg-pink-500 text-white font-black text-[10px] border-2 border-white shadow-xs">
+            Lv.3
+          </span>
+</div>
+<h3 class="mt-2 text-xl font-black text-stone-800 group-hover:text-pink-600 transition-colors">朵朵</h3>
+<span class="mt-0.5 px-2.5 py-0.5 rounded-full bg-pink-50 text-pink-700 text-[11px] font-bold border border-pink-200">
+          大班 · 启蒙
+        </span>
+<span class="mt-2 text-[11px] font-bold text-stone-400 flex items-center gap-1">
+<span>🔥</span> 昨天来过
+        </span>
+</div>
+<!-- 快速切换到朵朵按钮 -->
+<button class="flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-white hover:bg-pink-50 text-pink-600 border-2 border-pink-200 text-xs font-black btn-candy-arrow cursor-pointer active:translate-y-0.5">
+<span>◀</span> 切换到朵朵
+      </button>
+</div>
+<!-- ================= 中央 C 位超大英雄卡片（小虎：主咖登场） ================= -->
+<div class="relative flex flex-col items-center z-20">
+<!-- 顶部金色皇冠徽章飘带「👑 上次是你 · 最佳小先锋」 -->
+<div class="absolute -top-5 z-30 flex items-center gap-1.5 px-6 py-2 rounded-full bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 text-white font-black text-sm shadow-lg border-[3px] border-white transform -rotate-1 animate-sway">
+<span class="text-base">👑</span> 上次是你 · 最佳小先锋
+      </div>
+<!-- 英雄巨卡卡体（380px 宽度，超大视觉冲击） -->
+<div class="w-[380px] bg-white rounded-[36px] border-[5px] border-amber-400 p-7 flex flex-col items-center justify-between hero-candy-card relative overflow-hidden select-none">
+<!-- 顶部温润橙光晕底 -->
+<div class="absolute top-0 inset-x-0 h-44 bg-gradient-to-b from-amber-100/90 via-amber-50/50 to-transparent pointer-events-none rounded-t-[32px]"></div>
+<!-- 巨型圆润发光底座，居中超萌立体老虎守护者大头像（直径约 160px） -->
+<div class="relative mt-4 mb-2 animate-hero-float">
+<!-- 外发光扩散环 -->
+<div class="absolute -inset-2.5 rounded-full bg-amber-300/40 blur-sm pointer-events-none"></div>
+<!-- 巨型头像底座 -->
+<div class="w-40 h-40 rounded-full bg-gradient-to-b from-amber-200 via-amber-300 to-orange-300 border-4 border-white flex items-center justify-center shadow-lg relative">
+<span class="text-7xl filter drop-shadow-md transform hover:scale-110 transition-transform cursor-pointer">🐯</span>
+<!-- 华丽 Lv.5 奖章 -->
+<span class="absolute -bottom-2 -right-1 px-4 py-1 rounded-full bg-gradient-to-r from-amber-600 to-orange-600 text-white font-black text-sm border-2 border-white shadow-md flex items-center gap-1">
+<span>⭐</span> Lv.5
+            </span>
+</div>
+</div>
+<!-- 名字与年级徽章 -->
+<div class="flex flex-col items-center text-center mt-2">
+<h2 class="text-4xl font-black text-inkText tracking-tight">
+            小虎
+          </h2>
+<div class="mt-1.5 px-4 py-1 rounded-full bg-amber-100 text-amber-900 font-extrabold text-xs border border-amber-300 shadow-xs">
+            三年级 · 冲刺阶段
+          </div>
+</div>
+<!-- 两个可爱状态小药丸 -->
+<div class="flex items-center justify-center gap-3 w-full mt-3.5">
+<div class="flex-1 py-1.5 px-2 bg-orange-50 border border-orange-200 rounded-xl text-center text-xs font-black text-orange-700 shadow-xs flex items-center justify-center gap-1">
+<span>🔥</span> 连续打卡 3 天
+          </div>
+<div class="flex-1 py-1.5 px-2 bg-amber-50 border border-amber-200 rounded-xl text-center text-xs font-black text-amber-800 shadow-xs flex items-center justify-center gap-1">
+<span>⭐</span> 已闯关 12 次
+          </div>
+</div>
+<!-- 最下方超大糖果厚底主行动按钮：「🚀 开始守护小书屋！」（高度 72px） -->
+<button class="w-full h-[72px] mt-5 rounded-[24px] text-white font-black text-2xl tracking-wide flex items-center justify-center gap-3 btn-candy-action border-[3px] border-emerald-300/60 cursor-pointer active:translate-y-1">
+<span class="text-3xl animate-bounce">🚀</span>
+<span>开始守护小书屋！</span>
+</button>
+</div>
+</div>
+<!-- ================= 右侧快捷切换翼：圆圆 & 添新伙伴 ================= -->
+<div class="flex flex-col items-center justify-center gap-3 w-52 z-10">
+<!-- 圆圆小卡 -->
+<div class="w-48 bg-white/95 rounded-[26px] border-[3px] border-emerald-200 p-4 flex flex-col items-center sub-candy-card cursor-pointer group relative overflow-hidden">
+<!-- 装饰渐变顶 -->
+<div class="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-emerald-100/70 to-transparent pointer-events-none"></div>
+<!-- 头像与徽章 -->
+<div class="relative mt-1">
+<div class="w-[72px] h-[72px] rounded-full bg-gradient-to-b from-emerald-100 to-emerald-200 border-2 border-emerald-300 flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform">
+<span class="text-4xl filter drop-shadow">🐼</span>
+</div>
+<span class="absolute -bottom-1 -right-1 px-2 py-0.5 rounded-full bg-emerald-600 text-white font-black text-[10px] border-2 border-white shadow-xs">
+            Lv.4
+          </span>
+</div>
+<h3 class="mt-2 text-xl font-black text-stone-800 group-hover:text-emerald-600 transition-colors">圆圆</h3>
+<span class="mt-0.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[11px] font-bold border border-emerald-200">
+          一年级 · 进阶
+        </span>
+<span class="mt-2 text-[11px] font-bold text-stone-400 flex items-center gap-1">
+<span>🌱</span> 已读 45 个字
+        </span>
+</div>
+<!-- 快速切换到圆圆按钮 -->
+<button class="flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-white hover:bg-emerald-50 text-emerald-700 border-2 border-emerald-200 text-xs font-black btn-candy-arrow cursor-pointer active:translate-y-0.5">
+        切换到圆圆 <span>▶</span>
+</button>
+<!-- 右侧下方配角区：圆形虚线糖果卡「➕ 添小新伙伴」 -->
+<button class="mt-1 flex items-center gap-2 px-4 py-2 rounded-full bg-[#FAF4E6] hover:bg-white border-2 border-dashed border-amber-300 hover:border-amber-400 text-amber-800 text-xs font-extrabold shadow-xs transition-all cursor-pointer group">
+<span class="w-5 h-5 rounded-full bg-amber-400 text-white flex items-center justify-center font-black group-hover:scale-110 transition-transform">＋</span>
+<span>添小新伙伴</span>
+</button>
+</div>
+</main>
+<!-- ==================== 底部趣味守卫伙伴栏 & 绿茵地垄 ==================== -->
+<footer class="w-full relative z-10 shrink-0">
+<!-- 中间友好操作提示条（草坪上方浮空） -->
+<div class="w-full flex justify-center -mb-3 relative z-30 pointer-events-none">
+<div class="inline-flex items-center gap-2 px-5 py-1.5 rounded-full bg-white/90 border border-amber-200 shadow-sm backdrop-blur-xs">
+<span class="text-sm">👶</span>
+<span class="text-xs font-black text-stone-600 tracking-wide">左右轻触头像可快速换人，支持多宝独立学习进度哦！</span>
+</div>
+</div>
+<!-- 柔和草地地垄（立体绿茵） -->
+<div class="relative w-full h-28 bg-gradient-to-t from-[#5FA340] to-[#78C257] border-t-4 border-[#94E66F]/80 shadow-lg flex items-end justify-between px-10 pb-3">
+<!-- 草坪装饰花草 -->
+<div class="absolute -top-3 left-1/4 text-sm filter drop-shadow-xs">🌼</div>
+<div class="absolute -top-2 left-1/2 text-xs filter drop-shadow-xs">🌸</div>
+<div class="absolute -top-3 left-3/4 text-sm filter drop-shadow-xs">🍀</div>
+<!-- 左下角：守卫伙伴战队（书架 + 向日葵 + 摇摆发射阳光的豌豆射手） -->
+<div class="flex items-end gap-3 z-10 relative">
+<!-- 书库小木盒 -->
+<div class="flex flex-col items-center">
+<div class="relative bg-[#C28246] border-2 border-[#8F5620] rounded-xl p-2 pb-1.5 shadow-md flex items-end gap-1">
+<div class="w-4 h-12 bg-rose-500 rounded-t border border-rose-600 flex items-center justify-center text-[9px] text-white font-black [writing-mode:vertical-rl]">语文</div>
+<div class="w-3.5 h-10 bg-amber-400 rounded-t border border-amber-500 flex items-center justify-center text-[8px] text-amber-950 font-black [writing-mode:vertical-rl]">汉字</div>
+<div class="w-4 h-[52px] bg-sky-500 rounded-t border border-sky-600 flex items-center justify-center text-[9px] text-white font-black [writing-mode:vertical-rl]">故事</div>
+<span class="absolute -top-4 inset-x-0 mx-auto w-max text-[10px] bg-amber-300 text-amber-950 font-black px-2 py-[1px] rounded-full shadow border border-amber-400">
+              🛡️ 书库
+            </span>
+</div>
+<div class="w-full flex justify-between px-1.5 -mt-0.5">
+<div class="w-2.5 h-2 bg-[#8F5620] rounded-b"></div>
+<div class="w-2.5 h-2 bg-[#8F5620] rounded-b"></div>
+</div>
+</div>
+<!-- 植物守卫 1：微笑向日葵 -->
+<div class="flex flex-col items-center -mb-0.5 animate-sway">
+<div class="w-12 h-12 rounded-full bg-amber-100 border-2 border-amber-300 flex items-center justify-center shadow-md">
+<span class="text-3xl filter drop-shadow">🌻</span>
+</div>
+<span class="mt-1 px-2 py-[1px] rounded-full bg-emerald-700 text-white font-bold text-[10px] shadow-xs">
+            向日葵
+          </span>
+</div>
+<!-- 植物守卫 2：豌豆射手（发射阳光/字灵弹） -->
+<div class="flex flex-col items-center -mb-1 animate-hero-float">
+<div class="relative">
+<div class="w-[52px] h-[52px] rounded-full bg-emerald-100 border-2 border-emerald-400 flex items-center justify-center shadow-md transform hover:scale-110 transition-transform">
+<span class="text-3xl filter drop-shadow">🌱</span>
+</div>
+<!-- 发射的阳光小光点 -->
+<span class="absolute -top-1 -right-2 text-xs animate-ping">✨</span>
+</div>
+<span class="mt-1 px-2 py-[1px] rounded-full bg-emerald-800 text-white font-black text-[10px] shadow-xs">
+            豌豆射手
+          </span>
+</div>
+</div>
+<!-- 中间草坪趣味文案 -->
+<div class="hidden lg:flex items-center gap-2 mb-1 px-4 py-1 rounded-full bg-emerald-900/35 text-emerald-100 text-xs font-bold border border-emerald-600/40">
+<span>🌱</span> 答对汉字 · 发射神奇字灵击退捣蛋僵尸！ <span>🎯</span>
+</div>
+<!-- 右下角草坪：举着白旗的憨萌小僵尸「我不会认字~」 -->
+<div class="flex items-end gap-2 z-10 relative mr-4">
+<!-- 举着小白旗「我不会认字~」 -->
+<div class="flex flex-col items-center mb-4 -mr-2 z-20 transform -rotate-12 animate-sway">
+<div class="px-2 py-1 bg-white border-2 border-stone-300 rounded-md shadow-md flex items-center gap-1">
+<span class="text-xs">🏳️</span>
+<span class="text-[10px] font-black text-stone-700 leading-none">我不会认字~</span>
+</div>
+<div class="w-1 h-5 bg-stone-400 rounded-b"></div>
+</div>
+<!-- 憨萌呆头小僵尸 -->
+<div class="flex flex-col items-center -mb-0.5">
+<div class="w-[52px] h-[52px] rounded-2xl bg-teal-100/90 border-2 border-teal-400 flex items-center justify-center shadow-md transform hover:rotate-6 transition-transform">
+<span class="text-3xl filter drop-shadow">🧟‍♂️</span>
+</div>
+<span class="mt-1 px-2 py-[1px] rounded-full bg-stone-700/80 text-white font-bold text-[10px] shadow-xs">
+            呆萌僵尸
+          </span>
+</div>
+</div>
+</div>
+</footer>
+</body></html>
