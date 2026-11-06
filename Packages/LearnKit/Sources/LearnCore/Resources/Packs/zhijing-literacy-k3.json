@@ -1,0 +1,1601 @@
+{
+  "schemaVersion": 1,
+  "id": "zhijing-literacy-k3",
+  "title": "直映识字（幼儿园启蒙） · 大班",
+  "subject": "chinese",
+  "grade": "k3",
+  "edition": "直映识字",
+  "units": [
+    {
+      "id": "u1",
+      "title": "第一册 · 基础与自然",
+      "theme": "meadow",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "识字练习",
+          "characters": [
+            {
+              "char": "人",
+              "pinyin": "rén",
+              "words": [
+                "大人",
+                "人们"
+              ],
+              "image_association": "像一个人张开双腿在走路。",
+              "idioms": [
+                "人山人海",
+                "助人为乐"
+              ],
+              "tts_text": "人，大人的“人”，人山人海。"
+            },
+            {
+              "char": "头",
+              "pinyin": "tóu",
+              "words": [
+                "头发",
+                "点头"
+              ],
+              "image_association": "像一个小婴儿的大脑袋。",
+              "idioms": [
+                "摇头晃脑",
+                "头头是道"
+              ],
+              "tts_text": "头，头发的“头”，摇头晃脑。"
+            },
+            {
+              "char": "目",
+              "pinyin": "mù",
+              "words": [
+                "目光",
+                "耳目"
+              ],
+              "image_association": "像一只竖起来的眼睛。",
+              "idioms": [
+                "目不转睛",
+                "一目了然"
+              ],
+              "tts_text": "目，目光的“目”，目不转睛。"
+            },
+            {
+              "char": "耳",
+              "pinyin": "ěr",
+              "words": [
+                "耳朵",
+                "木耳"
+              ],
+              "image_association": "像一只长在脸旁边的耳朵。",
+              "idioms": [
+                "耳听八方",
+                "掩耳盗铃"
+              ],
+              "tts_text": "耳，耳朵的“耳”，耳听八方。"
+            },
+            {
+              "char": "口",
+              "pinyin": "kǒu",
+              "words": [
+                "嘴巴",
+                "开口"
+              ],
+              "image_association": "像张开的红嘴唇。",
+              "idioms": [
+                "张口结舌",
+                "口是心非"
+              ],
+              "tts_text": "口，开口的“口”，张口结舌。"
+            },
+            {
+              "char": "手",
+              "pinyin": "shǒu",
+              "words": [
+                "手心",
+                "拍手"
+              ],
+              "image_association": "像张开五指的小手。",
+              "idioms": [
+                "手舞足蹈",
+                "眼疾手快"
+              ],
+              "tts_text": "手，拍手的“手”，手舞足蹈。"
+            },
+            {
+              "char": "一",
+              "pinyin": "yī",
+              "words": [
+                "一个",
+                "第一"
+              ],
+              "image_association": "像一根横放的糖果。",
+              "idioms": [
+                "一心一意",
+                "一五一十"
+              ],
+              "tts_text": "一，第一的“一”，一心一意。"
+            },
+            {
+              "char": "二",
+              "pinyin": "èr",
+              "words": [
+                "二月",
+                "第二"
+              ],
+              "image_association": "像上下两根平行的糖果。",
+              "idioms": [
+                "二话不说",
+                "独一无二"
+              ],
+              "tts_text": "二，第二的“二”，独一无二。"
+            },
+            {
+              "char": "马",
+              "pinyin": "mǎ",
+              "words": [
+                "小马",
+                "木马"
+              ],
+              "image_association": "像一匹昂首长嘶的马。",
+              "idioms": [
+                "马到成功",
+                "千军万马"
+              ],
+              "tts_text": "马，小马的“马”，马到成功。"
+            },
+            {
+              "char": "鱼",
+              "pinyin": "yú",
+              "words": [
+                "金鱼",
+                "钓鱼"
+              ],
+              "image_association": "像一条游动的小鱼。",
+              "idioms": [
+                "如鱼得水",
+                "浑水摸鱼"
+              ],
+              "tts_text": "鱼，金鱼的“鱼”，如鱼得水。"
+            },
+            {
+              "char": "天",
+              "pinyin": "tiān",
+              "words": [
+                "天空",
+                "蓝天"
+              ],
+              "image_association": "像一个顶天立地的人。",
+              "idioms": [
+                "天天向上",
+                "海阔天空"
+              ],
+              "tts_text": "天，天空的“天”，海阔天空。"
+            },
+            {
+              "char": "山",
+              "pinyin": "shān",
+              "words": [
+                "高山",
+                "爬山"
+              ],
+              "image_association": "像三座高低不同的山峰。",
+              "idioms": [
+                "山清水秀",
+                "人山人海"
+              ],
+              "tts_text": "山，高山的“山”，山清水秀。"
+            },
+            {
+              "char": "水",
+              "pinyin": "shuǐ",
+              "words": [
+                "喝水",
+                "水果"
+              ],
+              "image_association": "像中间流淌的河流。",
+              "idioms": [
+                "水落石出",
+                "行云流水"
+              ],
+              "tts_text": "水，喝水的“水”，水落石出。"
+            },
+            {
+              "char": "火",
+              "pinyin": "huǒ",
+              "words": [
+                "大火",
+                "火车"
+              ],
+              "image_association": "像一团燃烧的火焰。",
+              "idioms": [
+                "火冒三丈",
+                "十万火急"
+              ],
+              "tts_text": "火，大火的“火”，火冒三丈。"
+            },
+            {
+              "char": "女",
+              "pinyin": "nǚ",
+              "words": [
+                "女孩",
+                "女儿"
+              ],
+              "image_association": "像一个交叉双腿端坐的女子。",
+              "idioms": [
+                "男女老少",
+                "善男信女"
+              ],
+              "tts_text": "女，女孩的“女”，男女老少。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u2",
+      "title": "第二册 · 姓氏与生活",
+      "theme": "meadow",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "识字练习",
+          "characters": [
+            {
+              "char": "宋",
+              "pinyin": "sòng",
+              "words": [
+                "宋老师",
+                "宋朝"
+              ],
+              "image_association": "宝盖头下面有一棵小树。",
+              "idioms": [],
+              "tts_text": "宋，宋老师的“宋”。"
+            },
+            {
+              "char": "李",
+              "pinyin": "lǐ",
+              "words": [
+                "李子",
+                "行李"
+              ],
+              "image_association": "木字下面有一个孩子，树上结着红果子。",
+              "idioms": [
+                "投桃报李",
+                "瓜田李下"
+              ],
+              "tts_text": "李，李子的“李”，投桃报李。"
+            },
+            {
+              "char": "球",
+              "pinyin": "qiú",
+              "words": [
+                "皮球",
+                "足球"
+              ],
+              "image_association": "王字旁代表玉石，右边的求字像踢球。",
+              "idioms": [],
+              "tts_text": "球，皮球的“球”。"
+            },
+            {
+              "char": "脸",
+              "pinyin": "liǎn",
+              "words": [
+                "洗脸",
+                "脸蛋"
+              ],
+              "image_association": "月字旁代表肉，脸是我们长五官的地方。",
+              "idioms": [
+                "脸红脖子粗"
+              ],
+              "tts_text": "脸，洗脸的“脸”。"
+            },
+            {
+              "char": "眼",
+              "pinyin": "yǎn",
+              "words": [
+                "眼睛",
+                "眼泪"
+              ],
+              "image_association": "目字旁加上右边的艮，表示眼睛。",
+              "idioms": [
+                "眉开眼笑",
+                "眼前一亮"
+              ],
+              "tts_text": "眼，眼睛的“眼”，眉开眼笑。"
+            },
+            {
+              "char": "嘴",
+              "pinyin": "zuǐ",
+              "words": [
+                "嘴巴",
+                "张嘴"
+              ],
+              "image_association": "口字旁，右边像是张开的嘴巴和胡子。",
+              "idioms": [
+                "七嘴八舌",
+                "笨嘴拙舌"
+              ],
+              "tts_text": "嘴，嘴巴的“嘴”，七嘴八舌。"
+            },
+            {
+              "char": "正",
+              "pinyin": "zhèng",
+              "words": [
+                "正在",
+                "立正"
+              ],
+              "image_association": "像是在架子上摆得整整齐齐的书本。",
+              "idioms": [
+                "光明正大",
+                "一本正经"
+              ],
+              "tts_text": "正，立正的“正”，光明正大。"
+            },
+            {
+              "char": "好",
+              "pinyin": "hǎo",
+              "words": [
+                "好人",
+                "美好"
+              ],
+              "image_association": "左边是女孩，右边是男孩，表示友好。",
+              "idioms": [
+                "好好学习",
+                "好事多磨"
+              ],
+              "tts_text": "好，好人的“好”，好好学习。"
+            },
+            {
+              "char": "爱",
+              "pinyin": "ài",
+              "words": [
+                "爱心",
+                "可爱"
+              ],
+              "image_association": "中间有一颗大大的红心。",
+              "idioms": [
+                "相亲相爱",
+                "爱不释手"
+              ],
+              "tts_text": "爱，爱心的“爱”，相亲相爱。"
+            },
+            {
+              "char": "车",
+              "pinyin": "chē",
+              "words": [
+                "汽车",
+                "火车"
+              ],
+              "image_association": "像一辆有轮子、有车厢的马车。",
+              "idioms": [
+                "车水马龙",
+                "杯水车薪"
+              ],
+              "tts_text": "车，汽车的“车”，车水马龙。"
+            },
+            {
+              "char": "太",
+              "pinyin": "tài",
+              "words": [
+                "太阳",
+                "太好"
+              ],
+              "image_association": "像一个人张开双臂，中间有一颗红心。",
+              "idioms": [
+                "太平盛世"
+              ],
+              "tts_text": "太，太阳的“太”。"
+            },
+            {
+              "char": "阳",
+              "pinyin": "yáng",
+              "words": [
+                "阳光",
+                "太阳"
+              ],
+              "image_association": "双耳旁像山丘，右边是一个发光的太阳。",
+              "idioms": [
+                "阳光明媚"
+              ],
+              "tts_text": "阳，太阳的“阳”，阳光明媚。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u3",
+      "title": "第三册 · 校园与品格",
+      "theme": "meadow",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "识字练习",
+          "characters": [
+            {
+              "char": "借",
+              "pinyin": "jiè",
+              "words": [
+                "借书",
+                "借东西"
+              ],
+              "image_association": "左边是单人旁，右边是昔，像一个人向别人借书。",
+              "idioms": [
+                "有借有还",
+                "借花献佛"
+              ],
+              "tts_text": "借，借书的“借”，有借有还。"
+            },
+            {
+              "char": "知",
+              "pinyin": "zhī",
+              "words": [
+                "知识",
+                "知道"
+              ],
+              "image_association": "左边是矢（箭），右边是口，像一个人拿着箭知道方向。",
+              "idioms": [
+                "知书达理",
+                "不知不觉"
+              ],
+              "tts_text": "知，知识的“知”，知书达理。"
+            },
+            {
+              "char": "识",
+              "pinyin": "shí",
+              "words": [
+                "识字",
+                "认识"
+              ],
+              "image_association": "言字旁，表示用语言来认识字。",
+              "idioms": [
+                "有识之士",
+                "见多识广"
+              ],
+              "tts_text": "识，识字的“识”，见多识广。"
+            },
+            {
+              "char": "魔",
+              "pinyin": "mó",
+              "words": [
+                "魔术",
+                "魔法"
+              ],
+              "image_association": "广字头下面有个林和一个鬼，像神仙施展法术。",
+              "idioms": [
+                "魔术师"
+              ],
+              "tts_text": "魔，魔术的“魔”。"
+            },
+            {
+              "char": "术",
+              "pinyin": "shù",
+              "words": [
+                "魔术",
+                "手术"
+              ],
+              "image_association": "木字右上角加一点，表示神奇的技艺。",
+              "idioms": [
+                "不学无术",
+                "术业专攻"
+              ],
+              "tts_text": "术，魔术的“术”，不学无术。"
+            },
+            {
+              "char": "讲",
+              "pinyin": "jiǎng",
+              "words": [
+                "讲课",
+                "讲话"
+              ],
+              "image_association": "言字旁加上一个井字，像老师站在井边给大家讲话。",
+              "idioms": [
+                "娓娓道来"
+              ],
+              "tts_text": "讲，讲课的“讲”。"
+            },
+            {
+              "char": "完",
+              "pinyin": "wán",
+              "words": [
+                "完成",
+                "做完"
+              ],
+              "image_association": "宝盖头像房子，下面有个元，表示事情做完了。",
+              "idioms": [
+                "完美无缺",
+                "完好无损"
+              ],
+              "tts_text": "完，完成的“完”，完美无缺。"
+            },
+            {
+              "char": "成",
+              "pinyin": "chéng",
+              "words": [
+                "成功",
+                "成绩"
+              ],
+              "image_association": "像一个人拿着大斧头，把东西砍成两半。",
+              "idioms": [
+                "马到成功",
+                "心想事成"
+              ],
+              "tts_text": "成，成功的“成”，马到成功。"
+            },
+            {
+              "char": "老",
+              "pinyin": "lǎo",
+              "words": [
+                "老人",
+                "老师"
+              ],
+              "image_association": "像一个拄着拐杖、头发长长的老爷爷。",
+              "idioms": [
+                "老当益壮",
+                "返老还童"
+              ],
+              "tts_text": "老，老人的“老”，老当益壮。"
+            },
+            {
+              "char": "师",
+              "pinyin": "shī",
+              "words": [
+                "老师",
+                "师生"
+              ],
+              "image_association": "左边是一把小刀，右边是一条毛巾，像老师在批改作业。",
+              "idioms": [
+                "为人师表",
+                "良师益友"
+              ],
+              "tts_text": "师，老师的“师”，为人师表。"
+            },
+            {
+              "char": "听",
+              "pinyin": "tīng",
+              "words": [
+                "听话",
+                "听见"
+              ],
+              "image_association": "左边是口，右边是斤，好像用耳朵在认真听。",
+              "idioms": [
+                "洗耳恭听",
+                "道听途说"
+              ],
+              "tts_text": "听，听话的“听”，洗耳恭听。"
+            },
+            {
+              "char": "懂",
+              "pinyin": "dǒng",
+              "words": [
+                "懂事",
+                "听懂"
+              ],
+              "image_association": "竖心旁，表示心里明白了，懂了。",
+              "idioms": [
+                "懵懵懂懂"
+              ],
+              "tts_text": "懂，懂事的“懂”。"
+            },
+            {
+              "char": "朋",
+              "pinyin": "péng",
+              "words": [
+                "朋友",
+                "亲朋"
+              ],
+              "image_association": "像两串贝壳挂在一起，表示很亲密。",
+              "idioms": [
+                "高朋满座",
+                "呼朋引伴"
+              ],
+              "tts_text": "朋，朋友的“朋”，高朋满座。"
+            },
+            {
+              "char": "友",
+              "pinyin": "yǒu",
+              "words": [
+                "朋友",
+                "友好"
+              ],
+              "image_association": "像两只手拉在一起，表示交朋友。",
+              "idioms": [
+                "友好相处",
+                "良师益友"
+              ],
+              "tts_text": "友，友好的“友”，良师益友。"
+            },
+            {
+              "char": "学",
+              "pinyin": "xué",
+              "words": [
+                "学习",
+                "学校"
+              ],
+              "image_association": "像一个小孩子戴着帽子，下面是一个宝盖头。",
+              "idioms": [
+                "好好学习",
+                "学而不厌"
+              ],
+              "tts_text": "学，学习的“学”，好好学习。"
+            },
+            {
+              "char": "校",
+              "pinyin": "xiào",
+              "words": [
+                "学校",
+                "校园"
+              ],
+              "image_association": "木字旁，表示学校里有树，右边是交，表示老师和学生交往。",
+              "idioms": [
+                "校园生活"
+              ],
+              "tts_text": "校，学校的“校”。"
+            },
+            {
+              "char": "升",
+              "pinyin": "shēng",
+              "words": [
+                "升起",
+                "升旗"
+              ],
+              "image_association": "像旗子慢慢升上旗杆。",
+              "idioms": [
+                "旭日东升",
+                "步步高升"
+              ],
+              "tts_text": "升，升旗的“升”，旭日东升。"
+            },
+            {
+              "char": "旗",
+              "pinyin": "qí",
+              "words": [
+                "红旗",
+                "升旗"
+              ],
+              "image_association": "方字旁，右边像一面飘扬的旗子。",
+              "idioms": [
+                "旗帜鲜明",
+                "旗开得胜"
+              ],
+              "tts_text": "旗，红旗的“旗”，旗开得胜。"
+            },
+            {
+              "char": "礼",
+              "pinyin": "lǐ",
+              "words": [
+                "礼物",
+                "敬礼"
+              ],
+              "image_association": "左边是神，右边像一个人弯腰鞠躬。",
+              "idioms": [
+                "彬彬有礼",
+                "礼尚往来"
+              ],
+              "tts_text": "礼，礼物的“礼”，彬彬有礼。"
+            },
+            {
+              "char": "敬",
+              "pinyin": "jìng",
+              "words": [
+                "敬礼",
+                "尊敬"
+              ],
+              "image_association": "左边是苟，右边是攵，表示非常恭敬。",
+              "idioms": [
+                "敬而远之",
+                "肃然起敬"
+              ],
+              "tts_text": "敬，敬礼的“敬”，肃然起敬。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u4",
+      "title": "第四册 · 动物与生活",
+      "theme": "meadow",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "识字练习",
+          "characters": [
+            {
+              "char": "雀",
+              "pinyin": "què",
+              "words": [
+                "麻雀",
+                "孔雀"
+              ],
+              "image_association": "上面是个小，下面是个隹（短尾巴鸟），像一只小鸟。",
+              "idioms": [
+                "欢呼雀跃",
+                "门可罗雀"
+              ],
+              "tts_text": "雀，麻雀的“雀”，欢呼雀跃。"
+            },
+            {
+              "char": "收",
+              "pinyin": "shōu",
+              "words": [
+                "收信",
+                "丰收"
+              ],
+              "image_association": "左边像把东西收拢在一起。",
+              "idioms": [
+                "秋收冬藏",
+                "名利双收"
+              ],
+              "tts_text": "收，收信的“收”，秋收冬藏。"
+            },
+            {
+              "char": "藏",
+              "pinyin": "cáng",
+              "words": [
+                "捉迷藏",
+                "躲藏"
+              ],
+              "image_association": "草字头下面藏着很多东西。",
+              "idioms": [
+                "藏龙卧虎",
+                "东躲西藏"
+              ],
+              "tts_text": "藏，捉迷藏的“藏”，藏龙卧虎。"
+            },
+            {
+              "char": "铅",
+              "pinyin": "qiān",
+              "words": [
+                "铅笔",
+                "铅球"
+              ],
+              "image_association": "金字旁，表示这是一种金属做的东西。",
+              "idioms": [],
+              "tts_text": "铅，铅笔的“铅”。"
+            },
+            {
+              "char": "姑",
+              "pinyin": "gū",
+              "words": [
+                "姑娘",
+                "姑姑"
+              ],
+              "image_association": "女字旁，右边是个古字。",
+              "idioms": [
+                "姑娘家"
+              ],
+              "tts_text": "姑，姑娘的“姑”。"
+            },
+            {
+              "char": "娘",
+              "pinyin": "niáng",
+              "words": [
+                "姑娘",
+                "大娘"
+              ],
+              "image_association": "女字旁，右边是个良字，表示好女子。",
+              "idioms": [
+                "老大娘"
+              ],
+              "tts_text": "娘，姑娘的“娘”。"
+            },
+            {
+              "char": "玩",
+              "pinyin": "wán",
+              "words": [
+                "玩耍",
+                "好玩"
+              ],
+              "image_association": "王字旁，表示玉石，右边是元，表示孩子拿着玩具玩。",
+              "idioms": [
+                "吃喝玩乐",
+                "游山玩水"
+              ],
+              "tts_text": "玩，玩耍的“玩”，游山玩水。"
+            },
+            {
+              "char": "具",
+              "pinyin": "jù",
+              "words": [
+                "玩具",
+                "文具"
+              ],
+              "image_association": "像两只手捧着一个贝（钱），上面有个眼睛。",
+              "idioms": [
+                "具体而微",
+                "别具一格"
+              ],
+              "tts_text": "具，玩具的“具”，别具一格。"
+            },
+            {
+              "char": "抱",
+              "pinyin": "bào",
+              "words": [
+                "抱抱",
+                "拥抱"
+              ],
+              "image_association": "提手旁，表示用手臂去抱。",
+              "idioms": [
+                "拥抱未来",
+                "抱头鼠窜"
+              ],
+              "tts_text": "抱，抱抱的“抱”，拥抱未来。"
+            },
+            {
+              "char": "单",
+              "pinyin": "dān",
+              "words": [
+                "简单",
+                "单人"
+              ],
+              "image_association": "上面是两只耳朵，下面是一个十字架，表示简单。",
+              "idioms": [
+                "简单明了",
+                "单枪匹马"
+              ],
+              "tts_text": "单，简单的“单”，单枪匹马。"
+            },
+            {
+              "char": "满",
+              "pinyin": "mǎn",
+              "words": [
+                "满意",
+                "装满"
+              ],
+              "image_association": "水字旁，右边像是在草帽下装满了水。",
+              "idioms": [
+                "满载而归",
+                "心满意足"
+              ],
+              "tts_text": "满，满意的“满”，满载而归。"
+            },
+            {
+              "char": "积",
+              "pinyin": "jī",
+              "words": [
+                "积累",
+                "积木"
+              ],
+              "image_association": "禾木旁，表示把粮食一点点攒起来。",
+              "idioms": [
+                "积少成多",
+                "日积月累"
+              ],
+              "tts_text": "积，积累的“积”，积少成多。"
+            },
+            {
+              "char": "搭",
+              "pinyin": "dā",
+              "words": [
+                "搭积木",
+                "搭车"
+              ],
+              "image_association": "提手旁，表示用手把东西搭起来。",
+              "idioms": [
+                "搭棚子"
+              ],
+              "tts_text": "搭，搭积木的“搭”。"
+            },
+            {
+              "char": "奇",
+              "pinyin": "qí",
+              "words": [
+                "奇怪",
+                "好奇"
+              ],
+              "image_association": "大字下面有个可，表示非常特别。",
+              "idioms": [
+                "奇花异草",
+                "千奇百怪"
+              ],
+              "tts_text": "奇，奇怪的“奇”，千奇百怪。"
+            },
+            {
+              "char": "怪",
+              "pinyin": "guài",
+              "words": [
+                "奇怪",
+                "怪物"
+              ],
+              "image_association": "竖心旁，表示心里觉得奇怪。",
+              "idioms": [
+                "大惊小怪",
+                "怪模怪样"
+              ],
+              "tts_text": "怪，奇怪的“怪”，大惊小怪。"
+            },
+            {
+              "char": "蜜",
+              "pinyin": "mì",
+              "words": [
+                "蜂蜜",
+                "甜蜜"
+              ],
+              "image_association": "宝盖头像蜂巢，下面是虫子，表示蜜蜂。",
+              "idioms": [
+                "甜甜蜜蜜",
+                "口蜜腹剑"
+              ],
+              "tts_text": "蜜，蜂蜜的“蜜”，甜甜蜜蜜。"
+            },
+            {
+              "char": "蜂",
+              "pinyin": "fēng",
+              "words": [
+                "蜜蜂",
+                "蜜蜂"
+              ],
+              "image_association": "虫字旁，右边是个丰字。",
+              "idioms": [
+                "蜂拥而至"
+              ],
+              "tts_text": "蜂，蜜蜂的“蜂”，蜂拥而至。"
+            },
+            {
+              "char": "蜻",
+              "pinyin": "qīng",
+              "words": [
+                "蜻蜓",
+                "蜻蜓点水"
+              ],
+              "image_association": "虫字旁，右边是个青字。",
+              "idioms": [
+                "蜻蜓点水"
+              ],
+              "tts_text": "蜻，蜻蜓的“蜻”，蜻蜓点水。"
+            },
+            {
+              "char": "蜓",
+              "pinyin": "tíng",
+              "words": [
+                "蜻蜓",
+                "蜻蜓点水"
+              ],
+              "image_association": "虫字旁，右边是个廷字。",
+              "idioms": [
+                "蜻蜓点水"
+              ],
+              "tts_text": "蜓，蜻蜓的“蜓”。"
+            },
+            {
+              "char": "珍",
+              "pinyin": "zhēn",
+              "words": [
+                "珍珠",
+                "珍惜"
+              ],
+              "image_association": "王字旁代表玉石，表示非常珍贵。",
+              "idioms": [
+                "奇珍异宝",
+                "敝帚自珍"
+              ],
+              "tts_text": "珍，珍珠的“珍”，奇珍异宝。"
+            },
+            {
+              "char": "珠",
+              "pinyin": "zhū",
+              "words": [
+                "珍珠",
+                "水珠"
+              ],
+              "image_association": "王字旁代表玉石，右边是个朱。",
+              "idioms": [
+                "掌上明珠",
+                "珠光宝气"
+              ],
+              "tts_text": "珠，珍珠的“珠”，掌上明珠。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u5",
+      "title": "第五册 · 自然与生活进阶",
+      "theme": "meadow",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "识字练习",
+          "characters": [
+            {
+              "char": "整",
+              "pinyin": "zhěng",
+              "words": [
+                "整齐",
+                "完整"
+              ],
+              "image_association": "下面是一个正字，上面是敕，表示把东西整理得端正。",
+              "idioms": [
+                "整整齐齐",
+                "化整为零"
+              ],
+              "tts_text": "整，整齐的“整”，整整齐齐。"
+            },
+            {
+              "char": "齐",
+              "pinyin": "qí",
+              "words": [
+                "整齐",
+                "对齐"
+              ],
+              "image_association": "像田地里长出的麦穗，长得一样高，很整齐。",
+              "idioms": [
+                "齐心协力",
+                "百花齐放"
+              ],
+              "tts_text": "齐，整齐的“齐”，齐心协力。"
+            },
+            {
+              "char": "池",
+              "pinyin": "chí",
+              "words": [
+                "水池",
+                "池塘"
+              ],
+              "image_association": "三点水，右边是也，表示有水的地方。",
+              "idioms": [
+                "池鱼之殃"
+              ],
+              "tts_text": "池，水池的“池”。"
+            },
+            {
+              "char": "塘",
+              "pinyin": "táng",
+              "words": [
+                "池塘",
+                "鱼塘"
+              ],
+              "image_association": "土字旁，右边是唐，表示用泥土围起来的水塘。",
+              "idioms": [
+                "池塘春草"
+              ],
+              "tts_text": "塘，池塘的“塘”。"
+            },
+            {
+              "char": "蝌",
+              "pinyin": "kē",
+              "words": [
+                "蝌蚪"
+              ],
+              "image_association": "虫字旁，右边是科，小蝌蚪找妈妈。",
+              "idioms": [],
+              "tts_text": "蝌，蝌蚪的“蝌”。"
+            },
+            {
+              "char": "蚪",
+              "pinyin": "dǒu",
+              "words": [
+                "蝌蚪"
+              ],
+              "image_association": "虫字旁，右边是斗，蝌蚪在水里游。",
+              "idioms": [],
+              "tts_text": "蚪，蝌蚪的“蚪”。"
+            },
+            {
+              "char": "捕",
+              "pinyin": "bǔ",
+              "words": [
+                "捕鱼",
+                "捕捉"
+              ],
+              "image_association": "提手旁，表示用手去抓。",
+              "idioms": [
+                "捕风捉影",
+                "螳螂捕蝉"
+              ],
+              "tts_text": "捕，捕鱼的“捕”，捕风捉影。"
+            },
+            {
+              "char": "捞",
+              "pinyin": "lāo",
+              "words": [
+                "打捞",
+                "捞鱼"
+              ],
+              "image_association": "提手旁，右边是劳，表示从水里把东西弄上来。",
+              "idioms": [
+                "海底捞针"
+              ],
+              "tts_text": "捞，打捞的“捞”，海底捞针。"
+            },
+            {
+              "char": "平",
+              "pinyin": "píng",
+              "words": [
+                "平安",
+                "平静"
+              ],
+              "image_association": "像天平两端放平，非常平稳。",
+              "idioms": [
+                "平平安安",
+                "心平气和"
+              ],
+              "tts_text": "平，平安的“平”，平平安安。"
+            },
+            {
+              "char": "稳",
+              "pinyin": "wěn",
+              "words": [
+                "稳重",
+                "平稳"
+              ],
+              "image_association": "禾木旁，右边是急，表示粮食堆得稳稳当当。",
+              "idioms": [
+                "稳如泰山",
+                "稳操胜券"
+              ],
+              "tts_text": "稳，平稳的“稳”，稳如泰山。"
+            },
+            {
+              "char": "交",
+              "pinyin": "jiāo",
+              "words": [
+                "交朋友",
+                "交通"
+              ],
+              "image_association": "像一个人张开双腿站着，下面的交叉点表示交会。",
+              "idioms": [
+                "交头接耳",
+                "风雨交加"
+              ],
+              "tts_text": "交，交通的“交”，交头接耳。"
+            },
+            {
+              "char": "转",
+              "pinyin": "zhuǎn",
+              "words": [
+                "转弯",
+                "转身"
+              ],
+              "image_association": "车字旁，表示车子在转动方向。",
+              "idioms": [
+                "转危为安",
+                "峰回路转"
+              ],
+              "tts_text": "转，转弯的“转”，转危为安。"
+            },
+            {
+              "char": "铁",
+              "pinyin": "tiě",
+              "words": [
+                "钢铁",
+                "铁锅"
+              ],
+              "image_association": "金字旁，表示一种坚硬的金属，右边是失。",
+              "idioms": [
+                "铁杵成针",
+                "铁面无私"
+              ],
+              "tts_text": "铁，钢铁的“铁”，铁杵成针。"
+            },
+            {
+              "char": "挖",
+              "pinyin": "wā",
+              "words": [
+                "挖土",
+                "挖掘"
+              ],
+              "image_association": "提手旁，表示用手或者工具去挖。",
+              "idioms": [
+                "挖空心思"
+              ],
+              "tts_text": "挖，挖土的“挖”。"
+            },
+            {
+              "char": "受",
+              "pinyin": "shòu",
+              "words": [
+                "受伤",
+                "接受"
+              ],
+              "image_association": "上面像一只手，把东西递给下面的人，表示接受。",
+              "idioms": [
+                "受宠若惊",
+                "自作自受"
+              ],
+              "tts_text": "受，受伤的“受”，受宠若惊。"
+            },
+            {
+              "char": "伤",
+              "pinyin": "shāng",
+              "words": [
+                "受伤",
+                "伤心"
+              ],
+              "image_association": "单人旁，右边像一个人被箭射中，表示受伤。",
+              "idioms": [
+                "伤天害理",
+                "无伤大雅"
+              ],
+              "tts_text": "伤，受伤的“伤”，无伤大雅。"
+            },
+            {
+              "char": "首",
+              "pinyin": "shǒu",
+              "words": [
+                "首先",
+                "首都"
+              ],
+              "image_association": "像一个人的头，上面是头发。",
+              "idioms": [
+                "昂首挺胸",
+                "首屈一指"
+              ],
+              "tts_text": "首，首先的“首”，昂首挺胸。"
+            },
+            {
+              "char": "击",
+              "pinyin": "jī",
+              "words": [
+                "打击",
+                "击掌"
+              ],
+              "image_association": "像一只手拿着武器在敲打。",
+              "idioms": [
+                "击掌为盟",
+                "声东击西"
+              ],
+              "tts_text": "击，打击的“击”，声东击西。"
+            },
+            {
+              "char": "赞",
+              "pinyin": "zàn",
+              "words": [
+                "赞美",
+                "称赞"
+              ],
+              "image_association": "上面是两只手捧着一个先，下面是贝，表示赞美。",
+              "idioms": [
+                "赞不绝口",
+                "交口称赞"
+              ],
+              "tts_text": "赞，赞美的“赞”，赞不绝口。"
+            },
+            {
+              "char": "英",
+              "pinyin": "yīng",
+              "words": [
+                "英雄",
+                "英语"
+              ],
+              "image_association": "草字头，下面是一个中央的央，表示花中最美的。",
+              "idioms": [
+                "英雄好汉",
+                "英姿飒爽"
+              ],
+              "tts_text": "英，英雄的“英”，英姿飒爽。"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u6",
+      "title": "第六册 · 情感与复杂动作",
+      "theme": "meadow",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "识字练习",
+          "characters": [
+            {
+              "char": "剧",
+              "pinyin": "jù",
+              "words": [
+                "京剧",
+                "电视剧"
+              ],
+              "image_association": "左边是居，右边是刂，表示演戏很激烈。",
+              "idioms": [
+                "剧终人散"
+              ],
+              "tts_text": "剧，京剧的“剧”。"
+            },
+            {
+              "char": "痛",
+              "pinyin": "tòng",
+              "words": [
+                "疼痛",
+                "痛快"
+              ],
+              "image_association": "病字旁，里面是个甬，表示生病了感觉疼。",
+              "idioms": [
+                "痛痛快快",
+                "痛不欲生"
+              ],
+              "tts_text": "痛，疼痛的“痛”，痛痛快快。"
+            },
+            {
+              "char": "批",
+              "pinyin": "pī",
+              "words": [
+                "批改",
+                "批评"
+              ],
+              "image_association": "提手旁，右边是比，表示用手去批改作业。",
+              "idioms": [
+                "批红判白"
+              ],
+              "tts_text": "批，批改的“批”。"
+            },
+            {
+              "char": "评",
+              "pinyin": "píng",
+              "words": [
+                "批评",
+                "评理"
+              ],
+              "image_association": "言字旁，表示用语言去评价。",
+              "idioms": [
+                "评头论足"
+              ],
+              "tts_text": "评，批评的“评”。"
+            },
+            {
+              "char": "严",
+              "pinyin": "yán",
+              "words": [
+                "严格",
+                "严厉"
+              ],
+              "image_association": "像一张脸上长着两只大眼睛，非常严肃。",
+              "idioms": [
+                "严严实实",
+                "严阵以待"
+              ],
+              "tts_text": "严，严格的“严”，严严实实。"
+            },
+            {
+              "char": "肃",
+              "pinyin": "sù",
+              "words": [
+                "严肃",
+                "肃静"
+              ],
+              "image_association": "像一个人拿着毛笔在写字，旁边很安静。",
+              "idioms": [
+                "肃然起敬"
+              ],
+              "tts_text": "肃，严肃的“肃”，肃然起敬。"
+            },
+            {
+              "char": "扶",
+              "pinyin": "fú",
+              "words": [
+                "扶老奶奶",
+                "扶手"
+              ],
+              "image_association": "提手旁，表示用手去搀扶别人。",
+              "idioms": [
+                "扶老携幼",
+                "救死扶伤"
+              ],
+              "tts_text": "扶，扶老奶奶的“扶”，救死扶伤。"
+            },
+            {
+              "char": "梯",
+              "pinyin": "tī",
+              "words": [
+                "楼梯",
+                "电梯"
+              ],
+              "image_association": "木字旁，表示用木头做的阶梯。",
+              "idioms": [
+                "梯山航海"
+              ],
+              "tts_text": "梯，楼梯的“梯”。"
+            },
+            {
+              "char": "肚",
+              "pinyin": "dù",
+              "words": [
+                "肚子",
+                "肚皮"
+              ],
+              "image_association": "月字旁代表肉，右边是土，肚子圆鼓鼓的。",
+              "idioms": [
+                "肚大腰圆"
+              ],
+              "tts_text": "肚，肚子的“肚”。"
+            },
+            {
+              "char": "肠",
+              "pinyin": "cháng",
+              "words": [
+                "肠子",
+                "香肠"
+              ],
+              "image_association": "月字旁代表肉，弯弯曲曲的像肠子。",
+              "idioms": [
+                "肝肠寸断",
+                "牵肠挂肚"
+              ],
+              "tts_text": "肠，肠子的“肠”，牵肠挂肚。"
+            },
+            {
+              "char": "承",
+              "pinyin": "chéng",
+              "words": [
+                "承认",
+                "承担"
+              ],
+              "image_association": "像一个人用双手托着上面的东西。",
+              "idioms": [
+                "一脉相承",
+                "承前启后"
+              ],
+              "tts_text": "承，承认的“承”，一脉相承。"
+            },
+            {
+              "char": "修",
+              "pinyin": "xiū",
+              "words": [
+                "修理",
+                "修改"
+              ],
+              "image_association": "单人旁，像一个人拿着工具在修理树枝。",
+              "idioms": [
+                "修修补补",
+                "修身养性"
+              ],
+              "tts_text": "修，修理的“修”，修身养性。"
+            },
+            {
+              "char": "改",
+              "pinyin": "gǎi",
+              "words": [
+                "改正",
+                "修改"
+              ],
+              "image_association": "左边是自己的己，右边是攵，表示要改变自己。",
+              "idioms": [
+                "改过自新",
+                "知错就改"
+              ],
+              "tts_text": "改，改正的“改”，知错就改。"
+            },
+            {
+              "char": "诚",
+              "pinyin": "chéng",
+              "words": [
+                "诚实",
+                "真诚"
+              ],
+              "image_association": "言字旁，右边是成，表示说到做到，很诚实。",
+              "idioms": [
+                "诚心诚意",
+                "开诚布公"
+              ],
+              "tts_text": "诚，诚实的“诚”，诚心诚意。"
+            },
+            {
+              "char": "实",
+              "pinyin": "shí",
+              "words": [
+                "诚实",
+                "果实"
+              ],
+              "image_association": "宝盖头下面是一个头，表示里面装满了东西，很实在。",
+              "idioms": [
+                "实事求是",
+                "实实在在"
+              ],
+              "tts_text": "实，诚实的“实”，实实在在。"
+            },
+            {
+              "char": "温",
+              "pinyin": "wēn",
+              "words": [
+                "温暖",
+                "温柔"
+              ],
+              "image_association": "三点水，右边是昷，表示水不冷不热，很温和。",
+              "idioms": [
+                "温故知新",
+                "温柔体贴"
+              ],
+              "tts_text": "温，温暖的“温”，温故知新。"
+            },
+            {
+              "char": "度",
+              "pinyin": "dù",
+              "words": [
+                "温度",
+                "长度"
+              ],
+              "image_association": "广字头，里面是一个廿和又，表示测量的标准。",
+              "idioms": [
+                "度日如年",
+                "宽宏大量"
+              ],
+              "tts_text": "度，温度的“度”，度日如年。"
+            },
+            {
+              "char": "沉",
+              "pinyin": "chén",
+              "words": [
+                "下沉",
+                "沉重"
+              ],
+              "image_association": "三点水，表示东西沉入水底。",
+              "idioms": [
+                "沉鱼落雁",
+                "破釜沉舟"
+              ],
+              "tts_text": "沉，下沉的“沉”，破釜沉舟。"
+            },
+            {
+              "char": "浮",
+              "pinyin": "fú",
+              "words": [
+                "漂浮",
+                "浮力"
+              ],
+              "image_association": "三点水，右边是孚，表示东西浮在水面上。",
+              "idioms": [
+                "浮想联翩",
+                "心浮气躁"
+              ],
+              "tts_text": "浮，漂浮的“浮”，浮想联翩。"
+            },
+            {
+              "char": "演",
+              "pinyin": "yǎn",
+              "words": [
+                "表演",
+                "演戏"
+              ],
+              "image_association": "三点水，右边是寅，像水在流动，也指在台上表演。",
+              "idioms": [
+                "生龙活虎",
+                "表演自如"
+              ],
+              "tts_text": "演，表演的“演”。"
+            },
+            {
+              "char": "奏",
+              "pinyin": "zòu",
+              "words": [
+                "演奏",
+                "合奏"
+              ],
+              "image_association": "上面是一个丰，下面是一个天，表示用手弹奏乐器。",
+              "idioms": [
+                "先斩后奏",
+                "高奏凯歌"
+              ],
+              "tts_text": "奏，演奏的“奏”，高奏凯歌。"
+            },
+            {
+              "char": "躲",
+              "pinyin": "duǒ",
+              "words": [
+                "躲藏",
+                "躲避"
+              ],
+              "image_association": "身字旁，右边是朵，表示把身体藏起来。",
+              "idioms": [
+                "东躲西藏"
+              ],
+              "tts_text": "躲，躲藏的“躲”。"
+            },
+            {
+              "char": "震",
+              "pinyin": "zhèn",
+              "words": [
+                "地震",
+                "震惊"
+              ],
+              "image_association": "雨字头，下面是一个辰，表示雷声轰鸣大地震动。",
+              "idioms": [
+                "震耳欲聋",
+                "震惊中外"
+              ],
+              "tts_text": "震，地震的“震”，震耳欲聋。"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
