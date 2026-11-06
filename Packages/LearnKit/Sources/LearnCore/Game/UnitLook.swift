@@ -70,6 +70,11 @@ public struct DefenderLook: Hashable, Sendable {
         case drop
         /// 方印章
         case seal
+        /// 铁栅门：没有脸，不是植物
+        case gate
+
+        /// 有没有眼睛
+        public var hasFace: Bool { self != .gate }
     }
 
     public enum Accessory: String, CaseIterable, Sendable {

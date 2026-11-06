@@ -114,6 +114,162 @@
     "source": "resources/graphics/Plants/StarFruit",
     "pivot": 0
   },
+  "plant-wallnut": {
+    "frameCount": 16,
+    "frameTime": 0.1,
+    "crop": [
+      0,
+      0,
+      64,
+      72
+    ],
+    "canvas": [
+      65,
+      73
+    ],
+    "source": "resources/graphics/Plants/WallNut/WallNut",
+    "pivot": 0,
+    "states": {
+      "cracked1": "plant-wallnut-cracked1",
+      "cracked2": "plant-wallnut-cracked2"
+    }
+  },
+  "plant-wallnut-cracked1": {
+    "frameCount": 11,
+    "frameTime": 0.1,
+    "crop": [
+      0,
+      2,
+      64,
+      71
+    ],
+    "canvas": [
+      65,
+      73
+    ],
+    "source": "resources/graphics/Plants/WallNut/WallNut_cracked1",
+    "pivot": 0
+  },
+  "plant-wallnut-cracked2": {
+    "frameCount": 15,
+    "frameTime": 0.1,
+    "crop": [
+      0,
+      6,
+      64,
+      67
+    ],
+    "canvas": [
+      65,
+      73
+    ],
+    "source": "resources/graphics/Plants/WallNut/WallNut_cracked2",
+    "pivot": 0
+  },
+  "plant-tallnut": {
+    "frameCount": 14,
+    "frameTime": 0.1,
+    "crop": [
+      0,
+      0,
+      82,
+      119
+    ],
+    "canvas": [
+      83,
+      119
+    ],
+    "source": "resources/graphics/Plants/TallNut/TallNut",
+    "pivot": 0,
+    "states": {
+      "cracked1": "plant-tallnut-cracked1",
+      "cracked2": "plant-tallnut-cracked2"
+    }
+  },
+  "plant-tallnut-cracked1": {
+    "frameCount": 17,
+    "frameTime": 0.1,
+    "crop": [
+      1,
+      0,
+      82,
+      119
+    ],
+    "canvas": [
+      83,
+      119
+    ],
+    "source": "resources/graphics/Plants/TallNut/TallNut_cracked1",
+    "pivot": 0
+  },
+  "plant-tallnut-cracked2": {
+    "frameCount": 15,
+    "frameTime": 0.1,
+    "crop": [
+      0,
+      2,
+      82,
+      117
+    ],
+    "canvas": [
+      83,
+      119
+    ],
+    "source": "resources/graphics/Plants/TallNut/TallNut_cracked2",
+    "pivot": 0
+  },
+  "plant-potato": {
+    "frameCount": 8,
+    "frameTime": 0.12,
+    "crop": [
+      1,
+      0,
+      74,
+      55
+    ],
+    "canvas": [
+      75,
+      55
+    ],
+    "source": "resources/graphics/Plants/PotatoMine/PotatoMine",
+    "pivot": 37.5,
+    "states": {
+      "init": "plant-potato-init",
+      "explode": "plant-potato-explode"
+    }
+  },
+  "plant-potato-init": {
+    "frameCount": 1,
+    "frameTime": 0.1,
+    "crop": [
+      20,
+      23,
+      36,
+      30
+    ],
+    "canvas": [
+      75,
+      55
+    ],
+    "source": "resources/graphics/Plants/PotatoMine/PotatoMineInit",
+    "pivot": 37.5
+  },
+  "plant-potato-explode": {
+    "frameCount": 1,
+    "frameTime": 0.5,
+    "crop": [
+      1,
+      1,
+      131,
+      92
+    ],
+    "canvas": [
+      132,
+      93
+    ],
+    "source": "resources/graphics/Plants/PotatoMine/PotatoMineExplode",
+    "pivot": 66
+  },
   "zombie-blob": {
     "frameCount": 22,
     "frameTime": 0.09,

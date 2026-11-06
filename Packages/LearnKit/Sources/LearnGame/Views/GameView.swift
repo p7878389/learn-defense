@@ -35,7 +35,7 @@ struct GameView: View {
 
     private var seedPackets: some View {
         SeedPacketStrip(
-            kinds: session.tuning.lineup,
+            kinds: session.tuning.plantable,
             sun: session.sun,
             enabled: session.canUseShop,
             draggingID: activeDrag?.kind.id,
@@ -51,7 +51,10 @@ struct GameView: View {
                 }
                 session.previewSeed(at: nil)
                 activeDrag = nil
-            })
+            },
+            barricade: session.tuning.barricade,
+            barricadeEnabled: session.canDropBarricade,
+            onBarricade: { session.dropBarricade() })
             .background(
                 GeometryReader { proxy in
                     Color.clear.onChange(of: proxy.frame(in: .named("gameLayout")), initial: true) { _, frame in

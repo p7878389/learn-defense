@@ -220,7 +220,39 @@ struct UnitTests {
         #expect(UnitCatalog.defender(id: "frost") == .frost)
         #expect(Set(UnitCatalog.enemies.map(\.hp)) == [1, 2, 3])
         #expect(UnitCatalog.enemies.allSatisfy { $0.sunReward == $0.hp * 25 })
-        #expect(UnitCatalog.defenders.allSatisfy { $0.sunCost >= 50 })
+        #expect(UnitCatalog.defenders.filter(\.canShoot).allSatisfy { $0.sunCost >= 50 })
+        // 防御道具不发射，土豆雷最便宜
+        #expect(UnitCatalog.defenders.allSatisfy { $0.sunCost >= 25 })
+        #expect((UnitCatalog.defenders + UnitCatalog.barricades).allSatisfy { $0.canShoot != ($0.guardStyle != nil) })
+        #expect(UnitCatalog.defender(id: "ironGate") == .ironGate)
+        #expect(EnemyKind.hopper.canVault && !EnemyKind.blob.canVault)
+    }
+
+    @Test func guardNumbersFollowDifficulty() {
+        func wall(_ tuning: GameTuning, _ id: String) -> Double? {
+            guard case let .wall(seconds, _) = tuning.guards.first(where: { $0.id == id })?.guardStyle else { return nil }
+            return seconds
+        }
+        func mine(_ tuning: GameTuning) -> Int? {
+            guard case let .mine(armAfter, _) = tuning.guards.first(where: { $0.id == "potato" })?.guardStyle else { return nil }
+            return armAfter
+        }
+        let preschool = GameTuning.make(grade: .k3, difficulty: .normal)
+        let normal = GameTuning.make(grade: .g2, difficulty: .normal)
+        let hard = GameTuning.make(grade: .g2, difficulty: .hard)
+        #expect(preschool.guards.map(\.id) == ["wallnut", "potato"])
+        #expect(normal.guards.map(\.id) == ["wallnut", "tallnut", "potato"])
+        #expect(wall(preschool, "wallnut") == 20 && mine(preschool) == 1)
+        #expect(wall(normal, "wallnut") == 15 && wall(normal, "tallnut") == 30 && mine(normal) == 2)
+        #expect(wall(hard, "wallnut") == 12 && wall(hard, "tallnut") == 25 && mine(hard) == 3)
+        #expect(preschool.barricade == nil)
+        guard case let .wall(gate, tall) = hard.barricade?.guardStyle else {
+            Issue.record("小学应提供铁栅门")
+            return
+        }
+        #expect(gate == 8 && tall)
+        #expect(normal.plantable.map(\.id) == normal.lineup.map(\.id) + ["wallnut", "tallnut", "potato"])
+        #expect(normal.guards.allSatisfy { !$0.canShoot })
     }
 
     /// 不管哪种走法，平均速度都要等于设定值，否则「多少秒走到书架」的难度就不准了

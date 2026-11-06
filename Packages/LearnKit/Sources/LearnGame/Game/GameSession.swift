@@ -41,6 +41,8 @@ final class GameSession: ObservableObject {
     @Published private(set) var ultimate: Question?
     @Published private(set) var ultimateWrongPicks: Set<Int> = []
     @Published private(set) var inventory = Inventory(capacity: 3)
+    /// 场上已经有一道铁栅门；碎了才能再放
+    @Published private(set) var barricadeDown = false
 
     private(set) var attempted = 0
     private(set) var firstTryCorrect = 0
@@ -233,6 +235,7 @@ final class GameSession: ObservableObject {
             }
             feedback.play(correct: true)
             typing = false
+            scene.noteCorrectAnswer()
 
             enemyQuestions[id] = nil
             enemyWrongPicks[id] = nil
@@ -338,7 +341,7 @@ final class GameSession: ObservableObject {
 
     /// 把拖到战场上的卡牌落到对应草坪；成功后立即扣除阳光
     func dropSeed(id: String, at point: CGPoint) -> Bool {
-        guard canUseShop, let kind = tuning.lineup.first(where: { $0.id == id }) else { return false }
+        guard canUseShop, let kind = tuning.plantable.first(where: { $0.id == id }) else { return false }
         guard sun >= kind.sunCost else {
             scene.play(FloatingTextEffect(text: "阳光不够", color: Palette.hurt, fontSize: 30))
             speech.speak(SpeechText.Line.notEnoughSun, interrupt: true)
@@ -356,6 +359,35 @@ final class GameSession: ObservableObject {
         }
         sun -= kind.sunCost
         speech.speak(SpeechText.Line.planted(kind.name), interrupt: true)
+        return true
+    }
+
+    /// 铁栅门卡能不能点：战斗中、场上还没有门、有正在答题的僵尸（阳光不够时卡片变灰，由界面判断）
+    var canDropBarricade: Bool {
+        tuning.barricade != nil && phase == .playing && ultimate == nil && !barricadeDown && targetID != nil
+    }
+
+    /// 花阳光在正在答题的僵尸面前放一道铁栅门，同一时间场上只有一道
+    @discardableResult
+    func dropBarricade() -> Bool {
+        guard let kind = tuning.barricade, phase == .playing, ultimate == nil else { return false }
+        guard !barricadeDown else {
+            speech.speak(SpeechText.Line.gateBusy, interrupt: true)
+            return false
+        }
+        guard let id = targetID else {
+            speech.speak(SpeechText.Line.gateNoTarget, interrupt: true)
+            return false
+        }
+        guard sun >= kind.sunCost else {
+            scene.play(FloatingTextEffect(text: "阳光不够", color: Palette.hurt, fontSize: 30))
+            speech.speak(SpeechText.Line.notEnoughSun, interrupt: true)
+            return false
+        }
+        guard scene.dropBarricade(kind, before: id) else { return false }
+        sun -= kind.sunCost
+        barricadeDown = true
+        speech.speak(SpeechText.Line.gateDown, interrupt: true)
         return true
     }
 
@@ -605,6 +637,12 @@ extension GameSession: GameSceneDelegate {
         resolved += 1
         roundResolved = resolved
         checkFinished()
+    }
+}
+
+extension GameSession {
+    func barricadeRemoved() {
+        barricadeDown = false
     }
 }
 
