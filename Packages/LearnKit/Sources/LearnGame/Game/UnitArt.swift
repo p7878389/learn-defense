@@ -206,8 +206,33 @@ enum DefenderArt {
         case .seal:
             CGPath(roundedRect: CGRect(x: -r * 0.9, y: -r * 0.9, width: r * 1.8, height: r * 1.8),
                    cornerWidth: r * 0.35, cornerHeight: r * 0.35, transform: nil)
+        case .gate:
+            gate(radius: r)
+        }
+        if look.body == .gate {
+            return Shapes.filled(path, SKColor(white: 0.62, alpha: 1), stroke: SKColor(white: 0.25, alpha: 1), width: 2.5)
         }
         return Shapes.filled(path, look.color.fill, stroke: look.color.dark, width: 3)
+    }
+
+    /// 铁栅门：上下两道横梁、四根竖栏，竖栏顶上带尖
+    private static func gate(radius r: CGFloat) -> CGPath {
+        let path = CGMutablePath()
+        let width = r * 1.3, height = r * 2.1
+        let left = -width / 2, bottom = -r * 1.05
+        for y in [bottom + height * 0.18, bottom + height * 0.72] {
+            path.addRect(CGRect(x: left - r * 0.08, y: y, width: width + r * 0.16, height: r * 0.18))
+        }
+        let bars = 4
+        for i in 0..<bars {
+            let x = left + width * (CGFloat(i) + 0.5) / CGFloat(bars) - r * 0.07
+            path.addRect(CGRect(x: x, y: bottom, width: r * 0.14, height: height))
+            path.move(to: CGPoint(x: x - r * 0.05, y: bottom + height))
+            path.addLine(to: CGPoint(x: x + r * 0.07, y: bottom + height + r * 0.22))
+            path.addLine(to: CGPoint(x: x + r * 0.19, y: bottom + height))
+            path.closeSubpath()
+        }
+        return path
     }
 
     static func eyes(radius r: CGFloat) -> SKNode {

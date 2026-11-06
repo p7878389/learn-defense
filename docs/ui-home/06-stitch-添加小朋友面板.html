@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=1194, height=834, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>字灵守卫 - 添加新小守卫</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts Nunito Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,300..1000;1,6..12,300..1000&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {},
+          borderRadius: {
+            "DEFAULT": "1rem",
+            "lg": "2rem",
+            "xl": "3rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Nunito Sans", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
+            display: ["Nunito Sans", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
+            body: ["Nunito Sans", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
+            label: ["Nunito Sans", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    /* 禁用页面滚动，锁定 iPad 1194x834 精准视口 */
+    html, body {
+      width: 1194px;
+      height: 834px;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+    .candy-btn-shadow {
+      box-shadow: 0 6px 0 #247359;
+    }
+    .candy-btn-shadow:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #247359;
+    }
+    .candy-orange-shadow {
+      box-shadow: 0 5px 0 #c2610d;
+    }
+    .candy-orange-shadow:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #c2610d;
+    }
+    .card-depth-shadow {
+      box-shadow: 0 8px 0 #ebd8b0;
+    }
+    .subtle-depth-shadow {
+      box-shadow: 0 4px 0 #e2d3b5;
+    }
+    .tab-unselected-shadow {
+      box-shadow: 0 4px 0 #ded9cf;
+    }
+    .avatar-btn-shadow {
+      box-shadow: 0 4px 0 #ded8cc;
+    }
+  </style>
+</head>
+<body class="w-[1194px] h-[834px] relative bg-[#FAF2DE] font-body text-[#2B2B38] overflow-hidden flex items-center justify-center m-0 p-0">
+<!-- ================= 背景：首页轮播（本地改动：Stitch 原稿是一个假的顶栏，这里换成 05 轮播首页，模糊后放在遮罩下面） ================= -->
+<iframe class="absolute inset-0 w-[1194px] h-[834px] border-0 pointer-events-none filter blur-[3px]" src="05-stitch-轮播首页.html" tabindex="-1" aria-hidden="true"></iframe>
+<!-- ================= 黑色/暗米色毛玻璃弹窗全屏遮罩 ================= -->
+<div class="absolute inset-0 w-[1194px] h-[834px] bg-[#2B2B38]/65 backdrop-blur-md z-40 transition-all flex items-center justify-center">
+<!-- ================= 中央主面板：960 x 650 大圆角糖果白底 ================= -->
+<div class="relative w-[968px] h-[648px] bg-white rounded-[36px] shadow-[0_24px_50px_rgba(0,0,0,0.35),0_10px_0_#e8ddc7] border-4 border-white flex flex-col justify-between p-7 box-border z-50">
+<!-- 1. 面板顶部 Header (高度约 60px) -->
+<div class="flex items-center justify-between pb-3 border-b-2 border-stone-100">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center text-2xl shadow-inner">
+            ✨
+          </div>
+<div>
+<h1 class="text-[32px] font-black tracking-tight text-[#2B2B38] leading-tight flex items-center gap-2">
+              欢迎新的小守卫！
+              <span class="text-3xl">🎉</span>
+</h1>
+<p class="text-[17px] font-bold text-[#8C857A]">
+              选个喜欢的小动物，一起去汉字世界保卫家园吧！
+            </p>
+</div>
+</div>
+<!-- 右上角 56px 糖果厚底关闭按钮 -->
+<button aria-label="关闭面板" class="w-14 h-14 rounded-full bg-stone-100 active:bg-stone-200 text-[#8C857A] hover:text-[#2B2B38] flex items-center justify-center text-2xl font-black shadow-[0_4px_0_#d5cfc4] active:translate-y-1 active:shadow-none transition-all duration-150 cursor-pointer" type="button">
+<span class="material-symbols-outlined text-[28px] font-bold">close</span>
+</button>
+</div>
+<!-- 2. 面板主体 (左右两栏) -->
+<div class="flex gap-6 mt-3 flex-1 items-stretch">
+<!-- 左栏：300px 实时预览卡片 -->
+<div class="w-[304px] bg-[#FAF2DE]/80 rounded-[30px] p-4 flex flex-col items-center justify-between border-2 border-[#EEDBBA] subtle-depth-shadow">
+<!-- 实时预览小标 -->
+<div class="w-full flex items-center justify-between px-2 pt-1">
+<span class="text-[20px] font-black text-[#2B2B38] flex items-center gap-1.5">
+<span>👀</span> 实时卡片预览
+            </span>
+<span class="text-[14px] bg-amber-200/90 text-amber-900 px-2.5 py-0.5 rounded-full font-bold">
+              即时联动
+            </span>
+</div>
+<!-- 精致完整拟物卡片 (与主页同款样式) -->
+<div class="w-full bg-white rounded-[26px] p-4 flex flex-col items-center relative card-depth-shadow border-2 border-amber-100 my-1">
+<!-- 顶部角标：新伙伴黄绿徽章 -->
+<div class="absolute -top-3 left-4 bg-gradient-to-r from-emerald-500 to-lime-500 text-white text-[15px] font-black px-3.5 py-0.5 rounded-full shadow-md flex items-center gap-1 border-2 border-white">
+<span>🌱</span> 新伙伴
+            </div>
+<!-- 头像大圆形底座 (100px) -->
+<div class="relative mt-2 mb-2">
+<div class="w-[100px] h-[100px] rounded-full bg-gradient-to-b from-amber-100 to-amber-200 flex items-center justify-center text-[54px] shadow-inner border-4 border-amber-300">
+<span id="preview-avatar">🐨</span>
+</div>
+<!-- Lv.1 徽章 -->
+<div class="absolute -bottom-1 -right-1 bg-amber-400 text-amber-950 font-black text-[14px] px-2.5 py-0.5 rounded-full border-2 border-white shadow">
+                Lv.1
+              </div>
+</div>
+<!-- 名字展示 -->
+<div class="text-[30px] font-black text-[#2B2B38] tracking-wide leading-tight" id="preview-name">
+              小树
+            </div>
+<!-- 年级胶囊 -->
+<div class="mt-1.5">
+<span class="bg-[#E6F7EF] text-[#247359] border border-[#A7E2C9] text-[16px] font-black px-4 py-1 rounded-full inline-block shadow-sm" id="preview-grade">
+                二年级
+              </span>
+</div>
+<!-- 状态药丸 (横排两列) -->
+<div class="grid grid-cols-2 gap-2 w-full mt-3">
+<div class="bg-amber-50 rounded-xl py-1.5 px-2 flex items-center justify-center gap-1 text-[15px] font-black text-amber-800 border border-amber-200/60">
+<span>🔥</span> 连续 0 天
+              </div>
+<div class="bg-sky-50 rounded-xl py-1.5 px-2 flex items-center justify-center gap-1 text-[15px] font-black text-sky-800 border border-sky-200/60">
+<span>⭐</span> 闯关 0 次
+              </div>
+</div>
+<!-- 模拟不可点浅绿厚底按钮 -->
+<div class="w-full mt-3.5">
+<div class="w-full h-11 rounded-2xl bg-emerald-100/90 text-emerald-700/80 font-black text-[18px] flex items-center justify-center gap-1.5 border border-emerald-200/90 shadow-[0_3px_0_#c4e4d5]">
+<span>▶</span> 开始守护！
+              </div>
+</div>
+</div>
+<!-- 卡片下方小提示 -->
+<p class="text-[15px] font-bold text-[#8C857A] flex items-center gap-1 pb-1">
+<span>✨</span> 建好后会出现在首页轮播哦
+          </p>
+</div>
+<!-- 右栏：三步表单配置 -->
+<div class="flex-1 flex flex-col justify-between py-0.5 pl-2">
+<!-- 步骤 1：选头像 (2行5列) -->
+<div>
+<div class="flex items-center gap-2 mb-2">
+<span class="w-7 h-7 rounded-full bg-[#F28C2E] text-white font-black text-[17px] flex items-center justify-center shadow-[0_2px_0_#c2610d]">
+                1
+              </span>
+<h2 class="text-[20px] font-black text-[#2B2B38]">选一个头像伴侣</h2>
+<span class="text-[15px] font-bold text-[#8C857A] ml-1">（点击随意更换）</span>
+</div>
+<!-- 10个头像网格 -->
+<div class="grid grid-cols-5 gap-3 max-w-[580px]">
+<button class="avatar-option h-[62px] rounded-2xl bg-stone-50 hover:bg-amber-50 active:translate-y-0.5 border-2 border-stone-200 flex items-center justify-center text-[38px] relative avatar-btn-shadow transition-all" onclick="selectAvatar('🐯', this)" type="button">
+                🐯
+              </button>
+<button class="avatar-option h-[62px] rounded-2xl bg-stone-50 hover:bg-amber-50 active:translate-y-0.5 border-2 border-stone-200 flex items-center justify-center text-[38px] relative avatar-btn-shadow transition-all" onclick="selectAvatar('🐼', this)" type="button">
+                🐼
+              </button>
+<button class="avatar-option h-[62px] rounded-2xl bg-stone-50 hover:bg-amber-50 active:translate-y-0.5 border-2 border-stone-200 flex items-center justify-center text-[38px] relative avatar-btn-shadow transition-all" onclick="selectAvatar('🦊', this)" type="button">
+                🦊
+              </button>
+<button class="avatar-option h-[62px] rounded-2xl bg-stone-50 hover:bg-amber-50 active:translate-y-0.5 border-2 border-stone-200 flex items-center justify-center text-[38px] relative avatar-btn-shadow transition-all" onclick="selectAvatar('🐰', this)" type="button">
+                🐰
+              </button>
+<!-- 默认选中：🐨 -->
+<button class="avatar-option h-[62px] rounded-2xl bg-amber-50 border-[3.5px] border-[#F28C2E] flex items-center justify-center text-[38px] relative shadow-[0_4px_0_#c2610d] ring-4 ring-amber-200/80 transition-all scale-105 z-10" onclick="selectAvatar('🐨', this)" type="button">
+                🐨
+<span class="check-badge absolute -top-2 -right-2 w-6 h-6 bg-emerald-500 rounded-full text-white text-[14px] font-black flex items-center justify-center border-2 border-white shadow">
+                  ✓
+                </span>
+</button>
+<button class="avatar-option h-[62px] rounded-2xl bg-stone-50 hover:bg-amber-50 active:translate-y-0.5 border-2 border-stone-200 flex items-center justify-center text-[38px] relative avatar-btn-shadow transition-all" onclick="selectAvatar('🦁', this)" type="button">
+                🦁
+              </button>
+<button class="avatar-option h-[62px] rounded-2xl bg-stone-50 hover:bg-amber-50 active:translate-y-0.5 border-2 border-stone-200 flex items-center justify-center text-[38px] relative avatar-btn-shadow transition-all" onclick="selectAvatar('🐸', this)" type="button">
+                🐸
+              </button>
+<button class="avatar-option h-[62px] rounded-2xl bg-stone-50 hover:bg-amber-50 active:translate-y-0.5 border-2 border-stone-200 flex items-center justify-center text-[38px] relative avatar-btn-shadow transition-all" onclick="selectAvatar('🐧', this)" type="button">
+                🐧
+              </button>
+<button class="avatar-option h-[62px] rounded-2xl bg-stone-50 hover:bg-amber-50 active:translate-y-0.5 border-2 border-stone-200 flex items-center justify-center text-[38px] relative avatar-btn-shadow transition-all" onclick="selectAvatar('🦄', this)" type="button">
+                🦄
+              </button>
+<button class="avatar-option h-[62px] rounded-2xl bg-stone-50 hover:bg-amber-50 active:translate-y-0.5 border-2 border-stone-200 flex items-center justify-center text-[38px] relative avatar-btn-shadow transition-all" onclick="selectAvatar('🐳', this)" type="button">
+                🐳
+              </button>
+</div>
+</div>
+<!-- 步骤 2：名字或小名 -->
+<div>
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-2">
+<span class="w-7 h-7 rounded-full bg-[#F28C2E] text-white font-black text-[17px] flex items-center justify-center shadow-[0_2px_0_#c2610d]">
+                  2
+                </span>
+<label class="text-[20px] font-black text-[#2B2B38]" for="guard-name-input">名字或小名</label>
+</div>
+<span class="text-[16px] font-bold text-[#8C857A]">最多 6 个汉字</span>
+</div>
+<div class="relative w-full">
+<input class="w-full h-16 bg-[#FAF2DE]/80 hover:bg-[#FAF2DE] focus:bg-white text-[24px] font-black text-[#2B2B38] px-5 pr-14 rounded-2xl border-[3px] border-amber-300 focus:border-[#F28C2E] focus:ring-4 focus:ring-amber-200/70 focus:outline-none transition-all placeholder-stone-400 shadow-inner" id="guard-name-input" maxlength="6" oninput="updateNamePreview(this.value)" placeholder="例如：乐乐、朵朵" type="text" value="小树"/>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none flex items-center justify-center">
+<span class="material-symbols-outlined text-[26px]">edit</span>
+</div>
+</div>
+</div>
+<!-- 步骤 3：几年级 -->
+<div>
+<div class="flex items-center gap-2 mb-2">
+<span class="w-7 h-7 rounded-full bg-[#F28C2E] text-white font-black text-[17px] flex items-center justify-center shadow-[0_2px_0_#c2610d]">
+                3
+              </span>
+<h2 class="text-[20px] font-black text-[#2B2B38]">读几年级啦？</h2>
+<span class="text-[15px] font-bold text-[#8C857A]">（系统会匹配最适合的字词关卡）</span>
+</div>
+<div class="grid grid-cols-4 gap-2.5 max-w-[580px]">
+<button class="grade-tab h-[52px] py-2.5 rounded-2xl bg-stone-100 hover:bg-stone-200/80 active:translate-y-0.5 text-[#2B2B38] text-[18px] font-black tab-unselected-shadow transition-all" onclick="selectGrade('中班', this)" type="button">
+                中班
+              </button>
+<button class="grade-tab h-[52px] py-2.5 rounded-2xl bg-stone-100 hover:bg-stone-200/80 active:translate-y-0.5 text-[#2B2B38] text-[18px] font-black tab-unselected-shadow transition-all" onclick="selectGrade('大班', this)" type="button">
+                大班
+              </button>
+<button class="grade-tab h-[52px] py-2.5 rounded-2xl bg-stone-100 hover:bg-stone-200/80 active:translate-y-0.5 text-[#2B2B38] text-[18px] font-black tab-unselected-shadow transition-all" onclick="selectGrade('一年级', this)" type="button">
+                一年级
+              </button>
+<button class="grade-tab h-[52px] py-2.5 rounded-2xl bg-[#F28C2E] text-white text-[18px] font-black candy-orange-shadow scale-[1.02] transition-all" onclick="selectGrade('二年级', this)" type="button">
+                二年级
+              </button>
+<button class="grade-tab h-[52px] py-2.5 rounded-2xl bg-stone-100 hover:bg-stone-200/80 active:translate-y-0.5 text-[#2B2B38] text-[18px] font-black tab-unselected-shadow transition-all" onclick="selectGrade('三年级', this)" type="button">
+                三年级
+              </button>
+<button class="grade-tab h-[52px] py-2.5 rounded-2xl bg-stone-100 hover:bg-stone-200/80 active:translate-y-0.5 text-[#2B2B38] text-[18px] font-black tab-unselected-shadow transition-all" onclick="selectGrade('四年级', this)" type="button">
+                四年级
+              </button>
+<button class="grade-tab h-[52px] py-2.5 rounded-2xl bg-stone-100 hover:bg-stone-200/80 active:translate-y-0.5 text-[#2B2B38] text-[18px] font-black tab-unselected-shadow transition-all" onclick="selectGrade('五年级', this)" type="button">
+                五年级
+              </button>
+<button class="grade-tab h-[52px] py-2.5 rounded-2xl bg-stone-100 hover:bg-stone-200/80 active:translate-y-0.5 text-[#2B2B38] text-[18px] font-black tab-unselected-shadow transition-all" onclick="selectGrade('六年级', this)" type="button">
+                六年级
+              </button>
+</div>
+</div>
+</div>
+</div>
+<!-- 3. 面板底部操作栏 -->
+<div class="pt-3 border-t-2 border-stone-100 flex items-center justify-between mt-2">
+<div class="flex items-center gap-2 text-[#8C857A] pl-2">
+<span class="text-xl">💡</span>
+<span class="text-[17px] font-bold">随时可以在主页点击头像铅笔修改年级和名字</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="h-16 w-36 rounded-2xl bg-stone-100 hover:bg-stone-200/90 active:bg-stone-300 text-[#2B2B38] font-black text-[20px] shadow-[0_4px_0_#d1cbbf] active:translate-y-1 active:shadow-none transition-all duration-150 flex items-center justify-center cursor-pointer" type="button">
+            再想想
+          </button>
+<button class="h-[70px] w-56 rounded-2xl bg-[#3DA885] hover:bg-[#349877] text-white font-black text-[25px] tracking-wide candy-btn-shadow transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer" id="submit-btn" onclick="submitProfile()" type="button">
+<span>建好啦！</span>
+<span class="text-2xl">✨</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- 轻量交互：头像、名字、年级与预览卡联动 -->
+<script>
+    function selectAvatar(emoji, buttonElement) {
+      document.getElementById('preview-avatar').textContent = emoji;
+      const allAvatars = document.querySelectorAll('.avatar-option');
+      allAvatars.forEach(btn => {
+        btn.className = "avatar-option h-[62px] rounded-2xl bg-stone-50 hover:bg-amber-50 active:translate-y-0.5 border-2 border-stone-200 flex items-center justify-center text-[38px] relative avatar-btn-shadow transition-all";
+        const badge = btn.querySelector('.check-badge');
+        if (badge) badge.remove();
+      });
+      buttonElement.className = "avatar-option h-[62px] rounded-2xl bg-amber-50 border-[3.5px] border-[#F28C2E] flex items-center justify-center text-[38px] relative shadow-[0_4px_0_#c2610d] ring-4 ring-amber-200/80 transition-all scale-105 z-10";
+      const checkBadge = document.createElement('span');
+      checkBadge.className = "check-badge absolute -top-2 -right-2 w-6 h-6 bg-emerald-500 rounded-full text-white text-[14px] font-black flex items-center justify-center border-2 border-white shadow";
+      checkBadge.textContent = "✓";
+      buttonElement.appendChild(checkBadge);
+    }
+
+    function updateNamePreview(value) {
+      const trimmed = value.trim();
+      document.getElementById('preview-name').textContent = trimmed.length > 0 ? trimmed : "小守卫";
+      document.getElementById('submit-btn').disabled = trimmed.length === 0;
+      document.getElementById('submit-btn').classList.toggle('opacity-40', trimmed.length === 0);
+    }
+
+    function selectGrade(gradeName, buttonElement) {
+      document.getElementById('preview-grade').textContent = gradeName;
+      const allTabs = document.querySelectorAll('.grade-tab');
+      allTabs.forEach(tab => {
+        tab.className = "grade-tab h-[52px] py-2.5 rounded-2xl bg-stone-100 hover:bg-stone-200/80 active:translate-y-0.5 text-[#2B2B38] text-[18px] font-black tab-unselected-shadow transition-all";
+      });
+      buttonElement.className = "grade-tab h-[52px] py-2.5 rounded-2xl bg-[#F28C2E] text-white text-[18px] font-black candy-orange-shadow scale-[1.02] transition-all";
+    }
+
+    function submitProfile() {
+      const btn = document.getElementById('submit-btn');
+      btn.innerHTML = `<span>成功啦！🌱</span>`;
+    }
+  </script>
+</body></html>

@@ -48,6 +48,7 @@ public struct BadgeKind: Codable, Identifiable, Sendable, Equatable {
 
 /// 外观槽位。道具皮肤每个道具各占一个位置，所以装备时按 `CosmeticKind.equipKey` 区分
 public enum CosmeticSlot: String, Codable, CaseIterable, Identifiable, Sendable {
+    case defenderSkin, enemySkin
     /// 普通豌豆类（orb）子弹
     case projectile
     /// 僵尸被打败的特效
@@ -59,6 +60,8 @@ public enum CosmeticSlot: String, Codable, CaseIterable, Identifiable, Sendable 
 
     public var displayName: String {
         switch self {
+        case .defenderSkin: "射手皮肤"
+        case .enemySkin: "僵尸皮肤"
         case .projectile: "子弹外观"
         case .defeat: "僵尸退场"
         case .itemSkin: "道具皮肤"
@@ -67,6 +70,8 @@ public enum CosmeticSlot: String, Codable, CaseIterable, Identifiable, Sendable 
 
     public var icon: String {
         switch self {
+        case .defenderSkin: "🌱"
+        case .enemySkin: "🧟"
         case .projectile: "🟢"
         case .defeat: "💥"
         case .itemSkin: "🎒"
@@ -120,9 +125,10 @@ public struct CosmeticKind: Codable, Identifiable, Sendable, Equatable {
     public var projectile: ProjectilePayload?
     public var defeat: DefeatEffect?
     public var itemSkin: ItemSkin?
+    public var characterSkin: CharacterSkin? = nil
 
     /// 「原版」：不替换任何东西，选它等于卸下
-    public var isOriginal: Bool { projectile == nil && defeat == nil && itemSkin == nil }
+    public var isOriginal: Bool { projectile == nil && defeat == nil && itemSkin == nil && characterSkin == nil }
 
     /// 同一个位置只能装一件
     public var equipKey: String {
@@ -212,9 +218,10 @@ public struct GrowthCatalog: Sendable {
                 return false
             }
             let matches: Bool = switch item.slot {
-            case .projectile: item.defeat == nil && item.itemSkin == nil
-            case .defeat: item.projectile == nil && item.itemSkin == nil
-            case .itemSkin: item.itemSkin != nil && UnitCatalog.item(id: item.itemSkin!.item) != nil
+            case .defenderSkin, .enemySkin: item.projectile == nil && item.defeat == nil && item.itemSkin == nil
+            case .projectile: item.defeat == nil && item.itemSkin == nil && item.characterSkin == nil
+            case .defeat: item.projectile == nil && item.itemSkin == nil && item.characterSkin == nil
+            case .itemSkin: item.itemSkin != nil && UnitCatalog.item(id: item.itemSkin!.item) != nil && item.characterSkin == nil
             }
             let valid = matches && item.unlockLevel >= 1 && item.price >= 0
             if !valid { issues.append("外观「\(item.name)」的槽位、内容、等级或价格不对，已忽略") }

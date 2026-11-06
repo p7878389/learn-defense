@@ -139,6 +139,17 @@ public final class AppModel: ObservableObject {
         return store
     }
 
+    /// 首页卡片用的游玩概况（来自对局记录）；数据库不可用或读取失败时当作没玩过
+    func playActivity(for profileID: UUID) -> PlayActivity {
+        guard let database else { return .none }
+        do {
+            return try database.playActivity(profileID: profileID)
+        } catch {
+            print("读取游玩记录失败：\(error)")
+            return .none
+        }
+    }
+
     /// 一局的对局记录器：答题明细先记在内存里，结束或中途退出时写进数据库
     func recorder(for config: GameConfig) -> GameRecorder {
         GameRecorder(

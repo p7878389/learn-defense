@@ -45,6 +45,11 @@ extension LearnDatabase {
         return try context.fetch(descriptor)
     }
 
+    /// 首页卡片用的游玩概况：最近一次游玩时间、连续游玩天数（含中途退出的对局）
+    public func playActivity(profileID: UUID, now: Date = Date(), calendar: Calendar = .current) throws -> PlayActivity {
+        PlayActivity(playedAt: try games(profileID: profileID).map(\.startedAt), now: now, calendar: calendar)
+    }
+
     /// 一局的答题明细，按出题顺序
     public func answers(gameID: UUID) throws -> [StoredAnswer] {
         let gid = gameID.uuidString

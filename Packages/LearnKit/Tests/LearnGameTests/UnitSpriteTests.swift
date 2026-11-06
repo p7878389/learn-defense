@@ -33,6 +33,8 @@ struct UnitSpriteTests {
             let node = DefenderNode(kind: kind, radius: 34)
             let sprite = try #require(node.childNode(withName: "//unitSprite") as? SKSpriteNode, "\(kind.id)")
             #expect(sprite.texture != nil)
+            // 土豆雷埋着时只有一帧，出土后才动起来
+            if case .mine = kind.guardStyle { node.arm() }
             #expect(sprite.action(forKey: "idle") != nil)
             #expect(sprite.size.width <= 80 && sprite.size.height <= 80)
         }

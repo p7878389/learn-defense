@@ -32,10 +32,39 @@ public struct GameTuning: Sendable {
     public var generator: GeneratorSettings
     /// 每条路上的字灵，下标就是路号
     public var lineup: [DefenderKind]
+    /// 能种的防御道具（坚果墙、土豆雷…），耐久和出土题数按难度调好
+    public var guards: [DefenderKind]
+    /// 战斗中花阳光放在当前僵尸面前的路障；nil 表示这一档不提供
+    public var barricade: DefenderKind?
+    /// 会跳的僵尸能不能跳过矮墙（幼儿园关掉，免得孩子看不懂为什么没挡住）
+    public var wallsCanBeVaulted: Bool
     public var waves: WavePlan
 
     /// hearts 为 nil 表示不会失败，怪物走到头只会退回去
     public var canLose: Bool { hearts != nil }
+
+    /// 卡牌栏里能拖到草坪上的全部卡牌：射手在前，防御道具在后
+    public var plantable: [DefenderKind] { lineup + guards }
+
+    /// 一档难度里防御道具的数值
+    struct GuardNumbers {
+        var wall: Double
+        var tallWall: Double
+        var mineArmAfter: Int
+        var gate: Double
+
+        /// tall 为 false 时不提供高坚果
+        func guards(tall: Bool) -> [DefenderKind] {
+            let mine = GuardStyle.mine(armAfter: mineArmAfter, bossDamage: 1)
+            return [DefenderKind.wallnut.guarding(.wall(seconds: wall, tall: false))]
+                + (tall ? [DefenderKind.tallnut.guarding(.wall(seconds: tallWall, tall: true))] : [])
+                + [DefenderKind.potato.guarding(mine)]
+        }
+
+        var barricade: DefenderKind {
+            DefenderKind.ironGate.guarding(.wall(seconds: gate, tall: true))
+        }
+    }
 
     public static func make(grade: Grade, difficulty: Difficulty, pacing: PacingConfig = GrowthCatalog.bundled.pacing) -> GameTuning {
         let questions = pacing.questionBudget(grade: grade, difficulty: difficulty)
@@ -53,6 +82,10 @@ public struct GameTuning: Sendable {
                 generator: GeneratorSettings(
                     optionCount: [2, 3, 3][i], strategy: .easy, showHint: true, preschool: true),
                 lineup: [.starling, .inkling, .frost],
+                // 幼儿园不会失败，只给坚果墙和土豆雷，也不让僵尸跳墙
+                guards: GuardNumbers(wall: 20, tallWall: 40, mineArmAfter: 1, gate: 12).guards(tall: false),
+                barricade: nil,
+                wallsCanBeVaulted: false,
                 // 幼儿园的怪物都只要答对一次
                 waves: WavePlan(mix: [
                     WavePlan.Entry(.blob, weight: 3),
@@ -61,6 +94,10 @@ public struct GameTuning: Sendable {
                 ]))
         }
         let lineup: [DefenderKind] = [.frost, .twin, .inkling, .stroke, .starling]
+        let numbers: GuardNumbers = switch difficulty {
+        case .easy, .normal: GuardNumbers(wall: 15, tallWall: 30, mineArmAfter: 2, gate: 10)
+        case .hard: GuardNumbers(wall: 12, tallWall: 25, mineArmAfter: 3, gate: 8)
+        }
         switch difficulty {
         case .easy:
             return GameTuning(
@@ -68,6 +105,9 @@ public struct GameTuning: Sendable {
                 startingSun: 250, ultimateEnergy: 5, ultimate: .inkStorm,
                 generator: GeneratorSettings(optionCount: 3, strategy: .easy, showHint: true, preschool: false),
                 lineup: lineup,
+                guards: numbers.guards(tall: true),
+                barricade: numbers.barricade,
+                wallsCanBeVaulted: true,
                 waves: WavePlan(mix: [
                     WavePlan.Entry(.blob, weight: 4),
                     WavePlan.Entry(.hopper, weight: 2),
@@ -79,6 +119,9 @@ public struct GameTuning: Sendable {
                 startingSun: 300, ultimateEnergy: 5, ultimate: .inkStorm,
                 generator: GeneratorSettings(optionCount: 4, strategy: .normal, showHint: false, preschool: false),
                 lineup: lineup,
+                guards: numbers.guards(tall: true),
+                barricade: numbers.barricade,
+                wallsCanBeVaulted: true,
                 waves: WavePlan(mix: [
                     WavePlan.Entry(.blob, weight: 4),
                     WavePlan.Entry(.hopper, weight: 2),
@@ -91,6 +134,9 @@ public struct GameTuning: Sendable {
                 startingSun: 350, ultimateEnergy: 5, ultimate: .inkStorm,
                 generator: GeneratorSettings(optionCount: 4, strategy: .hard, showHint: false, preschool: false),
                 lineup: lineup,
+                guards: numbers.guards(tall: true),
+                barricade: numbers.barricade,
+                wallsCanBeVaulted: true,
                 waves: WavePlan(mix: [
                     WavePlan.Entry(.blob, weight: 3),
                     WavePlan.Entry(.hopper, weight: 2),
