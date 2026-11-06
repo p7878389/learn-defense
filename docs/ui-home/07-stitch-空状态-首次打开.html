@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=1194, height=834, initial-scale=1.0, user-scalable=no" name="viewport"/>
+<title>字灵守卫 - 欢迎来到字灵王国</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Nunito Sans & ZCOOL KuaiLe (for friendly display) -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&amp;family=ZCOOL+KuaiLe&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            paper: "#FAF2DE",
+            emeraldTheme: "#3DA885",
+            forestTheme: "#247359",
+            goldenTheme: "#FFC93C",
+            goldStroke: "#E0A100",
+            inkText: "#2B2B38",
+            subText: "#8C857A",
+          },
+          borderRadius: {
+            "DEFAULT": "1rem",
+            "lg": "2rem",
+            "xl": "3rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Nunito Sans", "ZCOOL KuaiLe", "sans-serif"],
+            display: ["ZCOOL KuaiLe", "Nunito Sans", "sans-serif"],
+            body: ["Nunito Sans", "sans-serif"],
+            label: ["Nunito Sans", "sans-serif"]
+          }
+        },
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+      line-height: 1;
+      display: inline-block;
+    }
+
+    /* 3D 文字描边立体效果 */
+    .brand-title-3d {
+      color: #FF7A00;
+      text-shadow:
+        0 2px 0 #FFF,
+        0 4px 0 #EA580C,
+        0 7px 0 #C2410C,
+        0 10px 14px rgba(194, 65, 12, 0.35);
+      -webkit-text-stroke: 1.5px #FFFFFF;
+    }
+
+    /* 糖果微浮动动画 */
+    @keyframes float-gentle {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-7px) rotate(2deg); }
+    }
+    @keyframes float-reverse {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-9px) rotate(-3deg); }
+    }
+    @keyframes twinkle {
+      0%, 100% { transform: scale(0.8); opacity: 0.4; }
+      50% { transform: scale(1.2); opacity: 1; }
+    }
+    @keyframes peek-zombie {
+      0%, 100% { transform: rotate(0deg) translateY(0); }
+      50% { transform: rotate(-3deg) translateY(-5px); }
+    }
+
+    .animate-float-gentle {
+      animation: float-gentle 4s ease-in-out infinite;
+    }
+    .animate-float-reverse {
+      animation: float-reverse 4.5s ease-in-out infinite;
+    }
+    .animate-twinkle {
+      animation: twinkle 2.5s ease-in-out infinite;
+    }
+    .animate-peek {
+      animation: peek-zombie 3.2s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="bg-[#FAF2DE] text-[#2B2B38] font-body flex items-center justify-center min-h-screen p-0 m-0 select-none overflow-hidden">
+<!-- iPad 横屏固定安全视口 1194 x 834 绝对一屏免滚动 -->
+<main class="relative w-[1194px] h-[834px] max-w-[1194px] max-h-[834px] overflow-hidden bg-[#FAF2DE] shadow-2xl flex flex-col justify-between">
+<!-- 背景光效渐变层 -->
+<div class="absolute inset-0 pointer-events-none z-0">
+<div class="absolute top-0 left-0 right-0 h-[380px] bg-gradient-to-b from-[#DDF1FF]/80 via-[#EDF7FC]/40 to-transparent"></div>
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[52%] w-[680px] h-[680px] bg-[radial-gradient(circle,rgba(255,243,196,0.95)_0%,rgba(255,235,170,0.4)_50%,transparent_75%)] rounded-full blur-2xl"></div>
+<div class="absolute top-36 left-48 text-3xl animate-twinkle text-amber-400">✨</div>
+<div class="absolute top-52 left-28 text-2xl animate-twinkle text-amber-300" style="animation-delay: 1.2s;">⭐</div>
+<div class="absolute top-32 right-56 text-3xl animate-twinkle text-amber-400" style="animation-delay: 0.7s;">✨</div>
+<div class="absolute top-64 right-36 text-2xl animate-twinkle text-amber-300" style="animation-delay: 1.8s;">🌟</div>
+<div class="absolute top-44 left-64 text-3xl animate-float-gentle">🦋</div>
+<div class="absolute top-60 right-64 text-2xl animate-float-reverse">🦋</div>
+</div>
+<!-- 顶部栏 -->
+<header class="relative z-20 w-full h-[104px] px-10 flex items-center justify-between pt-2">
+<div class="w-40 flex items-center"></div>
+<div class="flex flex-col items-center justify-center text-center -mt-1">
+<h1 class="brand-title-3d font-display text-[46px] font-black tracking-widest leading-none drop-shadow-md">
+          字灵守卫
+        </h1>
+<p class="font-headline font-black text-[20px] text-[#4A3E3D] tracking-wider mt-1.5 flex items-center gap-1.5">
+<span>今天谁来守护书本？</span>
+<span class="text-amber-500">📖</span>
+</p>
+</div>
+<div class="w-40 flex justify-end">
+<button class="flex items-center gap-1.5 px-4 py-2 bg-white/80 hover:bg-white text-[#8C857A] hover:text-[#57534E] text-[14px] font-bold rounded-full shadow-[0_2px_6px_rgba(0,0,0,0.06)] border border-stone-200/90 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[17px] text-[#8C857A]" data-icon="lock">lock</span>
+<span>家长专区</span>
+</button>
+</div>
+</header>
+<!-- 中央：欢迎建档卡片（无侧卡、无箭头、无分页点） -->
+<section class="relative z-10 flex-1 flex items-center justify-center -mt-3">
+<div class="relative w-[400px] h-[510px] bg-white rounded-[36px] border-4 border-amber-300/80 shadow-[0_16px_36px_rgba(242,140,46,0.16),0_7px_0_#F59E0B] p-7 flex flex-col items-center justify-between transition-transform hover:-translate-y-1 duration-300">
+<div class="absolute -top-3.5 px-4 py-1 bg-amber-400 text-white font-display text-sm font-black rounded-full shadow-[0_2px_0_#D97706] tracking-wide flex items-center gap-1">
+<span>🌱</span> 新守卫报到处
+        </div>
+<!-- 1. 空位剪影 -->
+<div class="w-full flex flex-col items-center pt-2">
+<div class="flex items-end justify-center gap-3.5 mb-1 py-1">
+<div class="w-[72px] h-[72px] rounded-full border-[3px] border-dashed border-amber-300/80 bg-amber-50/60 flex items-center justify-center text-amber-300/80 shadow-inner group">
+<span class="text-2xl opacity-40 font-black">❔</span>
+</div>
+<div class="relative w-[92px] h-[92px] rounded-full border-4 border-dashed border-amber-400 bg-amber-100/70 flex items-center justify-center text-amber-500 shadow-inner -translate-y-1">
+<div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[13px] px-2 py-0.5 rounded-full font-black shadow-[0_2px_0_#059669] flex items-center gap-0.5">
+<span>🌱</span>
+</div>
+<span class="text-3xl font-black opacity-70">❔</span>
+</div>
+<div class="w-[72px] h-[72px] rounded-full border-[3px] border-dashed border-amber-300/80 bg-amber-50/60 flex items-center justify-center text-amber-300/80 shadow-inner">
+<span class="text-2xl opacity-40 font-black">❔</span>
+</div>
+</div>
+</div>
+<!-- 2. 标题与说明 -->
+<div class="text-center px-2 flex flex-col items-center">
+<h2 class="font-headline font-black text-[34px] text-[#292524] tracking-tight leading-tight">
+            还没有小守卫
+          </h2>
+<p class="font-body text-[19px] text-[#78716C] font-semibold leading-relaxed mt-2.5">
+            先给孩子建一张卡，<br/>
+            就可以开始守护书本啦
+          </p>
+</div>
+<!-- 3. 主按钮与提示 -->
+<div class="w-full flex flex-col items-center gap-3 pb-1">
+<button class="w-full h-[72px] bg-gradient-to-b from-[#FBBF24] via-[#F59E0B] to-[#D97706] hover:from-[#FCD34D] hover:to-[#B45309] text-white font-headline font-black text-[25px] rounded-full shadow-[0_8px_0_#92400E] active:translate-y-2 active:shadow-none transition-all flex items-center justify-center gap-2.5 tracking-wider cursor-pointer group">
+<span class="w-9 h-9 rounded-full bg-white/25 flex items-center justify-center text-white text-2xl leading-none font-black shadow-inner group-hover:rotate-90 transition-transform duration-300">＋</span>
+<span>添加第一个小朋友</span>
+</button>
+<div class="flex items-center gap-1.5 text-[#8C857A] text-[14px] font-bold">
+<span class="material-symbols-outlined text-[17px] text-amber-500" data-icon="lightbulb">lightbulb</span>
+<span>请爸爸妈妈帮忙填写名字和年级</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 底部草坪 -->
+<footer class="relative z-20 w-full h-[84px]">
+<div class="absolute -top-16 left-12 flex items-end gap-3 pointer-events-none">
+<div class="flex flex-col items-center">
+<div class="px-3.5 py-1.5 bg-[#854D0E] text-[#FEF3C7] rounded-xl border-2 border-[#FEF08A] shadow-[0_4px_0_#532906] font-display text-sm font-black flex items-center gap-1">
+<span>📚</span> 字灵书阁
+          </div>
+<div class="w-2 h-4 bg-[#713F12]"></div>
+</div>
+<div class="text-4xl animate-float-gentle drop-shadow-md pb-1" title="太阳向日葵">
+          🌻
+        </div>
+<div class="text-4xl animate-bounce drop-shadow-md pb-1" style="animation-duration: 2.2s;" title="小字灵射手">
+          🌱
+        </div>
+</div>
+<div class="absolute -top-16 right-16 flex items-end gap-2 pointer-events-none animate-peek">
+<div class="flex flex-col items-center -mr-2 mb-3">
+<div class="bg-amber-100 text-[#78350F] px-2.5 py-1 rounded-lg border-2 border-[#92400E] shadow-[0_3px_0_#78350F] font-headline font-black text-xs text-center leading-tight">
+<span class="block text-[10px] text-amber-600">zì</span>
+<span class="text-sm font-black">字</span>
+</div>
+<div class="w-1.5 h-3 bg-[#78350F]"></div>
+</div>
+<div class="text-5xl drop-shadow-md select-none" title="小僵尸在张望">
+          🧟
+        </div>
+<div class="bg-white/95 px-2 py-0.5 rounded-full text-[11px] font-bold text-stone-600 shadow-sm border border-stone-200 mb-9 -ml-1">
+          想吃知识!
+        </div>
+</div>
+<div class="w-full h-full bg-gradient-to-t from-[#2E8B57] via-[#3DA885] to-[#48BF91] rounded-t-[32px] border-t-4 border-[#A7F3D0] shadow-[inset_0_4px_8px_rgba(255,255,255,0.4)] flex items-center justify-between px-16 relative overflow-hidden">
+<div class="absolute inset-0 flex items-center justify-around opacity-90 pointer-events-none">
+<span class="text-xl">🌼</span>
+<span class="text-lg">🍀</span>
+<span class="text-sm opacity-70">🌿</span>
+<span class="text-xl">🌸</span>
+<span class="text-lg">🍀</span>
+<span class="text-base opacity-75">🌿</span>
+<span class="text-xl">🌼</span>
+<span class="text-lg">🍀</span>
+<span class="text-xl">🌸</span>
+</div>
+<div class="w-full flex items-center justify-center gap-2 text-white/95 font-headline font-extrabold text-[15px] drop-shadow-sm tracking-wide z-10">
+<span class="w-2 h-2 rounded-full bg-amber-300 animate-ping"></span>
+<span>守卫防线已就绪 · 创建小守卫即刻开启汉字魔法大冒险</span>
+</div>
+</div>
+</footer>
+</main>
+</body></html>

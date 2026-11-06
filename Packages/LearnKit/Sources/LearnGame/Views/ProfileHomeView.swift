@@ -67,9 +67,7 @@ struct ProfileHomeView: View {
         .sheet(isPresented: $showWrongBook) {
             if let profile { WrongBookView(profile: profile, progress: model.progress(for: profile.id)) }
         }
-        .sheet(item: $editing) { item in
-            ProfileEditor(profile: item.profile, isNew: false) { model.save($0) }
-        }
+        .profileEditorCover(item: $editing) { model.save($0) }
     }
 
     @ViewBuilder

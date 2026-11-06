@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>字灵守卫 - 战场防线沙盘</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: ZCOOL KuaiLe & Nunito & Noto Sans SC -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&amp;family=Nunito:wght@700;800;900&amp;family=Noto+Sans+SC:wght@500;700;900&amp;family=Public+Sans:wght@700;900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#F28C2E",
+            "background-light": "#f8f7f5",
+            "background-dark": "#221910",
+            paper: '#FAF3E0',
+            brandOrange: '#F28C2E',
+            inkText: '#2B2B38',
+            grassGreen: '#70BF44',
+            darkGrass: '#52962D',
+            dirtEarth: '#8A5528',
+            skyLight: '#DCF1FF',
+          },
+          fontFamily: {
+            game: ['"ZCOOL KuaiLe"', '"Noto Sans SC"', 'sans-serif'],
+            sans: ['"Noto Sans SC"', '"Nunito"', 'sans-serif'],
+            display: ['"Public Sans"', '"Noto Sans SC"', 'sans-serif']
+          },
+          borderRadius: {
+            "DEFAULT": "1rem",
+            "lg": "2rem",
+            "xl": "3rem",
+            "full": "9999px"
+          },
+          boxShadow: {
+            'candy': '0 8px 0 rgba(0,0,0,0.12), 0 16px 24px -4px rgba(0,0,0,0.08)',
+            'candy-lg': '0 10px 0 #D97706, 0 20px 28px -4px rgba(242, 140, 46, 0.35)',
+            'candy-btn': '0 7px 0 #C26117, 0 12px 18px rgba(194, 97, 23, 0.35)',
+            'slot-grass': 'inset 0 6px 12px rgba(0,0,0,0.18), 0 8px 0 #478426',
+            'slot-active': 'inset 0 4px 8px rgba(245,158,11,0.2), 0 10px 0 #B45309, 0 0 25px rgba(245,158,11,0.45)',
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    /* 游戏字灵专属立体厚重文字 */
+    .game-logo-title {
+      font-family: 'ZCOOL KuaiLe', 'Noto Sans SC', sans-serif;
+      color: #F28C2E;
+      text-shadow:
+        -3px -3px 0 #FFFFFF,
+         3px -3px 0 #FFFFFF,
+        -3px  3px 0 #FFFFFF,
+         3px  3px 0 #FFFFFF,
+        -5px  0   0 #FFFFFF,
+         5px  0   0 #FFFFFF,
+         0   -5px 0 #FFFFFF,
+         0    5px 0 #FFFFFF,
+         0    8px 0 #C26117,
+         0    13px 6px rgba(74, 30, 2, 0.28);
+    }
+
+    /* 3D草坪战壕沙盘多层立体透视 */
+    .battlefield-ground {
+      background: linear-gradient(180deg, #81D34D 0%, #68B63A 40%, #52962D 100%);
+      box-shadow: inset 0 6px 0 rgba(255,255,255,0.4), 0 -8px 24px rgba(0,0,0,0.06);
+    }
+    .dirt-layer {
+      background: linear-gradient(180deg, #6B3F1B 0%, #502E12 100%);
+      border-top: 4px solid #8B5424;
+    }
+
+    /* 地台3D凹凸质感 */
+    .hero-plinth {
+      transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .hero-plinth:hover {
+      transform: translateY(-6px);
+    }
+
+    /* 糖果按键厚底按下态 */
+    .btn-candy-action {
+      box-shadow: 0 8px 0 #B45309, 0 16px 20px rgba(180, 83, 9, 0.35);
+      transition: all 0.15s ease;
+    }
+    .btn-candy-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 0 #B45309, 0 20px 24px rgba(180, 83, 9, 0.4);
+    }
+    .btn-candy-action:active {
+      transform: translateY(6px);
+      box-shadow: 0 2px 0 #B45309, 0 6px 10px rgba(180, 83, 9, 0.3);
+    }
+
+    .parent-btn {
+      box-shadow: 0 6px 0 #D6D3D1, 0 10px 15px rgba(0,0,0,0.06);
+      transition: all 0.15s ease;
+    }
+    .parent-btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #D6D3D1;
+    }
+
+    /* 浮动动画 */
+    @keyframes heroFloat {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-7px) rotate(1deg); }
+    }
+    .animate-hero-float {
+      animation: heroFloat 3.8s ease-in-out infinite;
+    }
+
+    @keyframes shineHalo {
+      0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.75; }
+      50% { transform: scale(1.1) rotate(180deg); opacity: 0.95; }
+    }
+    .animate-halo {
+      animation: shineHalo 14s linear infinite;
+    }
+
+    @keyframes zombiePeep {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      30% { transform: translateY(-4px) rotate(-3deg); }
+      70% { transform: translateY(2px) rotate(2deg); }
+    }
+    .animate-zombie {
+      animation: zombiePeep 4.5s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="bg-[#F8F4E8] text-inkText w-screen h-screen overflow-hidden select-none flex flex-col justify-between relative font-sans">
+<!-- ==================== 顶部远景氛围（晨光蓝天、浮云、微风） ==================== -->
+<div class="absolute inset-x-0 top-0 h-64 bg-gradient-to-b from-[#D8F0FF] via-[#EBF7FF]/70 to-transparent pointer-events-none z-0"></div>
+<!-- 背景小浮云 -->
+<div class="absolute top-5 left-12 opacity-80 pointer-events-none z-0">
+<svg fill="none" height="42" viewbox="0 0 140 48" width="130">
+<path d="M25 40C15 40 8 33 8 24C8 16 14 10 22 9C26 4 33 0 42 0C53 0 62 7 64 16C68 14 73 13 78 13C90 13 100 22 100 33C105 33 110 37 110 42C110 42 25 42 25 40Z" fill="white" fill-opacity="0.88"></path>
+<circle cx="112" cy="30" fill="white" fill-opacity="0.75" r="14"></circle>
+</svg>
+</div>
+<div class="absolute top-7 right-28 opacity-75 pointer-events-none z-0">
+<svg fill="none" height="48" viewbox="0 0 170 56" width="150">
+<path d="M30 46C18 46 10 38 10 27C10 18 17 11 27 10C31 4 40 0 51 0C64 0 75 8 77 18C82 16 88 15 94 15C108 15 120 25 120 38C126 38 132 42 132 48Z" fill="white" fill-opacity="0.85"></path>
+<circle cx="134" cy="36" fill="white" fill-opacity="0.75" r="16"></circle>
+</svg>
+</div>
+<!-- ==================== 顶部导航栏 (iPad 1194宽适配) ==================== -->
+<header class="w-full pt-5 px-8 flex justify-between items-center z-30 relative shrink-0">
+<!-- 左侧：精美糖果质感药丸 -->
+<div class="flex items-center">
+<div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/95 border-2 border-amber-300 text-amber-900 font-extrabold text-sm shadow-[0_4px_0_#FBBF24,0_8px_12px_rgba(251,191,36,0.2)]">
+<span class="text-lg">🛡️</span>
+<span class="tracking-wide font-game text-base text-amber-950">字灵守卫 iPad 版</span>
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse ml-0.5"></span>
+</div>
+</div>
+<!-- 中间：大号立体 Logo + 彩虹渐变可爱副标题气泡 -->
+<div class="flex flex-col items-center justify-center text-center -mt-1">
+<h1 class="game-logo-title text-5xl tracking-wider select-none leading-tight">
+        字灵守卫
+      </h1>
+<div class="mt-1 px-5 py-1.5 rounded-full bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400 text-white font-black text-sm tracking-wide shadow-md border-2 border-white flex items-center gap-1.5 animate-bounce" style="animation-duration: 3s;">
+<span>⚔️</span>
+<span>今天谁来守卫书本？选择你的出战小英雄！</span>
+<span>✨</span>
+</div>
+</div>
+<!-- 右上角：大触控高对比度 家长专区 (长按解锁，高度≥56px，带糖果厚阴影) -->
+<div class="flex items-center justify-end">
+<button class="parent-btn min-h-[56px] px-6 rounded-2xl bg-white border-[3px] border-stone-300 hover:border-amber-400 hover:bg-stone-50 text-stone-700 font-black text-sm flex items-center gap-2.5 cursor-pointer select-none">
+<span class="text-2xl filter drop-shadow">👨‍👩‍👧</span>
+<div class="text-left flex flex-col">
+<span class="text-stone-900 leading-snug">家长专区</span>
+<span class="text-[11px] font-bold text-amber-600 leading-none">长按解锁 🔒</span>
+</div>
+</button>
+</div>
+</header>
+<!-- ==================== 核心战场场景 (横向草坪沙盘 Diorama) ==================== -->
+<main class="w-full flex-1 max-w-[1240px] mx-auto px-6 z-20 flex items-center justify-between gap-3 my-auto overflow-visible relative">
+<!-- ----------------- 场景左侧：守卫藏书屋 / 守卫书库基地 ----------------- -->
+<div class="w-[200px] shrink-0 flex flex-col items-center relative z-20">
+<!-- 金光阳光充能魔法阵光环 -->
+<div class="absolute -top-10 w-44 h-44 rounded-full bg-gradient-to-tr from-amber-300/35 via-yellow-200/40 to-transparent blur-xl pointer-events-none animate-halo"></div>
+<!-- 守卫知识光盾飘标 -->
+<div class="mb-2 px-3 py-1 rounded-full bg-amber-500 text-white font-black text-xs shadow-md border-2 border-white flex items-center gap-1 animate-pulse">
+<span>☀️</span> 向日葵充能中
+      </div>
+<!-- 立体精装藏书屋碉堡主体 -->
+<div class="w-full bg-[#FAF0D7] border-4 border-[#8B5424] rounded-[28px] p-3.5 shadow-[0_8px_0_#693A14,0_16px_25px_rgba(105,58,20,0.25)] flex flex-col items-center relative">
+<!-- 屋顶/牌匾 -->
+<div class="w-full py-1.5 px-2 bg-gradient-to-r from-[#D97706] to-[#B45309] rounded-xl border border-amber-300 text-center shadow-inner mb-2.5">
+<span class="font-game text-sm text-white tracking-widest flex items-center justify-center gap-1">
+<span>🛡️</span> 守卫书库
+          </span>
+</div>
+<!-- 书架陈列（泛着知识金色流光） -->
+<div class="w-full bg-[#E8D4B0] border-2 border-[#AA6D35] rounded-2xl p-2.5 flex items-end justify-center gap-1.5 relative shadow-inner h-28">
+<!-- 魔法光尘点缀 -->
+<div class="absolute top-1 left-2 text-xs">✨</div>
+<div class="absolute top-2 right-2 text-xs">⭐</div>
+<!-- 精装立书 -->
+<div class="w-6 h-[88px] bg-rose-500 rounded-t-lg border-2 border-rose-700 shadow-sm flex items-center justify-center text-[11px] text-white font-black [writing-mode:vertical-rl] transform hover:-translate-y-1 transition-transform">
+            语文
+          </div>
+<div class="w-5 h-20 bg-amber-400 rounded-t-lg border-2 border-amber-600 shadow-sm flex items-center justify-center text-[10px] text-amber-950 font-black [writing-mode:vertical-rl] transform hover:-translate-y-1 transition-transform">
+            识字
+          </div>
+<div class="w-6 h-24 bg-sky-500 rounded-t-lg border-2 border-sky-700 shadow-sm flex items-center justify-center text-[11px] text-white font-black [writing-mode:vertical-rl] transform hover:-translate-y-1 transition-transform">
+            故事
+          </div>
+<div class="w-5 h-[76px] bg-emerald-500 rounded-t-lg border-2 border-emerald-700 shadow-sm flex items-center justify-center text-[10px] text-white font-black [writing-mode:vertical-rl] transform hover:-translate-y-1 transition-transform">
+            诗词
+          </div>
+</div>
+<!-- 藏书屋底部守卫能量向日葵 -->
+<div class="mt-2.5 flex items-center gap-2 bg-amber-100/90 border border-amber-300/80 px-2.5 py-1 rounded-full w-full justify-center">
+<span class="text-xl filter drop-shadow">🌻</span>
+<span class="text-[11px] font-black text-amber-900">知识宝库 100%</span>
+</div>
+</div>
+<!-- 支撑地基木桩 -->
+<div class="w-28 h-3 bg-[#693A14] rounded-b-xl shadow-md"></div>
+</div>
+<!-- ----------------- 场景中部：草坪阵线格子 / 小英雄守卫出战地台 ----------------- -->
+<div class="flex-1 flex items-center justify-center gap-[18px] px-2 relative z-20">
+<!-- ================= 英雄 1：小虎（当前选中 / 上次是你） ================= -->
+<div class="hero-plinth flex flex-col items-center cursor-pointer group">
+<!-- 皇冠悬浮勋带 -->
+<div class="relative z-30 -mb-3 flex items-center gap-1 px-4 py-1 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 text-white font-black text-xs shadow-lg border-2 border-white animate-hero-float">
+<span>👑</span> 上次是你 · 首席先锋
+        </div>
+<!-- 小虎出战立牌卡片 (高对比金色厚边框，金光地台环绕) -->
+<div class="w-[214px] bg-white rounded-[32px] border-4 border-amber-400 p-4 pt-5 flex flex-col items-center justify-between shadow-candy-lg relative overflow-visible">
+<!-- 背后金色向日葵神圣光环 -->
+<div class="absolute -top-6 inset-x-0 mx-auto w-36 h-36 bg-amber-300/30 rounded-full blur-md pointer-events-none"></div>
+<!-- 英雄头像台座：老虎头戴向日葵冠 + 绿芽发带 -->
+<div class="relative mt-1">
+<div class="w-24 h-24 rounded-full bg-gradient-to-b from-amber-100 to-orange-200 border-4 border-amber-400 flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform relative">
+<!-- 头戴小向日葵皇冠装饰 -->
+<span class="absolute -top-3 left-1/2 -translate-x-1/2 text-2xl filter drop-shadow">🌻</span>
+<span class="text-5xl filter drop-shadow">🐯</span>
+</div>
+<!-- 等级勋章 -->
+<span class="absolute -bottom-1 -right-1 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black text-xs border-2 border-white shadow-md">
+              Lv.5
+            </span>
+</div>
+<!-- 英雄名字与年级标签 -->
+<div class="flex flex-col items-center mt-2">
+<h2 class="text-2xl font-black text-inkText tracking-tight group-hover:text-amber-600 transition-colors">
+              小虎
+            </h2>
+<div class="mt-1 px-3 py-0.5 rounded-full bg-amber-100 text-amber-900 text-xs font-black border border-amber-200">
+              三年级守卫
+            </div>
+</div>
+<!-- 战绩胶囊 -->
+<div class="w-full mt-2 py-1 px-2 rounded-xl bg-amber-50 border border-amber-200 text-center text-[11px] font-extrabold text-amber-800">
+            ⭐ 已闯关 12 次 · 战力全开
+          </div>
+<!-- 大号糖果出战按钮（≥68px舒适触控，主操作） -->
+<button class="w-full mt-3 min-h-[68px] rounded-2xl bg-gradient-to-b from-amber-400 via-orange-500 to-orange-600 text-white font-black text-lg tracking-wide border-2 border-amber-200 flex items-center justify-center gap-2 btn-candy-action cursor-pointer">
+<span class="text-2xl">🌟</span>
+<span>派小虎出战！</span>
+</button>
+</div>
+<!-- 3D 绿色金光草地地台台座 -->
+<div class="w-48 h-6 bg-[#68B63A] rounded-full -mt-3 border-4 border-[#8FE06A] shadow-slot-active flex items-center justify-center">
+<span class="text-[10px] text-amber-950 font-black tracking-widest opacity-80">✦ 首发出战位 ✦</span>
+</div>
+</div>
+<!-- ================= 英雄 2：朵朵（粉萌兔子英雄） ================= -->
+<div class="hero-plinth flex flex-col items-center cursor-pointer group">
+<div class="w-[188px] bg-white/95 hover:bg-white rounded-[28px] border-[3px] border-stone-200 hover:border-pink-300 p-3.5 flex flex-col items-center justify-between shadow-candy relative">
+<!-- 头像：萌兔 + 粉红柔光底座 -->
+<div class="relative mt-2">
+<div class="w-20 h-20 rounded-full bg-gradient-to-b from-pink-100 to-pink-200 border-[3px] border-pink-300 flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform">
+<span class="text-4xl filter drop-shadow">🐰</span>
+</div>
+<span class="absolute -bottom-1 -right-1 px-2 py-0.5 rounded-full bg-pink-500 text-white font-black text-[11px] border-2 border-white shadow">
+              Lv.3
+            </span>
+</div>
+<div class="flex flex-col items-center mt-2">
+<h2 class="text-xl font-black text-inkText tracking-tight group-hover:text-pink-600 transition-colors">
+              朵朵
+            </h2>
+<div class="mt-1 px-2.5 py-0.5 rounded-full bg-pink-50 text-pink-700 text-xs font-bold border border-pink-200">
+              大班
+            </div>
+</div>
+<div class="w-full mt-2 py-1 px-1 rounded-xl bg-stone-50 border border-stone-100 text-center text-[11px] font-bold text-stone-500">
+            🔥 昨天来过
+          </div>
+<!-- 切换选择按键 -->
+<button class="w-full mt-3 min-h-[52px] rounded-xl bg-pink-50 hover:bg-pink-500 hover:text-white text-pink-600 font-black text-sm border-2 border-pink-200 hover:border-pink-500 transition-all flex items-center justify-center gap-1 shadow-sm active:translate-y-1">
+<span>🌸</span> 选朵朵
+          </button>
+</div>
+<!-- 草地莲花台台座 -->
+<div class="w-40 h-5 bg-[#5EA832] rounded-full -mt-2 border-2 border-[#7BCF4A] shadow-slot-grass flex items-center justify-center">
+<span class="text-[9px] text-emerald-950 font-bold opacity-70">🌸 莲花防守台</span>
+</div>
+</div>
+<!-- ================= 英雄 3：圆圆（憨态熊猫英雄） ================= -->
+<div class="hero-plinth flex flex-col items-center cursor-pointer group">
+<div class="w-[188px] bg-white/95 hover:bg-white rounded-[28px] border-[3px] border-stone-200 hover:border-emerald-400 p-3.5 flex flex-col items-center justify-between shadow-candy relative">
+<!-- 头像：熊猫 + 竹林翠绿底座 -->
+<div class="relative mt-2">
+<div class="w-20 h-20 rounded-full bg-gradient-to-b from-emerald-100 to-emerald-200 border-[3px] border-emerald-300 flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform">
+<span class="text-4xl filter drop-shadow">🐼</span>
+</div>
+<span class="absolute -bottom-1 -right-1 px-2 py-0.5 rounded-full bg-emerald-600 text-white font-black text-[11px] border-2 border-white shadow">
+              Lv.4
+            </span>
+</div>
+<div class="flex flex-col items-center mt-2">
+<h2 class="text-xl font-black text-inkText tracking-tight group-hover:text-emerald-700 transition-colors">
+              圆圆
+            </h2>
+<div class="mt-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-200">
+              一年级
+            </div>
+</div>
+<div class="w-full mt-2 py-1 px-1 rounded-xl bg-stone-50 border border-stone-100 text-center text-[11px] font-bold text-stone-500">
+            🌱 已读 45 个字
+          </div>
+<!-- 切换选择按键 -->
+<button class="w-full mt-3 min-h-[52px] rounded-xl bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-700 font-black text-sm border-2 border-emerald-200 hover:border-emerald-600 transition-all flex items-center justify-center gap-1 shadow-sm active:translate-y-1">
+<span>🎋</span> 选圆圆
+          </button>
+</div>
+<!-- 竹林小土台台座 -->
+<div class="w-40 h-5 bg-[#5EA832] rounded-full -mt-2 border-2 border-[#7BCF4A] shadow-slot-grass flex items-center justify-center">
+<span class="text-[9px] text-emerald-950 font-bold opacity-70">🎋 竹林防御台</span>
+</div>
+</div>
+<!-- ================= 卡片 4：草坪召唤法阵木牌桩（召唤新伙伴 / 添加孩子） ================= -->
+<div class="hero-plinth flex flex-col items-center cursor-pointer group">
+<div class="w-[188px] min-h-[295px] bg-[#FAF3DE] hover:bg-white rounded-[28px] border-[3px] border-dashed border-[#B47F46] hover:border-amber-500 p-3.5 flex flex-col items-center justify-center text-center shadow-candy transition-colors relative">
+<!-- 法阵光芒圆形大「＋」按键 (≥64px 舒适触控) -->
+<div class="w-16 h-16 rounded-full bg-white border-[3px] border-[#B47F46] group-hover:border-amber-500 group-hover:bg-amber-500 group-hover:text-white text-[#8C5D2A] flex items-center justify-center shadow-md group-hover:scale-110 transition-all">
+<svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="3.5" viewbox="0 0 24 24">
+<path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<h2 class="mt-3 text-lg font-black text-amber-950 group-hover:text-amber-600 transition-colors">
+            召唤新守卫
+          </h2>
+<span class="mt-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold">
+            添加孩子
+          </span>
+<p class="mt-3 text-[11px] font-bold text-stone-400">
+            长按可以编辑小英雄
+          </p>
+</div>
+<!-- 召唤符石地台 -->
+<div class="w-40 h-5 bg-[#825B34] rounded-full -mt-2 border-2 border-[#A37344] shadow-slot-grass flex items-center justify-center">
+<span class="text-[9px] text-amber-100 font-bold opacity-80">✨ 符文法阵桩</span>
+</div>
+</div>
+</div>
+<!-- ----------------- 场景右侧远景：迷雾与木栅栏外，呆萌小僵尸探头 ----------------- -->
+<div class="w-[185px] shrink-0 flex flex-col items-center relative z-20">
+<!-- 僵尸搞笑气泡说明 -->
+<div class="mb-1 px-3 py-1 bg-white/95 rounded-full border-2 border-teal-300 text-[11px] font-black text-stone-700 shadow-md flex items-center gap-1 animate-zombie">
+<span>🧟‍♂️</span> 想偷字...学拼音！
+      </div>
+<!-- 迷雾木栅栏防线防守带 -->
+<div class="w-full bg-[#E4F3EE]/95 border-[3px] border-[#52967A] rounded-[26px] p-3 flex flex-col items-center shadow-[0_8px_0_#376C56,0_16px_22px_rgba(55,108,86,0.2)] relative">
+<!-- 木栅栏装饰插片 -->
+<div class="w-full flex justify-between px-1 -mt-5 mb-1 z-30">
+<div class="w-3.5 h-6 bg-[#A36D3A] rounded-t-sm border border-[#643F17]"></div>
+<div class="w-3.5 h-7 bg-[#A36D3A] rounded-t-sm border border-[#643F17]"></div>
+<div class="w-3.5 h-6 bg-[#A36D3A] rounded-t-sm border border-[#643F17]"></div>
+<div class="w-3.5 h-7 bg-[#A36D3A] rounded-t-sm border border-[#643F17]"></div>
+</div>
+<!-- 呆萌小僵尸本体（手举写有「偷字」的木旗） -->
+<div class="flex items-center justify-center gap-2 mt-1">
+<!-- 手举的小旗子「字」 -->
+<div class="flex flex-col items-center -mr-1 transform -rotate-12">
+<div class="px-2 py-1 bg-[#FDE68A] border-2 border-[#D97706] rounded-md shadow-sm text-center">
+<span class="font-game text-xs font-black text-amber-950 block leading-none">字</span>
+<span class="text-[8px] font-bold text-amber-800">zì</span>
+</div>
+<div class="w-1 h-5 bg-[#92400E] rounded-b"></div>
+</div>
+<!-- 呆萌小僵尸面孔 -->
+<div class="w-16 h-16 rounded-2xl bg-gradient-to-b from-teal-100 to-teal-200 border-[3px] border-teal-400 flex items-center justify-center shadow-inner transform hover:rotate-6 transition-transform">
+<span class="text-4xl filter drop-shadow">🧟‍♂️</span>
+</div>
+</div>
+<div class="mt-2 text-center">
+<span class="inline-block px-2.5 py-0.5 rounded-full bg-teal-800/80 text-teal-100 text-[10px] font-bold">
+            排队求知的小怪
+          </span>
+</div>
+<!-- 射手字灵弹预备防卫标 -->
+<div class="mt-2 w-full py-1 rounded-xl bg-teal-50 border border-teal-200/80 flex items-center justify-center gap-1 text-[11px] font-black text-teal-800">
+<span>🌱</span> 豌豆射手已锁定
+        </div>
+</div>
+<!-- 地基桩 -->
+<div class="w-24 h-3 bg-[#376C56] rounded-b-xl shadow-md"></div>
+</div>
+</main>
+<!-- ==================== 底部：战场横截面草坪沙盘 & 泥土层 (横跨全屏) ==================== -->
+<footer class="w-full relative z-10 shrink-0 select-none">
+<!-- 草坪上方指引提示条 -->
+<div class="w-full flex justify-center -mb-3 z-30 relative pointer-events-none">
+<div class="inline-flex items-center gap-2.5 px-6 py-2 rounded-full bg-white/95 border-2 border-amber-300 shadow-[0_4px_10px_rgba(0,0,0,0.08)] pointer-events-auto">
+<span class="text-lg">👆</span>
+<span class="text-xs font-black text-stone-700 tracking-wide">
+          点击小英雄即可直接开战！答对汉字神枪击退小僵尸 🎯
+        </span>
+<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-[10px]">
+          极速载入中
+        </span>
+</div>
+</div>
+<!-- 战场横截面草坪（上层绿茵沙盘 + 点缀花朵草丛） -->
+<div class="w-full h-16 battlefield-ground relative flex items-center justify-between px-10 pt-2 z-10">
+<!-- 草坪点缀 -->
+<div class="flex items-center gap-3 text-xs opacity-90 filter drop-shadow-xs">
+<span>🌼</span>
+<span class="text-white font-black text-[11px] bg-emerald-800/40 px-2 py-0.5 rounded-full border border-emerald-600/40">🌿 第一防线：阳光汉字阵</span>
+<span>🌸</span>
+</div>
+<!-- 守卫战队快捷道具小徽章 -->
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-900/40 text-emerald-100 text-xs font-black border border-emerald-500/40 shadow-xs">
+<span>🌻</span> 向日葵产光
+        </div>
+<div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-900/40 text-emerald-100 text-xs font-black border border-emerald-500/40 shadow-xs">
+<span>🌱</span> 豌豆字灵弹
+        </div>
+<div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-900/40 text-emerald-100 text-xs font-black border border-emerald-500/40 shadow-xs">
+<span>🛡️</span> 知识铁壁盾
+        </div>
+</div>
+<div class="flex items-center gap-2 text-xs opacity-90 filter drop-shadow-xs">
+<span>🍀</span>
+<span>🌼</span>
+</div>
+</div>
+<!-- 底部泥土层横截面 (纯正战场切面，标注文案) -->
+<div class="w-full h-8 dirt-layer flex items-center justify-between px-8 text-stone-300 text-[10px] font-bold tracking-wider z-10">
+<span>🌱 专为 4~12 岁儿童设计 · 纯净无广告 · 护眼大字排版</span>
+<span class="text-stone-400">Microsoft Fluent Emoji (MIT 许可) · 字灵守卫教育沙盘</span>
+</div>
+</footer>
+</body></html>
