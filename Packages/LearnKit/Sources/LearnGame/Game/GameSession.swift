@@ -193,7 +193,7 @@ final class GameSession: ObservableObject {
             } else {
                 score += 2
             }
-            feedback.play(correct: true)
+            feedback.play(correct: true, volume: speech.effectsVolume)
 
             enemyQuestions[id] = nil
             enemyWrongPicks[id] = nil
@@ -209,7 +209,7 @@ final class GameSession: ObservableObject {
                     scene.setSign(id, next.question.signText)
                     current = next.question
                     wrongPicks = []
-                    speech.speak(next.question.promptSpeech, interrupt: false)
+                    speech.speak(next.question.promptSpeech, interrupt: false, channel: .question)
                 } else {
                     scene.fire(at: id, overwhelming: true)
                 }
@@ -227,13 +227,13 @@ final class GameSession: ObservableObject {
             picks.insert(index)
             enemyWrongPicks[id] = picks
             wrongPicks = picks
-            feedback.play(correct: false)
+            feedback.play(correct: false, volume: speech.effectsVolume)
             scene.penalize(id)
         }
     }
 
     func replayPrompt() {
-        speech.speak((ultimate ?? current)?.promptSpeech, interrupt: true)
+        speech.speak((ultimate ?? current)?.promptSpeech, interrupt: true, channel: .preview)
     }
 
     // MARK: - 大招
@@ -245,7 +245,7 @@ final class GameSession: ObservableObject {
         ultimateWrongPicks = []
         ultimateShownAt = Date()
         scene.setGamePaused(true)
-        speech.speak(pair.1.promptSpeech, interrupt: true)
+        speech.speak(pair.1.promptSpeech, interrupt: true, channel: .question)
     }
 
     func answerUltimate(_ index: Int) {
@@ -256,7 +256,7 @@ final class GameSession: ObservableObject {
                 progress.record(item, correct: true)
                 recorder?.recordAnswer(question, chosenIndex: index, ultimate: true, shownAt: ultimateShownAt)
             }
-            feedback.play(correct: true)
+            feedback.play(correct: true, volume: speech.effectsVolume)
             ultimate = nil
             ultimateItem = nil
             energy = 0
@@ -277,7 +277,7 @@ final class GameSession: ObservableObject {
                 recorder?.recordAnswer(question, chosenIndex: index, ultimate: true, shownAt: ultimateShownAt)
             }
             ultimateWrongPicks.insert(index)
-            feedback.play(correct: false)
+            feedback.play(correct: false, volume: speech.effectsVolume)
         }
     }
 
@@ -510,7 +510,7 @@ extension GameSession: GameSceneDelegate {
         current = id.flatMap { enemyQuestions[$0]?.question }
         if let id, current != nil, shownAt[id] == nil { shownAt[id] = Date() }
         wrongPicks = id.flatMap { enemyWrongPicks[$0] } ?? []
-        speech.speak(current?.promptSpeech, interrupt: false)
+        speech.speak(current?.promptSpeech, interrupt: false, channel: .question)
     }
 
     func enemyReachedBase(_ id: Int) -> Bool {

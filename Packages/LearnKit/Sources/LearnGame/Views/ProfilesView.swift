@@ -74,12 +74,12 @@ struct ProfilesView: View {
                 Button {
                     showingVoiceSettings = true
                 } label: {
-                    Label("语音设置", systemImage: "speaker.wave.2.fill")
+                    Label("家长专区", systemImage: "gearshape.fill")
                 }
             }
         }
-        .sheet(isPresented: $showingVoiceSettings) {
-            VoiceSettingsView(library: model.speechLibrary)
+        .growthCover(isPresented: $showingVoiceSettings) {
+            ParentSettingsView()
         }
         .confirmationDialog(
             "删除「\(deleting?.name ?? "")」的档案？学习记录也会一起删除。",
