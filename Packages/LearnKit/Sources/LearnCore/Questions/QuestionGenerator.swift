@@ -40,6 +40,10 @@ public struct QuestionGenerator: Sendable {
             return choice(q, item.key, &rng)
         case .picture(let p):
             return listenPickPicture(p, item.key, &rng)
+        case .englishWord(let w):
+            return englishWord(w, item.key, &rng)
+        case .sentence(let s):
+            return sentenceMeaning(s, item.key, &rng)
         }
     }
 
@@ -163,7 +167,63 @@ public struct QuestionGenerator: Sendable {
             card: WordCard(picture: p.emoji, text: p.text, pinyin: p.pinyin.map(Pinyin.normalize)), &rng)
     }
 
+    /// 英语单词：看英文选意思、看意思选英文、听英文选单词（幼儿园只出听音题）
+    private func englishWord<R: RandomNumberGenerator>(_ w: EnglishWordItem, _ key: String, _ rng: inout R) -> Question? {
+        let kinds: [QuestionKind] = settings.preschool
+            ? [.listenPickEnglish]
+            : [.englishToMeaning, .meaningToEnglish, .listenPickEnglish]
+        let kind = kinds.randomElement(using: &rng)!
+        // 意思有重叠的词（hello「喂；你好」和 hi「嗨；你好」）不能互相当干扰项
+        let others = pool.englishWords.filter {
+            $0.word.lowercased() != w.word.lowercased() && !Self.sharesMeaning($0.meaning, w.meaning)
+        }.shuffled(using: &rng)
+        let answerSpeech = "\(w.word)，\(w.meaning)"
+        let explanation = [w.word, w.phonetic, w.meaning].compactMap { $0 }.joined(separator: " ")
+        let card = WordCard(text: w.word, pinyin: w.phonetic, detail: w.meaning)
+
+        switch kind {
+        case .englishToMeaning:
+            return build(
+                kind: kind, key: key, instruction: "选出正确的意思", prompt: w.word,
+                hint: settings.showHint ? w.phonetic : nil,
+                correct: w.meaning, distractors: others.map(\.meaning), style: .text,
+                answerSpeech: answerSpeech, explanation: explanation, card: card, &rng)
+        case .meaningToEnglish:
+            return build(
+                kind: kind, key: key, instruction: "选出正确的英文", prompt: w.meaning, hint: nil,
+                correct: w.word, distractors: others.map(\.word), style: .text,
+                answerSpeech: answerSpeech, explanation: explanation, card: card, &rng)
+        default:
+            return build(
+                kind: .listenPickEnglish, key: key, instruction: "听一听，是哪个单词？", prompt: "🔊", hint: nil,
+                correct: w.word, distractors: others.map(\.word), style: .text,
+                promptSpeech: w.word, answerSpeech: answerSpeech, explanation: explanation, card: card, &rng)
+        }
+    }
+
+    private func sentenceMeaning<R: RandomNumberGenerator>(_ s: SentenceItem, _ key: String, _ rng: inout R) -> Question? {
+        let others = pool.sentences
+            .filter { $0.sentence != s.sentence && $0.meaning != s.meaning }
+            .map(\.meaning).shuffled(using: &rng)
+        return build(
+            kind: .sentenceMeaning, key: key, instruction: "选出句子的意思", prompt: s.sentence, hint: nil,
+            correct: s.meaning, distractors: others, style: .text,
+            answerSpeech: s.sentence, explanation: "\(s.sentence) \(s.meaning)",
+            card: WordCard(text: s.sentence, detail: s.meaning), &rng)
+    }
+
     // MARK: - 工具
+
+    /// 两个中文意思是否有相同的义项（按「；」「，」「/」等拆开比较）
+    static func sharesMeaning(_ a: String, _ b: String) -> Bool {
+        let separators = CharacterSet(charactersIn: "；;，,、/／")
+        func senses(_ s: String) -> Set<String> {
+            Set(s.components(separatedBy: separators)
+                .map { $0.trimmingCharacters(in: .whitespaces) }
+                .filter { !$0.isEmpty })
+        }
+        return !senses(a).isDisjoint(with: senses(b))
+    }
 
     private func charCard(_ c: CharacterItem) -> WordCard {
         let words = (c.words ?? []).filter { $0.contains(c.char) && $0.count > 1 }

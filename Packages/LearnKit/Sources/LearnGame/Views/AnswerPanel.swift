@@ -118,9 +118,11 @@ struct OptionButton: View {
         if style == .emoji {
             PictureView(emoji: text, size: 92)
         } else {
+            // 句子意思这类长选项可以折成两行
             Text(text)
                 .font(.system(size: fontSize, weight: .bold, design: .rounded))
-                .lineLimit(1)
+                .lineLimit(text.count > 10 ? 2 : 1)
+                .multilineTextAlignment(.center)
                 .minimumScaleFactor(0.5)
                 .foregroundStyle(Theme.ink)
         }

@@ -10,6 +10,10 @@ public enum QuestionKind: String, Codable, Sendable {
     case choice             // 手写选择题
     case listenPickPicture  // 听音选图（幼儿园）
     case listenPickChar     // 听音选字（幼儿园）
+    case englishToMeaning   // 看英文选意思
+    case meaningToEnglish   // 看意思选英文
+    case listenPickEnglish  // 听英文选单词
+    case sentenceMeaning    // 选出英语句子的意思
 }
 
 public enum OptionStyle: Sendable {
