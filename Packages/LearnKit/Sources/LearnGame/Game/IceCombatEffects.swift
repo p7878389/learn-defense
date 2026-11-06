@@ -29,17 +29,22 @@ enum IceCombatEffects {
         motes.particleScale = 0.24
         aura.addChild(motes)
         defender.addChild(aura)
+        DiagLog.log("ice aura+ emitter=\(DiagLog.id(motes)) defender=\(DiagLog.id(defender))")
     }
 
-    static func trail(on bullet: SKNode, in layer: SKNode) -> SKEmitterNode {
+    /// 子弹尾迹：粒子挂在子弹上、随子弹一起移除。
+    /// 不用 targetNode、飞行途中也不把发射器挪出子弹——那样会在 SpriteKit 帧更新里改节点树，
+    /// 发射器释放后渲染层还引用着它的粒子，偶发闪退。
+    /// 粒子往后飞的速度补上子弹的飞行速度 speed，匀速直线飞行时等同于留在原地慢慢散开
+    static func trail(on bullet: SKNode, speed: CGFloat) -> SKEmitterNode {
         let trail = emitter(rate: 0, lifetime: 0.28)
         trail.name = "iceTrail"
-        trail.targetNode = layer
         trail.emissionAngle = .pi
         trail.emissionAngleRange = .pi / 3
-        trail.particleSpeed = 28
+        trail.particleSpeed = 28 + speed
         trail.particlePositionRange = CGVector(dx: 4, dy: 7)
         bullet.addChild(trail)
+        DiagLog.log("ice trail+ emitter=\(DiagLog.id(trail)) bullet=\(DiagLog.id(bullet)) speed=\(Int(speed))")
         return trail
     }
 
@@ -77,15 +82,10 @@ enum IceCombatEffects {
         shards.particleSpeedRange = 35
         shards.yAcceleration = -100
         layer.addChild(shards)
-        shards.run(.sequence([.wait(forDuration: 0.8), .removeFromParent()]))
-    }
-
-    /// 停止发射后保留已生成的粒子自然消散；外层节点仍负责最终清理。
-    static func finish(_ trail: SKEmitterNode, in layer: SKNode) {
-        trail.particleBirthRate = 0
-        trail.move(toParent: layer)
-        trail.zPosition = 50
-        trail.run(.sequence([.wait(forDuration: 0.35), .removeFromParent()]))
+        let shardsID = DiagLog.id(shards)
+        DiagLog.log("ice shards+ emitter=\(shardsID)")
+        shards.run(.sequence([.wait(forDuration: 0.8), .run { DiagLog.log("ice shards- emitter=\(shardsID)") },
+                              .removeFromParent()]))
     }
 
     private static func emitter(rate: CGFloat, lifetime: CGFloat) -> SKEmitterNode {

@@ -238,6 +238,14 @@ struct CombatAnimationTests {
         try clock.advance(seconds: 1.3)
         #expect(isFrame(body.texture, of: "plant-stroke"))
         #expect(body.action(forKey: SpriteRig.loopKey) != nil)
+        #expect(body.action(forKey: SpriteRig.onceKey) == nil, "发射动画播完自己结束")
+        // 闪退回归：连续发射时，上一次的回调回到待机不能删掉正在跑的动作；再打一轮仍能回到待机
+        plant.shoot()
+        try clock.advance(seconds: 0.2)
+        plant.shoot()
+        try clock.advance(seconds: 1.3)
+        #expect(isFrame(body.texture, of: "plant-stroke"))
+        #expect(body.action(forKey: SpriteRig.loopKey) != nil)
         // 没有发射动画的豌豆射手不受影响
         let pea = DefenderNode(kind: .inkling, radius: 34)
         pea.shoot()

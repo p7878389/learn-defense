@@ -287,6 +287,7 @@ final class EnemyNode: SKNode {
     /// 被打败：播放退场特效（默认用外观配置里的，孩子装备了退场外观时由场景传入）。
     /// 有序列帧时僵尸掉头倒下；burnt 为 true（大招）时整个烧焦
     func defeat(with effect: DefeatEffect? = nil, burnt: Bool = false) {
+        DiagLog.log("enemy defeat id=\(enemyID) kind=\(kind.id) node=\(DiagLog.id(self)) burnt=\(burnt) rig=\(rig != nil)")
         removeAllActions()
         if let parent {
             (effect ?? kind.look.defeat)
@@ -324,6 +325,7 @@ final class EnemyNode: SKNode {
 
     /// 走到书架：先啃两口，再钻进去消失
     func breakThrough() {
+        DiagLog.log("enemy breakThrough id=\(enemyID) kind=\(kind.id) node=\(DiagLog.id(self))")
         removeAction(forKey: "chomp")
         var steps: [SKAction] = []
         if let rig, let bite = biteClip {

@@ -46,6 +46,8 @@ final class GameScene: SKScene {
     private var spawningFinished = false
     private var built = false
     private(set) var gamePaused = false
+    /// 诊断日志：上次记录场景节点数量的时间
+    private var lastDiagStats: TimeInterval = 0
 
     private let baseX: CGFloat = 160
     private var spawnX: CGFloat { size.width - 45 }
@@ -66,7 +68,17 @@ final class GameScene: SKScene {
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
+    deinit {
+        DiagLog.log("scene deinit")
+    }
+
+    override func willMove(from view: SKView) {
+        DiagLog.log("scene willMove(from:) scene=\(DiagLog.id(self)) view=\(DiagLog.id(view))")
+        super.willMove(from: view)
+    }
+
     override func didMove(to view: SKView) {
+        DiagLog.log("scene didMove(to:) scene=\(DiagLog.id(self)) view=\(DiagLog.id(view)) built=\(built)")
         guard !built else { return }
         built = true
         buildBackground()
@@ -100,6 +112,10 @@ final class GameScene: SKScene {
     override func update(_ currentTime: TimeInterval) {
         let dt = lastUpdate == 0 ? 0 : min(currentTime - lastUpdate, 0.1)
         lastUpdate = currentTime
+        if currentTime - lastDiagStats >= 5 {
+            lastDiagStats = currentTime
+            logDiagStats()
+        }
         guard !gamePaused, dt > 0, let delegate = gameDelegate else { return }
         let factor = delegate.speedFactor
 
@@ -315,7 +331,21 @@ final class GameScene: SKScene {
         effect.play(at: point ?? CGPoint(x: size.width / 2, y: size.height / 2), in: self)
     }
 
+    /// 每 5 秒记一次场景里的节点数，闪退前最后一条能看出场面有多热闹
+    private func logDiagStats() {
+        #if DEBUG
+        var total = 0, emitters = 0, sprites = 0, shapes = 0
+        enumerateChildNodes(withName: ".//*") { node, _ in
+            total += 1
+            if node is SKEmitterNode { emitters += 1 } else if node is SKSpriteNode { sprites += 1 } else if node is SKShapeNode { shapes += 1 }
+        }
+        DiagLog.log("scene stats nodes=\(total) emitters=\(emitters) sprites=\(sprites) shapes=\(shapes) "
+            + "enemies=\(enemies.count) defenders=\(defenders.count) paused=\(gamePaused) speed=\(speed)")
+        #endif
+    }
+
     func setGamePaused(_ paused: Bool) {
+        DiagLog.log("scene setGamePaused(\(paused))")
         gamePaused = paused
         // speed 为 0 时动画也停下
         speed = paused ? 0 : 1
