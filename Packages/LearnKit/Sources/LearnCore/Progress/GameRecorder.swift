@@ -7,7 +7,7 @@ public enum GameOutcome: String, Codable, Sendable {
 }
 
 /// 一道题的第一次作答
-public struct AnswerRecord: Sendable, Equatable {
+public struct AnswerRecord: Codable, Sendable, Equatable {
     public var itemKey: String
     public var kind: QuestionKind
     public var prompt: String
@@ -73,7 +73,7 @@ public struct GameSummary: Sendable, Equatable {
 }
 
 /// 写进数据库的一局
-public struct GameRecord: Sendable, Equatable {
+public struct GameRecord: Codable, Sendable, Equatable {
     public var id: UUID
     public var profileID: UUID
     public var outcome: GameOutcome

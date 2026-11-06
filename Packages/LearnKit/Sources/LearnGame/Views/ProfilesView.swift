@@ -65,8 +65,8 @@ struct ProfilesView: View {
         }
         .onAppear(perform: refresh)
         .profileEditorCover(item: $editing, onSave: save, onDelete: delete)
-        .sheet(isPresented: $showingVoiceSettings) {
-            VoiceSettingsView(library: model.speechLibrary)
+        .growthCover(isPresented: $showingVoiceSettings) {
+            ParentSettingsView()
         }
     }
 
@@ -82,7 +82,7 @@ struct ProfilesView: View {
             }
             .frame(maxWidth: .infinity)
 
-            // 家长用的设置入口，灰白色，不抢孩子的注意力。现在只有朗读语音设置
+            // 家长专区入口，灰白色，不抢孩子的注意力；进入前要家长验证
             Button { showingVoiceSettings = true } label: {
                 Label("家长专区", systemImage: "lock.fill")
                     .font(.system(size: 16, weight: .bold, design: .rounded))
