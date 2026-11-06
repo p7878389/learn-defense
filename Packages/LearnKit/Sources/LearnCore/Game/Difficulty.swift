@@ -15,6 +15,14 @@ public enum Difficulty: String, Codable, CaseIterable, Identifiable, Sendable {
 }
 
 /// 一局游戏的参数，由年级和难度决定
+extension GameTuning {
+    /// 这个年级在任一难度下会上场的射手。射手没有单独的解锁，按年级决定能不能出场
+    public static func defenders(for grade: Grade) -> [DefenderKind] {
+        let ids = Set(Difficulty.allCases.flatMap { make(grade: grade, difficulty: $0).lineup.map(\.id) })
+        return UnitCatalog.defenders.filter { ids.contains($0.id) }
+    }
+}
+
 public struct GameTuning: Sendable {
     public var lanes: Int
     /// 一局的题量：所有怪物血量之和，按年级段和难度从节奏配置读取（不含大招题）

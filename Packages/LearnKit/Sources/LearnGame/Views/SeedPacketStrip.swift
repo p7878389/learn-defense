@@ -7,6 +7,8 @@ struct SeedPacketStrip: View {
     let sun: Int
     let enabled: Bool
     let draggingID: String?
+    /// 射手 id → 装备的皮肤，卡面跟着换
+    var skins: [String: CharacterSkin] = [:]
     let onDragChanged: (DefenderKind, CGPoint) -> Void
     let onDragEnded: (DefenderKind, CGPoint) -> Void
 
@@ -32,8 +34,8 @@ struct SeedPacketStrip: View {
         let affordable = sun >= kind.sunCost
         let available = enabled && affordable
         return VStack(spacing: 0) {
-            if let texture = UnitSprites.frames(named: "plant-\(kind.id)").first {
-                Image(decorative: texture.cgImage(), scale: 1)
+            if let image = UnitSprites.portrait(of: kind, skin: skins[kind.id]) {
+                Image(decorative: image, scale: 1)
                     .resizable().scaledToFit().frame(width: 38, height: 36)
             }
             Text(kind.name)

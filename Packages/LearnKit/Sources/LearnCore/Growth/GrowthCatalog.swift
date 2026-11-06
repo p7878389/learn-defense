@@ -126,6 +126,11 @@ public struct CosmeticKind: Codable, Identifiable, Sendable, Equatable {
     public var defeat: DefeatEffect?
     public var itemSkin: ItemSkin?
     public var characterSkin: CharacterSkin? = nil
+    /// 射手皮肤给哪种射手穿（DefenderKind.id）；不写就是豌豆射手。其他槽位不填
+    public var defender: String? = nil
+
+    /// 射手皮肤对应的射手
+    public var shooterID: String { defender ?? DefenderKind.inkling.id }
 
     /// 「原版」：不替换任何东西，选它等于卸下
     public var isOriginal: Bool { projectile == nil && defeat == nil && itemSkin == nil && characterSkin == nil }
@@ -133,6 +138,8 @@ public struct CosmeticKind: Codable, Identifiable, Sendable, Equatable {
     /// 同一个位置只能装一件
     public var equipKey: String {
         if let itemSkin { return "item.\(itemSkin.item)" }
+        // 每种射手各占一个位置；豌豆射手沿用最早的 "defenderSkin"，旧存档不用迁移
+        if slot == .defenderSkin, shooterID != DefenderKind.inkling.id { return "\(slot.rawValue).\(shooterID)" }
         return slot.rawValue
     }
 }
@@ -223,7 +230,8 @@ public struct GrowthCatalog: Sendable {
             case .defeat: item.projectile == nil && item.itemSkin == nil && item.characterSkin == nil
             case .itemSkin: item.itemSkin != nil && UnitCatalog.item(id: item.itemSkin!.item) != nil && item.characterSkin == nil
             }
-            let valid = matches && item.unlockLevel >= 1 && item.price >= 0
+            let target = item.slot == .defenderSkin ? UnitCatalog.defender(id: item.shooterID) != nil : item.defender == nil
+            let valid = matches && target && item.unlockLevel >= 1 && item.price >= 0
             if !valid { issues.append("外观「\(item.name)」的槽位、内容、等级或价格不对，已忽略") }
             return valid
         }
@@ -231,6 +239,11 @@ public struct GrowthCatalog: Sendable {
 
     public func cosmetics(in slot: CosmeticSlot) -> [CosmeticKind] {
         cosmetics.filter { $0.slot == slot }
+    }
+
+    /// 某种射手能穿的皮肤（含它的原版）
+    public func shooterSkins(for defenderID: String) -> [CosmeticKind] {
+        cosmetics(in: .defenderSkin).filter { $0.shooterID == defenderID }
     }
 
     public func cosmetic(id: String) -> CosmeticKind? {

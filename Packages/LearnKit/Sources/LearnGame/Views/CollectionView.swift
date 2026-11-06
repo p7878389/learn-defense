@@ -8,11 +8,20 @@ struct CollectionView: View {
     let onClose: () -> Void
 
     @State private var slot: CosmeticSlot = .defenderSkin
+    /// 射手皮肤按射手分开装备，这里是正在看的射手
+    @State private var shooter: String = DefenderKind.inkling.id
     /// 点过的卡片，在预览舞台上试看
     @State private var previewID: String?
     @State private var confirming: CosmeticKind?
 
     private var growth: GrowthStore { model.growth(for: profileID) }
+
+    private var shooterKind: DefenderKind { UnitCatalog.defender(id: shooter) ?? .inkling }
+
+    /// 当前分类下的外观；射手皮肤只列正在看的射手
+    private var items: [CosmeticKind] {
+        slot == .defenderSkin ? growth.catalog.shooterSkins(for: shooter) : growth.catalog.cosmetics(in: slot)
+    }
 
     var body: some View {
         let level = growth.level.level
@@ -21,9 +30,13 @@ struct CollectionView: View {
             HStack(alignment: .top, spacing: 22) {
                 slotTabs
                 VStack(spacing: 18) {
+                    // 射手分类条占用积分提示的位置，整页高度基本不变
+                    if slot == .defenderSkin { shooterTabs }
                     stage
                     cards(level: level)
-                    HintCapsule(icon: "💡", text: "积分怎么来？通关、拿星星、升级、得徽章都能拿积分！", tint: GrowthColors.orangeDark)
+                    if slot != .defenderSkin {
+                        HintCapsule(icon: "💡", text: "积分怎么来？通关、拿星星、升级、得徽章都能拿积分！", tint: GrowthColors.orangeDark)
+                    }
                 }
             }
         }
@@ -78,10 +91,55 @@ struct CollectionView: View {
         .frame(width: 210)
     }
 
+    // MARK: 射手分类
+
+    /// 每种射手一格：现在穿着哪套、这个年级能不能上场
+    private var shooterTabs: some View {
+        let loadout = growth.loadout
+        let grade = model.profiles.first { $0.id == profileID }?.grade
+        let playable = grade.map { Set(GameTuning.defenders(for: $0).map(\.id)) }
+        return HStack(spacing: 10) {
+            ForEach(UnitCatalog.defenders, id: \.id) { kind in
+                let selected = shooter == kind.id
+                let worn = loadout.defenderSkins[kind.id]
+                let wornName = worn.flatMap { skin in
+                    growth.catalog.shooterSkins(for: kind.id).first { $0.characterSkin == skin }?.name
+                } ?? "原版"
+                let onField = playable?.contains(kind.id) ?? true
+                Button {
+                    shooter = kind.id
+                    previewID = nil
+                } label: {
+                    HStack(spacing: 8) {
+                        if let image = UnitSprites.portrait(of: kind, skin: worn) {
+                            Image(decorative: image, scale: 1).resizable().scaledToFit().frame(width: 42, height: 42)
+                                .opacity(onField ? 1 : 0.5)
+                        }
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(kind.name).font(.system(size: 16, weight: .heavy, design: .rounded))
+                            Text("穿着：\(wornName)").font(.system(size: 12, weight: .bold, design: .rounded))
+                            Text(onField ? "✅ 已上场" : (grade?.isPreschool == true ? "🔒 上小学后上场" : "🔒 暂未上场"))
+                                .font(.system(size: 11, weight: .heavy, design: .rounded))
+                        }
+                        .lineLimit(1).minimumScaleFactor(0.7)
+                        Spacer(minLength: 0)
+                    }
+                    .foregroundStyle(selected ? .white : Theme.ink)
+                    .padding(.horizontal, 10)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 62)
+                    .background(CandyTileBackground(selected: selected))
+                }
+                .buttonStyle(PressableStyle())
+                .accessibilityLabel("\(kind.name)，穿着\(wornName)，\(onField ? "已上场" : "暂未上场")")
+            }
+        }
+    }
+
     // MARK: 预览舞台
 
     private var previewItem: CosmeticKind? {
-        let items = growth.catalog.cosmetics(in: slot)
+        let items = items
         if let previewID, let item = items.first(where: { $0.id == previewID }) { return item }
         return items.first { growth.state.isEquipped($0) && !$0.isOriginal } ?? items.first
     }
@@ -115,7 +173,7 @@ struct CollectionView: View {
     private func stageContent(_ item: CosmeticKind?) -> some View {
         switch slot {
         case .defenderSkin, .enemySkin:
-            CharacterSkinPreview(skin: item?.characterSkin, enemy: slot == .enemySkin)
+            CharacterSkinPreview(kind: shooterKind, skin: item?.characterSkin, enemy: slot == .enemySkin)
                 .padding(.top, 30)
         case .projectile:
             HStack {
@@ -169,10 +227,13 @@ struct CollectionView: View {
     // MARK: 卡片
 
     private func cards(level: Int) -> some View {
-        let items = growth.catalog.cosmetics(in: slot)
+        let items = items
+        // 还没有皮肤的射手只有原版：补一张「即将推出」，卡片限宽免得两张卡被拉得很宽
+        let comingSoon = slot == .defenderSkin && items.count <= 1
         // 子弹外观有 6 件：右侧约 900pt 要放下 6 张卡，卡片和按钮都不能有超过 140pt 的最小宽度，否则整页被撑宽、两边被裁掉
         return HStack(alignment: .top, spacing: 12) {
-            ForEach(items, id: \.id) { card($0, level: level) }
+            ForEach(items, id: \.id) { card($0, level: level).frame(maxWidth: comingSoon ? 240 : .infinity) }
+            if comingSoon { comingSoonCard.frame(maxWidth: 240) }
         }
         .padding(.horizontal, slot == .itemSkin ? 70 : 0)
     }
@@ -189,7 +250,14 @@ struct CollectionView: View {
                 .background(Capsule().fill(GrowthColors.rarity(item.rarity).opacity(item.rarity == .legendary ? 0.8 : 0.18)))
             ZStack {
                 Circle().fill(locked ? Color(white: 0.9) : GrowthColors.rarity(item.rarity).opacity(0.15)).frame(width: 96, height: 96)
-                PictureView(emoji: item.icon, size: 60).grayscale(locked ? 1 : 0).opacity(locked ? 0.35 : 1)
+                Group {
+                    if let image = portrait(of: item) {
+                        Image(decorative: image, scale: 1).resizable().scaledToFit().frame(width: 78, height: 78)
+                    } else {
+                        PictureView(emoji: item.icon, size: 60)
+                    }
+                }
+                .grayscale(locked ? 1 : 0).opacity(locked ? 0.35 : 1)
                 if locked { Text("🔒").font(.system(size: 34)) }
             }
             Text(item.name).font(.system(size: 24, weight: .heavy, design: .rounded))
@@ -227,6 +295,34 @@ struct CollectionView: View {
         }
         .contentShape(Rectangle())
         .onTapGesture { previewID = item.id }
+    }
+
+    /// 角色皮肤卡直接画出穿上后的样子；其他外观用图标
+    private func portrait(of item: CosmeticKind) -> CGImage? {
+        switch item.slot {
+        case .defenderSkin: UnitCatalog.defender(id: item.shooterID).flatMap { UnitSprites.portrait(of: $0, skin: item.characterSkin) }
+        case .enemySkin: UnitSprites.portrait(of: EnemyKind.blob, skin: item.characterSkin)
+        case .projectile, .defeat, .itemSkin: nil
+        }
+    }
+
+    private var comingSoonCard: some View {
+        VStack(spacing: 10) {
+            Spacer(minLength: 0)
+            Text("🎨").font(.system(size: 54))
+            Text("更多皮肤").font(.system(size: 24, weight: .heavy, design: .rounded)).foregroundStyle(Theme.ink)
+            Text("\(shooterKind.name)的新皮肤正在绘制中，敬请期待！")
+                .font(.system(size: 14, weight: .bold, design: .rounded)).foregroundStyle(Theme.muted)
+                .multilineTextAlignment(.center)
+            Spacer(minLength: 0)
+            CandyButtonLabel(title: "即将推出", fill: Color(white: 0.9), edge: Color(white: 0.78), foreground: Theme.muted,
+                             font: .system(size: 18, weight: .heavy, design: .rounded), height: 46, minWidth: 0)
+                .frame(maxWidth: .infinity)
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, minHeight: 330)
+        .background(RoundedRectangle(cornerRadius: 26).fill(GrowthColors.surface.opacity(0.6)))
+        .overlay(RoundedRectangle(cornerRadius: 26).stroke(GrowthColors.cardEdge, style: StrokeStyle(lineWidth: 2, dash: [7, 5])))
     }
 
     private func cornerTag(_ text: String, fill: Color, text color: Color) -> some View {
