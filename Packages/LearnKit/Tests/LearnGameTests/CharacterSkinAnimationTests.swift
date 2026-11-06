@@ -9,7 +9,8 @@ import Testing
 @MainActor
 struct CharacterSkinAnimationTests {
     @Test func onlyIntendedCharactersChangeAndMissingResourcesFallBack() throws {
-        for skin in CharacterSkin.allCases {
+        // 只加特效的皮肤（萤火精灵）没有自己的序列帧，单独测
+        for skin in CharacterSkin.allCases where !skin.isEffectOnly {
             let rig = try #require(UnitSprites.defender(.inkling, radius: 34, skin: skin))
             #expect(rig.base == "skin-\(skin.rawValue)-plant-inkling")
             let original = try #require(UnitSprites.defender(.inkling, radius: 34))
@@ -89,7 +90,7 @@ struct CharacterSkinAnimationTests {
             clock.scene.addChild(zombie)
             zombies.append(zombie)
             let label = SKLabelNode(fontNamed: "PingFangSC-Semibold")
-            label.text = ["经典原版", "软糖派对", "像素方块", "竹筒小侠", "方块工匠", "弹弹蛋"][index]
+            label.text = ["经典原版", "软糖派对", "像素方块", "竹筒小侠", "方块工匠", "弹弹蛋", "萤火精灵"][index]
             label.fontColor = SKColor(red: 0.15, green: 0.25, blue: 0.21, alpha: 1)
             label.fontSize = 25
             label.position = CGPoint(x: x, y: 525)
@@ -124,6 +125,77 @@ struct CharacterSkinAnimationTests {
         let frostOriginal = try #require(UnitSprites.portrait(of: .frost, skin: nil))
         #expect(frost.width == frostOriginal.width)
         #expect(UnitSprites.defender(.frost, radius: 34, skin: .bamboo)?.base == "plant-frost")
+    }
+
+    /// 萤火精灵：沿用原版贴图，身后一圈光晕、身边固定几颗光团，平时只亮一部分；僵尸配它保持原版
+    @Test func fireflyKeepsOriginalArtAndAddsFixedOrbs() throws {
+        let rig = try #require(UnitSprites.defender(.inkling, radius: 34, skin: .firefly))
+        #expect(rig.base == "plant-inkling")
+        let shooter = DefenderNode(kind: .inkling, radius: 34, skin: .firefly)
+        let effects = try #require(shooter.childNode(withName: CharacterSkinEffects.nodeName))
+        let aura = try #require(effects.childNode(withName: CharacterSkinEffects.fireflyAuraName) as? SKSpriteNode)
+        #expect(aura.size.width > 34 * 2)
+        let holders = effects.children.filter { $0.name == CharacterSkinEffects.fireflyHolderName }
+        #expect(holders.count == CharacterSkinEffects.fireflyOrbs)
+        let orbs = holders.compactMap { $0.childNode(withName: CharacterSkinEffects.fireflyOrbName) as? SKSpriteNode }
+        #expect(orbs.count == CharacterSkinEffects.fireflyOrbs)
+        #expect(holders.filter { $0.alpha > 0 }.count == CharacterSkinEffects.fireflyBaseOrbs)
+        let zombie = EnemyNode(id: 0, kind: .blob, sign: "春", lane: 0, scale: 1, skin: .firefly)
+        #expect(zombie.childNode(withName: "//characterSkinEffects") == nil)
+        // 其他皮肤不受连对影响
+        let party = DefenderNode(kind: .inkling, radius: 34, skin: .party)
+        party.showStreak(5)
+        #expect(party.childNode(withName: CharacterSkinEffects.nodeName)?.action(forKey: "fireflyStreak") == nil)
+    }
+
+    /// 连对越多越亮：3 连对多亮一颗、5 连对全亮；答错清零暗回去；全程节点数不变
+    @Test func fireflyGlowsBrighterWithStreak() throws {
+        let clock = try SkinClock()
+        let shooter = DefenderNode(kind: .inkling, radius: 34, skin: .firefly)
+        shooter.position = CGPoint(x: 300, y: 180)
+        clock.scene.addChild(shooter)
+        let effects = try #require(shooter.childNode(withName: CharacterSkinEffects.nodeName))
+        let initial = shooter.children.count
+        let initialEffects = effects.children.count
+        let base = CharacterSkinEffects.fireflyBaseOrbs
+        func lit() -> Int { effects.children.filter { $0.name == CharacterSkinEffects.fireflyHolderName && $0.alpha > 0.5 }.count }
+
+        shooter.showStreak(3)
+        try clock.advance(seconds: 0.5)
+        #expect(lit() == base + 1)
+        #expect(abs(effects.alpha - CharacterSkinEffects.intensity(streak: 3)) < 0.01)
+
+        shooter.showStreak(5)
+        shooter.shoot()
+        #expect(effects.childNode(withName: "fireflyBurst") != nil)
+        try clock.advance(seconds: 0.5)
+        #expect(effects.childNode(withName: "fireflyBurst") == nil)
+        #expect(lit() == CharacterSkinEffects.fireflyOrbs)
+        #expect(effects.alpha > CharacterSkinEffects.intensity(streak: 3))
+        #expect(abs(effects.xScale - CharacterSkinEffects.glowScale(streak: 5)) < 0.01)
+
+        shooter.showStreak(0)
+        try clock.advance(seconds: 0.5)
+        #expect(lit() == base)
+        #expect(abs(effects.alpha - CharacterSkinEffects.intensity(streak: 0)) < 0.01)
+        #expect(shooter.children.count == initial)
+        #expect(effects.children.count == initialEffects)
+    }
+
+    /// 场景记连对数：答对加一、答错清零；后种下的萤火射手也按当前连对数发光
+    @Test func sceneTracksAnswerStreak() throws {
+        let scene = GameScene(tuning: GameTuning.make(grade: .g1, difficulty: .easy), theme: .academy,
+                              loadout: Loadout(defenderSkins: ["inkling": .firefly]))
+        scene.noteCorrectAnswer()
+        scene.noteCorrectAnswer()
+        scene.noteCorrectAnswer()
+        #expect(scene.answerStreak == 3)
+        #expect(scene.plant(.inkling, in: DefenderCell(lane: 0, column: 0)))
+        let shooter = try #require(scene.children.compactMap { $0 as? DefenderNode }.first)
+        let effects = try #require(shooter.childNode(withName: CharacterSkinEffects.nodeName))
+        #expect(effects.action(forKey: "fireflyStreak") != nil)
+        scene.penalize(42)
+        #expect(scene.answerStreak == 0)
     }
 
     /// 收藏馆试穿：每种皮肤、每个角色的舞台身份各不相同，切换时 SpriteView 才会换成新场景

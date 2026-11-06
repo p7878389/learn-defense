@@ -5,6 +5,7 @@
   { "id": "defender.bamboo", "slot": "defenderSkin", "defender": "inkling", "name": "竹筒小侠", "icon": "🎋", "summary": "整株重画成系红头带的竹筒侠客，竹枝炮管照样发射绿豌豆", "rarity": "legendary", "unlockLevel": 1, "price": 0, "characterSkin": "bamboo" },
   { "id": "defender.voxel", "slot": "defenderSkin", "defender": "inkling", "name": "方块工匠", "icon": "🧱", "summary": "整株重画成方块体素风：立体方块脑袋一格一格地跳，方形炮管照样发射绿豌豆", "rarity": "legendary", "unlockLevel": 1, "price": 0, "characterSkin": "voxel" },
   { "id": "defender.egg", "slot": "defenderSkin", "defender": "inkling", "name": "弹弹蛋", "icon": "🥚", "summary": "整株重画成圆滚滚的果冻蛋，弹呀弹，彩条喇叭照样发射绿豌豆", "rarity": "legendary", "unlockLevel": 1, "price": 0, "characterSkin": "egg" },
+  { "id": "defender.firefly", "slot": "defenderSkin", "defender": "inkling", "name": "萤火精灵", "icon": "✨", "summary": "全身笼着金色萤光，光团绕身忽明忽暗；连续答对越多越亮越大，连对 3 题、5 题再多亮一颗", "rarity": "rare", "unlockLevel": 2, "price": 100, "characterSkin": "firefly" },
   { "id": "defender.twin.original", "slot": "defenderSkin", "defender": "twin", "name": "原版双发射手", "icon": "🌱", "summary": "经典双发射手，随时换回", "rarity": "common", "unlockLevel": 1, "price": 0 },
   { "id": "defender.frost.original", "slot": "defenderSkin", "defender": "frost", "name": "原版寒冰射手", "icon": "❄️", "summary": "经典寒冰射手，随时换回", "rarity": "common", "unlockLevel": 1, "price": 0 },
   { "id": "defender.stroke.original", "slot": "defenderSkin", "defender": "stroke", "name": "原版大喷菇", "icon": "🍄", "summary": "经典大喷菇，随时换回", "rarity": "common", "unlockLevel": 1, "price": 0 },

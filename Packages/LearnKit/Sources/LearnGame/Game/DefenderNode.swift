@@ -30,7 +30,8 @@ final class DefenderNode: SKNode {
         body = DefenderArt.body(kind.look, radius: radius)
         let rig = UnitSprites.defender(kind, radius: radius, skin: skin)
         self.rig = rig
-        self.skin = rig?.base.hasPrefix("skin-") == true ? skin : nil
+        // 换贴图的皮肤要真有这套素材才算穿上；只加特效的皮肤（萤火精灵）沿用原版贴图，有序列帧就保留
+        self.skin = rig?.base.hasPrefix("skin-") == true || (rig != nil && skin?.isEffectOnly == true) ? skin : nil
         super.init()
         if let rig {
             addChild(rig.sprite)
@@ -61,6 +62,11 @@ final class DefenderNode: SKNode {
 
     /// 答对时能不能由它发射
     var canShoot: Bool { attack != nil }
+
+    /// 连对数变了：萤火精灵的光团跟着变亮变多，其他外观不变
+    func showStreak(_ streak: Int) {
+        CharacterSkinEffects.showStreak(streak, on: self, skin: skin)
+    }
 
     /// 子弹出发的位置：有序列帧时从嘴里出来（豌豆射手的嘴在右上方），否则从身体右侧
     var muzzle: CGPoint {

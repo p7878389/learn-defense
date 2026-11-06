@@ -72,6 +72,8 @@ final class GameScene: SKScene {
     private var laneHeight: CGFloat { lawn.rowHeight }
     /// 拖动植物卡时标出落点格
     private var plantPreview: SKShapeNode?
+    /// 连续答对几题（答错清零）：萤火精灵的光团跟着变亮
+    private(set) var answerStreak = 0
 
     init(tuning: GameTuning, theme: SceneTheme, loadout: Loadout = .standard) {
         self.tuning = tuning
@@ -283,9 +285,16 @@ final class GameScene: SKScene {
         gameDelegate?.enemyDefeated(id, at: enemy.center)
     }
 
-    /// 孩子答对一题：埋着的土豆雷往出土再近一步。返回有没有土豆雷刚出土
+    private func updateStreak(_ streak: Int) {
+        guard streak != answerStreak else { return }
+        answerStreak = streak
+        for defender in defenders.values { defender.showStreak(streak) }
+    }
+
+    /// 孩子答对一题：连对数加一；埋着的土豆雷往出土再近一步。返回有没有土豆雷刚出土
     @discardableResult
     func noteCorrectAnswer() -> Bool {
+        updateStreak(answerStreak + 1)
         var armed = false
         for defender in defenders.values where defender.guardian?.correctAnswer() == true {
             defender.arm()
@@ -388,6 +397,7 @@ final class GameScene: SKScene {
         ]))
         addChild(defender)
         defenders[cell] = defender
+        defender.showStreak(answerStreak)
         return true
     }
 
@@ -487,6 +497,7 @@ final class GameScene: SKScene {
 
     /// 答错：怪物往前冲一段；被挡住时改为狠咬一口防御道具
     func penalize(_ id: Int) {
+        updateStreak(0)
         guard let enemy = enemies[id] else { return }
         if enemy.isChewing, let blocker = chewing[id] {
             blocker.shake()
