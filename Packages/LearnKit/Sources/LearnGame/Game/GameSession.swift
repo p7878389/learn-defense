@@ -26,7 +26,8 @@ final class GameSession: ObservableObject {
 
     @Published private(set) var phase: Phase = .preparing
     @Published private(set) var hearts: Int?
-    @Published private(set) var energy = 0
+    /// 模块内可写，方便测试直接攒满能量
+    @Published internal(set) var energy = 0
     @Published private(set) var score = 0
     @Published private(set) var sun: Int
     @Published private(set) var defeated = 0
@@ -289,6 +290,19 @@ final class GameSession: ObservableObject {
         ultimateShownAt = Date()
         scene.setGamePaused(true)
         speech.speak(pair.1.promptSpeech, interrupt: true, channel: .question)
+    }
+
+    /// 不放大招了：关掉题目、继续战斗。还没作答就取消，能量留着下次再放；
+    /// 已经答错过再取消，和「答错后再点对只是关掉」一样清空能量，免得靠取消换一道题
+    func cancelUltimate() {
+        guard ultimate != nil else { return }
+        if !ultimateWrongPicks.isEmpty { energy = 0 }
+        ultimate = nil
+        ultimateItem = nil
+        ultimateWrongPicks = []
+        ultimateShownAt = nil
+        speech.stop()
+        if phase == .playing { scene.setGamePaused(false) }
     }
 
     func answerUltimate(_ index: Int) {
