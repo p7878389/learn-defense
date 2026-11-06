@@ -10,14 +10,16 @@ struct AnswerPanel: View {
     /// 字块题：点下第一块时通知（战场放慢），拼满时交卷
     var onStartInput: () -> Void = {}
     var onSubmitInput: ([String]) -> Void = { _ in }
+    /// 横屏时答题区要矮，行距收紧，战场才能铺满宽度
+    var compact = false
 
     private var revealed: Bool { !wrongPicks.isEmpty }
 
     var body: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: compact ? 8 : 14) {
             if let q = question, let spec = q.input {
                 header(q)
-                TileAnswerView(spec: spec, wrongCount: wrongPicks.count, onStart: onStartInput, onSubmit: onSubmitInput)
+                TileAnswerView(spec: spec, wrongCount: wrongPicks.count, compact: compact, onStart: onStartInput, onSubmit: onSubmitInput)
             } else if let q = question {
                 header(q)
                 HStack(spacing: 16) {

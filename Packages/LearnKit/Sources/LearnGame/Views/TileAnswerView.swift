@@ -7,6 +7,8 @@ struct TileAnswerView: View {
     let spec: InputSpec
     /// 这道题已经答错几次
     let wrongCount: Int
+    /// 横屏时行距收紧
+    let compact: Bool
     let onStart: () -> Void
     let onSubmit: ([String]) -> Void
 
@@ -19,16 +21,18 @@ struct TileAnswerView: View {
         let index: Int
     }
 
-    init(spec: InputSpec, wrongCount: Int, onStart: @escaping () -> Void, onSubmit: @escaping ([String]) -> Void) {
+    init(spec: InputSpec, wrongCount: Int, compact: Bool = false,
+         onStart: @escaping () -> Void, onSubmit: @escaping ([String]) -> Void) {
         self.spec = spec
         self.wrongCount = wrongCount
+        self.compact = compact
         self.onStart = onStart
         self.onSubmit = onSubmit
         _placed = State(initialValue: Array(repeating: nil, count: spec.blanks.count))
     }
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: compact ? 6 : 12) {
             slots
             feedback
             tiles
