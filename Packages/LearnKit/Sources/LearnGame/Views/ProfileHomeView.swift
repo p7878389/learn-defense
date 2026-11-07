@@ -17,6 +17,7 @@ struct ProfileHomeView: View {
     /// 为空表示全部单元
     @State private var selectedUnits: Set<String> = []
     @State private var activeGame: GameConfig?
+    @State private var forestGame: GameConfig?
     @State private var showWrongBook = false
     @State private var editing: EditingProfile?
     /// 游戏结束后刷新错题数
@@ -55,6 +56,9 @@ struct ProfileHomeView: View {
                     openCollectionAfterGame = true
                     activeGame = nil
                 })
+        }
+        .gameCover(item: $forestGame, onDismiss: { refresh += 1 }) { config in
+            ForestDefenseView(config: config, model: model, onExit: { forestGame = nil })
         }
         .growthCover(isPresented: $showCollection) {
             CollectionView(profileID: profileID, onClose: { showCollection = false })
@@ -226,7 +230,7 @@ struct ProfileHomeView: View {
     private func actions(profile: Profile, grade: Grade, reviewPacks: [ContentPack], pack: ContentPack, reviewCount: Int) -> some View {
         HStack(spacing: 20) {
             Button {
-                activeGame = GameConfig(
+                forestGame = GameConfig(
                     profileID: profile.id,
                     grade: grade,
                     packIDs: [pack.id],
@@ -240,6 +244,13 @@ struct ProfileHomeView: View {
                     .foregroundStyle(.white)
             }
             .buttonStyle(PressableStyle())
+
+            Button("经典模式") {
+                activeGame = GameConfig(profileID: profile.id, grade: grade, packIDs: [pack.id],
+                                        selection: selectedUnits.isEmpty ? .all : .units(selectedUnits),
+                                        difficulty: profile.difficulty)
+            }
+            .buttonStyle(.borderedProminent)
 
             Button {
                 activeGame = GameConfig(
