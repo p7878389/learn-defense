@@ -78,6 +78,12 @@ public struct ForestEnemy: Identifiable, Sendable {
     public let maxHealth: Double
     public var slowed: Double = 0
     public let fast: Bool
+    public let kind: ForestEnemyKind
+    public var rooted: Double = 0
+    public var attackCooldown: Double = 2
+    public var attacks = 0
+    public var cast: ForestCast?
+    public var isBoss: Bool { kind.isBoss }
     /// 1 朝右、-1 朝左，只取这两个值；前方的路掉头时立即换向，并开始 `turnTimer` 转身动作。
     public var facing: Double = 1
     /// 转身动作剩余时间，从 `turnTime` 递减到 0。
@@ -88,6 +94,11 @@ public struct ForestEnemy: Identifiable, Sendable {
     public static let hitFlash = 0.18
     public init(id: Int, health: Double, fast: Bool) {
         self.id = id; self.health = health; self.maxHealth = health; self.fast = fast
+        self.kind = fast ? .boar : .skeleton
+    }
+    public init(id: Int, kind: ForestEnemyKind) {
+        self.id = id; self.kind = kind; health = kind.health; maxHealth = kind.health
+        fast = kind == .boar
     }
 }
 /// 怪物被击败时留下的烟尘与奖励飘字。
@@ -95,6 +106,7 @@ public struct ForestDefeat: Identifiable, Sendable {
     public let id: Int
     public let point: ForestPoint
     public let fast: Bool
+    public var kind: ForestEnemyKind = .skeleton
     public let reward: Int
     public var age: Double = 0
     public static let duration = 0.7
@@ -107,12 +119,17 @@ public struct ForestBattle: Sendable {
         .init(x: 0.55, y: 0.62), .init(x: 0.69, y: 0.66),
         .init(x: 0.62, y: 0.83), .init(x: 0.705, y: 0.88)
     ]
-    public private(set) var phase: Phase = .preparing
-    public private(set) var coins = 100
+    public internal(set) var phase: Phase = .preparing
+    public internal(set) var coins = 100
     public private(set) var lives = 5
-    public private(set) var wave = 0
-    public private(set) var towers: [Int: ForestTower] = [:]
-    public private(set) var enemies: [ForestEnemy] = []
+    public internal(set) var wave = 0
+    public internal(set) var towers: [Int: ForestTower] = [:]
+    public internal(set) var enemies: [ForestEnemy] = []
+    public internal(set) var defenses: [Int: ForestDefenseUnit] = [:]
+    public internal(set) var combatShots: [ForestCombatShot] = []
+    public internal(set) var zones: [ForestZone] = []
+    public private(set) var boss: ForestEnemyKind
+    var nextCombatID = 0
     public private(set) var shots: [ForestShot] = []
     public private(set) var defeats: [ForestDefeat] = []
     /// 每座塔最近一次瞄准的位置。
@@ -139,19 +156,24 @@ public struct ForestBattle: Sendable {
     public static let burstGap = 0.09
     public static let rapidReload = 0.75
     public static let frostReload = 1.2
-    public init() {}
+    public init(boss: ForestEnemyKind = .knight) { self.boss = boss.isBoss ? boss : .knight }
+    public mutating func selectBoss(_ kind: ForestEnemyKind) {
+        guard phase == .preparing, wave == 0, kind.isBoss else { return }
+        boss = kind
+    }
     @discardableResult public mutating func build(_ kind: ForestTower, at slot: Int) -> Bool {
-        guard phase == .preparing, Self.slots.indices.contains(slot), towers[slot] == nil, coins >= 50 else { return false }
-        coins -= 50; towers[slot] = kind; return true
+        guard phase == .preparing, Self.slots.indices.contains(slot), defenses[slot] == nil, coins >= 50 else { return false }
+        coins -= 50; towers[slot] = kind; defenses[slot] = ForestDefenseUnit(); return true
     }
     public mutating func startWave() {
-        guard phase == .preparing, !towers.isEmpty else { return }
+        guard phase == .preparing, defenses.values.contains(where: \.alive) else { return }
         wave += 1; spawnRemaining = 3 + wave; spawnTimer = 0; phase = .fighting
     }
     public mutating func tick(_ elapsed: Double) {
-        guard elapsed > 0 else { return }
+        guard elapsed.isFinite, elapsed > 0, phase == .preparing || phase == .fighting else { return }
         let dt = min(elapsed, 0.1)
         time += dt
+        guard phase == .fighting else { return }
         for index in shots.indices {
             let previous = shots[index].age
             shots[index].age += dt
@@ -167,25 +189,34 @@ public struct ForestBattle: Sendable {
         shots.removeAll { $0.age >= $0.duration }
         for index in defeats.indices { defeats[index].age += dt }
         defeats.removeAll { $0.age >= ForestDefeat.duration }
-        guard phase == .fighting else { return }
         spawnTimer -= dt
         if spawnRemaining > 0 && spawnTimer <= 0 {
             nextID += 1
-            enemies.append(ForestEnemy(id: nextID, health: nextID.isMultiple(of: 2) ? 4 : 3, fast: nextID.isMultiple(of: 2)))
+            let kind: ForestEnemyKind
+            if wave == 3 && spawnRemaining == 1 { kind = boss }
+            else if wave >= 2 && spawnRemaining <= 2 { kind = spawnRemaining == 2 ? .goblin : .acolyte }
+            else { kind = nextID.isMultiple(of: 2) ? .boar : .skeleton }
+            enemies.append(ForestEnemy(id: nextID, kind: kind))
             spawnRemaining -= 1; spawnTimer = 1.8
         }
+        tickCombat(dt)
         for index in enemies.indices {
+            guard enemies[index].health > 0 else { continue }
             let slow = enemies[index].slowed > 0 ? 0.55 : 1.0
-            enemies[index].distance += dt * (enemies[index].fast ? 0.075 : 0.055) * slow
+            if enemies[index].cast == nil && enemies[index].rooted <= 0 {
+                enemies[index].distance += dt * enemies[index].kind.speed * slow
+            }
+            enemies[index].rooted = max(0, enemies[index].rooted - dt)
             enemies[index].slowed = max(0, enemies[index].slowed - dt)
             enemies[index].hitTimer = max(0, enemies[index].hitTimer - dt)
             enemies[index].turnTimer = max(0, enemies[index].turnTimer - dt)
             turn(&enemies[index])
         }
         for (slot, tower) in towers.sorted(by: { $0.key < $1.key }) {
-            cooldowns[slot, default: 0] -= dt
+            guard defenses[slot]?.alive == true else { continue }
+            cooldowns[slot, default: 0] -= dt * ((defenses[slot]?.chilled ?? 0) > 0 ? 0.5 : 1)
             let origin = Self.slots[slot]
-            let candidates = enemies.indices.filter { origin.distance(to: ForestPath.forest.point(at: enemies[$0].distance)) <= Self.range }
+            let candidates = enemies.indices.filter { enemies[$0].health > 0 && origin.distance(to: ForestPath.forest.point(at: enemies[$0].distance)) <= Self.range }
             guard let target = candidates.max(by: { enemies[$0].distance < enemies[$1].distance }) else { continue }
             let aim = ForestPath.forest.point(at: enemies[target].distance)
             // 炮管先转向目标，对准后才开火；只有炮管转动，塔身不动
@@ -213,13 +244,15 @@ public struct ForestBattle: Sendable {
         }
         for enemy in enemies where enemy.health <= 0 {
             nextDefeatID += 1
-            defeats.append(ForestDefeat(id: nextDefeatID, point: ForestPath.forest.point(at: enemy.distance), fast: enemy.fast, reward: Self.reward))
+            defeats.append(ForestDefeat(id: nextDefeatID, point: ForestPath.forest.point(at: enemy.distance), fast: enemy.fast,
+                                        kind: enemy.kind, reward: enemy.isBoss ? 100 : Self.reward))
         }
-        coins += enemies.filter { $0.health <= 0 }.count * Self.reward
-        lives -= enemies.filter { $0.health > 0 && $0.distance >= ForestPath.forest.length }.count
+        coins += enemies.filter { $0.health <= 0 }.reduce(0) { $0 + ($1.isBoss ? 100 : Self.reward) }
+        lives = max(0, lives - enemies.filter { $0.health > 0 && $0.distance >= ForestPath.forest.length }.reduce(0) { $0 + ($1.isBoss ? 3 : 1) })
         enemies.removeAll { $0.health <= 0 || $0.distance >= ForestPath.forest.length }
         if lives <= 0 { phase = .lost }
         else if spawnRemaining == 0 && enemies.isEmpty { phase = .question }
+        if phase != .fighting { combatShots.removeAll(); zones.removeAll(); shots.removeAll() }
     }
     /// 塔的装填进度：0 刚开火，1 已就绪；连发塔点射过程中视为就绪。
     public func readiness(of slot: Int) -> Double {
