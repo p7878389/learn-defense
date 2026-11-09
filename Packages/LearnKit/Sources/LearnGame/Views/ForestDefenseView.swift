@@ -65,6 +65,8 @@ private final class ForestSession: ObservableObject {
 struct ForestDefenseView: View {
     @StateObject private var session: ForestSession
     @State private var baseHit = false
+    @State private var selectedHero: ForestHero?
+    @State private var focusedSlot: Int?
     private let onExit: () -> Void
     init(config: GameConfig, model: AppModel, onExit: @escaping () -> Void) {
         _session = StateObject(wrappedValue: ForestSession(config: config, model: model))
@@ -85,8 +87,11 @@ struct ForestDefenseView: View {
                     let width = min(geo.size.width, geo.size.height * 1376 / 768)
                     let height = width * 768 / 1376
                     ForestBattlefield(battle: session.battle, width: width, height: height, baseHit: baseHit,
-                                      canBuild: session.battle.coins >= 50) { index in
-                        _ = session.battle.build(session.selectedTower, at: index)
+                                      canBuild: session.battle.coins >= 50, selectedSlot: focusedSlot) { index in
+                        focusedSlot = index
+                        guard session.battle.defenses[index] == nil else { return }
+                        if let selectedHero { _ = session.battle.deploy(selectedHero, at: index) }
+                        else { _ = session.battle.build(session.selectedTower, at: index) }
                     }
                     .frame(width: width, height: height)
                     .position(x: geo.size.width / 2, y: geo.size.height / 2)
@@ -96,6 +101,7 @@ struct ForestDefenseView: View {
                 }
             }
             controls
+            defenseControls
         }
         .padding(.vertical, 8)
         .background(Color(red: 0.92, green: 0.96, blue: 0.85))
@@ -111,15 +117,27 @@ struct ForestDefenseView: View {
         } else {
             switch session.battle.phase {
             case .preparing:
-                HStack {
-                    Button("🌱 连发塔 50") { session.selectedTower = .rapid }.buttonStyle(.borderedProminent).tint(session.selectedTower == .rapid ? .green : .gray)
-                    Button("❄️ 冰冻塔 50") { session.selectedTower = .frost }.buttonStyle(.borderedProminent).tint(session.selectedTower == .frost ? .blue : .gray)
+                ScrollView(.horizontal, showsIndicators: false) {
+                  HStack {
+                    Button("🌱 连发塔 50") { selectedHero = nil; session.selectedTower = .rapid }.buttonStyle(.borderedProminent).tint(selectedHero == nil && session.selectedTower == .rapid ? .green : .gray)
+                    Button("❄️ 冰冻塔 50") { selectedHero = nil; session.selectedTower = .frost }.buttonStyle(.borderedProminent).tint(selectedHero == nil && session.selectedTower == .frost ? .blue : .gray)
+                    ForEach(ForestHero.allCases, id: \.self) { hero in
+                        Button("\(hero.name) 50") { selectedHero = hero }
+                            .buttonStyle(.borderedProminent).tint(selectedHero == hero ? .orange : .gray)
+                            .disabled(session.battle.defenses.values.contains { $0.hero == hero })
+                    }
                     Button("开始第 \(session.battle.wave + 1) 波") { session.battle.startWave() }
-                        .buttonStyle(.borderedProminent).disabled(session.battle.towers.isEmpty)
+                        .buttonStyle(.borderedProminent).disabled(!session.battle.defenses.values.contains(where: \.alive))
+                  }
                 }
-                Text("选择塔后点击发光的空塔位建造").font(.caption)
+                if session.battle.wave == 0 {
+                    Picker("最终首领", selection: Binding(get: { session.battle.boss }, set: { session.battle.selectBoss($0) })) {
+                        ForEach(ForestEnemyKind.bosses, id: \.self) { Text($0.name).tag($0) }
+                    }.pickerStyle(.menu)
+                }
+                Text("选择守卫后点击空塔位；点击已有守卫可修复。最后一波：\(session.battle.boss.name)").font(.caption)
             case .fighting:
-                Text("守卫正在自动攻击，保护森林！")
+                Text("留意橙色前摇预警，及时修复防线、释放英雄技能").font(.caption)
             case .question:
                 if let question = session.question {
                     VStack(spacing: 5) {
@@ -143,6 +161,29 @@ struct ForestDefenseView: View {
             }
         }
     }
+
+    @ViewBuilder private var defenseControls: some View {
+        if session.battle.phase == .preparing || session.battle.phase == .fighting {
+            HStack {
+                if let slot = focusedSlot, let unit = session.battle.defenses[slot] {
+                    Text("塔位 \(slot + 1) · 耐久 \(Int(ceil(unit.health)))/\(Int(unit.maxHealth))").font(.caption)
+                    Button("修复 +20 · 15☀️") { _ = session.battle.repair(at: slot) }
+                        .buttonStyle(.bordered)
+                        .disabled(unit.health >= unit.maxHealth || session.battle.coins < ForestBattle.repairCost)
+                }
+                ForEach(session.battle.defenses.keys.sorted(), id: \.self) { slot in
+                    if let unit = session.battle.defenses[slot], let hero = unit.hero, session.battle.phase == .fighting {
+                        Button(unit.skillCooldown > 0 ? "\(hero.skillName) \(Int(ceil(unit.skillCooldown)))s" : hero.skillName) {
+                            _ = session.battle.useSkill(at: slot)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(hero == .paladin ? .orange : .green)
+                        .disabled(!unit.alive || unit.skillCooldown > 0 || unit.cast != nil)
+                    }
+                }
+            }
+        }
+    }
 }
 
 /// 地图主题：底图与这张地图专用的塔位底座。每张地图的塔位统一用同一种底座，不依赖底图上画的地块。
@@ -162,6 +203,7 @@ struct ForestBattlefield: View {
     var theme: ForestMapTheme = .forest
     var baseHit = false
     var canBuild = true
+    var selectedSlot: Int?
     var build: (Int) -> Void = { _ in }
 
     var body: some View {
@@ -171,7 +213,8 @@ struct ForestBattlefield: View {
             ForEach(ForestBattle.slots.indices, id: \.self) { index in
                 ForestSlotPad(
                     slot: index, stage: stage, image: artwork(theme.slotPad), glow: theme.glow, time: battle.time,
-                    buildable: battle.phase == .preparing && battle.towers[index] == nil && canBuild,
+                    buildable: battle.phase == .preparing && battle.defenses[index] == nil && canBuild,
+                    selectable: battle.defenses[index] != nil && (battle.phase == .preparing || battle.phase == .fighting),
                     build: build)
             }
             ForEach(ForestBattle.slots.indices, id: \.self) { index in
@@ -183,20 +226,39 @@ struct ForestBattlefield: View {
                         base: artwork(tower == .rapid ? "forest-tower-rapid-base" : "forest-tower-frost"),
                         head: tower == .rapid ? artwork("forest-tower-rapid-head") : nil,
                         muzzle: artwork("forest-fx-pea-muzzle"), nova: artwork("forest-fx-ice-nova"))
+                        .opacity(battle.defenses[index]?.alive == true ? 1 : 0.22)
+                        .saturation(battle.defenses[index]?.alive == true ? 1 : 0)
+                }
+            }
+            ForEach(battle.defenses.keys.sorted(), id: \.self) { slot in
+                if let unit = battle.defenses[slot], unit.hero != nil {
+                    ForestHeroView(unit: unit, slot: slot, width: width, height: height)
                 }
             }
             // 越靠下的怪物越靠前绘制，重叠时保持前后关系
             ForEach(battle.enemies.sorted { ForestPath.forest.point(at: $0.distance).y < ForestPath.forest.point(at: $1.distance).y }) { enemy in
-                ForestEnemySprite(
+                if enemy.kind == .skeleton || enemy.kind == .boar {
+                  ForestEnemySprite(
                     enemy: enemy, stage: stage, time: battle.time,
                     frames: ForestArtwork.frames(enemy.fast ? ForestArtwork.boarRun : ForestArtwork.skeletonWalk),
                     dust: artwork("forest-fx-dust"), nova: artwork("forest-fx-ice-nova"))
+                } else {
+                    ForestRosterEnemyView(enemy: enemy, width: width, height: height, time: battle.time)
+                }
             }
             ForEach(battle.defeats) { defeat in
                 ForestDefeatSprite(
                     defeat: defeat, stage: stage,
-                    image: ForestArtwork.frames(defeat.fast ? ForestArtwork.boarRun : ForestArtwork.skeletonWalk)[0],
+                    image: defeat.kind == .skeleton || defeat.kind == .boar
+                        ? ForestArtwork.frames(defeat.fast ? ForestArtwork.boarRun : ForestArtwork.skeletonWalk)[0]
+                        : ForestRosterArtwork.image(defeat.kind.rawValue),
                     poof: artwork("forest-fx-poof"), star: artwork("forest-fx-star"))
+            }
+            ForestCombatOverlay(battle: battle, width: width, height: height)
+            ForEach(battle.defenses.keys.sorted(), id: \.self) { slot in
+                if let unit = battle.defenses[slot] {
+                    ForestDefenseStatusView(unit: unit, slot: slot, width: width, height: height, selected: selectedSlot == slot)
+                }
             }
             ForEach(battle.shots) { shot in
                 ForestShotSprite(
@@ -312,6 +374,7 @@ private struct ForestSlotPad: View {
     let glow: Color
     let time: Double
     let buildable: Bool
+    var selectable = false
     let build: (Int) -> Void
 
     var body: some View {
@@ -339,7 +402,7 @@ private struct ForestSlotPad: View {
                 .contentShape(Ellipse())
         }
         .buttonStyle(.plain)
-        .disabled(!buildable)
+        .disabled(!buildable && !selectable)
         .position(stage.padCenter(slot))
     }
 }

@@ -1,0 +1,158 @@
+[
+  {
+    "asset": "knight.jpg",
+    "screen": "projects/3114158888309762861/screens/ae9c3e78e0af4165ac079a689f496222",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  },
+  {
+    "asset": "ogre.jpg",
+    "screen": "projects/3114158888309762861/screens/009658880c16481d94ad49b7769e194a",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  },
+  {
+    "asset": "berserker.jpg",
+    "screen": "projects/3114158888309762861/screens/f365428a385b451ca071926df165e325",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  },
+  {
+    "asset": "frostKing.jpg",
+    "screen": "projects/3114158888309762861/screens/e14cd3670a3d4683a8cd22921bf534f0",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  },
+  {
+    "asset": "infernal.jpg",
+    "screen": "projects/3114158888309762861/screens/7ceb3a99d42045238a4c5289919ca8ac",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  },
+  {
+    "asset": "reaper.jpg",
+    "screen": "projects/3114158888309762861/screens/128dac5eabb942cd953046888eadf905",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  },
+  {
+    "asset": "pharaoh.jpg",
+    "screen": "projects/3114158888309762861/screens/3ee8aa3852a94f5184942ae4e98ac43c",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  },
+  {
+    "asset": "slime.jpg",
+    "screen": "projects/3114158888309762861/screens/e26c3d708c7b4bd7aec2889fe750ce47",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  },
+  {
+    "asset": "gargoyle.jpg",
+    "screen": "projects/3114158888309762861/screens/a0709130e0da447a93e97b5494a5d9a2",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  },
+  {
+    "asset": "shaman.jpg",
+    "screen": "projects/3114158888309762861/screens/d972a9db96a54110949a9cf4a97676fc",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  },
+  {
+    "asset": "goblin.jpg",
+    "screen": "projects/3114158888309762861/screens/86ef6926e0424804bf8253f17e17b041",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  },
+  {
+    "asset": "acolyte.jpg",
+    "screen": "projects/3114158888309762861/screens/fe840e1bd78743998fc5b591874c1217",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  },
+  {
+    "asset": "paladin.jpg",
+    "screen": "projects/3114158888309762861/screens/a5559c5b3a0545ff9518e919bccd783f",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  },
+  {
+    "asset": "botanist.jpg",
+    "screen": "projects/3114158888309762861/screens/5af654aff7bf46acad0756a1dfd80eb1",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  },
+  {
+    "asset": "ogre-skill.jpg",
+    "screen": "projects/3114158888309762861/screens/6262aec0071e4d628652501bd2b4bf42",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  },
+  {
+    "asset": "berserker-skill.jpg",
+    "screen": "projects/3114158888309762861/screens/e1c1068245e44c5eb59a9aa5845e1ca6",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  },
+  {
+    "asset": "frostKing-skill.jpg",
+    "screen": "projects/3114158888309762861/screens/857c3b6f963e47e68b16d3db6803f4bb",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  },
+  {
+    "asset": "infernal-skill.jpg",
+    "screen": "projects/3114158888309762861/screens/5ba6be1043b84e24a9f9df1afd0ed410",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  },
+  {
+    "asset": "reaper-skill.jpg",
+    "screen": "projects/3114158888309762861/screens/194983bc2fa84c3688162b52c14d9f60",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  },
+  {
+    "asset": "pharaoh-skill.jpg",
+    "screen": "projects/3114158888309762861/screens/bbab50e5183140a48a1b56286b25c69d",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  },
+  {
+    "asset": "slime-skill.jpg",
+    "screen": "projects/3114158888309762861/screens/4c6604e2edff46e9b1b473c99c2df95b",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  },
+  {
+    "asset": "gargoyle-skill.jpg",
+    "screen": "projects/3114158888309762861/screens/6e66155e15254ea8b288ee3934330e2d",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  },
+  {
+    "asset": "reaper-windup.jpg",
+    "screen": "projects/3114158888309762861/screens/4a8383057d034f49a1e53bcf9e38db4f",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  },
+  {
+    "asset": "pharaoh-windup.jpg",
+    "screen": "projects/3114158888309762861/screens/53d33553fbd9425db38d3f5483e9bdbf",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  },
+  {
+    "asset": "slime-windup.jpg",
+    "screen": "projects/3114158888309762861/screens/f72efc7cdb8d49789f472b2a8eab0ee0",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  },
+  {
+    "asset": "gargoyle-windup.jpg",
+    "screen": "projects/3114158888309762861/screens/c3a61a624f8e41db961316ddfdba2bef",
+    "source": "Stitch MCP download_file",
+    "usage": "角色原型/关键姿态；原图保留，运行时做背景遮罩"
+  }
+]
