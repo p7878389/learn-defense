@@ -75,3 +75,30 @@ extension LearnDatabase {
         try context.save()
     }
 }
+
+extension LearnDatabase {
+    public static let forestRulesName = "forest-rules.json"
+
+    /// 森林塔防的怪物、英雄、炮塔数值。数据库里没有时写入默认值；之后以数据库为准，不被 syncConfig 覆盖。
+    public func forestRules() throws -> ForestRules {
+        if let row = try configFile(named: Self.forestRulesName) {
+            // 损坏时保留原数据供排查，本次使用默认值。
+            return ForestRules.decode(row.data) ?? .defaults
+        }
+        try saveForestRules(.defaults)
+        return .defaults
+    }
+
+    public func saveForestRules(_ rules: ForestRules) throws {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys, .prettyPrinted]
+        let data = try encoder.encode(rules.validated())
+        if let row = try configFile(named: Self.forestRulesName) {
+            row.data = data
+            row.syncedAt = Date()
+        } else {
+            context.insert(StoredConfigFile(name: Self.forestRulesName, data: data))
+        }
+        try context.save()
+    }
+}

@@ -94,7 +94,7 @@ struct ForestCombatOverlay: View {
             for zone in battle.zones {
                 let center = pixel(zone.point)
                 let r = zone.radius * width
-                let rect = CGRect(x: center.x - r, y: center.y - r * 0.38, width: r * 2, height: r * 0.76)
+                let rect = Self.footprint(at: zone.point, radius: zone.radius, width: width, height: height)
                 let opacity = min(0.28, zone.remaining * 0.28)
                 context.fill(Path(ellipseIn: rect), with: .color(tint(zone.effect).opacity(opacity)))
                 context.stroke(Path(ellipseIn: rect), with: .color(tint(zone.effect).opacity(0.7)), lineWidth: 2)
@@ -111,8 +111,12 @@ struct ForestCombatOverlay: View {
             for enemy in battle.enemies {
                 if let cast = enemy.cast, cast.charging {
                     let center = pixel(cast.point)
-                    let r = width * (cast.skill ? 0.055 : 0.025)
-                    let rect = CGRect(x: center.x - r, y: center.y - r * 0.4, width: r * 2, height: r * 0.8)
+                    // 范围技按真实波及范围预警；单体攻击只在被锁定的塔位脚下画小圈。
+                    let area = Self.warningRadius(of: enemy, rules: battle.rules)
+                    let r = width * 0.025
+                    let rect = area > 0
+                        ? Self.footprint(at: cast.point, radius: area, width: width, height: height)
+                        : CGRect(x: center.x - r, y: center.y - r * 0.4, width: r * 2, height: r * 0.8)
                     context.stroke(Path(ellipseIn: rect), with: .color(.orange.opacity(0.4 + cast.progress * 0.6)),
                                    style: StrokeStyle(lineWidth: 2 + cast.progress * 2, dash: [5, 4]))
                 }
@@ -139,7 +143,8 @@ struct ForestCombatOverlay: View {
                     }
                 } else {
                     let p = min(1, (shot.age - shot.flight) / 0.45)
-                    let r = width * (shot.skill ? 0.055 : 0.025) * (0.3 + p)
+                    // 范围弹的冲击环扩到真实波及半径为止；单体命中保持小环。
+                    let r = width * (shot.radius > 0 ? shot.radius * min(1, 0.3 + p) : 0.025 * (0.3 + p))
                     let rect = CGRect(x: end.x - r, y: end.y - r * 0.55, width: r * 2, height: r * 1.1)
                     context.stroke(Path(ellipseIn: rect), with: .color(color.opacity(1 - p)), lineWidth: max(1, 5 * (1 - p)))
                     for n in 0..<8 {
@@ -160,6 +165,17 @@ struct ForestCombatOverlay: View {
         }
         .frame(width: width, height: height)
         .allowsHitTesting(false)
+    }
+
+    /// 敌人蓄力时预警的范围半径（归一化坐标）；0 表示单体攻击，只标出被锁定的塔位。
+    static func warningRadius(of enemy: ForestEnemy, rules: ForestRules) -> Double {
+        enemy.cast?.skill == true ? rules.enemy(enemy.kind).skillRadius : 0
+    }
+    /// 范围效果在画面上的落地椭圆。判定用的是归一化坐标里的圆，换算到画面横向乘宽、纵向乘高，
+    /// 这样圈内的塔位正好是会被波及的塔位。
+    static func footprint(at point: ForestPoint, radius: Double, width: CGFloat, height: CGFloat) -> CGRect {
+        CGRect(x: (point.x - radius) * width, y: (point.y - radius) * height,
+               width: radius * 2 * width, height: radius * 2 * height)
     }
 
     private func pixel(_ point: ForestPoint) -> CGPoint { CGPoint(x: point.x * width, y: point.y * height) }

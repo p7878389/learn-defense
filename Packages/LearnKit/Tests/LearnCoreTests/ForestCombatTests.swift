@@ -206,4 +206,79 @@ final class ForestCombatTests: XCTestCase {
         XCTAssertEqual(battle.phase, .lost)
         XCTAssertEqual(battle.lives, 0)
     }
+
+    /// 英雄守在 2 号位，身边有不会还手的怪。
+    private func heroEncounter(_ hero: ForestHero, enemies count: Int = 1) -> ForestBattle {
+        var battle = encounter(.ogre)
+        battle.towers.removeValue(forKey: 2)
+        battle.defenses[2] = ForestDefenseUnit(hero: hero)
+        let template = battle.enemies[0]
+        battle.enemies = (0..<count).map { offset in
+            var enemy = ForestEnemy(id: 100 + offset, kind: .ogre)
+            enemy.distance = template.distance - Double(offset) * 0.01
+            enemy.health = 100
+            enemy.attackCooldown = 99
+            enemy.rooted = 99
+            return enemy
+        }
+        return battle
+    }
+
+    func testHeroSkillCanBeUsedWhileBasicAttackIsInProgress() {
+        for hero in ForestHero.allCases {
+            var battle = heroEncounter(hero)
+            battle.tick(0.05)
+            XCTAssertEqual(battle.defenses[2]!.cast?.skill, false, hero.rawValue)
+            XCTAssertTrue(battle.useSkill(at: 2), hero.rawValue)
+            XCTAssertEqual(battle.defenses[2]!.cast?.skill, true, hero.rawValue)
+            // 技能施放中不能再次触发。
+            battle.defenses[2]!.skillCooldown = 0
+            XCTAssertFalse(battle.useSkill(at: 2), hero.rawValue)
+        }
+    }
+
+    func testVinesLandOnLockedPointEvenWhenLockedTargetDiesDuringWindup() {
+        var battle = heroEncounter(.botanist, enemies: 2)
+        for index in battle.enemies.indices { battle.enemies[index].rooted = 0 }
+        XCTAssertTrue(battle.useSkill(at: 2))
+        let locked = battle.defenses[2]!.cast!.target
+        battle.tick(0.05)
+        battle.enemies[battle.enemies.firstIndex { $0.id == locked }!].health = 0
+        for _ in 0..<35 { battle.tick(0.05) }
+        XCTAssertEqual(battle.enemies.count, 1)
+        XCTAssertGreaterThan(battle.enemies[0].rooted, 0)
+        XCTAssertTrue(battle.zones.contains { $0.effect == .vines })
+    }
+
+    func testShieldChillAndHitFlashDoNotCarryAcrossWaves() {
+        var battle = heroEncounter(.paladin)
+        XCTAssertTrue(battle.useSkill(at: 2))
+        battle.defenses[2]!.shield = 6
+        battle.defenses[2]!.chilled = 3
+        battle.defenses[2]!.hitTimer = 0.18
+        battle.enemies[0].health = 0
+        battle.tick(0.05)
+        XCTAssertEqual(battle.phase, .question)
+        let unit = battle.defenses[2]!
+        XCTAssertEqual(unit.shield, 0)
+        XCTAssertEqual(unit.chilled, 0)
+        XCTAssertEqual(unit.hitTimer, 0)
+        XCTAssertNil(unit.cast)
+    }
+
+    func testBossSkillAreaComesFromRosterAndReaperStaysSingleTarget() {
+        for kind in ForestEnemyKind.bosses {
+            var battle = encounter(kind)
+            battle.enemies[0].attacks = 2
+            var radius: Double?
+            for _ in 0..<60 where radius == nil {
+                battle.tick(0.05)
+                radius = battle.combatShots.first { $0.side == .enemy && $0.skill }?.radius
+            }
+            XCTAssertEqual(radius, battle.rules.enemy(kind).skillRadius, kind.rawValue)
+        }
+        XCTAssertEqual(ForestRules.defaults.enemy(.reaper).skillRadius, 0)
+        XCTAssertEqual(ForestRules.defaults.enemy(.gargoyle).skillRadius, 0.12)
+        XCTAssertEqual(ForestRules.defaults.enemy(.goblin).skillRadius, 0)
+    }
 }
