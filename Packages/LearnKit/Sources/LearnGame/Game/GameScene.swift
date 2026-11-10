@@ -29,11 +29,15 @@ protocol GameSceneDelegate: AnyObject {
     var speedFactor: Double { get }
     /// 孩子正在拼瞄准的这道字块题：这只怪物原地等着
     var holdsTarget: Bool { get }
+    /// 首领被打到只剩最后一段血、开始暴走
+    func bossEnraged(_ id: Int)
 }
 
 extension GameSceneDelegate {
     /// 默认不定住目标（测试里的简单代理不用实现）
     var holdsTarget: Bool { false }
+    /// 首领被打到只剩最后一段血、开始暴走
+    func bossEnraged(_ id: Int) {}
 }
 
 /// 游戏画面：负责怪物移动、瞄准、战斗结算和动画；答题规则在 GameSession 里。
@@ -128,6 +132,9 @@ final class GameScene: SKScene {
 
     // MARK: - 主循环
 
+    /// 战场时钟：对局进行了多少秒，暂停时不走
+    private(set) var clock: TimeInterval = 0
+
     override func update(_ currentTime: TimeInterval) {
         let dt = lastUpdate == 0 ? 0 : min(currentTime - lastUpdate, 0.1)
         lastUpdate = currentTime
@@ -136,6 +143,7 @@ final class GameScene: SKScene {
             logDiagStats()
         }
         guard !gamePaused, dt > 0, let delegate = gameDelegate else { return }
+        clock += dt
         let factor = delegate.speedFactor
 
         if !spawningFinished {
@@ -188,13 +196,15 @@ final class GameScene: SKScene {
     /// 让一只怪物从右边出场；测试里可以指定路和位置
     @discardableResult
     func spawn(_ spec: EnemySpawn, lane: Int, x: CGFloat? = nil) -> EnemyNode {
+        let boss = tuning.waves.isBoss(spec.kind)
         let enemy = EnemyNode(id: spec.id, kind: spec.kind, sign: spec.sign, lane: lane,
-                              scale: min(1.2, laneHeight / 104), skin: loadout.enemySkin)
+                              scale: min(1.2, laneHeight / 104), skin: loadout.enemySkin, boss: boss)
         enemy.position = CGPoint(x: x ?? spawnX, y: laneY(lane))
         enemy.zPosition = 10 + CGFloat(tuning.lanes - lane)
         addChild(enemy)
         enemies[spec.id] = enemy
         enemy.appear()
+        if boss { BossWarningEffect(name: spec.kind.name, laneY: laneY(lane), laneHeight: laneHeight).play(in: self) }
         return enemy
     }
 
@@ -257,7 +267,7 @@ final class GameScene: SKScene {
     /// 出土的土豆雷被踩到就炸：普通怪物直接倒下，首领只扣血并被弹开
     private func triggerMines(under enemy: EnemyNode) {
         for mine in guards(inLane: enemy.lane) where abs(mine.position.x - enemy.position.x) <= contactGap {
-            guard let damage = mine.guardian?.trigger(isBoss: enemy.kind == tuning.waves.boss,
+            guard let damage = mine.guardian?.trigger(isBoss: tuning.waves.isBoss(enemy.kind),
                                                       health: enemy.health.current) else { continue }
             remove(mine, exploded: true)
             InkBurstEffect(color: UnitColor.coral.fill, scale: 1.3, count: 12).play(at: mine.position, in: self)
@@ -266,12 +276,24 @@ final class GameScene: SKScene {
         }
     }
 
+    /// 被打中但没倒下：更新血量；首领这一下开始暴走时，全屏红光一闪并通知对局配音
+    private func wound(_ enemy: EnemyNode) {
+        let wasEnraged = enemy.isEnraged
+        enemy.showWound()
+        guard enemy.isEnraged, !wasEnraged else { return }
+        ScreenFlashEffect(color: Palette.hurt, alpha: 0.3, duration: 0.4)
+            .play(at: CGPoint(x: size.width / 2, y: size.height / 2), in: self)
+        FloatingTextEffect(text: "💢 首领暴走！", color: Palette.hurt, fontSize: 34)
+            .play(at: CGPoint(x: enemy.center.x, y: enemy.center.y + 70), in: self)
+        gameDelegate?.bossEnraged(enemy.enemyID)
+    }
+
     /// 不经过答题直接受到伤害（土豆雷）
     private func blast(_ enemy: EnemyNode, damage: Int) {
         let id = enemy.enemyID
         enemy.flash()
         guard enemy.health.take(damage) else {
-            enemy.showWound()
+            wound(enemy)
             stopChewing(enemy)
             enemy.knockBack(70)
             return
@@ -479,7 +501,7 @@ final class GameScene: SKScene {
                 self.enemies[id] = nil
                 self.gameDelegate?.enemyDefeated(id, at: enemy.center)
             } else {
-                enemy.showWound()
+                wound(enemy)
             }
         }
         return defeated

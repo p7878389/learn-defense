@@ -43,7 +43,7 @@ struct PacingTests {
                     let kinds = tuning.waves.kinds(questions: tuning.questions, using: &rng)
                     #expect(kinds.reduce(0) { $0 + $1.hp } == tuning.questions)
                     #expect(kinds.prefix(tuning.waves.warmup).allSatisfy { $0 == tuning.waves.basic })
-                    if let boss = tuning.waves.boss { #expect(kinds.last == boss) }
+                    if !tuning.waves.bosses.isEmpty { #expect(kinds.last.map(tuning.waves.isBoss) == true) }
                 }
             }
         }
@@ -51,6 +51,53 @@ struct PacingTests {
         let plan = WavePlan(mix: [WavePlan.Entry(.armored, weight: 1)], boss: .king)
         let small = plan.kinds(questions: 4, using: &rng)
         #expect(small.reduce(0) { $0 + $1.hp } == 4 && !small.contains(.king))
+    }
+
+    @Test func forestEnemiesJoinClassicWaves() throws {
+        let all = UnitCatalog.enemies + UnitCatalog.forestEnemies
+        #expect(Set(all.map(\.id)).count == all.count, "森林怪物和原版僵尸不能重名")
+        for kind in UnitCatalog.forestEnemies {
+            #expect(UnitCatalog.enemy(id: kind.id) == kind)
+            #expect(ForestEnemyKind(rawValue: kind.id)?.name == kind.name, "\(kind.id) 和森林模式是同一个角色")
+            #expect(kind.sunReward == kind.hp * 25)
+        }
+        // 首领血量和铁门僵尸一样，抽到哪个都不改变一局的题量
+        #expect(EnemyKind.forestBosses.count == 10)
+        #expect(EnemyKind.forestBosses.allSatisfy { $0.hp == EnemyKind.king.hp })
+        #expect(EnemyKind.forestBosses.allSatisfy { ForestEnemyKind(rawValue: $0.id)?.isBoss == true })
+        // 飘着的首领能越过矮墙
+        #expect(EnemyKind.reaper.canVault && EnemyKind.gargoyle.canVault && !EnemyKind.knight.canVault)
+
+        // 小学标准、挑战难度：每个首领都会轮到，最后一只一定是首领
+        var rng = SeededRNG(state: 7)
+        for difficulty in [Difficulty.normal, .hard] {
+            let tuning = GameTuning.make(grade: .g3, difficulty: difficulty)
+            #expect(Set(tuning.waves.bosses) == Set([EnemyKind.king] + EnemyKind.forestBosses))
+            var seen: Set<String> = []
+            var minions: Set<String> = []
+            for _ in 0..<400 {
+                let kinds = tuning.waves.kinds(questions: tuning.questions, using: &rng)
+                seen.insert(try #require(kinds.last).id)
+                #expect(kinds.dropLast().allSatisfy { !tuning.waves.isBoss($0) }, "首领只在最后出一个")
+                minions.formUnion(kinds.dropLast().map(\.id))
+            }
+            #expect(seen == Set(tuning.waves.bosses.map(\.id)))
+            #expect(minions.isSuperset(of: ["goblin", "acolyte"]))
+        }
+        // 入门和幼儿园不出首领；幼儿园只加 1 滴血的小怪
+        #expect(GameTuning.make(grade: .g3, difficulty: .easy).waves.bosses.isEmpty)
+        for grade in Grade.allCases where grade.isPreschool {
+            for difficulty in Difficulty.allCases {
+                let waves = GameTuning.make(grade: grade, difficulty: difficulty).waves
+                #expect(waves.bosses.isEmpty && waves.mix.allSatisfy { $0.kind.hp == 1 })
+            }
+        }
+        // 只有一个候选时和以前一样，不多消耗随机数
+        var a = SeededRNG(state: 5), b = SeededRNG(state: 5)
+        let single = WavePlan(mix: [WavePlan.Entry(.hopper, weight: 1)], boss: .king)
+        _ = single.kinds(questions: 10, using: &a)
+        _ = WavePlan(mix: [WavePlan.Entry(.hopper, weight: 1)]).kinds(questions: 7, using: &b)
+        #expect(a.next() == b.next())
     }
 
     @Test func reviewBudget() {

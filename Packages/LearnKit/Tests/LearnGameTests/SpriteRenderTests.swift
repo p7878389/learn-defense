@@ -44,6 +44,29 @@ struct SpriteRenderTests {
         }
     }
 
+    /// 森林怪物在经典模式里的样子：和僵尸并排，朝左、举题牌、首领有血量红点；可导出预览目检。
+    @Test func renderForestEnemiesInClassicMode() throws {
+        let scene = SKScene(size: CGSize(width: 1200, height: 620))
+        scene.backgroundColor = SKColor(red: 0.93, green: 0.96, blue: 0.87, alpha: 1)
+        let kinds = [EnemyKind.blob, .king] + UnitCatalog.forestEnemies
+        for (index, kind) in kinds.enumerated() {
+            let x = CGFloat(index % 7) * 165 + 105
+            let y: CGFloat = index < 7 ? 420 : 150
+            let node = EnemyNode(id: index, kind: kind, sign: "学", lane: 0, scale: 1)
+            node.position = CGPoint(x: x, y: y)
+            scene.addChild(node)
+            scene.addChild(label(kind.name, at: CGPoint(x: x, y: y - 80), size: 18))
+        }
+        let view = SKView(frame: CGRect(origin: .zero, size: scene.size))
+        let texture = try #require(view.texture(from: scene, crop: CGRect(origin: .zero, size: scene.size)))
+        #expect(texture.size() == scene.size)
+        if let path = ProcessInfo.processInfo.environment["LEARN_DEFENSE_FOREST_PREVIEW"] {
+            let bitmap = NSBitmapImageRep(cgImage: texture.cgImage())
+            let data = try #require(bitmap.representation(using: .png, properties: [:]))
+            try data.write(to: URL(fileURLWithPath: path))
+        }
+    }
+
     private func label(_ text: String, at point: CGPoint, size: CGFloat = 20) -> SKLabelNode {
         let label = SKLabelNode(fontNamed: "PingFangSC-Semibold")
         label.text = text

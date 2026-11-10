@@ -46,7 +46,9 @@ public enum SpeechText {
     public static var gameLines: [String] {
         unique(Line.all
             + UnitCatalog.defenders.map { Line.planted($0.name) }
-            + UnitCatalog.items.map(\.name))
+            + UnitCatalog.items.map(\.name)
+            + Line.bossCandidates.map { Line.bossArrive($0.name) }
+            + [ItemKind.inkStorm, .rainbow].map { Line.ultimateCast($0.name) })
     }
 
     /// 纯英文：有字母，且所有字母都是拉丁字母（含带重音的）。标点、数字不算
@@ -82,8 +84,18 @@ public enum SpeechText {
         public static func planted(_ name: String) -> String { "\(name)种下了" }
         public static func bought(_ name: String) -> String { "买到\(name)啦，已经换上了！" }
 
+        // 首领和大招的播报。孩子不一定认得首领的名字，出场时把名字读出来
+        public static func bossArrive(_ name: String) -> String { "小心，\(name)来了！" }
+        /// 只剩最后一段血时首领暴走：告诉孩子离胜利只差一题，而不是吓唬
+        public static let bossEnraged = "首领生气了，再答对一题就能打败它！"
+        public static let bossDefeated = "太棒了，打败首领啦！"
+        public static func ultimateCast(_ name: String) -> String { "\(name)，发射！" }
+
+        /// 会当首领出场的怪物（出场播报要预先生成）
+        static let bossCandidates: [EnemyKind] = [.king] + EnemyKind.forestBosses
+
         /// 预先生成的固定提示语（试听句不在内）
         static let all = [plantFirst, battleStart, notEnoughSun, cellTaken, cellBlocked, won, lost,
-                          gateDown, gateBusy, gateNoTarget]
+                          gateDown, gateBusy, gateNoTarget, bossEnraged, bossDefeated]
     }
 }

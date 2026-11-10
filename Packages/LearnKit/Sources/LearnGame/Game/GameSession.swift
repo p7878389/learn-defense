@@ -86,6 +86,9 @@ final class GameSession: ObservableObject {
     private let recorder: GameRecorder?
     /// 每个怪物当前这道题第一次成为瞄准目标的时间，算作答用时
     private var shownAt: [Int: Date] = [:]
+    /// 正在给哪道新题留缓冲时间，以及从战场时钟的哪一刻算起
+    private var graceMark: (question: Question.ID, start: TimeInterval)?
+    private var newItemGrace: TimeInterval { TimeInterval(rules.newItemGraceSeconds) }
     private var ultimateShownAt: Date?
     /// 本局装备的外观（子弹、退场特效、道具皮肤）
     let loadout: Loadout
@@ -323,6 +326,8 @@ final class GameSession: ObservableObject {
             if firstTry {
                 score += 30
                 ultimatesCast += 1
+                feedback.play(.ultimateCast, volume: speech.effectsVolume)
+                speech.speak(SpeechText.Line.ultimateCast(tuning.ultimate.name), interrupt: true)
                 tuning.ultimate.use(on: self)
             }
         } else {
@@ -565,7 +570,19 @@ final class GameSession: ObservableObject {
 extension GameSession: GameSceneDelegate {
     /// 拼字块题时战场放慢到一半
     var speedFactor: Double { tuner.speedFactor * (typing ? 0.5 : 1) }
-    var holdsTarget: Bool { typing }
+    var holdsTarget: Bool { typing || inNewItemGrace }
+
+    /// 瞄准的这道题是孩子第一次见的知识点（还没有作答记录）：从瞄准它起的几秒内，
+    /// 这只怪物原地等着。答过一次（对或错）就有了记录，之后照常逼近。
+    /// 按战场时钟计时，暂停时不走
+    private var inNewItemGrace: Bool {
+        guard newItemGrace > 0, let id = targetID, let entry = enemyQuestions[id],
+              progress.stats[entry.item.key] == nil else { return false }
+        if graceMark?.question != entry.question.id {
+            graceMark = (entry.question.id, scene.clock)
+        }
+        return scene.clock - (graceMark?.start ?? scene.clock) < newItemGrace
+    }
 
     func nextEnemy() -> EnemySpawn? {
         guard phase == .playing, spawned < totalEnemies else { return nil }
@@ -580,6 +597,11 @@ extension GameSession: GameSceneDelegate {
         enemyQuestions[lastEnemyID] = entry
         enemyKinds[lastEnemyID] = kind
         questionIDs = enemyQuestions.keys.sorted()
+        if tuning.waves.isBoss(kind) {
+            // 画面上的预警由场景在怪物出场时播放，这里配上号角和一句提醒
+            feedback.play(.bossArrive, volume: speech.effectsVolume)
+            speech.speak(SpeechText.Line.bossArrive(kind.name), interrupt: false)
+        }
         return EnemySpawn(id: lastEnemyID, sign: entry.question.signText, kind: kind)
     }
 
@@ -637,7 +659,14 @@ extension GameSession: GameSceneDelegate {
         enemyWrongPicks[id] = nil
         shownAt[id] = nil
         questionIDs = enemyQuestions.keys.sorted()
-        if kind == tuning.waves.boss { bossesDefeated += 1 }
+        if tuning.waves.isBoss(kind) {
+            bossesDefeated += 1
+            feedback.play(.bossDefeated, volume: speech.effectsVolume)
+            scene.play(ScreenFlashEffect(color: Palette.bullet, alpha: 0.5, duration: 0.6))
+            scene.play(FloatingTextEffect(text: "🏆 打败首领！", color: Palette.target, fontSize: 40),
+                       at: CGPoint(x: point.x, y: point.y + 100))
+            speech.speak(SpeechText.Line.bossDefeated, interrupt: false)
+        }
         if kind.bonus > 0 {
             score += kind.bonus
             scene.play(FloatingTextEffect(text: "+\(kind.bonus)"), at: CGPoint(x: point.x, y: point.y + 30))
@@ -655,6 +684,12 @@ extension GameSession: GameSceneDelegate {
 }
 
 extension GameSession {
+    func bossEnraged(_ id: Int) {
+        guard phase == .playing else { return }
+        feedback.play(.bossEnrage, volume: speech.effectsVolume)
+        speech.speak(SpeechText.Line.bossEnraged, interrupt: false)
+    }
+
     func barricadeRemoved() {
         barricadeDown = false
     }

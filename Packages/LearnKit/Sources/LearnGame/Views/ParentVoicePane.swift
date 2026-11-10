@@ -81,6 +81,9 @@ struct ParentGamePane: View {
                 Stepper("后续每回合增加 \(rules.restIncrementSeconds) 秒", value: $rules.restIncrementSeconds, in: 1...30)
                 Stepper("最长休息 \(rules.maxRestSeconds) 秒", value: $rules.maxRestSeconds, in: rules.initialRestSeconds...600)
                 Stepper("每 \(rules.reviewEvery) 题穿插一次错题", value: $rules.reviewEvery, in: 2...20)
+                Stepper(rules.newItemGraceSeconds == 0 ? "新知识点不额外等待"
+                        : "新知识点先等 \(rules.newItemGraceSeconds) 秒再逼近",
+                        value: $rules.newItemGraceSeconds, in: 0...60, step: 2)
                 Stepper("简单：每回合增加 \(rules.questionIncrement.easy) 题", value: $rules.questionIncrement.easy, in: 1...20)
                 Stepper("标准：每回合增加 \(rules.questionIncrement.normal) 题", value: $rules.questionIncrement.normal, in: 1...20)
                 Stepper("挑战：每回合增加 \(rules.questionIncrement.hard) 题", value: $rules.questionIncrement.hard, in: 1...20)

@@ -315,8 +315,8 @@ struct UnitTests {
                 let kinds = tuning.waves.kinds(questions: tuning.questions, using: &rng)
                 #expect(kinds.reduce(0) { $0 + $1.hp } == tuning.questions, "怪物血量之和就是题量")
                 #expect(kinds.prefix(tuning.waves.warmup).allSatisfy { $0 == tuning.waves.basic })
-                if let boss = tuning.waves.boss {
-                    #expect(kinds.last == boss)
+                if !tuning.waves.bosses.isEmpty {
+                    #expect(kinds.last.map(tuning.waves.isBoss) == true, "最后一只是首领候选里的一个")
                 }
                 if grade.isPreschool {
                     #expect(kinds.allSatisfy { $0.hp == 1 }, "幼儿园不出要打好几下的怪")

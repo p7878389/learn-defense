@@ -40,11 +40,19 @@ final class EnemyNode: SKNode {
     /// 牌子上是单个 emoji（如听音题的 🔊）时，换成 3D 图片
     private var signPicture: SKNode?
     private let pips = SKNode()
+    /// 这一局的首领：头顶是血条而不是红点，出场有专门的动画
+    let isBoss: Bool
+    private var healthBar: BossHealthBar?
+    /// 首领只剩最后一段血：暴走，走得快一点
+    private(set) var isEnraged = false
+    static let enragedSpeed = 1.2
 
-    init(id: Int, kind: EnemyKind, sign text: String, lane: Int, scale: CGFloat, skin: CharacterSkin? = nil) {
+    init(id: Int, kind: EnemyKind, sign text: String, lane: Int, scale: CGFloat, skin: CharacterSkin? = nil,
+         boss: Bool = false) {
         enemyID = id
         self.lane = lane
         self.kind = kind
+        isBoss = boss
         health = Health(max: kind.hp)
         movement = kind.movement.makeStrategy()
 
@@ -87,7 +95,14 @@ final class EnemyNode: SKNode {
         addChild(sign)
         setSign(text)
 
-        if kind.hp > 1 {
+        if boss {
+            let bar = BossHealthBar(name: kind.name, segments: kind.hp)
+            bar.position = CGPoint(x: 0, y: figureBaseY + halfHeight * s + 10)
+            bar.zPosition = 3
+            addChild(bar)
+            healthBar = bar
+            addAura(width: (rig?.sprite.size.width ?? extent.width * 2) * s)
+        } else if kind.hp > 1 {
             pips.position = CGPoint(x: 0, y: figureBaseY + halfHeight * s + 16)
             addChild(pips)
             showHealth()
@@ -127,7 +142,7 @@ final class EnemyNode: SKNode {
             if slowRemaining <= 0 { endSlow() }
         }
         guard !doomed, !isHeld else { return 0 }
-        let motion = movement.step(dt: dt, speed: speed * slowFactor)
+        let motion = movement.step(dt: dt, speed: speed * slowFactor * (isEnraged ? Self.enragedSpeed : 1))
         figure.position.y = figureBaseY + CGFloat(motion.lift)
         return CGFloat(motion.dx)
     }
@@ -215,7 +230,57 @@ final class EnemyNode: SKNode {
         }
     }
 
+    /// 暴走：脚下的光变成急促的红光，头顶冒出一个跳动的怒气标记，身体抖一下
+    private func enrage() {
+        isEnraged = true
+        if let aura = childNode(withName: "bossAura") as? SKShapeNode {
+            aura.removeAllActions()
+            aura.fillColor = Palette.hurt.withAlphaComponent(0.6)
+            aura.strokeColor = Palette.hurt
+            aura.lineWidth = 3
+            aura.run(.repeatForever(.sequence([
+                .group([.fadeAlpha(to: 0.5, duration: 0.22), .scale(to: 0.95, duration: 0.22)]),
+                .group([.fadeAlpha(to: 1, duration: 0.22), .scale(to: 1.2, duration: 0.22)]),
+            ])))
+        }
+        if let healthBar {
+            let anger = SKLabelNode(text: "💢")
+            anger.name = "bossAnger"
+            anger.fontSize = 26
+            anger.verticalAlignmentMode = .center
+            anger.position = CGPoint(x: healthBar.position.x + BossHealthBar.size.width / 2 + 16,
+                                     y: healthBar.position.y + 8)
+            anger.zPosition = 4
+            addChild(anger)
+            anger.run(.repeatForever(.sequence([.scale(to: 1.35, duration: 0.2), .scale(to: 0.9, duration: 0.2)])))
+        }
+        squash.run(.sequence([
+            .moveBy(x: 6, y: 0, duration: 0.04), .moveBy(x: -12, y: 0, duration: 0.07),
+            .moveBy(x: 12, y: 0, duration: 0.07), .moveBy(x: -6, y: 0, duration: 0.04),
+        ]))
+    }
+
+    /// 首领脚下一圈一明一暗的光，远远就能认出它
+    private func addAura(width: CGFloat) {
+        let aura = SKShapeNode(ellipseOf: CGSize(width: width * 1.15, height: 26))
+        aura.name = "bossAura"
+        aura.fillColor = Palette.hurt.withAlphaComponent(0.35)
+        aura.strokeColor = Palette.bullet.withAlphaComponent(0.8)
+        aura.lineWidth = 2
+        aura.position = CGPoint(x: 0, y: -44)
+        aura.zPosition = -1
+        addChild(aura)
+        aura.run(.repeatForever(.sequence([
+            .group([.fadeAlpha(to: 0.45, duration: 0.7), .scale(to: 0.9, duration: 0.7)]),
+            .group([.fadeAlpha(to: 1, duration: 0.7), .scale(to: 1.08, duration: 0.7)]),
+        ])))
+    }
+
     func showHealth() {
+        if let healthBar {
+            healthBar.set(current: health.current, max: health.max, animated: parent != nil)
+            return
+        }
         pips.removeAllChildren()
         let n = health.max
         for i in 0..<n {
@@ -230,6 +295,7 @@ final class EnemyNode: SKNode {
     /// 被打中但没倒下：更新血量红点；只剩最后一下时，铁桶、铁门这类防具被打掉，换成普通僵尸继续走
     func showWound() {
         showHealth()
+        if isBoss, !isEnraged, health.max > 1, health.current == 1 { enrage() }
         guard !armorShed, health.max > 1, health.current == 1,
               let rig, let bare = rig.clip(for: "bare") else { return }
         armorShed = true
@@ -257,6 +323,27 @@ final class EnemyNode: SKNode {
     func appear() {
         alpha = 0
         run(.fadeIn(withDuration: 0.3))
+        if isBoss { enterAsBoss() }
+    }
+
+    /// 首领出场：从大到小「砸」到地上弹一下，落地时脚下荡开两圈波纹
+    private func enterAsBoss() {
+        let rest = figure.xScale
+        figure.setScale(rest * 1.7)
+        let land = SKAction.sequence([
+            .scale(to: rest * 0.9, duration: 0.28),
+            .scale(to: rest * 1.08, duration: 0.1),
+            .scale(to: rest, duration: 0.1),
+        ])
+        land.timingMode = .easeIn
+        figure.run(.sequence([
+            land,
+            .run { [weak self] in
+                guard let self, let parent = self.parent else { return }
+                RippleEffect(color: Palette.hurt, rings: 2)
+                    .play(at: CGPoint(x: self.position.x, y: self.position.y - 44 * self.yScale), in: parent)
+            },
+        ]), withKey: "bossEntrance")
     }
 
     /// 被打中一下：身体闪白
@@ -317,10 +404,14 @@ final class EnemyNode: SKNode {
         }
         let fallClip = burnt ? (rig?.clip(for: "boom") ?? rig?.clip(for: "die")) : rig?.clip(for: "die")
         guard let rig, let fallClip else {
-            run(.sequence([
-                .group([.scale(by: 1.4, duration: 0.2), .fadeOut(withDuration: 0.2)]),
-                .removeFromParent(),
-            ]))
+            // 首领没有倒地动画：先抖两下再炸开，比小怪退场更有分量
+            let vanish = SKAction.group([.scale(by: isBoss ? 1.7 : 1.4, duration: isBoss ? 0.35 : 0.2),
+                                         .fadeOut(withDuration: isBoss ? 0.35 : 0.2)])
+            let shudder = SKAction.sequence([
+                .moveBy(x: 8, y: 0, duration: 0.05), .moveBy(x: -16, y: 0, duration: 0.08),
+                .moveBy(x: 16, y: 0, duration: 0.08), .moveBy(x: -8, y: 0, duration: 0.05),
+            ])
+            run(.sequence((isBoss ? [shudder] : []) + [vanish, .removeFromParent()]))
             return
         }
         // 倒在地上：停掉呼吸和跳跃，取消冰冻色
@@ -329,7 +420,8 @@ final class EnemyNode: SKNode {
         squash.xScale = 1
         squash.yScale = 1
         figure.position.y = figureBaseY
-        for node in [sign, pips] {
+        for node in [sign, pips, healthBar, childNode(withName: "bossAura"), childNode(withName: "bossAnger")]
+            .compactMap({ $0 }) {
             node.removeAllActions()
             node.run(.fadeOut(withDuration: 0.15))
         }

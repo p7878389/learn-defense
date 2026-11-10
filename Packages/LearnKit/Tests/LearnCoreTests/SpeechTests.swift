@@ -45,6 +45,21 @@ struct SpeechTextTests {
         #expect(lines.contains(SpeechText.Line.planted(DefenderKind.inkling.name)))
         #expect(lines.contains(ItemKind.frostCharm.name))
         #expect(Set(lines).count == lines.count)
+        // 首领和大招的播报都会预先生成：每个可能当首领的怪物一句出场，加暴走、击杀、两种大招
+        for boss in [EnemyKind.king] + EnemyKind.forestBosses {
+            #expect(lines.contains("小心，\(boss.name)来了！"))
+        }
+        #expect(lines.contains(SpeechText.Line.bossEnraged))
+        #expect(lines.contains(SpeechText.Line.bossDefeated))
+        #expect(lines.contains("成语大招，发射！") && lines.contains("彩虹大招，发射！"))
+        // 每一档难度的首领候选都有出场播报
+        for grade in Grade.allCases {
+            for difficulty in Difficulty.allCases {
+                for boss in GameTuning.make(grade: grade, difficulty: difficulty).waves.bosses {
+                    #expect(lines.contains(SpeechText.Line.bossArrive(boss.name)), "\(boss.id)")
+                }
+            }
+        }
     }
 }
 

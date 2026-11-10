@@ -1,0 +1,552 @@
+{
+ "zombie-goblin": {
+  "frameCount": 6,
+  "frameTime": 0.12,
+  "crop": [
+   38,
+   5,
+   244,
+   279
+  ],
+  "canvas": [
+   320,
+   320
+  ],
+  "files": [
+   "ForestActions/goblin-action-0",
+   "ForestActions/goblin-action-1",
+   "ForestActions/goblin-action-2",
+   "ForestActions/goblin-action-3",
+   "ForestActions/goblin-action-4",
+   "ForestActions/goblin-action-5"
+  ],
+  "mirrored": true,
+  "states": {
+   "attack": "zombie-goblin-attack"
+  }
+ },
+ "zombie-goblin-attack": {
+  "frameCount": 3,
+  "frameTime": 0.2,
+  "crop": [
+   38,
+   5,
+   244,
+   279
+  ],
+  "canvas": [
+   320,
+   320
+  ],
+  "files": [
+   "ForestActions/goblin-action-6",
+   "ForestActions/goblin-action-7",
+   "ForestActions/goblin-action-8"
+  ],
+  "mirrored": true
+ },
+ "zombie-acolyte": {
+  "frameCount": 6,
+  "frameTime": 0.12,
+  "crop": [
+   37,
+   5,
+   251,
+   279
+  ],
+  "canvas": [
+   320,
+   320
+  ],
+  "files": [
+   "ForestActions/acolyte-action-0",
+   "ForestActions/acolyte-action-1",
+   "ForestActions/acolyte-action-2",
+   "ForestActions/acolyte-action-3",
+   "ForestActions/acolyte-action-4",
+   "ForestActions/acolyte-action-5"
+  ],
+  "mirrored": true,
+  "states": {
+   "attack": "zombie-acolyte-attack"
+  }
+ },
+ "zombie-acolyte-attack": {
+  "frameCount": 3,
+  "frameTime": 0.2,
+  "crop": [
+   37,
+   5,
+   251,
+   279
+  ],
+  "canvas": [
+   320,
+   320
+  ],
+  "files": [
+   "ForestActions/acolyte-action-6",
+   "ForestActions/acolyte-action-7",
+   "ForestActions/acolyte-action-8"
+  ],
+  "mirrored": true
+ },
+ "zombie-knight": {
+  "frameCount": 6,
+  "frameTime": 0.12,
+  "crop": [
+   14,
+   15,
+   295,
+   269
+  ],
+  "canvas": [
+   320,
+   320
+  ],
+  "files": [
+   "ForestActions/knight-action-0",
+   "ForestActions/knight-action-1",
+   "ForestActions/knight-action-2",
+   "ForestActions/knight-action-3",
+   "ForestActions/knight-action-4",
+   "ForestActions/knight-action-5"
+  ],
+  "mirrored": true,
+  "states": {
+   "attack": "zombie-knight-attack"
+  }
+ },
+ "zombie-knight-attack": {
+  "frameCount": 3,
+  "frameTime": 0.2,
+  "crop": [
+   14,
+   15,
+   295,
+   269
+  ],
+  "canvas": [
+   320,
+   320
+  ],
+  "files": [
+   "ForestActions/knight-action-6",
+   "ForestActions/knight-action-7",
+   "ForestActions/knight-action-8"
+  ],
+  "mirrored": true
+ },
+ "zombie-berserker": {
+  "frameCount": 6,
+  "frameTime": 0.12,
+  "crop": [
+   18,
+   5,
+   283,
+   279
+  ],
+  "canvas": [
+   320,
+   320
+  ],
+  "files": [
+   "ForestActions/berserker-action-0",
+   "ForestActions/berserker-action-1",
+   "ForestActions/berserker-action-2",
+   "ForestActions/berserker-action-3",
+   "ForestActions/berserker-action-4",
+   "ForestActions/berserker-action-5"
+  ],
+  "mirrored": true,
+  "states": {
+   "attack": "zombie-berserker-attack"
+  }
+ },
+ "zombie-berserker-attack": {
+  "frameCount": 3,
+  "frameTime": 0.2,
+  "crop": [
+   18,
+   5,
+   283,
+   279
+  ],
+  "canvas": [
+   320,
+   320
+  ],
+  "files": [
+   "ForestActions/berserker-action-6",
+   "ForestActions/berserker-action-7",
+   "ForestActions/berserker-action-8"
+  ],
+  "mirrored": true
+ },
+ "zombie-frostKing": {
+  "frameCount": 6,
+  "frameTime": 0.12,
+  "crop": [
+   30,
+   6,
+   263,
+   277
+  ],
+  "canvas": [
+   320,
+   320
+  ],
+  "files": [
+   "ForestActions/frostKing-action-0",
+   "ForestActions/frostKing-action-1",
+   "ForestActions/frostKing-action-2",
+   "ForestActions/frostKing-action-3",
+   "ForestActions/frostKing-action-4",
+   "ForestActions/frostKing-action-5"
+  ],
+  "mirrored": true,
+  "states": {
+   "attack": "zombie-frostKing-attack"
+  }
+ },
+ "zombie-frostKing-attack": {
+  "frameCount": 3,
+  "frameTime": 0.2,
+  "crop": [
+   30,
+   6,
+   263,
+   277
+  ],
+  "canvas": [
+   320,
+   320
+  ],
+  "files": [
+   "ForestActions/frostKing-action-6",
+   "ForestActions/frostKing-action-7",
+   "ForestActions/frostKing-action-8"
+  ],
+  "mirrored": true
+ },
+ "zombie-infernal": {
+  "frameCount": 6,
+  "frameTime": 0.12,
+  "crop": [
+   14,
+   23,
+   292,
+   261
+  ],
+  "canvas": [
+   320,
+   320
+  ],
+  "files": [
+   "ForestActions/infernal-action-0",
+   "ForestActions/infernal-action-1",
+   "ForestActions/infernal-action-2",
+   "ForestActions/infernal-action-3",
+   "ForestActions/infernal-action-4",
+   "ForestActions/infernal-action-5"
+  ],
+  "mirrored": true,
+  "states": {
+   "attack": "zombie-infernal-attack"
+  }
+ },
+ "zombie-infernal-attack": {
+  "frameCount": 3,
+  "frameTime": 0.2,
+  "crop": [
+   14,
+   23,
+   292,
+   261
+  ],
+  "canvas": [
+   320,
+   320
+  ],
+  "files": [
+   "ForestActions/infernal-action-6",
+   "ForestActions/infernal-action-7",
+   "ForestActions/infernal-action-8"
+  ],
+  "mirrored": true
+ },
+ "zombie-pharaoh": {
+  "frameCount": 6,
+  "frameTime": 0.12,
+  "crop": [
+   34,
+   5,
+   250,
+   279
+  ],
+  "canvas": [
+   320,
+   320
+  ],
+  "files": [
+   "ForestActions/pharaoh-action-0",
+   "ForestActions/pharaoh-action-1",
+   "ForestActions/pharaoh-action-2",
+   "ForestActions/pharaoh-action-3",
+   "ForestActions/pharaoh-action-4",
+   "ForestActions/pharaoh-action-5"
+  ],
+  "mirrored": true,
+  "states": {
+   "attack": "zombie-pharaoh-attack"
+  }
+ },
+ "zombie-pharaoh-attack": {
+  "frameCount": 3,
+  "frameTime": 0.2,
+  "crop": [
+   34,
+   5,
+   250,
+   279
+  ],
+  "canvas": [
+   320,
+   320
+  ],
+  "files": [
+   "ForestActions/pharaoh-action-6",
+   "ForestActions/pharaoh-action-7",
+   "ForestActions/pharaoh-action-8"
+  ],
+  "mirrored": true
+ },
+ "zombie-reaper": {
+  "frameCount": 6,
+  "frameTime": 0.12,
+  "crop": [
+   10,
+   25,
+   299,
+   259
+  ],
+  "canvas": [
+   320,
+   320
+  ],
+  "files": [
+   "ForestActions/reaper-action-0",
+   "ForestActions/reaper-action-1",
+   "ForestActions/reaper-action-2",
+   "ForestActions/reaper-action-3",
+   "ForestActions/reaper-action-4",
+   "ForestActions/reaper-action-5"
+  ],
+  "mirrored": true,
+  "states": {
+   "attack": "zombie-reaper-attack"
+  }
+ },
+ "zombie-reaper-attack": {
+  "frameCount": 3,
+  "frameTime": 0.2,
+  "crop": [
+   10,
+   25,
+   299,
+   259
+  ],
+  "canvas": [
+   320,
+   320
+  ],
+  "files": [
+   "ForestActions/reaper-action-6",
+   "ForestActions/reaper-action-7",
+   "ForestActions/reaper-action-8"
+  ],
+  "mirrored": true
+ },
+ "zombie-slime": {
+  "frameCount": 6,
+  "frameTime": 0.12,
+  "crop": [
+   11,
+   7,
+   297,
+   277
+  ],
+  "canvas": [
+   320,
+   320
+  ],
+  "files": [
+   "ForestActions/slime-action-0",
+   "ForestActions/slime-action-1",
+   "ForestActions/slime-action-2",
+   "ForestActions/slime-action-3",
+   "ForestActions/slime-action-4",
+   "ForestActions/slime-action-5"
+  ],
+  "mirrored": true,
+  "states": {
+   "attack": "zombie-slime-attack"
+  }
+ },
+ "zombie-slime-attack": {
+  "frameCount": 3,
+  "frameTime": 0.2,
+  "crop": [
+   11,
+   7,
+   297,
+   277
+  ],
+  "canvas": [
+   320,
+   320
+  ],
+  "files": [
+   "ForestActions/slime-action-6",
+   "ForestActions/slime-action-7",
+   "ForestActions/slime-action-8"
+  ],
+  "mirrored": true
+ },
+ "zombie-gargoyle": {
+  "frameCount": 6,
+  "frameTime": 0.12,
+  "crop": [
+   11,
+   36,
+   297,
+   247
+  ],
+  "canvas": [
+   320,
+   320
+  ],
+  "files": [
+   "ForestActions/gargoyle-action-0",
+   "ForestActions/gargoyle-action-1",
+   "ForestActions/gargoyle-action-2",
+   "ForestActions/gargoyle-action-3",
+   "ForestActions/gargoyle-action-4",
+   "ForestActions/gargoyle-action-5"
+  ],
+  "mirrored": true,
+  "states": {
+   "attack": "zombie-gargoyle-attack"
+  }
+ },
+ "zombie-gargoyle-attack": {
+  "frameCount": 3,
+  "frameTime": 0.2,
+  "crop": [
+   11,
+   36,
+   297,
+   247
+  ],
+  "canvas": [
+   320,
+   320
+  ],
+  "files": [
+   "ForestActions/gargoyle-action-6",
+   "ForestActions/gargoyle-action-7",
+   "ForestActions/gargoyle-action-8"
+  ],
+  "mirrored": true
+ },
+ "zombie-shaman": {
+  "frameCount": 6,
+  "frameTime": 0.12,
+  "crop": [
+   10,
+   0,
+   289,
+   320
+  ],
+  "canvas": [
+   320,
+   320
+  ],
+  "files": [
+   "ForestActions/shaman-action-0",
+   "ForestActions/shaman-action-1",
+   "ForestActions/shaman-action-2",
+   "ForestActions/shaman-action-3",
+   "ForestActions/shaman-action-4",
+   "ForestActions/shaman-action-5"
+  ],
+  "mirrored": true,
+  "states": {
+   "attack": "zombie-shaman-attack"
+  }
+ },
+ "zombie-shaman-attack": {
+  "frameCount": 3,
+  "frameTime": 0.2,
+  "crop": [
+   10,
+   0,
+   289,
+   320
+  ],
+  "canvas": [
+   320,
+   320
+  ],
+  "files": [
+   "ForestActions/shaman-action-6",
+   "ForestActions/shaman-action-7",
+   "ForestActions/shaman-action-8"
+  ],
+  "mirrored": true
+ },
+ "zombie-ogre": {
+  "frameCount": 6,
+  "frameTime": 0.12,
+  "crop": [
+   71,
+   72,
+   398,
+   379
+  ],
+  "canvas": [
+   512,
+   512
+  ],
+  "files": [
+   "ForestRoster/ogre-walk-0",
+   "ForestRoster/ogre-walk-1",
+   "ForestRoster/ogre-walk-2",
+   "ForestRoster/ogre-walk-3",
+   "ForestRoster/ogre-walk-4",
+   "ForestRoster/ogre-walk-5"
+  ],
+  "mirrored": false,
+  "states": {
+   "attack": "zombie-ogre-attack"
+  }
+ },
+ "zombie-ogre-attack": {
+  "frameCount": 1,
+  "frameTime": 0.6,
+  "crop": [
+   41,
+   18,
+   431,
+   473
+  ],
+  "canvas": [
+   512,
+   512
+  ],
+  "files": [
+   "ForestRoster/ogre-skill"
+  ],
+  "mirrored": false
+ }
+}
