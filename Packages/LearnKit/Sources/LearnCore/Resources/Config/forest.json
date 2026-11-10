@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "economy": {
+    "startCoins": 100,
+    "lives": 5,
+    "waves": 3,
+    "spawnBase": 3,
+    "spawnInterval": 1.8,
+    "waveReward": 50,
+    "repairCost": 15,
+    "repairAmount": 20
+  },
+  "towers": {
+    "rapid": { "cost": 50, "maxHealth": 30, "damage": 0.45, "range": 0.18, "reload": 0.75, "burst": 3, "burstGap": 0.09, "slowSeconds": 0 },
+    "frost": { "cost": 50, "maxHealth": 30, "damage": 0.6, "range": 0.18, "reload": 1.2, "burst": 1, "burstGap": 0, "slowSeconds": 2 }
+  },
+  "enemies": {
+    "skeleton": { "health": 3, "speed": 0.055, "reward": 10, "leakLives": 1, "windup": 0.35, "recovery": 0.3, "attackDamage": 1, "attackRange": 0.13, "attackCooldown": 4, "skillDamage": 0, "skillRadius": 0, "skillCount": 1 },
+    "boar":     { "health": 4, "speed": 0.075, "reward": 10, "leakLives": 1, "windup": 0.4, "recovery": 0.3, "attackDamage": 1, "attackRange": 0.13, "attackCooldown": 4, "skillDamage": 0, "skillRadius": 0, "skillCount": 1 },
+    "goblin":   { "health": 3, "speed": 0.055, "reward": 10, "leakLives": 1, "windup": 0.4, "recovery": 0.3, "attackDamage": 3, "attackRange": 0.24, "attackCooldown": 4, "skillDamage": 0, "skillRadius": 0, "skillCount": 1 },
+    "acolyte":  { "health": 3, "speed": 0.055, "reward": 10, "leakLives": 1, "windup": 0.55, "recovery": 0.35, "attackDamage": 3, "attackRange": 0.24, "attackCooldown": 4, "skillDamage": 0, "skillRadius": 0, "skillCount": 1 },
+    "knight":   { "health": 18, "speed": 0.033, "reward": 100, "leakLives": 3, "windup": 0.55, "recovery": 0.4, "attackDamage": 3, "attackRange": 0.13, "attackCooldown": 3.2, "skillDamage": 5, "skillRadius": 0.12, "skillCount": 1 },
+    "ogre":     { "health": 18, "speed": 0.033, "reward": 100, "leakLives": 3, "windup": 0.8, "recovery": 0.65, "attackDamage": 3, "attackRange": 0.13, "attackCooldown": 3.2, "skillDamage": 5, "skillRadius": 0.12, "skillCount": 1 },
+    "berserker":{ "health": 18, "speed": 0.045, "reward": 100, "leakLives": 3, "windup": 0.45, "recovery": 0.35, "attackDamage": 3, "attackRange": 0.13, "attackCooldown": 3.2, "skillDamage": 5, "skillRadius": 0.12, "skillCount": 1 },
+    "frostKing":{ "health": 18, "speed": 0.045, "reward": 100, "leakLives": 3, "windup": 0.5, "recovery": 0.4, "attackDamage": 3, "attackRange": 0.13, "attackCooldown": 3.2, "skillDamage": 5, "skillRadius": 0.12, "skillCount": 1 },
+    "infernal": { "health": 18, "speed": 0.038, "reward": 100, "leakLives": 3, "windup": 0.7, "recovery": 0.5, "attackDamage": 3, "attackRange": 0.13, "attackCooldown": 3.2, "skillDamage": 5, "skillRadius": 0.12, "skillCount": 1 },
+    "reaper":   { "health": 18, "speed": 0.038, "reward": 100, "leakLives": 3, "windup": 0.9, "recovery": 0.45, "attackDamage": 3, "attackRange": 0.24, "attackCooldown": 3.2, "skillDamage": 5, "skillRadius": 0, "skillCount": 3 },
+    "pharaoh":  { "health": 18, "speed": 0.038, "reward": 100, "leakLives": 3, "windup": 1, "recovery": 0.5, "attackDamage": 3, "attackRange": 0.24, "attackCooldown": 3.2, "skillDamage": 5, "skillRadius": 0.12, "skillCount": 1 },
+    "slime":    { "health": 18, "speed": 0.033, "reward": 100, "leakLives": 3, "windup": 0.85, "recovery": 0.6, "attackDamage": 3, "attackRange": 0.24, "attackCooldown": 3.2, "skillDamage": 5, "skillRadius": 0.12, "skillCount": 1 },
+    "gargoyle": { "health": 18, "speed": 0.038, "reward": 100, "leakLives": 3, "windup": 1.1, "recovery": 0.65, "attackDamage": 3, "attackRange": 0.24, "attackCooldown": 3.2, "skillDamage": 5, "skillRadius": 0.12, "skillCount": 3 },
+    "shaman":   { "health": 18, "speed": 0.038, "reward": 100, "leakLives": 3, "windup": 0.7, "recovery": 0.45, "attackDamage": 3, "attackRange": 0.24, "attackCooldown": 3.2, "skillDamage": 5, "skillRadius": 0.12, "skillCount": 1 }
+  },
+  "heroes": {
+    "paladin": { "cost": 50, "maxHealth": 36, "attackDamage": 1.2, "attackRange": 0.24, "attackWindup": 0.45, "attackRecovery": 0.35, "attackCooldown": 0.85, "skillWindup": 0.8, "skillRecovery": 0.5, "skillCooldown": 12, "skillRange": 0, "skillRadius": 0.3, "skillDamage": 0, "skillSeconds": 6 },
+    "botanist":{ "cost": 50, "maxHealth": 36, "attackDamage": 1.2, "attackRange": 0.24, "attackWindup": 0.65, "attackRecovery": 0.45, "attackCooldown": 0.85, "skillWindup": 1, "skillRecovery": 0.5, "skillCooldown": 12, "skillRange": 0.3, "skillRadius": 0.14, "skillDamage": 2, "skillSeconds": 3 }
+  },
+  "combat": {
+    "slowFactor": 0.55,
+    "chillSeconds": 3,
+    "chillFactor": 0.5,
+    "shieldDamageFactor": 0.35,
+    "zoneSeconds": 3,
+    "zoneTickSeconds": 0.5,
+    "zoneTickDamage": 1,
+    "zoneMinRadius": 0.1,
+    "firstAttackDelay": 2,
+    "skillEvery": 3,
+    "meleeSkillExtraWindup": 0.25
+  }
+}

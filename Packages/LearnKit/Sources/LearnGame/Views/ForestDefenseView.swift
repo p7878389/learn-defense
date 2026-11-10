@@ -10,7 +10,7 @@ import AppKit
 /// 独立的路径塔防试验，不改变原有战斗场景。
 @MainActor
 private final class ForestSession: ObservableObject {
-    @Published var battle = ForestBattle()
+    @Published var battle: ForestBattle
     @Published var question: Question?
     @Published var wrongPicks: Set<Int> = []
     @Published var selectedTower: ForestTower = .rapid
@@ -26,6 +26,8 @@ private final class ForestSession: ObservableObject {
         generator = QuestionGenerator(pool: pool, settings: GameTuning.make(grade: config.grade, difficulty: config.difficulty).generator)
         progress = model.progress(for: config.profileID)
         speech = model.speech
+        // 数值来自数据库里的森林配置；一局之内不变。
+        battle = ForestBattle(rules: model.forestRules)
     }
     var isEmpty: Bool { generator.pool.isEmpty }
     func tick(_ elapsed: Double) {
@@ -87,7 +89,7 @@ struct ForestDefenseView: View {
                     let width = min(geo.size.width, geo.size.height * 1376 / 768)
                     let height = width * 768 / 1376
                     ForestBattlefield(battle: session.battle, width: width, height: height, baseHit: baseHit,
-                                      canBuild: session.battle.coins >= 50, selectedSlot: focusedSlot) { index in
+                                      canBuild: session.battle.coins >= selectedCost, selectedSlot: focusedSlot) { index in
                         focusedSlot = index
                         guard session.battle.defenses[index] == nil else { return }
                         if let selectedHero { _ = session.battle.deploy(selectedHero, at: index) }
@@ -105,6 +107,7 @@ struct ForestDefenseView: View {
         }
         .padding(.vertical, 8)
         .background(Color(red: 0.92, green: 0.96, blue: 0.85))
+        .task { ForestRosterArtwork.preload() }
         .onChange(of: session.battle.lives) { oldValue, newValue in
             guard newValue < oldValue else { return }
             baseHit = true
@@ -119,10 +122,10 @@ struct ForestDefenseView: View {
             case .preparing:
                 ScrollView(.horizontal, showsIndicators: false) {
                   HStack {
-                    Button("🌱 连发塔 50") { selectedHero = nil; session.selectedTower = .rapid }.buttonStyle(.borderedProminent).tint(selectedHero == nil && session.selectedTower == .rapid ? .green : .gray)
-                    Button("❄️ 冰冻塔 50") { selectedHero = nil; session.selectedTower = .frost }.buttonStyle(.borderedProminent).tint(selectedHero == nil && session.selectedTower == .frost ? .blue : .gray)
+                    Button("🌱 连发塔 \(session.battle.rules.tower(.rapid).cost)") { selectedHero = nil; session.selectedTower = .rapid }.buttonStyle(.borderedProminent).tint(selectedHero == nil && session.selectedTower == .rapid ? .green : .gray)
+                    Button("❄️ 冰冻塔 \(session.battle.rules.tower(.frost).cost)") { selectedHero = nil; session.selectedTower = .frost }.buttonStyle(.borderedProminent).tint(selectedHero == nil && session.selectedTower == .frost ? .blue : .gray)
                     ForEach(ForestHero.allCases, id: \.self) { hero in
-                        Button("\(hero.name) 50") { selectedHero = hero }
+                        Button("\(hero.name) \(session.battle.rules.hero(hero).cost)") { selectedHero = hero }
                             .buttonStyle(.borderedProminent).tint(selectedHero == hero ? .orange : .gray)
                             .disabled(session.battle.defenses.values.contains { $0.hero == hero })
                     }
@@ -162,14 +165,20 @@ struct ForestDefenseView: View {
         }
     }
 
+    /// 当前选中的守卫（英雄或炮塔）的建造花费。
+    private var selectedCost: Int {
+        let rules = session.battle.rules
+        return selectedHero.map { rules.hero($0).cost } ?? rules.tower(session.selectedTower).cost
+    }
+
     @ViewBuilder private var defenseControls: some View {
         if session.battle.phase == .preparing || session.battle.phase == .fighting {
             HStack {
                 if let slot = focusedSlot, let unit = session.battle.defenses[slot] {
                     Text("塔位 \(slot + 1) · 耐久 \(Int(ceil(unit.health)))/\(Int(unit.maxHealth))").font(.caption)
-                    Button("修复 +20 · 15☀️") { _ = session.battle.repair(at: slot) }
+                    Button("修复 +\(Int(session.battle.rules.economy.repairAmount)) · \(session.battle.rules.economy.repairCost)☀️") { _ = session.battle.repair(at: slot) }
                         .buttonStyle(.bordered)
-                        .disabled(unit.health >= unit.maxHealth || session.battle.coins < ForestBattle.repairCost)
+                        .disabled(unit.health >= unit.maxHealth || session.battle.coins < session.battle.rules.economy.repairCost)
                 }
                 ForEach(session.battle.defenses.keys.sorted(), id: \.self) { slot in
                     if let unit = session.battle.defenses[slot], let hero = unit.hero, session.battle.phase == .fighting {
@@ -178,7 +187,7 @@ struct ForestDefenseView: View {
                         }
                         .buttonStyle(.borderedProminent)
                         .tint(hero == .paladin ? .orange : .green)
-                        .disabled(!unit.alive || unit.skillCooldown > 0 || unit.cast != nil)
+                        .disabled(!session.battle.canUseSkill(at: slot))
                     }
                 }
             }

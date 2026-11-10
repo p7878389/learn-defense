@@ -47,7 +47,7 @@ public struct ForestPath: Sendable {
     public static let artworkAspect = 768.0 / 1376.0
 }
 
-public enum ForestTower: Sendable { case rapid, frost }
+public enum ForestTower: String, CaseIterable, Sendable { case rapid, frost }
 public struct ForestShot: Identifiable, Sendable {
     public let id: Int
     /// 发射这一弹的塔位，界面据此计算炮口位置和后坐动画。
@@ -80,7 +80,7 @@ public struct ForestEnemy: Identifiable, Sendable {
     public let fast: Bool
     public let kind: ForestEnemyKind
     public var rooted: Double = 0
-    public var attackCooldown: Double = 2
+    public var attackCooldown = ForestRules.defaults.combat.firstAttackDelay
     public var attacks = 0
     public var cast: ForestCast?
     public var isBoss: Bool { kind.isBoss }
@@ -96,8 +96,10 @@ public struct ForestEnemy: Identifiable, Sendable {
         self.id = id; self.health = health; self.maxHealth = health; self.fast = fast
         self.kind = fast ? .boar : .skeleton
     }
-    public init(id: Int, kind: ForestEnemyKind) {
-        self.id = id; self.kind = kind; health = kind.health; maxHealth = kind.health
+    /// 不传 `health` 时取默认配置里的血量；对局中由 `ForestBattle` 按当前配置传入。
+    public init(id: Int, kind: ForestEnemyKind, health: Double? = nil) {
+        let health = health ?? ForestRules.defaults.enemy(kind).health
+        self.id = id; self.kind = kind; self.health = health; maxHealth = health
         fast = kind == .boar
     }
 }
@@ -120,8 +122,10 @@ public struct ForestBattle: Sendable {
         .init(x: 0.62, y: 0.83), .init(x: 0.705, y: 0.88)
     ]
     public internal(set) var phase: Phase = .preparing
-    public internal(set) var coins = 100
-    public private(set) var lives = 5
+    /// 本局使用的数值配置，开局时确定，对局中不变。
+    public let rules: ForestRules
+    public internal(set) var coins: Int
+    public private(set) var lives: Int
     public internal(set) var wave = 0
     public internal(set) var towers: [Int: ForestTower] = [:]
     public internal(set) var enemies: [ForestEnemy] = []
@@ -149,25 +153,24 @@ public struct ForestBattle: Sendable {
     private var nextID = 0
     private var nextShotID = 0
     private var nextDefeatID = 0
-    public static let reward = 10
-    public static let range = 0.18
-    /// 连发塔每轮点射发数、发间隔与轮间冷却；冰晶塔单发冷却。
-    public static let burst = 3
-    public static let burstGap = 0.09
-    public static let rapidReload = 0.75
-    public static let frostReload = 1.2
-    public init(boss: ForestEnemyKind = .knight) { self.boss = boss.isBoss ? boss : .knight }
+    public init(boss: ForestEnemyKind = .knight, rules: ForestRules = .defaults) {
+        self.boss = boss.isBoss ? boss : .knight
+        self.rules = rules.validated()
+        coins = self.rules.economy.startCoins
+        lives = self.rules.economy.lives
+    }
     public mutating func selectBoss(_ kind: ForestEnemyKind) {
         guard phase == .preparing, wave == 0, kind.isBoss else { return }
         boss = kind
     }
     @discardableResult public mutating func build(_ kind: ForestTower, at slot: Int) -> Bool {
-        guard phase == .preparing, Self.slots.indices.contains(slot), defenses[slot] == nil, coins >= 50 else { return false }
-        coins -= 50; towers[slot] = kind; defenses[slot] = ForestDefenseUnit(); return true
+        let stats = rules.tower(kind)
+        guard phase == .preparing, Self.slots.indices.contains(slot), defenses[slot] == nil, coins >= stats.cost else { return false }
+        coins -= stats.cost; towers[slot] = kind; defenses[slot] = ForestDefenseUnit(maxHealth: stats.maxHealth); return true
     }
     public mutating func startWave() {
         guard phase == .preparing, defenses.values.contains(where: \.alive) else { return }
-        wave += 1; spawnRemaining = 3 + wave; spawnTimer = 0; phase = .fighting
+        wave += 1; spawnRemaining = rules.economy.spawnBase + wave; spawnTimer = 0; phase = .fighting
     }
     public mutating func tick(_ elapsed: Double) {
         guard elapsed.isFinite, elapsed > 0, phase == .preparing || phase == .fighting else { return }
@@ -180,9 +183,10 @@ public struct ForestBattle: Sendable {
             if previous < shots[index].flight, let enemyIndex = enemies.firstIndex(where: { $0.id == shots[index].targetID }) {
                 shots[index].target = ForestPath.forest.point(at: enemies[enemyIndex].distance)
                 if shots[index].age >= shots[index].flight {
-                    enemies[enemyIndex].health -= shots[index].tower == .rapid ? 0.45 : 0.6
+                    let stats = rules.tower(shots[index].tower)
+                    enemies[enemyIndex].health -= stats.damage
                     enemies[enemyIndex].hitTimer = ForestEnemy.hitFlash
-                    if shots[index].tower == .frost { enemies[enemyIndex].slowed = 2 }
+                    if stats.slowSeconds > 0 { enemies[enemyIndex].slowed = stats.slowSeconds }
                 }
             }
         }
@@ -193,18 +197,20 @@ public struct ForestBattle: Sendable {
         if spawnRemaining > 0 && spawnTimer <= 0 {
             nextID += 1
             let kind: ForestEnemyKind
-            if wave == 3 && spawnRemaining == 1 { kind = boss }
+            if wave == rules.economy.waves && spawnRemaining == 1 { kind = boss }
             else if wave >= 2 && spawnRemaining <= 2 { kind = spawnRemaining == 2 ? .goblin : .acolyte }
             else { kind = nextID.isMultiple(of: 2) ? .boar : .skeleton }
-            enemies.append(ForestEnemy(id: nextID, kind: kind))
-            spawnRemaining -= 1; spawnTimer = 1.8
+            var enemy = ForestEnemy(id: nextID, kind: kind, health: rules.enemy(kind).health)
+            enemy.attackCooldown = rules.combat.firstAttackDelay
+            enemies.append(enemy)
+            spawnRemaining -= 1; spawnTimer = rules.economy.spawnInterval
         }
         tickCombat(dt)
         for index in enemies.indices {
             guard enemies[index].health > 0 else { continue }
-            let slow = enemies[index].slowed > 0 ? 0.55 : 1.0
+            let slow = enemies[index].slowed > 0 ? rules.combat.slowFactor : 1.0
             if enemies[index].cast == nil && enemies[index].rooted <= 0 {
-                enemies[index].distance += dt * enemies[index].kind.speed * slow
+                enemies[index].distance += dt * rules.enemy(enemies[index].kind).speed * slow
             }
             enemies[index].rooted = max(0, enemies[index].rooted - dt)
             enemies[index].slowed = max(0, enemies[index].slowed - dt)
@@ -214,9 +220,10 @@ public struct ForestBattle: Sendable {
         }
         for (slot, tower) in towers.sorted(by: { $0.key < $1.key }) {
             guard defenses[slot]?.alive == true else { continue }
-            cooldowns[slot, default: 0] -= dt * ((defenses[slot]?.chilled ?? 0) > 0 ? 0.5 : 1)
+            let stats = rules.tower(tower)
+            cooldowns[slot, default: 0] -= dt * ((defenses[slot]?.chilled ?? 0) > 0 ? rules.combat.chillFactor : 1)
             let origin = Self.slots[slot]
-            let candidates = enemies.indices.filter { enemies[$0].health > 0 && origin.distance(to: ForestPath.forest.point(at: enemies[$0].distance)) <= Self.range }
+            let candidates = enemies.indices.filter { enemies[$0].health > 0 && origin.distance(to: ForestPath.forest.point(at: enemies[$0].distance)) <= stats.range }
             guard let target = candidates.max(by: { enemies[$0].distance < enemies[$1].distance }) else { continue }
             let aim = ForestPath.forest.point(at: enemies[target].distance)
             // 炮管先转向目标，对准后才开火；只有炮管转动，塔身不动
@@ -233,33 +240,29 @@ public struct ForestBattle: Sendable {
                                     angle: angles[slot, default: 0],
                                     flight: ForestShot.flightTime(from: origin, to: aim, tower: tower)))
             aims[slot] = aim
-            switch tower {
-            case .rapid:
-                let left = burstLeft[slot, default: 0] > 0 ? burstLeft[slot, default: 0] - 1 : Self.burst - 1
-                burstLeft[slot] = left
-                cooldowns[slot] = left > 0 ? Self.burstGap : Self.rapidReload
-            case .frost:
-                cooldowns[slot] = Self.frostReload
-            }
+            // 一轮点射打完才进入装填；单发塔每发都是一轮。
+            let left = burstLeft[slot, default: 0] > 0 ? burstLeft[slot, default: 0] - 1 : stats.burst - 1
+            burstLeft[slot] = left
+            cooldowns[slot] = left > 0 ? stats.burstGap : stats.reload
         }
         for enemy in enemies where enemy.health <= 0 {
             nextDefeatID += 1
             defeats.append(ForestDefeat(id: nextDefeatID, point: ForestPath.forest.point(at: enemy.distance), fast: enemy.fast,
-                                        kind: enemy.kind, reward: enemy.isBoss ? 100 : Self.reward))
+                                        kind: enemy.kind, reward: rules.enemy(enemy.kind).reward))
         }
-        coins += enemies.filter { $0.health <= 0 }.reduce(0) { $0 + ($1.isBoss ? 100 : Self.reward) }
-        lives = max(0, lives - enemies.filter { $0.health > 0 && $0.distance >= ForestPath.forest.length }.reduce(0) { $0 + ($1.isBoss ? 3 : 1) })
+        coins += enemies.filter { $0.health <= 0 }.reduce(0) { $0 + rules.enemy($1.kind).reward }
+        lives = max(0, lives - enemies.filter { $0.health > 0 && $0.distance >= ForestPath.forest.length }.reduce(0) { $0 + rules.enemy($1.kind).leakLives })
         enemies.removeAll { $0.health <= 0 || $0.distance >= ForestPath.forest.length }
         if lives <= 0 { phase = .lost }
         else if spawnRemaining == 0 && enemies.isEmpty { phase = .question }
-        if phase != .fighting { combatShots.removeAll(); zones.removeAll(); shots.removeAll() }
+        if phase != .fighting { endCombat(); shots.removeAll() }
     }
     /// 塔的装填进度：0 刚开火，1 已就绪；连发塔点射过程中视为就绪。
     public func readiness(of slot: Int) -> Double {
         guard let tower = towers[slot] else { return 0 }
         let cooldown = cooldowns[slot, default: 0]
-        if tower == .rapid && burstLeft[slot, default: 0] > 0 { return 1 }
-        let reload = tower == .rapid ? Self.rapidReload : Self.frostReload
+        if burstLeft[slot, default: 0] > 0 { return 1 }
+        let reload = rules.tower(tower).reload
         return min(1, max(0, 1 - cooldown / reload))
     }
     /// 看前方一小段路的水平走向：明显往反方向走时立即换向并开始转身动作；
@@ -276,7 +279,7 @@ public struct ForestBattle: Sendable {
     }
     public mutating func answer(correct: Bool) {
         guard phase == .question, correct else { return }
-        coins += 50
-        phase = wave >= 3 ? .won : .preparing
+        coins += rules.economy.waveReward
+        phase = wave >= rules.economy.waves ? .won : .preparing
     }
 }

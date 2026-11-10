@@ -1,10 +1,10 @@
 import Foundation
 import SwiftData
 
-// 系统配置：Resources/Config 下的 pacing / badges / cosmetics.json。
-// App 运行时仍读 GrowthCatalog.bundled（JSON 是来源），这里只是同步一份，方便查询。
+// 系统配置：Resources/Config 下的 pacing / badges / cosmetics / forest.json。
+// App 运行时仍读内置 JSON（GrowthCatalog.bundled、ForestRules.defaults），这里只是同步一份，方便查询。
 extension LearnDatabase {
-    public static let configFileNames = ["pacing.json", "badges.json", "cosmetics.json"]
+    public static let configFileNames = ["pacing.json", "badges.json", "cosmetics.json", "forest.json"]
 
     /// 整份替换数据库里的配置：原文件 + 校验后的徽章、外观
     /// bundle 为 nil 时读 LearnCore 自带的 Resources/Config
@@ -71,6 +71,38 @@ extension LearnDatabase {
             row.syncedAt = Date()
         } else {
             context.insert(StoredConfigFile(name: "game-rules.json", data: data))
+        }
+        try context.save()
+    }
+}
+
+extension LearnDatabase {
+    public static let forestRulesName = "forest-rules.json"
+
+    /// 森林塔防的怪物、英雄、炮塔数值：内置 forest.json 的默认值，叠加数据库里的改动项。
+    /// 数据库只存改动过的值，不被 syncConfig 覆盖；没改过的值始终跟随内置默认值。
+    public func forestRules() throws -> ForestRules {
+        guard let row = try configFile(named: Self.forestRulesName) else { return .defaults }
+        // 损坏时保留原数据供排查，本次使用默认值。
+        guard let rules = ForestRules.applying(overrides: row.data) else { return .defaults }
+        // 没有版本号的是早先整份写入的快照：收敛成改动项，免得把当时的默认值一直钉在库里。
+        let stored = try? JSONSerialization.jsonObject(with: row.data) as? [String: Any]
+        if stored?["version"] == nil { try saveForestRules(rules) }
+        return rules
+    }
+
+    /// 只写入相对默认值的改动项；与默认值完全一致时删除这一行。
+    public func saveForestRules(_ rules: ForestRules) throws {
+        let row = try configFile(named: Self.forestRulesName)
+        if let data = rules.overrides() {
+            if let row {
+                row.data = data
+                row.syncedAt = Date()
+            } else {
+                context.insert(StoredConfigFile(name: Self.forestRulesName, data: data))
+            }
+        } else if let row {
+            context.delete(row)
         }
         try context.save()
     }
