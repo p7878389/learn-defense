@@ -419,6 +419,7 @@ private struct ForestSlotPad: View {
 /// 沿路行走的怪物：按走过的距离切换行走/奔跑帧（减速时步频同步变慢，脚下不打滑），
 /// 路掉头时瞬间换向并做一个原地转步（不横向压扁图片），受击闪白后退，减速时泛蓝结霜。
 private struct ForestEnemySprite: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let enemy: ForestEnemy
     let stage: ForestStage
     let time: Double
@@ -433,13 +434,14 @@ private struct ForestEnemySprite: View {
         // 帧画布尺寸：骷髅 253x256，野猪 320x190
         let size = enemy.fast ? CGSize(width: w * 0.075, height: w * 0.075 * 190 / 320)
                               : CGSize(width: w * 0.062 * 253 / 256, height: w * 0.062)
-        // 每走过一段路面播完一个循环：骷髅一个循环两步，野猪一个循环一次跃进
-        let cycle = enemy.distance * (enemy.fast ? 22 : 26)
-        let progress = cycle - cycle.rounded(.down)
-        // 转身动作：定在着地帧，身体先下沉再弹起；pivot 在动作中段最大
-        let turning = enemy.turnTimer / ForestEnemy.turnTime
-        let pivot = sin((1 - turning) * .pi) * (turning > 0 ? 1 : 0)
-        let frame = turning > 0 ? 0 : min(frames.count - 1, Int(progress * Double(frames.count)))
+        let motion = ForestEnemyLocomotion(enemy: enemy, time: time, reduceMotion: reduceMotion)
+        let frame = motion.frameIndex(count: frames.count)
+        let displayFacing = enemy.cast.map {
+            abs($0.point.x - point.x) > 0.001 ? ($0.point.x > point.x ? 1.0 : -1.0) : enemy.facing
+        } ?? enemy.facing
+        let charge = enemy.cast?.charging == true ? enemy.cast!.progress : 0
+        let release = enemy.cast?.releasing == true
+        let lunge = release ? min(1, enemy.cast!.age - enemy.cast!.windup + 0.2) : 0
         let hit = enemy.hitTimer / ForestEnemy.hitFlash
         let frost = min(1, enemy.slowed)
         let appear = min(1, enemy.distance / 0.02)
@@ -456,20 +458,22 @@ private struct ForestEnemySprite: View {
                     .position(feet)
             }
             if enemy.fast {
-                // 蹄子落地时扬起尘土：每个奔跑循环两次
-                // 转身急停时扬尘最浓
-                let kick = max(max(0, cos(progress * 4 * .pi)), pivot * 1.6)
+                // 只在奔跑着地/转向时扬尘，定身和施法时收回。
                 dust.resizable().scaledToFit()
                     .frame(width: size.width * 0.45)
-                    .scaleEffect(x: enemy.facing < 0 ? -1 : 1, y: 1)
-                    .opacity((0.15 + 0.5 * kick) * appear)
+                    .scaleEffect(x: displayFacing < 0 ? -1 : 1, y: 1)
+                    .opacity(motion.dustOpacity * appear)
+                    .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: motion.moving)
                     .position(x: feet.x - enemy.facing * size.width * 0.45, y: feet.y - w * 0.006)
             }
-            sprite(frames[frame], size: size, hit: hit, frost: frost)
-                .scaleEffect(x: enemy.facing * (1 + 0.06 * pivot), y: 1 - 0.08 * pivot, anchor: .bottom)
+            sprite(frames.isEmpty ? Image(systemName: "questionmark.square") : frames[frame], size: size, hit: hit, frost: frost)
+                .scaleEffect(x: displayFacing * motion.scaleX,
+                             y: motion.scaleY * (1 - charge * 0.04 + lunge * 0.03), anchor: .bottom)
+                .rotationEffect(.degrees((release ? -4 : charge * 3) * displayFacing), anchor: .bottom)
                 .scaleEffect(0.6 + 0.4 * appear, anchor: .bottom)
                 .opacity(appear)
-                .position(x: feet.x - enemy.facing * hit * w * 0.006, y: feet.y - size.height / 2)
+                .position(x: feet.x + displayFacing * (lunge * w * 0.005 - hit * w * 0.006),
+                          y: feet.y - size.height / 2)
             if frost > 0 {
                 Image(systemName: "snowflake")
                     .font(.system(size: max(10, w * 0.014), weight: .bold))

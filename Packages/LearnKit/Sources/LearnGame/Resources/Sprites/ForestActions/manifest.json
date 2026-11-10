@@ -1,0 +1,2048 @@
+{
+  "knight": {
+    "source": "docs/forest-roster/actions/knight/source.png",
+    "scale": 0.7174447174447175,
+    "frames": [
+      {
+        "index": 0,
+        "source_cell": [
+          0,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          39,
+          17,
+          385,
+          375
+        ],
+        "offset": [
+          8,
+          11
+        ],
+        "bytes": 32878
+      },
+      {
+        "index": 1,
+        "source_cell": [
+          418,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          20,
+          14,
+          367,
+          376
+        ],
+        "offset": [
+          22,
+          10
+        ],
+        "bytes": 31728
+      },
+      {
+        "index": 2,
+        "source_cell": [
+          836,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          28,
+          13,
+          373,
+          376
+        ],
+        "offset": [
+          16,
+          10
+        ],
+        "bytes": 29974
+      },
+      {
+        "index": 3,
+        "source_cell": [
+          0,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          41,
+          15,
+          385,
+          377
+        ],
+        "offset": [
+          8,
+          10
+        ],
+        "bytes": 31020
+      },
+      {
+        "index": 4,
+        "source_cell": [
+          418,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          29,
+          11,
+          380,
+          377
+        ],
+        "offset": [
+          13,
+          10
+        ],
+        "bytes": 30354
+      },
+      {
+        "index": 5,
+        "source_cell": [
+          836,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          34,
+          14,
+          380,
+          376
+        ],
+        "offset": [
+          12,
+          10
+        ],
+        "bytes": 29282
+      },
+      {
+        "index": 6,
+        "source_cell": [
+          0,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          27,
+          15,
+          383,
+          375
+        ],
+        "offset": [
+          13,
+          11
+        ],
+        "bytes": 36216
+      },
+      {
+        "index": 7,
+        "source_cell": [
+          418,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          11,
+          27,
+          418,
+          374
+        ],
+        "offset": [
+          6,
+          12
+        ],
+        "bytes": 32268
+      },
+      {
+        "index": 8,
+        "source_cell": [
+          836,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          0,
+          24,
+          386,
+          377
+        ],
+        "offset": [
+          22,
+          10
+        ],
+        "bytes": 33634
+      }
+    ]
+  },
+  "goblin": {
+    "source": "docs/forest-roster/actions/goblin/source.png",
+    "scale": 0.7311827956989247,
+    "frames": [
+      {
+        "index": 0,
+        "source_cell": [
+          0,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          118,
+          21,
+          324,
+          380
+        ],
+        "offset": [
+          -2,
+          2
+        ],
+        "bytes": 25488
+      },
+      {
+        "index": 1,
+        "source_cell": [
+          418,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          109,
+          19,
+          309,
+          381
+        ],
+        "offset": [
+          7,
+          1
+        ],
+        "bytes": 23800
+      },
+      {
+        "index": 2,
+        "source_cell": [
+          836,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          99,
+          20,
+          308,
+          374
+        ],
+        "offset": [
+          12,
+          7
+        ],
+        "bytes": 24400
+      },
+      {
+        "index": 3,
+        "source_cell": [
+          0,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          107,
+          21,
+          343,
+          381
+        ],
+        "offset": [
+          -4,
+          1
+        ],
+        "bytes": 24670
+      },
+      {
+        "index": 4,
+        "source_cell": [
+          418,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          119,
+          18,
+          330,
+          380
+        ],
+        "offset": [
+          -4,
+          2
+        ],
+        "bytes": 23576
+      },
+      {
+        "index": 5,
+        "source_cell": [
+          836,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          95,
+          17,
+          320,
+          373
+        ],
+        "offset": [
+          8,
+          7
+        ],
+        "bytes": 24736
+      },
+      {
+        "index": 6,
+        "source_cell": [
+          0,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          74,
+          18,
+          360,
+          386
+        ],
+        "offset": [
+          2,
+          -2
+        ],
+        "bytes": 29468
+      },
+      {
+        "index": 7,
+        "source_cell": [
+          418,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          51,
+          16,
+          376,
+          386
+        ],
+        "offset": [
+          4,
+          -2
+        ],
+        "bytes": 30890
+      },
+      {
+        "index": 8,
+        "source_cell": [
+          836,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          61,
+          14,
+          330,
+          386
+        ],
+        "offset": [
+          17,
+          -2
+        ],
+        "bytes": 28322
+      }
+    ]
+  },
+  "acolyte": {
+    "source": "docs/forest-roster/actions/acolyte/source.png",
+    "scale": 0.7534626038781164,
+    "frames": [
+      {
+        "index": 0,
+        "source_cell": [
+          0,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          94,
+          26,
+          387,
+          376
+        ],
+        "offset": [
+          -22,
+          -3
+        ],
+        "bytes": 29836
+      },
+      {
+        "index": 1,
+        "source_cell": [
+          418,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          77,
+          17,
+          367,
+          378
+        ],
+        "offset": [
+          -8,
+          -5
+        ],
+        "bytes": 27574
+      },
+      {
+        "index": 2,
+        "source_cell": [
+          836,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          76,
+          16,
+          367,
+          372
+        ],
+        "offset": [
+          -7,
+          0
+        ],
+        "bytes": 28586
+      },
+      {
+        "index": 3,
+        "source_cell": [
+          0,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          100,
+          18,
+          386,
+          376
+        ],
+        "offset": [
+          -23,
+          -3
+        ],
+        "bytes": 28542
+      },
+      {
+        "index": 4,
+        "source_cell": [
+          418,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          81,
+          15,
+          369,
+          371
+        ],
+        "offset": [
+          -10,
+          0
+        ],
+        "bytes": 26990
+      },
+      {
+        "index": 5,
+        "source_cell": [
+          836,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          77,
+          10,
+          366,
+          371
+        ],
+        "offset": [
+          -7,
+          0
+        ],
+        "bytes": 28118
+      },
+      {
+        "index": 6,
+        "source_cell": [
+          0,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          89,
+          35,
+          363,
+          376
+        ],
+        "offset": [
+          -10,
+          -3
+        ],
+        "bytes": 25524
+      },
+      {
+        "index": 7,
+        "source_cell": [
+          418,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          62,
+          35,
+          378,
+          376
+        ],
+        "offset": [
+          -6,
+          -3
+        ],
+        "bytes": 26430
+      },
+      {
+        "index": 8,
+        "source_cell": [
+          836,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          58,
+          36,
+          364,
+          376
+        ],
+        "offset": [
+          1,
+          -3
+        ],
+        "bytes": 29764
+      }
+    ]
+  },
+  "berserker": {
+    "source": "docs/forest-roster/actions/berserker/source.png",
+    "scale": 0.7411444141689373,
+    "frames": [
+      {
+        "index": 0,
+        "source_cell": [
+          0,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          53,
+          30,
+          410,
+          366
+        ],
+        "offset": [
+          -12,
+          9
+        ],
+        "bytes": 36000
+      },
+      {
+        "index": 1,
+        "source_cell": [
+          418,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          59,
+          23,
+          405,
+          364
+        ],
+        "offset": [
+          -12,
+          10
+        ],
+        "bytes": 33522
+      },
+      {
+        "index": 2,
+        "source_cell": [
+          836,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          70,
+          32,
+          388,
+          363
+        ],
+        "offset": [
+          -10,
+          11
+        ],
+        "bytes": 29598
+      },
+      {
+        "index": 3,
+        "source_cell": [
+          0,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          49,
+          29,
+          409,
+          362
+        ],
+        "offset": [
+          -10,
+          12
+        ],
+        "bytes": 35010
+      },
+      {
+        "index": 4,
+        "source_cell": [
+          418,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          60,
+          25,
+          408,
+          362
+        ],
+        "offset": [
+          -13,
+          12
+        ],
+        "bytes": 33072
+      },
+      {
+        "index": 5,
+        "source_cell": [
+          836,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          71,
+          36,
+          394,
+          362
+        ],
+        "offset": [
+          -12,
+          12
+        ],
+        "bytes": 31042
+      },
+      {
+        "index": 6,
+        "source_cell": [
+          0,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          32,
+          13,
+          375,
+          380
+        ],
+        "offset": [
+          9,
+          -2
+        ],
+        "bytes": 36658
+      },
+      {
+        "index": 7,
+        "source_cell": [
+          418,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          27,
+          62,
+          402,
+          379
+        ],
+        "offset": [
+          1,
+          -1
+        ],
+        "bytes": 32860
+      },
+      {
+        "index": 8,
+        "source_cell": [
+          836,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          39,
+          36,
+          401,
+          380
+        ],
+        "offset": [
+          -3,
+          -2
+        ],
+        "bytes": 37132
+      }
+    ]
+  },
+  "frostKing": {
+    "source": "docs/forest-roster/actions/frostKing/source.png",
+    "scale": 0.68,
+    "frames": [
+      {
+        "index": 0,
+        "source_cell": [
+          0,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          62,
+          10,
+          375,
+          363
+        ],
+        "offset": [
+          12,
+          33
+        ],
+        "bytes": 32148
+      },
+      {
+        "index": 1,
+        "source_cell": [
+          418,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          58,
+          16,
+          372,
+          367
+        ],
+        "offset": [
+          14,
+          30
+        ],
+        "bytes": 29194
+      },
+      {
+        "index": 2,
+        "source_cell": [
+          836,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          73,
+          18,
+          370,
+          418
+        ],
+        "offset": [
+          9,
+          -4
+        ],
+        "bytes": 27986
+      },
+      {
+        "index": 3,
+        "source_cell": [
+          0,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          70,
+          12,
+          381,
+          356
+        ],
+        "offset": [
+          6,
+          38
+        ],
+        "bytes": 28726
+      },
+      {
+        "index": 4,
+        "source_cell": [
+          418,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          78,
+          8,
+          382,
+          361
+        ],
+        "offset": [
+          4,
+          35
+        ],
+        "bytes": 29504
+      },
+      {
+        "index": 5,
+        "source_cell": [
+          836,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          67,
+          0,
+          374,
+          362
+        ],
+        "offset": [
+          10,
+          34
+        ],
+        "bytes": 30414
+      },
+      {
+        "index": 6,
+        "source_cell": [
+          0,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          48,
+          14,
+          372,
+          371
+        ],
+        "offset": [
+          17,
+          28
+        ],
+        "bytes": 31176
+      },
+      {
+        "index": 7,
+        "source_cell": [
+          418,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          35,
+          16,
+          418,
+          370
+        ],
+        "offset": [
+          6,
+          28
+        ],
+        "bytes": 31398
+      },
+      {
+        "index": 8,
+        "source_cell": [
+          836,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          0,
+          13,
+          371,
+          370
+        ],
+        "offset": [
+          34,
+          28
+        ],
+        "bytes": 31124
+      }
+    ]
+  },
+  "infernal": {
+    "source": "docs/forest-roster/actions/infernal/source.png",
+    "scale": 0.6985645933014354,
+    "frames": [
+      {
+        "index": 0,
+        "source_cell": [
+          0,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          51,
+          8,
+          364,
+          370
+        ],
+        "offset": [
+          15,
+          22
+        ],
+        "bytes": 31876
+      },
+      {
+        "index": 1,
+        "source_cell": [
+          418,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          43,
+          11,
+          353,
+          365
+        ],
+        "offset": [
+          22,
+          25
+        ],
+        "bytes": 31850
+      },
+      {
+        "index": 2,
+        "source_cell": [
+          836,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          40,
+          20,
+          350,
+          371
+        ],
+        "offset": [
+          24,
+          21
+        ],
+        "bytes": 30812
+      },
+      {
+        "index": 3,
+        "source_cell": [
+          0,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          49,
+          10,
+          358,
+          372
+        ],
+        "offset": [
+          18,
+          20
+        ],
+        "bytes": 30916
+      },
+      {
+        "index": 4,
+        "source_cell": [
+          418,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          44,
+          9,
+          354,
+          372
+        ],
+        "offset": [
+          21,
+          20
+        ],
+        "bytes": 31944
+      },
+      {
+        "index": 5,
+        "source_cell": [
+          836,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          42,
+          10,
+          352,
+          370
+        ],
+        "offset": [
+          22,
+          22
+        ],
+        "bytes": 32120
+      },
+      {
+        "index": 6,
+        "source_cell": [
+          0,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          13,
+          12,
+          348,
+          377
+        ],
+        "offset": [
+          34,
+          17
+        ],
+        "bytes": 36062
+      },
+      {
+        "index": 7,
+        "source_cell": [
+          418,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          0,
+          20,
+          418,
+          376
+        ],
+        "offset": [
+          14,
+          17
+        ],
+        "bytes": 35238
+      },
+      {
+        "index": 8,
+        "source_cell": [
+          836,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          0,
+          13,
+          365,
+          373
+        ],
+        "offset": [
+          32,
+          19
+        ],
+        "bytes": 33634
+      }
+    ]
+  },
+  "pharaoh": {
+    "source": "docs/forest-roster/actions/pharaoh/source.png",
+    "scale": 0.7906976744186046,
+    "frames": [
+      {
+        "index": 0,
+        "source_cell": [
+          0,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          96,
+          17,
+          354,
+          354
+        ],
+        "offset": [
+          -18,
+          0
+        ],
+        "bytes": 34630
+      },
+      {
+        "index": 1,
+        "source_cell": [
+          418,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          86,
+          17,
+          338,
+          349
+        ],
+        "offset": [
+          -8,
+          4
+        ],
+        "bytes": 32366
+      },
+      {
+        "index": 2,
+        "source_cell": [
+          836,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          76,
+          17,
+          335,
+          354
+        ],
+        "offset": [
+          -2,
+          0
+        ],
+        "bytes": 34570
+      },
+      {
+        "index": 3,
+        "source_cell": [
+          0,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          98,
+          17,
+          354,
+          352
+        ],
+        "offset": [
+          -18,
+          2
+        ],
+        "bytes": 32066
+      },
+      {
+        "index": 4,
+        "source_cell": [
+          418,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          83,
+          17,
+          348,
+          352
+        ],
+        "offset": [
+          -10,
+          2
+        ],
+        "bytes": 31288
+      },
+      {
+        "index": 5,
+        "source_cell": [
+          836,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          80,
+          16,
+          335,
+          352
+        ],
+        "offset": [
+          -4,
+          2
+        ],
+        "bytes": 34794
+      },
+      {
+        "index": 6,
+        "source_cell": [
+          0,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          104,
+          23,
+          328,
+          362
+        ],
+        "offset": [
+          -10,
+          -6
+        ],
+        "bytes": 33016
+      },
+      {
+        "index": 7,
+        "source_cell": [
+          418,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          69,
+          24,
+          377,
+          361
+        ],
+        "offset": [
+          -16,
+          -5
+        ],
+        "bytes": 38230
+      },
+      {
+        "index": 8,
+        "source_cell": [
+          836,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          76,
+          19,
+          336,
+          363
+        ],
+        "offset": [
+          -3,
+          -7
+        ],
+        "bytes": 35438
+      }
+    ]
+  },
+  "reaper": {
+    "source": "docs/forest-roster/actions/reaper/source.png",
+    "scale": 0.739240506329114,
+    "frames": [
+      {
+        "index": 0,
+        "source_cell": [
+          0,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          30,
+          26,
+          405,
+          356
+        ],
+        "offset": [
+          0,
+          17
+        ],
+        "bytes": 41146
+      },
+      {
+        "index": 1,
+        "source_cell": [
+          418,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          19,
+          57,
+          390,
+          360
+        ],
+        "offset": [
+          9,
+          14
+        ],
+        "bytes": 39174
+      },
+      {
+        "index": 2,
+        "source_cell": [
+          836,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          35,
+          86,
+          381,
+          361
+        ],
+        "offset": [
+          6,
+          13
+        ],
+        "bytes": 34190
+      },
+      {
+        "index": 3,
+        "source_cell": [
+          0,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          31,
+          60,
+          400,
+          353
+        ],
+        "offset": [
+          0,
+          19
+        ],
+        "bytes": 37456
+      },
+      {
+        "index": 4,
+        "source_cell": [
+          418,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          32,
+          21,
+          399,
+          353
+        ],
+        "offset": [
+          0,
+          19
+        ],
+        "bytes": 42766
+      },
+      {
+        "index": 5,
+        "source_cell": [
+          836,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          21,
+          38,
+          391,
+          354
+        ],
+        "offset": [
+          8,
+          18
+        ],
+        "bytes": 41426
+      },
+      {
+        "index": 6,
+        "source_cell": [
+          0,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          21,
+          17,
+          402,
+          358
+        ],
+        "offset": [
+          4,
+          15
+        ],
+        "bytes": 39770
+      },
+      {
+        "index": 7,
+        "source_cell": [
+          418,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          17,
+          28,
+          412,
+          358
+        ],
+        "offset": [
+          1,
+          15
+        ],
+        "bytes": 41756
+      },
+      {
+        "index": 8,
+        "source_cell": [
+          836,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          23,
+          42,
+          388,
+          356
+        ],
+        "offset": [
+          8,
+          17
+        ],
+        "bytes": 40342
+      }
+    ]
+  },
+  "slime": {
+    "source": "docs/forest-roster/actions/slime/source.png",
+    "scale": 0.7870619946091644,
+    "frames": [
+      {
+        "index": 0,
+        "source_cell": [
+          0,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          25,
+          17,
+          393,
+          360
+        ],
+        "offset": [
+          -4,
+          -3
+        ],
+        "bytes": 33638
+      },
+      {
+        "index": 1,
+        "source_cell": [
+          418,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          29,
+          18,
+          386,
+          360
+        ],
+        "offset": [
+          -4,
+          -3
+        ],
+        "bytes": 33486
+      },
+      {
+        "index": 2,
+        "source_cell": [
+          836,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          33,
+          20,
+          396,
+          360
+        ],
+        "offset": [
+          -9,
+          -3
+        ],
+        "bytes": 33814
+      },
+      {
+        "index": 3,
+        "source_cell": [
+          0,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          42,
+          24,
+          386,
+          355
+        ],
+        "offset": [
+          -8,
+          1
+        ],
+        "bytes": 32494
+      },
+      {
+        "index": 4,
+        "source_cell": [
+          418,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          29,
+          31,
+          387,
+          354
+        ],
+        "offset": [
+          -4,
+          1
+        ],
+        "bytes": 33778
+      },
+      {
+        "index": 5,
+        "source_cell": [
+          836,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          31,
+          21,
+          386,
+          355
+        ],
+        "offset": [
+          -4,
+          1
+        ],
+        "bytes": 33878
+      },
+      {
+        "index": 6,
+        "source_cell": [
+          0,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          34,
+          61,
+          384,
+          361
+        ],
+        "offset": [
+          -4,
+          -4
+        ],
+        "bytes": 32526
+      },
+      {
+        "index": 7,
+        "source_cell": [
+          418,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          28,
+          32,
+          399,
+          360
+        ],
+        "offset": [
+          -8,
+          -3
+        ],
+        "bytes": 36936
+      },
+      {
+        "index": 8,
+        "source_cell": [
+          836,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          32,
+          25,
+          390,
+          360
+        ],
+        "offset": [
+          -6,
+          -3
+        ],
+        "bytes": 33524
+      }
+    ]
+  },
+  "gargoyle": {
+    "source": "docs/forest-roster/actions/gargoyle/source.png",
+    "scale": 0.7373737373737373,
+    "frames": [
+      {
+        "index": 0,
+        "source_cell": [
+          0,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          22,
+          82,
+          395,
+          346
+        ],
+        "offset": [
+          6,
+          25
+        ],
+        "bytes": 28158
+      },
+      {
+        "index": 1,
+        "source_cell": [
+          418,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          15,
+          62,
+          395,
+          350
+        ],
+        "offset": [
+          9,
+          22
+        ],
+        "bytes": 29162
+      },
+      {
+        "index": 2,
+        "source_cell": [
+          836,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          12,
+          40,
+          403,
+          353
+        ],
+        "offset": [
+          7,
+          20
+        ],
+        "bytes": 30828
+      },
+      {
+        "index": 3,
+        "source_cell": [
+          0,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          22,
+          24,
+          396,
+          351
+        ],
+        "offset": [
+          6,
+          21
+        ],
+        "bytes": 30660
+      },
+      {
+        "index": 4,
+        "source_cell": [
+          418,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          21,
+          44,
+          394,
+          349
+        ],
+        "offset": [
+          7,
+          23
+        ],
+        "bytes": 29094
+      },
+      {
+        "index": 5,
+        "source_cell": [
+          836,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          10,
+          70,
+          406,
+          339
+        ],
+        "offset": [
+          7,
+          30
+        ],
+        "bytes": 28740
+      },
+      {
+        "index": 6,
+        "source_cell": [
+          0,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          24,
+          47,
+          382,
+          350
+        ],
+        "offset": [
+          10,
+          22
+        ],
+        "bytes": 29326
+      },
+      {
+        "index": 7,
+        "source_cell": [
+          418,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          29,
+          46,
+          381,
+          351
+        ],
+        "offset": [
+          9,
+          21
+        ],
+        "bytes": 28134
+      },
+      {
+        "index": 8,
+        "source_cell": [
+          836,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          31,
+          52,
+          378,
+          350
+        ],
+        "offset": [
+          9,
+          22
+        ],
+        "bytes": 28680
+      }
+    ]
+  },
+  "shaman": {
+    "source": "docs/forest-roster/actions/shaman/source.png",
+    "scale": 0.7906976744186046,
+    "frames": [
+      {
+        "index": 0,
+        "source_cell": [
+          0,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          56,
+          17,
+          368,
+          361
+        ],
+        "offset": [
+          -8,
+          -5
+        ],
+        "bytes": 45598
+      },
+      {
+        "index": 1,
+        "source_cell": [
+          418,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          50,
+          21,
+          357,
+          358
+        ],
+        "offset": [
+          -1,
+          -3
+        ],
+        "bytes": 44150
+      },
+      {
+        "index": 2,
+        "source_cell": [
+          836,
+          0,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          43,
+          25,
+          357,
+          363
+        ],
+        "offset": [
+          2,
+          -7
+        ],
+        "bytes": 43304
+      },
+      {
+        "index": 3,
+        "source_cell": [
+          0,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          64,
+          31,
+          370,
+          363
+        ],
+        "offset": [
+          -12,
+          -7
+        ],
+        "bytes": 43922
+      },
+      {
+        "index": 4,
+        "source_cell": [
+          418,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          54,
+          25,
+          364,
+          358
+        ],
+        "offset": [
+          -6,
+          -3
+        ],
+        "bytes": 44338
+      },
+      {
+        "index": 5,
+        "source_cell": [
+          836,
+          418,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          42,
+          23,
+          359,
+          362
+        ],
+        "offset": [
+          2,
+          -6
+        ],
+        "bytes": 45298
+      },
+      {
+        "index": 6,
+        "source_cell": [
+          0,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          56,
+          31,
+          322,
+          365
+        ],
+        "offset": [
+          10,
+          -9
+        ],
+        "bytes": 40878
+      },
+      {
+        "index": 7,
+        "source_cell": [
+          418,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          42,
+          29,
+          375,
+          363
+        ],
+        "offset": [
+          -5,
+          -7
+        ],
+        "bytes": 45410
+      },
+      {
+        "index": 8,
+        "source_cell": [
+          836,
+          836,
+          418,
+          418
+        ],
+        "source_alpha_bounds": [
+          39,
+          32,
+          341,
+          364
+        ],
+        "offset": [
+          10,
+          -8
+        ],
+        "bytes": 42742
+      }
+    ]
+  }
+}
