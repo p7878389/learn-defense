@@ -16,6 +16,7 @@ struct ForestVitalBar: View {
 }
 
 struct ForestRosterEnemyView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let enemy: ForestEnemy
     let width: CGFloat
     let height: CGFloat
@@ -23,21 +24,30 @@ struct ForestRosterEnemyView: View {
     var body: some View {
         let point = ForestPath.forest.point(at: enemy.distance)
         let size = width * (enemy.isBoss ? 0.13 : 0.085)
-        let stride = sin(enemy.distance * 150)
-        let moving = enemy.cast == nil && enemy.rooted <= 0
-        let bob = moving ? abs(stride) * width * 0.003 : 0
+        let motion = ForestEnemyLocomotion(enemy: enemy, time: time, reduceMotion: reduceMotion)
+        // 巨魔行走帧脚底 448/512；通用动作帧脚底 280/320；均对齐原视图 0.92 高度的阴影。
+        let footOffset: CGFloat = ForestRosterArtwork.hasActionSheet(enemy.kind)
+            ? size * (0.92 - 280.0 / 320)
+            : (enemy.kind == .ogre && enemy.cast == nil ? size * (0.92 - 448.0 / 512) : 0)
+        let pathPoint = ForestPath.forest.point(at: enemy.distance)
+        let displayFacing = enemy.cast.map {
+            abs($0.point.x - pathPoint.x) > 0.001 ? ($0.point.x > pathPoint.x ? 1.0 : -1.0) : enemy.facing
+        } ?? enemy.facing
         let charge = enemy.cast?.charging == true ? enemy.cast!.progress : 0
         let release = enemy.cast?.releasing == true
         ZStack {
             Ellipse().fill(.black.opacity(0.25))
                 .frame(width: size * 0.55, height: width * 0.012)
+                .scaleEffect(motion.shadowScale)
                 .offset(y: size * 0.42)
-            ForestRosterArtwork.image(ForestRosterArtwork.pose(enemy.kind, cast: enemy.cast))
+            ForestRosterArtwork.image(ForestRosterArtwork.locomotionPose(enemy, progress: motion.progress))
                 .resizable().scaledToFit()
                 .frame(width: size, height: size)
-                .scaleEffect(x: enemy.facing, y: 1 - charge * 0.06, anchor: .bottom)
-                .rotationEffect(.degrees(release ? -enemy.facing * 7 : (moving ? stride * 2 : charge * enemy.facing * 4)), anchor: .bottom)
-                .offset(y: -bob - (enemy.kind.floating ? width * 0.007 : 0))
+                .scaleEffect(x: displayFacing * ForestRosterArtwork.nativeFacing(enemy.kind) * motion.scaleX,
+                             y: motion.scaleY * (1 - charge * 0.06), anchor: .bottom)
+                .rotationEffect(.degrees(release ? -displayFacing * 7 : (motion.moving ? motion.lean * displayFacing : charge * displayFacing * 4)), anchor: .bottom)
+                .offset(y: footOffset - motion.lift * width)
+                .animation(reduceMotion ? nil : .easeOut(duration: 0.12), value: motion.moving)
                 .brightness(enemy.hitTimer > 0 ? 0.5 : 0)
                 .colorMultiply(enemy.slowed > 0 ? Color(red: 0.65, green: 0.9, blue: 1) : .white)
             if enemy.rooted > 0 {
@@ -56,6 +66,7 @@ struct ForestRosterEnemyView: View {
             .offset(y: -size * 0.48)
         }
         .position(x: point.x * width, y: point.y * height - size * 0.4)
+        .task(id: enemy.kind) { await ForestRosterArtwork.preload(enemy.kind) }
         .allowsHitTesting(false)
     }
 }
@@ -119,6 +130,7 @@ struct ForestCombatOverlay: View {
                         : CGRect(x: center.x - r, y: center.y - r * 0.4, width: r * 2, height: r * 0.8)
                     context.stroke(Path(ellipseIn: rect), with: .color(.orange.opacity(0.4 + cast.progress * 0.6)),
                                    style: StrokeStyle(lineWidth: 2 + cast.progress * 2, dash: [5, 4]))
+                    drawCharge(context: &context, enemy: enemy, cast: cast)
                 }
             }
             for shot in battle.combatShots {
@@ -143,23 +155,8 @@ struct ForestCombatOverlay: View {
                     }
                 } else {
                     let p = min(1, (shot.age - shot.flight) / 0.45)
-                    // 范围弹的冲击环扩到真实波及半径为止；单体命中保持小环。
-                    let r = width * (shot.radius > 0 ? shot.radius * min(1, 0.3 + p) : 0.025 * (0.3 + p))
-                    let rect = CGRect(x: end.x - r, y: end.y - r * 0.55, width: r * 2, height: r * 1.1)
-                    context.stroke(Path(ellipseIn: rect), with: .color(color.opacity(1 - p)), lineWidth: max(1, 5 * (1 - p)))
-                    for n in 0..<8 {
-                        let a = Double(n) * .pi / 4
-                        var ray = Path()
-                        ray.move(to: CGPoint(x: end.x + cos(a) * r * 0.4, y: end.y + sin(a) * r * 0.4))
-                        ray.addLine(to: CGPoint(x: end.x + cos(a) * r, y: end.y + sin(a) * r))
-                        context.stroke(ray, with: .color(color.opacity(1 - p)), lineWidth: 2)
-                    }
-                    if [.slash, .holy, .crossSlash, .fire].contains(shot.effect) {
-                        var slash = Path()
-                        slash.move(to: CGPoint(x: end.x - r, y: end.y + r * 0.4))
-                        slash.addQuadCurve(to: CGPoint(x: end.x + r, y: end.y - r * 0.4), control: CGPoint(x: end.x + r, y: end.y + r))
-                        context.stroke(slash, with: .color(color.opacity(1 - p)), lineWidth: 6 * (1 - p))
-                    }
+                    drawImpact(context: &context, effect: shot.effect, at: end,
+                               radius: shot.radius, progress: p)
                 }
             }
         }
@@ -176,6 +173,82 @@ struct ForestCombatOverlay: View {
     static func footprint(at point: ForestPoint, radius: Double, width: CGFloat, height: CGFloat) -> CGRect {
         CGRect(x: (point.x - radius) * width, y: (point.y - radius) * height,
                width: radius * 2 * width, height: radius * 2 * height)
+    }
+
+    /// 0.45 秒命中特效分六阶段：出现、展开、峰值、碎散、衰减、收尾。
+    static func impactStage(_ progress: Double) -> Int {
+        min(5, max(0, Int(min(0.999_999, max(0, progress)) * 6)))
+    }
+
+    static func impactParticleCount(stage: Int) -> Int {
+        [4, 8, 12, 10, 6, 2][min(5, max(0, stage))]
+    }
+
+    private func drawCharge(context: inout GraphicsContext, enemy: ForestEnemy, cast: ForestCast) {
+        let origin = bodyPoint(ForestPath.forest.point(at: enemy.distance))
+        let color = tint(cast.effect)
+        let pulse = 0.75 + 0.25 * sin(cast.progress * .pi * 4)
+        let radius = width * (0.006 + 0.006 * pulse)
+        context.fill(Path(ellipseIn: CGRect(x: origin.x - radius, y: origin.y - radius,
+                                            width: radius * 2, height: radius * 2)),
+                     with: .color(color.opacity(0.45 + 0.45 * cast.progress)))
+        for index in 0..<4 {
+            let angle = cast.progress * 5 + Double(index) * .pi / 2
+            let orbit = width * (0.018 + 0.006 * pulse)
+            let point = CGPoint(x: origin.x + cos(angle) * orbit, y: origin.y + sin(angle) * orbit * 0.65)
+            context.fill(Path(ellipseIn: CGRect(x: point.x - 2, y: point.y - 2, width: 4, height: 4)),
+                         with: .color(color.opacity(0.9)))
+        }
+    }
+
+    private func drawImpact(context: inout GraphicsContext, effect: ForestCombatEffect,
+                            at end: CGPoint, radius: Double, progress: Double) {
+        let stage = Self.impactStage(progress)
+        let color = tint(effect)
+        let fade = pow(1 - progress, 1.25)
+        let peak = sin(min(1, progress * 1.7) * .pi * 0.5)
+        let impactRadius = width * (radius > 0
+            ? radius * min(1, 0.22 + 0.78 * peak)
+            : 0.018 + 0.026 * peak)
+        let rect = CGRect(x: end.x - impactRadius, y: end.y - impactRadius * 0.58,
+                          width: impactRadius * 2, height: impactRadius * 1.16)
+        context.stroke(Path(ellipseIn: rect), with: .color(color.opacity(0.9 * fade)),
+                       lineWidth: max(1, 5 * fade))
+
+        var slash = Path()
+        slash.move(to: CGPoint(x: end.x - impactRadius, y: end.y + impactRadius * 0.35))
+        slash.addQuadCurve(to: CGPoint(x: end.x + impactRadius, y: end.y - impactRadius * 0.35),
+                           control: CGPoint(x: end.x + impactRadius * 0.2, y: end.y + impactRadius))
+        context.stroke(slash, with: .color(.white.opacity(0.65 * fade)),
+                       lineWidth: max(1, 4 * fade))
+
+        let count = Self.impactParticleCount(stage: stage)
+        for index in 0..<count {
+            let angle = Double(index) * 2.399_963 + progress * 2.2
+            let distance = impactRadius * (0.35 + 0.65 * progress) * (0.72 + 0.28 * sin(Double(index) * 1.7))
+            let point = CGPoint(x: end.x + cos(angle) * distance,
+                                y: end.y + sin(angle) * distance * 0.65)
+            let particleSize = max(1.5, (5 - Double(stage) * 0.55) * fade)
+            let particle = CGRect(x: point.x - particleSize, y: point.y - particleSize,
+                                  width: particleSize * 2, height: particleSize * 2)
+            context.fill(Path(ellipseIn: particle), with: .color(color.opacity(0.9 * fade)))
+        }
+
+        // 属性轮廓只在峰值阶段出现，不把大面积闪光拖到恢复阶段。
+        if stage == 2 || stage == 3 {
+            let symbol: String
+            switch effect {
+            case .frost: symbol = "❄"
+            case .fire, .meteor: symbol = "✦"
+            case .acid, .flask: symbol = "●"
+            case .soul, .shadow: symbol = "☠"
+            case .scarab, .sandstorm: symbol = "◆"
+            case .stone, .smash: symbol = "✹"
+            default: symbol = "⚡"
+            }
+            context.draw(Text(symbol).font(.system(size: max(12, width * 0.018), weight: .black))
+                .foregroundColor(color.opacity(0.85 * fade)), at: end)
+        }
     }
 
     private func pixel(_ point: ForestPoint) -> CGPoint { CGPoint(x: point.x * width, y: point.y * height) }

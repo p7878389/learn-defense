@@ -1,0 +1,122 @@
+[
+  {
+    "file": "ogre-walk-0.webp",
+    "source_cell": [
+      0,
+      0,
+      512,
+      512
+    ],
+    "source_opaque_bounds": [
+      54,
+      53,
+      467,
+      463
+    ],
+    "offset": [
+      25,
+      31
+    ],
+    "bytes": 63558
+  },
+  {
+    "file": "ogre-walk-1.webp",
+    "source_cell": [
+      512,
+      0,
+      512,
+      512
+    ],
+    "source_opaque_bounds": [
+      55,
+      52,
+      444,
+      463
+    ],
+    "offset": [
+      25,
+      31
+    ],
+    "bytes": 60740
+  },
+  {
+    "file": "ogre-walk-2.webp",
+    "source_cell": [
+      1024,
+      0,
+      512,
+      512
+    ],
+    "source_opaque_bounds": [
+      58,
+      53,
+      440,
+      463
+    ],
+    "offset": [
+      25,
+      31
+    ],
+    "bytes": 56556
+  },
+  {
+    "file": "ogre-walk-3.webp",
+    "source_cell": [
+      0,
+      512,
+      512,
+      512
+    ],
+    "source_opaque_bounds": [
+      56,
+      52,
+      438,
+      461
+    ],
+    "offset": [
+      25,
+      33
+    ],
+    "bytes": 59222
+  },
+  {
+    "file": "ogre-walk-4.webp",
+    "source_cell": [
+      512,
+      512,
+      512,
+      512
+    ],
+    "source_opaque_bounds": [
+      56,
+      52,
+      487,
+      467
+    ],
+    "offset": [
+      25,
+      28
+    ],
+    "bytes": 60656
+  },
+  {
+    "file": "ogre-walk-5.webp",
+    "source_cell": [
+      1024,
+      512,
+      512,
+      512
+    ],
+    "source_opaque_bounds": [
+      57,
+      52,
+      489,
+      464
+    ],
+    "offset": [
+      25,
+      30
+    ],
+    "bytes": 60180
+  }
+]
