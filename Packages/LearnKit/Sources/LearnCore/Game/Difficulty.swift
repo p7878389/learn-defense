@@ -100,6 +100,7 @@ public struct GameTuning: Sendable {
                     WavePlan.Entry(.blob, weight: 3),
                     WavePlan.Entry(.drowsy, weight: 2),
                     WavePlan.Entry(.hopper, weight: difficulty == .easy ? 0 : 1),
+                    WavePlan.Entry(.goblin, weight: difficulty == .easy ? 0 : 1),
                 ]))
         }
         let lineup: [DefenderKind] = [.frost, .twin, .inkling, .stroke, .starling]
@@ -122,6 +123,7 @@ public struct GameTuning: Sendable {
                     WavePlan.Entry(.blob, weight: 4),
                     WavePlan.Entry(.hopper, weight: 2),
                     WavePlan.Entry(.drowsy, weight: 1),
+                    WavePlan.Entry(.goblin, weight: 1),
                 ]))
         case .normal:
             return GameTuning(
@@ -138,7 +140,9 @@ public struct GameTuning: Sendable {
                     WavePlan.Entry(.hopper, weight: 2),
                     WavePlan.Entry(.dasher, weight: 2),
                     WavePlan.Entry(.armored, weight: 1),
-                ], boss: .king))
+                    WavePlan.Entry(.goblin, weight: 2),
+                    WavePlan.Entry(.acolyte, weight: 1),
+                ], boss: .king, bosses: EnemyKind.forestBosses))
         case .hard:
             return GameTuning(
                 lanes: 5, questions: questions, crossSeconds: 16, spawnInterval: 4.2, hearts: 3,
@@ -154,7 +158,9 @@ public struct GameTuning: Sendable {
                     WavePlan.Entry(.hopper, weight: 2),
                     WavePlan.Entry(.dasher, weight: 3),
                     WavePlan.Entry(.armored, weight: 2),
-                ], boss: .king))
+                    WavePlan.Entry(.goblin, weight: 2),
+                    WavePlan.Entry(.acolyte, weight: 2),
+                ], boss: .king, bosses: EnemyKind.forestBosses))
         }
     }
 }

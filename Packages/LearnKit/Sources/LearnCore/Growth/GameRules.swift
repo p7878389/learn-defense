@@ -8,6 +8,8 @@ public struct GameRules: Codable, Sendable, Equatable {
     public var maxRestSeconds = 90
     public var questionIncrement = ByDifficulty(easy: 2, normal: 3, hard: 4)
     public var reviewEvery = 3
+    /// 瞄准的题是孩子第一次见的知识点时，这只怪物先原地等几秒，让孩子看题、听读音；0 表示不等
+    public var newItemGraceSeconds = 8
     public var coinLimits = ["answers": 100, "completion": 100, "firstWin": 10, "level": 90, "badge": 100]
 
     public init() {}
@@ -20,6 +22,7 @@ public struct GameRules: Codable, Sendable, Equatable {
         maxRestSeconds = (try? c.decodeIfPresent(Int.self, forKey: .maxRestSeconds)) ?? d.maxRestSeconds
         questionIncrement = (try? c.decodeIfPresent(ByDifficulty<Int>.self, forKey: .questionIncrement)) ?? d.questionIncrement
         reviewEvery = (try? c.decodeIfPresent(Int.self, forKey: .reviewEvery)) ?? d.reviewEvery
+        newItemGraceSeconds = (try? c.decodeIfPresent(Int.self, forKey: .newItemGraceSeconds)) ?? d.newItemGraceSeconds
         coinLimits = (try? c.decodeIfPresent([String: Int].self, forKey: .coinLimits)) ?? d.coinLimits
     }
 
@@ -43,6 +46,7 @@ public struct GameRules: Codable, Sendable, Equatable {
         if !(1...60).contains(r.restIncrementSeconds) { r.restIncrementSeconds = d.restIncrementSeconds }
         if !(r.initialRestSeconds...600).contains(r.maxRestSeconds) { r.maxRestSeconds = max(d.maxRestSeconds, r.initialRestSeconds) }
         if !(2...20).contains(r.reviewEvery) { r.reviewEvery = d.reviewEvery }
+        if !(0...60).contains(r.newItemGraceSeconds) { r.newItemGraceSeconds = d.newItemGraceSeconds }
         if ![r.questionIncrement.easy, r.questionIncrement.normal, r.questionIncrement.hard].allSatisfy({ (1...20).contains($0) }) {
             r.questionIncrement = d.questionIncrement
         }

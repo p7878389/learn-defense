@@ -34,6 +34,51 @@ public extension EnemyKind {
         look: EnemyLook(body: .spiky, color: .ink, accessory: .crown, eyes: .single, scale: 1.3, defeat: .sparkle))
 }
 
+// MARK: - 森林怪物（经典模式也能出场）
+
+/// 森林模式的小怪和首领，在经典模式里照样是「血量 = 要答对几题」。
+/// id 和 `ForestEnemyKind` 的 rawValue 一致，序列帧复用森林素材（见 `Sprites/forest-classic.json`）。
+/// 骷髅步兵、尖刺野猪没有成品图，暂不加入
+public extension EnemyKind {
+    static let goblin = EnemyKind(
+        id: "goblin", name: "掷石斥候", speed: 1.2,
+        movement: .surge(period: 1.4, amplitude: 0.6),
+        look: EnemyLook(body: .ball, color: .moss, accessory: .horns, defeat: .ripple),
+        drop: ItemDrop(.luckyStar, chance: 0.2))
+
+    static let acolyte = EnemyKind(
+        id: "acolyte", name: "暗影学徒", speed: 0.9,
+        look: EnemyLook(body: .cloud, color: .plum, eyes: .single, defeat: .sparkle),
+        drop: ItemDrop(.frostCharm, chance: 0.2))
+
+    /// 首领统一 3 滴血（和铁门僵尸一样），一局题量不会因为抽到哪个首领而变
+    private static func forestBoss(_ id: String, _ name: String, speed: Double, color: UnitColor,
+                                   movement: MovementStyle = .steady, scale: Double = 1.4) -> EnemyKind {
+        EnemyKind(id: id, name: name, hp: 3, speed: speed, bonus: 30, movement: movement,
+                  look: EnemyLook(body: .spiky, color: color, accessory: .crown, eyes: .single,
+                                  scale: scale, defeat: .firework))
+    }
+
+    /// 飘在空中的首领：一路上下浮动，矮墙拦不住（和会跳的僵尸同一条规则）
+    private static let hover = MovementStyle.hop(pause: 0, airTime: 1.4, height: 10)
+
+    static let knight = forestBoss("knight", "骷髅死亡骑士", speed: 0.6, color: .indigo)
+    static let ogre = forestBoss("ogre", "巨魔酋长", speed: 0.5, color: .coral, scale: 1.5)
+    static let berserker = forestBoss("berserker", "双斧狂战士", speed: 0.7, color: .moss,
+                                      movement: .surge(period: 2, amplitude: 0.5))
+    static let frostKing = forestBoss("frostKing", "寒霜魔王", speed: 0.6, color: .sky)
+    static let infernal = forestBoss("infernal", "炎狱领主", speed: 0.6, color: .crimson)
+    static let reaper = forestBoss("reaper", "冥魂收割者", speed: 0.6, color: .plum, movement: hover)
+    static let pharaoh = forestBoss("pharaoh", "古墓法老", speed: 0.55, color: .gold)
+    static let slime = forestBoss("slime", "剧毒史莱姆王", speed: 0.5, color: .jade, scale: 1.5)
+    static let gargoyle = forestBoss("gargoyle", "暗翼石像鬼王", speed: 0.65, color: .crimson, movement: hover)
+    static let shaman = forestBoss("shaman", "炼金萨满王", speed: 0.6, color: .moss)
+
+    /// 森林首领，经典模式每局从首领候选里随机抽一个压轴
+    static let forestBosses: [EnemyKind] = [.knight, .ogre, .berserker, .frostKing, .infernal,
+                                            .reaper, .pharaoh, .slime, .gargoyle, .shaman]
+}
+
 // MARK: - 内置字灵
 
 public extension DefenderKind {
@@ -92,7 +137,10 @@ public extension DefenderKind {
 
 /// 所有内置的怪物和字灵，按 id 查找
 public enum UnitCatalog {
+    /// 原版的六种僵尸：啃咬、倒下、烧焦、掉防具的动画齐全
     public static let enemies: [EnemyKind] = [.blob, .hopper, .dasher, .drowsy, .armored, .king]
+    /// 从森林模式来的小怪和首领：只有行走和出手动画，被打败时直接用退场特效
+    public static let forestEnemies: [EnemyKind] = [.goblin, .acolyte] + EnemyKind.forestBosses
     /// 能种在草坪上的植物：射手和防御道具
     public static let defenders: [DefenderKind] = [.inkling, .twin, .frost, .stroke, .starling,
                                                    .wallnut, .tallnut, .potato]
@@ -100,7 +148,7 @@ public enum UnitCatalog {
     public static let barricades: [DefenderKind] = [.ironGate]
 
     public static func enemy(id: String) -> EnemyKind? {
-        enemies.first { $0.id == id }
+        (enemies + forestEnemies).first { $0.id == id }
     }
 
     public static func defender(id: String) -> DefenderKind? {
@@ -125,14 +173,20 @@ public struct WavePlan: Sendable {
     public var warmup: Int
     public var basic: EnemyKind
     public var mix: [Entry]
-    public var boss: EnemyKind?
+    /// 首领候选：每局随机抽一个放在最后。空表示这一档不出首领
+    public var bosses: [EnemyKind]
+    /// 默认的首领（候选里的第一个）
+    public var boss: EnemyKind? { bosses.first }
 
-    public init(warmup: Int = 2, basic: EnemyKind = .blob, mix: [Entry], boss: EnemyKind? = nil) {
+    public init(warmup: Int = 2, basic: EnemyKind = .blob, mix: [Entry], boss: EnemyKind? = nil,
+                bosses: [EnemyKind] = []) {
         self.warmup = warmup
         self.basic = basic
         self.mix = mix
-        self.boss = boss
+        self.bosses = (boss.map { [$0] } ?? []) + bosses.filter { $0 != boss }
     }
+
+    public func isBoss(_ kind: EnemyKind) -> Bool { bosses.contains(kind) }
 
     /// 按题量出怪：所有怪物要答对的题数（血量）加起来正好等于 questions，每局题量固定。
     /// 先出 warmup 只基础怪；首领算在题量里，放在最后，题量不够容纳首领时就不出首领；
@@ -140,6 +194,8 @@ public struct WavePlan: Sendable {
     public func kinds<R: RandomNumberGenerator>(questions budget: Int, using rng: inout R) -> [EnemyKind] {
         var remaining = max(0, budget)
         var result: [EnemyKind] = []
+        // 只有一个候选时不消耗随机数，出怪顺序和以前一致
+        let boss = bosses.count > 1 ? bosses.randomElement(using: &rng) : bosses.first
         let bossHP = boss?.hp ?? 0
         let withBoss = boss != nil && remaining >= warmup * basic.hp + bossHP + 1
         if withBoss { remaining -= bossHP }

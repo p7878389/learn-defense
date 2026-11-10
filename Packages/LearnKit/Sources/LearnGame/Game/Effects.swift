@@ -181,6 +181,81 @@ struct ScreenFlashEffect: VisualEffect {
     }
 }
 
+/// 首领登场预警：全屏红光闪两下，它走的那条路亮起红色警示带，画面中上方滑进一条「首领来了」的横幅。
+/// 只是画面提示，不暂停战斗，1.8 秒内全部自己收掉
+struct BossWarningEffect {
+    static let bannerName = "bossBanner"
+    static let laneName = "bossLaneWarning"
+    let name: String
+    let laneY: CGFloat
+    let laneHeight: CGFloat
+
+    func play(in scene: SKScene) {
+        let size = scene.size
+        let center = CGPoint(x: size.width / 2, y: size.height / 2)
+
+        // 红光闪两下
+        for delay in [0.0, 0.42] {
+            scene.run(.sequence([.wait(forDuration: delay), .run {
+                ScreenFlashEffect(color: Palette.hurt, alpha: 0.3, duration: 0.38).play(at: center, in: scene)
+            }]))
+        }
+
+        // 这条路亮起警示带，一明一暗三次
+        let strip = SKSpriteNode(color: Palette.hurt, size: CGSize(width: size.width, height: laneHeight * 0.9))
+        strip.name = Self.laneName
+        strip.position = CGPoint(x: center.x, y: laneY)
+        strip.zPosition = 5
+        strip.alpha = 0
+        scene.addChild(strip)
+        strip.run(.sequence([
+            .repeat(.sequence([.fadeAlpha(to: 0.28, duration: 0.22), .fadeAlpha(to: 0.06, duration: 0.22)]), count: 3),
+            .fadeOut(withDuration: 0.2),
+            .removeFromParent(),
+        ]))
+
+        // 横幅：从右边滑进来，停一会儿，从左边滑出去
+        let banner = SKNode()
+        banner.name = Self.bannerName
+        banner.zPosition = 95
+        let title = SKLabelNode(text: "⚠️ 首领来了")
+        title.fontName = "PingFangSC-Semibold"
+        title.fontSize = 34
+        title.fontColor = .white
+        title.verticalAlignmentMode = .center
+        title.position = CGPoint(x: 0, y: 16)
+        let subtitle = SKLabelNode(text: name)
+        subtitle.fontName = "PingFangSC-Semibold"
+        subtitle.fontSize = 24
+        subtitle.fontColor = Palette.bullet
+        subtitle.verticalAlignmentMode = .center
+        subtitle.position = CGPoint(x: 0, y: -20)
+        let width = max(title.frame.width, subtitle.frame.width) + 72
+        let panel = SKShapeNode(rect: CGRect(x: -width / 2, y: -46, width: width, height: 92), cornerRadius: 22)
+        panel.fillColor = Palette.ink.withAlphaComponent(0.88)
+        panel.strokeColor = Palette.hurt
+        panel.lineWidth = 4
+        banner.addChild(panel)
+        banner.addChild(title)
+        banner.addChild(subtitle)
+        // 放在战场中上方，避开顶部的卡牌栏
+        let y = size.height * 0.68
+        banner.position = CGPoint(x: size.width + width, y: y)
+        scene.addChild(banner)
+        let slideIn = SKAction.move(to: CGPoint(x: center.x, y: y), duration: 0.28)
+        slideIn.timingMode = .easeOut
+        let slideOut = SKAction.move(to: CGPoint(x: -width, y: y), duration: 0.25)
+        slideOut.timingMode = .easeIn
+        banner.run(.sequence([
+            slideIn,
+            .sequence([.scale(to: 1.08, duration: 0.1), .scale(to: 1, duration: 0.1)]),
+            .wait(forDuration: 1.0),
+            slideOut,
+            .removeFromParent(),
+        ]))
+    }
+}
+
 /// 飘字，比如「+20」「❄️ 冰冻符」
 struct FloatingTextEffect: VisualEffect {
     let text: String

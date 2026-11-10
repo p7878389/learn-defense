@@ -63,6 +63,33 @@ struct EndlessRoundTests {
         #expect(s.nextEnemy() == nil)
     }
 
+    /// 第一次见的知识点：瞄准的怪物先原地等几秒；答过一次或等够时间后照常逼近
+    @Test func newItemHoldsTargetForGracePeriodOnly() throws {
+        let s = session(.easy)
+        var time = 0.0
+        func tick(_ count: Int) { for _ in 0..<count { time += 0.1; s.scene.update(time) } }
+        tick(10)
+        let first = try #require(s.questionIDs.first)
+        #expect(s.holdsTarget, "新题刚亮出来时不逼近")
+        let enemy = try #require(s.scene.enemies(inLane: 0).first { $0.enemyID == first }
+                                 ?? (0..<s.tuning.lanes).flatMap { s.scene.enemies(inLane: $0) }.first { $0.enemyID == first })
+        let start = enemy.position.x
+        tick(40)
+        #expect(enemy.position.x == start, "缓冲时间内原地等着")
+        tick(60)
+        #expect(!s.holdsTarget, "默认 8 秒后照常逼近")
+        #expect(enemy.position.x < start)
+
+        // 答过一次就有了记录，不再算新题
+        let t = session(.easy)
+        time = 0
+        for _ in 0..<10 { time += 0.1; t.scene.update(time) }
+        #expect(t.holdsTarget)
+        let question = try #require(t.current)
+        t.answer((question.answerIndex + 1) % question.options.count)
+        #expect(!t.holdsTarget)
+    }
+
     @Test func switchingTargetsKeepsWrongChoicesAndPauseBlocksAnswers() throws {
         // 入门只出选择题，这里要点选项
         let s = session(.easy)

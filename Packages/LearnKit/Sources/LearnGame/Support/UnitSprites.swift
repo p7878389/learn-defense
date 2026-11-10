@@ -1,4 +1,5 @@
 import LearnCore
+import ImageIO
 import SpriteKit
 
 /// 内置植物与僵尸的透明序列帧。动画共享纹理，节点独立；缺图时交回原有矢量绘制。
@@ -18,6 +19,11 @@ enum UnitSprites {
         let muzzle: [Double]?
         /// 这个角色的其他动画：attack 啃咬 / 发射、die 倒下、head 掉头、boom 烧焦、bare 掉了防具…
         let states: [String: String]?
+        /// 每一帧的图片（相对 Sprites 目录、不带扩展名的透明 WebP）。
+        /// 有它就不读「动画名/序号.png」，森林怪物借此直接复用森林模式的素材
+        let files: [String]?
+        /// 加载时水平翻转：经典模式的怪物朝左走，朝右画的素材要翻过来。crop 按翻转后的坐标写
+        let mirrored: Bool?
 
         var duration: TimeInterval { Double(frameCount) * frameTime }
     }
@@ -26,10 +32,13 @@ enum UnitSprites {
         guard let url = Bundle.module.url(forResource: "clips", withExtension: "json", subdirectory: "Sprites"),
               let data = try? Data(contentsOf: url),
               let clips = try? JSONDecoder().decode([String: Clip].self, from: data) else { return [:] }
-        guard let skinURL = Bundle.module.url(forResource: "skins", withExtension: "json", subdirectory: "Sprites"),
-              let skinData = try? Data(contentsOf: skinURL),
-              let skins = try? JSONDecoder().decode([String: Clip].self, from: skinData) else { return clips }
-        return clips.merging(skins) { original, _ in original }
+        // 皮肤和森林怪物各有一份清单，由各自的脚本生成；重名时以 clips.json 为准
+        return ["skins", "forest-classic"].reduce(clips) { merged, manifest in
+            guard let url = Bundle.module.url(forResource: manifest, withExtension: "json", subdirectory: "Sprites"),
+                  let data = try? Data(contentsOf: url),
+                  let extra = try? JSONDecoder().decode([String: Clip].self, from: data) else { return merged }
+            return merged.merging(extra) { original, _ in original }
+        }
     }()
     private static var cachedFrames: [String: [SKTexture]] = [:]
 
@@ -38,17 +47,28 @@ enum UnitSprites {
         guard let clip = clips[name], clip.frameCount > 0, clip.crop.count == 4 else { return [] }
         var frames: [SKTexture] = []
         for index in 0..<clip.frameCount {
-            guard let url = Bundle.module.url(forResource: String(index), withExtension: "png", subdirectory: "Sprites/\(name)"),
-                  let image = PlatformImage(contentsOfFile: url.path) else {
-                cachedFrames[name] = []
-                return []
+            let bitmap: CGImage
+            if let files = clip.files {
+                guard files.indices.contains(index),
+                      let image = Self.webp(files[index], mirrored: clip.mirrored == true) else {
+                    cachedFrames[name] = []
+                    return []
+                }
+                bitmap = image
+            } else {
+                guard let url = Bundle.module.url(forResource: String(index), withExtension: "png", subdirectory: "Sprites/\(name)"),
+                      let image = PlatformImage(contentsOfFile: url.path) else {
+                    cachedFrames[name] = []
+                    return []
+                }
+                // PNG 的 DPI 元数据会改变 NSImage 的点尺寸，裁切必须统一使用像素尺寸。
+                #if canImport(UIKit)
+                guard let decoded = image.cgImage else { return [] }
+                #else
+                guard let decoded = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return [] }
+                #endif
+                bitmap = decoded
             }
-            // PNG 的 DPI 元数据会改变 NSImage 的点尺寸，裁切必须统一使用像素尺寸。
-            #if canImport(UIKit)
-            guard let bitmap = image.cgImage else { return [] }
-            #else
-            guard let bitmap = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return [] }
-            #endif
             let source: CGImage
             if let key = clip.colorKey, key.count == 3 {
                 // Core Graphics 的色键遮罩不接受带 alpha 的源图；先以 RGB 解码白底帧。
@@ -78,6 +98,23 @@ enum UnitSprites {
         }
         cachedFrames[name] = frames
         return frames
+    }
+
+    /// 读 Sprites 目录下的一张透明 WebP（file 不带扩展名），需要时水平翻转
+    static func webp(_ file: String, mirrored: Bool) -> CGImage? {
+        guard let folder = Bundle.module.url(forResource: "Sprites", withExtension: nil),
+              let source = CGImageSourceCreateWithURL(
+                folder.appendingPathComponent(file).appendingPathExtension("webp") as CFURL, nil),
+              let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else { return nil }
+        guard mirrored else { return image }
+        guard let context = CGContext(data: nil, width: image.width, height: image.height,
+                                      bitsPerComponent: 8, bytesPerRow: image.width * 4,
+                                      space: CGColorSpaceCreateDeviceRGB(),
+                                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+        context.translateBy(x: CGFloat(image.width), y: 0)
+        context.scaleBy(x: -1, y: 1)
+        context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+        return context.makeImage()
     }
 
     static func clip(named name: String) -> Clip? {
