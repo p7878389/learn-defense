@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 import Testing
 @testable import LearnCore
 
@@ -39,26 +40,98 @@ struct ForestRulesTests {
         #expect(botanist.skillRange == 0.30 && botanist.attackWindup == 0.65 && botanist.attackDamage == 1.2)
     }
 
-    @Test func firstReadSeedsDefaultsAndEditsSurviveSyncAndReopen() throws {
+    private func storedObject(_ db: LearnDatabase) throws -> [String: Any]? {
+        guard let row = try db.configFile(named: LearnDatabase.forestRulesName) else { return nil }
+        return try JSONSerialization.jsonObject(with: row.data) as? [String: Any]
+    }
+
+    @Test func bundledFileIsCompleteAndValid() throws {
+        let rules = try #require(ForestRules.load())
+        #expect(rules == ForestRules.defaults)
+        #expect(rules.version == 1)
+        #expect(Set(rules.towers.keys) == Set(ForestTower.allCases.map(\.rawValue)))
+        #expect(Set(rules.enemies.keys) == Set(ForestEnemyKind.allCases.map(\.rawValue)))
+        #expect(Set(rules.heroes.keys) == Set(ForestHero.allCases.map(\.rawValue)))
+        #expect(rules.isComplete)
+    }
+
+    /// 数据库只存改动项：没改过就不落库，改过的只记下改动的那几个值。
+    @Test func databaseStoresOnlyChangedValuesAndKeepsThemAcrossSyncAndReopen() throws {
         let (dir, url) = temporaryStore()
         defer { try? FileManager.default.removeItem(at: dir) }
         do {
             let db = try LearnDatabase(url: url)
-            #expect(try db.configFile(named: LearnDatabase.forestRulesName) == nil)
             var rules = try db.forestRules()
             #expect(rules == .defaults)
-            #expect(try db.configFile(named: LearnDatabase.forestRulesName) != nil)
+            #expect(try db.configFile(named: LearnDatabase.forestRulesName) == nil)
+            try db.saveForestRules(.defaults)
+            #expect(try db.configFile(named: LearnDatabase.forestRulesName) == nil)
+
             rules.enemies[ForestEnemyKind.gargoyle.rawValue]!.skillCount = 1
             rules.towers[ForestTower.frost.rawValue]!.cost = 70
             rules.economy.startCoins = 240
             try db.saveForestRules(rules)
+            let stored = try #require(try storedObject(db))
+            #expect(stored as NSDictionary == [
+                "version": 1,
+                "economy": ["startCoins": 240],
+                "towers": ["frost": ["cost": 70]],
+                "enemies": ["gargoyle": ["skillCount": 1]]
+            ] as NSDictionary)
             try db.syncConfig(.bundled)
         }
-        let rules = try LearnDatabase(url: url).forestRules()
+        let db = try LearnDatabase(url: url)
+        var rules = try db.forestRules()
         #expect(rules.enemy(.gargoyle).skillCount == 1)
         #expect(rules.tower(.frost).cost == 70)
         #expect(rules.economy.startCoins == 240)
         #expect(rules.enemy(.knight) == ForestRules.defaults.enemy(.knight))
+
+        // 改回默认值的项从库里消失；全部改回后整行删除。
+        rules.towers[ForestTower.frost.rawValue]!.cost = ForestRules.defaults.tower(.frost).cost
+        try db.saveForestRules(rules)
+        #expect(try storedObject(db)?["towers"] == nil)
+        try db.saveForestRules(.defaults)
+        #expect(try db.configFile(named: LearnDatabase.forestRulesName) == nil)
+    }
+
+    /// 没改过的数值跟随内置默认值：默认值变了，库里的改动项不受影响，其余自动用新值。
+    @Test func untouchedValuesFollowNewDefaults() throws {
+        let overrides = Data(#"{"version":1,"enemies":{"gargoyle":{"skillCount":1}}}"#.utf8)
+        var newer = ForestRules.defaults
+        newer.enemies[ForestEnemyKind.gargoyle.rawValue]!.health = 25
+        newer.enemies[ForestEnemyKind.knight.rawValue]!.health = 30
+        newer.economy.startCoins = 150
+        let rules = try #require(ForestRules.applying(overrides: overrides, to: newer))
+        #expect(rules.enemy(.gargoyle).skillCount == 1)
+        #expect(rules.enemy(.gargoyle).health == 25)
+        #expect(rules.enemy(.knight).health == 30)
+        #expect(rules.economy.startCoins == 150)
+        #expect(rules.version == newer.version)
+    }
+
+    /// 上一版把整份默认值写进了库：读取时收敛成改动项，之后同样跟随默认值。
+    @Test func legacyFullSnapshotIsReducedToItsChanges() throws {
+        let db = try LearnDatabase(url: nil)
+        var legacy = ForestRules.defaults
+        legacy.enemies[ForestEnemyKind.ogre.rawValue]!.health = 22
+        var object = try #require(try JSONSerialization.jsonObject(with: JSONEncoder().encode(legacy)) as? [String: Any])
+        object.removeValue(forKey: "version")
+        db.context.insert(StoredConfigFile(name: LearnDatabase.forestRulesName,
+                                           data: try JSONSerialization.data(withJSONObject: object)))
+        try db.context.save()
+        #expect(try db.forestRules().enemy(.ogre).health == 22)
+        #expect(try #require(try storedObject(db)) as NSDictionary
+                == ["version": 1, "enemies": ["ogre": ["health": 22]]] as NSDictionary)
+
+        let pristine = try LearnDatabase(url: nil)
+        object = try #require(try JSONSerialization.jsonObject(with: JSONEncoder().encode(ForestRules.defaults)) as? [String: Any])
+        object.removeValue(forKey: "version")
+        pristine.context.insert(StoredConfigFile(name: LearnDatabase.forestRulesName,
+                                                 data: try JSONSerialization.data(withJSONObject: object)))
+        try pristine.context.save()
+        #expect(try pristine.forestRules() == .defaults)
+        #expect(try pristine.configFile(named: LearnDatabase.forestRulesName) == nil)
     }
 
     @Test func partialDataIsFilledPerFieldAndInvalidUnitsFallBack() throws {
@@ -67,7 +140,7 @@ struct ForestRulesTests {
          "enemies":{"knight":{"health":40},"ogre":{"health":-5,"speed":0.02},"dragon":{"health":1}},
          "towers":{"rapid":{"damage":2}}}
         """#
-        let rules = try #require(ForestRules.decode(Data(json.utf8)))
+        let rules = try #require(ForestRules.applying(overrides: Data(json.utf8)))
         #expect(rules.economy.startCoins == 300 && rules.economy.lives == 5)
         #expect(rules.enemy(.knight).health == 40)
         #expect(rules.enemy(.knight).speed == ForestRules.defaults.enemy(.knight).speed)
@@ -75,19 +148,19 @@ struct ForestRulesTests {
         #expect(rules.enemy(.ogre) == ForestRules.defaults.enemy(.ogre))
         #expect(rules.tower(.rapid).damage == 2 && rules.tower(.rapid).burst == 3)
         #expect(rules.hero(.paladin) == ForestRules.defaults.hero(.paladin))
-        #expect(ForestRules.decode(Data("not json".utf8)) == nil)
-        #expect(ForestRules.decode(Data(#"{"economy":{"lives":"many"}}"#.utf8)) == nil)
+        #expect(ForestRules.applying(overrides: Data("not json".utf8)) == nil)
+        #expect(ForestRules.applying(overrides: Data(#"{"economy":{"lives":"many"}}"#.utf8)) == nil)
     }
 
     @Test func unreadableRowFallsBackToDefaultsWithoutOverwritingIt() throws {
-        let (dir, url) = temporaryStore()
-        defer { try? FileManager.default.removeItem(at: dir) }
-        let db = try LearnDatabase(url: url)
-        _ = try db.forestRules()
-        let row = try #require(try db.configFile(named: LearnDatabase.forestRulesName))
-        row.data = Data("broken".utf8)
-        #expect(try db.forestRules() == .defaults)
-        #expect(try db.configFile(named: LearnDatabase.forestRulesName)?.data == Data("broken".utf8))
+        let db = try LearnDatabase(url: nil)
+        for broken in ["broken", #"{"version":1,"economy":{"lives":"many"}}"#] {
+            for old in try db.context.fetch(FetchDescriptor<StoredConfigFile>()) { db.context.delete(old) }
+            db.context.insert(StoredConfigFile(name: LearnDatabase.forestRulesName, data: Data(broken.utf8)))
+            try db.context.save()
+            #expect(try db.forestRules() == .defaults)
+            #expect(try db.configFile(named: LearnDatabase.forestRulesName)?.data == Data(broken.utf8))
+        }
     }
 
     @Test func battleFollowsTheRulesItWasGiven() {

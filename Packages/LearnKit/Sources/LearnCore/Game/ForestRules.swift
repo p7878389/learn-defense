@@ -1,22 +1,23 @@
 import Foundation
 
 /// 森林塔防的数值配置：怪物、英雄、炮塔、经济与战斗效果。
-/// 数据库是运行时来源：首次使用把这里的默认值写入数据库，之后以数据库为准；
-/// 战斗逻辑只读 `ForestBattle.rules`，不再各处写数字。
+/// 默认值在内置的 `Resources/Config/forest.json`，调数值改那个文件；
+/// 数据库只存被改动过的项（见 `LearnDatabase.forestRules`），没改过的始终跟随内置默认值。
+/// 战斗逻辑只读 `ForestBattle.rules`，不在各处写数字。
 /// 距离与半径用地图归一化坐标，时间单位为秒，速度为每秒走过的路径长度。
 public struct ForestRules: Codable, Sendable, Equatable {
     public struct Economy: Codable, Sendable, Equatable {
-        public var startCoins = 100
-        public var lives = 5
+        public var startCoins: Int
+        public var lives: Int
         /// 总波数；最后一波的最后一只是首领。
-        public var waves = 3
+        public var waves: Int
         /// 每波怪物数 = spawnBase + 波次。
-        public var spawnBase = 3
-        public var spawnInterval = 1.8
+        public var spawnBase: Int
+        public var spawnInterval: Double
         /// 波间答对题目的奖励。
-        public var waveReward = 50
-        public var repairCost = 15
-        public var repairAmount = 20.0
+        public var waveReward: Int
+        public var repairCost: Int
+        public var repairAmount: Double
     }
 
     public struct Tower: Codable, Sendable, Equatable {
@@ -71,97 +72,97 @@ public struct ForestRules: Codable, Sendable, Equatable {
 
     public struct Combat: Codable, Sendable, Equatable {
         /// 被冰塔减速时的移动速度倍率。
-        public var slowFactor = 0.55
+        public var slowFactor: Double
         /// 防线被冰霜击中后的冰冻时长，以及冰冻期间的出手速度倍率。
-        public var chillSeconds = 3.0
-        public var chillFactor = 0.5
+        public var chillSeconds: Double
+        public var chillFactor: Double
         /// 护盾期间受到伤害的倍率。
-        public var shieldDamageFactor = 0.35
+        public var shieldDamageFactor: Double
         /// 强化技留下的持续区域：持续时间、跳伤间隔、每跳伤害与最小半径。
-        public var zoneSeconds = 3.0
-        public var zoneTickSeconds = 0.5
-        public var zoneTickDamage = 1.0
-        public var zoneMinRadius = 0.1
+        public var zoneSeconds: Double
+        public var zoneTickSeconds: Double
+        public var zoneTickDamage: Double
+        public var zoneMinRadius: Double
         /// 怪物出场后多久才会第一次出手。
-        public var firstAttackDelay = 2.0
+        public var firstAttackDelay: Double
         /// 每第几次攻击换成强化技；0 表示从不。
-        public var skillEvery = 3
+        public var skillEvery: Int
         /// 近战强化技额外增加的前摇。
-        public var meleeSkillExtraWindup = 0.25
+        public var meleeSkillExtraWindup: Double
     }
 
-    public var economy = Economy()
-    public var combat = Combat()
+    /// 配置结构的版本号，随内置文件走；数据库里的改动项记下写入时的版本，供以后字段变动时迁移。
+    public var version: Int
+    public var economy: Economy
+    public var combat: Combat
     /// 以 `ForestTower` / `ForestEnemyKind` / `ForestHero` 的 rawValue 为键。
     public var towers: [String: Tower]
     public var enemies: [String: Enemy]
     public var heroes: [String: Hero]
 
-    public static let defaults = ForestRules()
+    /// 内置 forest.json 的内容。文件随包发布，缺失或写坏属于构建问题（测试会拦住），这里不再备一份数字。
+    public static let defaults: ForestRules = {
+        guard let rules = load() else { fatalError("内置 Config/forest.json 缺失或内容无效") }
+        return rules
+    }()
 
-    public init() {
-        towers = [
-            ForestTower.rapid.rawValue: Tower(cost: 50, maxHealth: 30, damage: 0.45, range: 0.18,
-                                              reload: 0.75, burst: 3, burstGap: 0.09, slowSeconds: 0),
-            ForestTower.frost.rawValue: Tower(cost: 50, maxHealth: 30, damage: 0.6, range: 0.18,
-                                              reload: 1.2, burst: 1, burstGap: 0, slowSeconds: 2)
-        ]
-        enemies = Dictionary(uniqueKeysWithValues: ForestEnemyKind.allCases.map { ($0.rawValue, Self.defaultEnemy($0)) })
-        heroes = [
-            ForestHero.paladin.rawValue: Hero(cost: 50, maxHealth: 36, attackDamage: 1.2, attackRange: 0.24,
-                                              attackWindup: 0.45, attackRecovery: 0.35, attackCooldown: 0.85,
-                                              skillWindup: 0.8, skillRecovery: 0.5, skillCooldown: 12,
-                                              skillRange: 0, skillRadius: 0.30, skillDamage: 0, skillSeconds: 6),
-            ForestHero.botanist.rawValue: Hero(cost: 50, maxHealth: 36, attackDamage: 1.2, attackRange: 0.24,
-                                               attackWindup: 0.65, attackRecovery: 0.45, attackCooldown: 0.85,
-                                               skillWindup: 1, skillRecovery: 0.5, skillCooldown: 12,
-                                               skillRange: 0.30, skillRadius: 0.14, skillDamage: 2, skillSeconds: 3)
-        ]
+    /// 读取内置配置：必须能完整解析、覆盖全部单位且数值都在合法范围内。bundle 为 nil 时读 LearnCore 自带的。
+    public static func load(bundle: Bundle? = nil) -> ForestRules? {
+        guard let url = (bundle ?? .module).url(forResource: "forest", withExtension: "json", subdirectory: "Config"),
+              let data = try? Data(contentsOf: url),
+              let rules = try? JSONDecoder().decode(ForestRules.self, from: data),
+              rules.isComplete else { return nil }
+        return rules
     }
 
-    private static func defaultEnemy(_ kind: ForestEnemyKind) -> Enemy {
-        func minion(health: Double, speed: Double, windup: Double, recovery: Double = 0.30,
-                    damage: Double, range: Double) -> Enemy {
-            Enemy(health: health, speed: speed, reward: 10, leakLives: 1, windup: windup, recovery: recovery,
-                  attackDamage: damage, attackRange: range, attackCooldown: 4,
-                  skillDamage: 0, skillRadius: 0, skillCount: 1)
-        }
-        func boss(speed: Double, windup: Double, recovery: Double, range: Double,
-                  radius: Double = 0.12, count: Int = 1) -> Enemy {
-            Enemy(health: 18, speed: speed, reward: 100, leakLives: 3, windup: windup, recovery: recovery,
-                  attackDamage: 3, attackRange: range, attackCooldown: 3.2,
-                  skillDamage: 5, skillRadius: radius, skillCount: count)
-        }
-        let melee = 0.13, ranged = 0.24
-        switch kind {
-        case .skeleton: return minion(health: 3, speed: 0.055, windup: 0.35, damage: 1, range: melee)
-        case .boar: return minion(health: 4, speed: 0.075, windup: 0.40, damage: 1, range: melee)
-        case .goblin: return minion(health: 3, speed: 0.055, windup: 0.40, damage: 3, range: ranged)
-        case .acolyte: return minion(health: 3, speed: 0.055, windup: 0.55, recovery: 0.35, damage: 3, range: ranged)
-        case .knight: return boss(speed: 0.033, windup: 0.55, recovery: 0.40, range: melee)
-        case .ogre: return boss(speed: 0.033, windup: 0.80, recovery: 0.65, range: melee)
-        case .berserker: return boss(speed: 0.045, windup: 0.45, recovery: 0.35, range: melee)
-        case .frostKing: return boss(speed: 0.045, windup: 0.50, recovery: 0.40, range: melee)
-        case .infernal: return boss(speed: 0.038, windup: 0.70, recovery: 0.50, range: melee)
-        case .reaper: return boss(speed: 0.038, windup: 0.90, recovery: 0.45, range: ranged, radius: 0, count: 3)
-        case .pharaoh: return boss(speed: 0.038, windup: 1.00, recovery: 0.50, range: ranged)
-        case .slime: return boss(speed: 0.033, windup: 0.85, recovery: 0.60, range: ranged)
-        case .gargoyle: return boss(speed: 0.038, windup: 1.10, recovery: 0.65, range: ranged, count: 3)
-        case .shaman: return boss(speed: 0.038, windup: 0.70, recovery: 0.45, range: ranged)
-        }
+    /// 全部单位都有配置，且每一组数值都合法。
+    public var isComplete: Bool {
+        economy.isValid && combat.isValid
+            && ForestTower.allCases.allSatisfy { towers[$0.rawValue]?.isValid == true }
+            && ForestEnemyKind.allCases.allSatisfy { enemies[$0.rawValue]?.isValid == true }
+            && ForestHero.allCases.allSatisfy { heroes[$0.rawValue]?.isValid == true }
     }
 
     public func tower(_ kind: ForestTower) -> Tower { towers[kind.rawValue] ?? Self.defaults.towers[kind.rawValue]! }
     public func enemy(_ kind: ForestEnemyKind) -> Enemy { enemies[kind.rawValue] ?? Self.defaults.enemies[kind.rawValue]! }
     public func hero(_ kind: ForestHero) -> Hero { heroes[kind.rawValue] ?? Self.defaults.heroes[kind.rawValue]! }
 
-    /// 读取数据库里的配置。缺少的字段、缺少的单位逐项用默认值补齐（新版本加了怪物或字段时旧数据仍可用）；
-    /// 字段类型不对导致整份无法解析时返回 nil，由调用方改用默认值，原数据保留供排查。
-    public static func decode(_ data: Data) -> ForestRules? {
-        guard let stored = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let base = try? JSONSerialization.jsonObject(with: JSONEncoder().encode(defaults)) as? [String: Any],
-              let merged = try? JSONSerialization.data(withJSONObject: merge(base, stored)) else { return nil }
+    /// 把数据库里的改动项叠加到默认值上。只写了部分字段的单位，其余字段取默认值；
+    /// 字段类型不对导致无法解析时返回 nil，由调用方改用默认值，原数据保留供排查。
+    public static func applying(overrides data: Data, to base: ForestRules = .defaults) -> ForestRules? {
+        guard var stored = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let baseObject = base.jsonObject else { return nil }
+        // 版本号跟内置文件走，不被库里记下的旧版本覆盖。
+        stored.removeValue(forKey: "version")
+        guard let merged = try? JSONSerialization.data(withJSONObject: merge(baseObject, stored)) else { return nil }
         return (try? JSONDecoder().decode(ForestRules.self, from: merged))?.validated()
+    }
+
+    /// 相对默认值被改动的项（带版本号），用来写入数据库；没有任何改动时返回 nil。
+    public func overrides(from base: ForestRules = .defaults) -> Data? {
+        guard let mine = validated().jsonObject, let baseObject = base.jsonObject else { return nil }
+        var changed = Self.difference(mine, from: baseObject)
+        changed.removeValue(forKey: "version")
+        guard !changed.isEmpty else { return nil }
+        changed["version"] = base.version
+        return try? JSONSerialization.data(withJSONObject: changed, options: [.sortedKeys, .prettyPrinted])
+    }
+
+    private var jsonObject: [String: Any]? {
+        (try? JSONEncoder().encode(self)).flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }
+    }
+
+    private static func difference(_ value: [String: Any], from base: [String: Any]) -> [String: Any] {
+        var result: [String: Any] = [:]
+        for (key, item) in value {
+            if let inner = item as? [String: Any], let baseInner = base[key] as? [String: Any] {
+                let changed = difference(inner, from: baseInner)
+                if !changed.isEmpty { result[key] = changed }
+            } else if (item as? NSObject) != (base[key] as? NSObject) {
+                result[key] = item
+            }
+        }
+        return result
     }
 
     private static func merge(_ base: [String: Any], _ over: [String: Any]) -> [String: Any] {
