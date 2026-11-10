@@ -26,43 +26,10 @@ public enum ForestEnemyKind: String, CaseIterable, Sendable {
         case .shaman: "炼金萨满王"
         }
     }
-    public var health: Double { isBoss ? 18 : (self == .boar ? 4 : 3) }
-    public var speed: Double {
-        switch self {
-        case .boar: 0.075
-        case .berserker, .frostKing: 0.045
-        case .slime, .ogre, .knight: 0.033
-        default: isBoss ? 0.038 : 0.055
-        }
-    }
+    // 血量、速度、前摇、伤害等数值不在这里：见 `ForestRules`，运行时来自数据库。
     public var floating: Bool { self == .reaper || self == .gargoyle }
+    /// 远程单位用投射物出手（飞行更久）；射程本身是配置里的数值。
     public var ranged: Bool { [.goblin, .acolyte, .reaper, .pharaoh, .slime, .gargoyle, .shaman].contains(self) }
-    public var windup: Double {
-        switch self {
-        case .skeleton: 0.35
-        case .boar, .goblin: 0.40
-        case .acolyte, .knight: 0.55
-        case .ogre: 0.80
-        case .berserker: 0.45
-        case .frostKing: 0.50
-        case .infernal, .shaman: 0.70
-        case .reaper: 0.90
-        case .pharaoh: 1.00
-        case .slime: 0.85
-        case .gargoyle: 1.10
-        }
-    }
-    public var recovery: Double {
-        switch self {
-        case .ogre, .gargoyle: 0.65
-        case .slime: 0.60
-        case .infernal, .pharaoh: 0.50
-        case .reaper, .shaman: 0.45
-        case .knight, .frostKing: 0.40
-        case .berserker, .acolyte: 0.35
-        default: 0.30
-        }
-    }
     public var effect: ForestCombatEffect {
         switch self {
         case .skeleton, .knight: .slash
@@ -107,7 +74,6 @@ public enum ForestHero: String, CaseIterable, Sendable {
     case paladin, botanist
     public var name: String { self == .paladin ? "圣阳骑士" : "林地药剂师" }
     public var skillName: String { self == .paladin ? "盾垒" : "藤蔓缠绕" }
-    public var windup: Double { self == .paladin ? 0.45 : 0.65 }
 }
 
 public enum ForestCombatEffect: String, Sendable {
@@ -149,10 +115,13 @@ public struct ForestDefenseUnit: Sendable {
     public var skillCooldown: Double = 0
     public var cast: ForestCast?
     public var alive: Bool { health > 0 }
-    public init(hero: ForestHero? = nil) {
+    /// 不传 `maxHealth` 时取默认配置里的耐久；对局中由 `ForestBattle` 按当前配置传入。
+    public init(hero: ForestHero? = nil, maxHealth: Double? = nil) {
         self.hero = hero
-        maxHealth = hero == nil ? 30 : 36
-        health = maxHealth
+        self.maxHealth = maxHealth
+            ?? hero.map { ForestRules.defaults.hero($0).maxHealth }
+            ?? ForestRules.defaults.tower(.rapid).maxHealth
+        health = self.maxHealth
     }
 }
 

@@ -13,6 +13,8 @@ public final class AppModel: ObservableObject {
     /// 成长系统配置（节奏、徽章、外观），来自 LearnCore 内置 JSON
     let growthCatalog = GrowthCatalog.bundled
     @Published private(set) var gameRules: GameRules
+    /// 森林塔防的怪物、英雄、炮塔数值，来自数据库。
+    private(set) var forestRules: ForestRules
     @Published private(set) var readerPreferences: ReaderPreferences
     private var allowsLegacyMigration = true
 
@@ -46,6 +48,11 @@ public final class AppModel: ObservableObject {
         catch {
             gameRules = .defaults
             issues.append("运行规则读取失败，使用默认值：\(error.localizedDescription)")
+        }
+        do { forestRules = try database?.forestRules() ?? .defaults }
+        catch {
+            forestRules = .defaults
+            issues.append("森林数值配置读取失败，使用默认值：\(error.localizedDescription)")
         }
         allowsLegacyMigration = !((try? database?.setting(named: "legacy-disabled", fallback: false)) ?? false)
         readerPreferences = ((try? database?.setting(named: "reader-preferences", fallback: ReaderPreferences())) ?? ReaderPreferences()).validated()

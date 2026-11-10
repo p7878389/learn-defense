@@ -56,9 +56,9 @@ final class ForestDefenseTests: XCTestCase {
         }
         XCTAssertEqual(fireTimes.count, 6)
         // 一轮三发间隔很短，两轮之间是装填冷却
-        XCTAssertEqual(fireTimes[1] - fireTimes[0], ForestBattle.burstGap, accuracy: 0.02)
-        XCTAssertEqual(fireTimes[2] - fireTimes[1], ForestBattle.burstGap, accuracy: 0.02)
-        XCTAssertEqual(fireTimes[3] - fireTimes[2], ForestBattle.rapidReload, accuracy: 0.02)
+        XCTAssertEqual(fireTimes[1] - fireTimes[0], battle.rules.tower(.rapid).burstGap, accuracy: 0.02)
+        XCTAssertEqual(fireTimes[2] - fireTimes[1], battle.rules.tower(.rapid).burstGap, accuracy: 0.02)
+        XCTAssertEqual(fireTimes[3] - fireTimes[2], battle.rules.tower(.rapid).reload, accuracy: 0.02)
         for (distance, flight) in flights where flight > 0.1 && flight < 0.4 {
             XCTAssertEqual(distance / flight, 1.0, accuracy: 0.001)
         }
@@ -94,7 +94,7 @@ final class ForestDefenseTests: XCTestCase {
         let coins = battle.coins
         for _ in 0..<3000 where battle.defeats.isEmpty { battle.tick(0.05) }
         XCTAssertEqual(battle.defeats.count, 1)
-        XCTAssertEqual(battle.coins, coins + ForestBattle.reward)
+        XCTAssertEqual(battle.coins, coins + battle.rules.enemy(.skeleton).reward)
         let defeatID = battle.defeats[0].id
         for _ in 0..<15 { battle.tick(0.05) }
         XCTAssertFalse(battle.defeats.contains { $0.id == defeatID })
