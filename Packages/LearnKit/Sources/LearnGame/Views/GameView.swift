@@ -4,15 +4,6 @@ import SwiftUI
 
 struct GameView: View {
     @StateObject private var session: GameSession
-    @State private var battlefieldFrame: CGRect = .zero
-    @State private var activeDrag: PlantDrag?
-    /// 本局答题区出现过的最高高度。战场占剩下的高度，答题区变矮时战场会跟着放大，
-    /// 所以答题区只增不减；准备阶段先按样题留好高度，开局、答对、换题时画面都不跳
-    @State private var answerPanelHeight: CGFloat = 0
-    /// 卡牌栏叠在战场上，在它上面松手（含只点一下）算取消
-    @State private var seedStripFrame: CGRect = .zero
-    /// iPad 竖着拿时屏幕窄，卡牌栏和状态栏并排放不下，状态栏挪到战场上方
-    @State private var isPortrait = false
     let onReplay: () -> Void
     let onExit: () -> Void
     let onOpenCollection: () -> Void
@@ -25,11 +16,33 @@ struct GameView: View {
             progress: model.progress(for: config.profileID),
             speech: model.speech,
             growth: model.growth(for: config.profileID),
-            recorder: model.recorder(for: config)))
+            recorder: model.recorder(for: config),
+            map: UserDefaults.standard.string(forKey: BattleMap.preferenceKey).flatMap(BattleMap.init(rawValue:)) ?? .woodland))
         self.onReplay = onReplay
         self.onExit = onExit
         self.onOpenCollection = onOpenCollection
     }
+
+    var body: some View {
+        BattleScreen(session: session, onReplay: onReplay, onExit: onExit, onOpenCollection: onOpenCollection)
+    }
+}
+
+/// 完整战斗界面，由 GameView 持有的对局状态驱动。
+struct BattleScreen: View {
+    @ObservedObject var session: GameSession
+    @State private var battlefieldFrame: CGRect = .zero
+    @State private var activeDrag: PlantDrag?
+    /// 本局答题区出现过的最高高度。战场占剩下的高度，答题区变矮时战场会跟着放大，
+    /// 所以答题区只增不减；准备阶段先按样题留好高度，开局、答对、换题时画面都不跳
+    @State private var answerPanelHeight: CGFloat = 0
+    /// 在卡牌栏上松手（含只点一下）算取消，拖动坐标始终使用 gameLayout
+    @State private var seedStripFrame: CGRect = .zero
+    /// 竖屏时答题栏使用纵向布局；顶部工具栏自行按可用宽度换行
+    @State private var isPortrait = false
+    let onReplay: () -> Void
+    let onExit: () -> Void
+    let onOpenCollection: () -> Void
 
     private var debugOptions: SpriteView.DebugOptions {
         []
@@ -69,7 +82,7 @@ struct GameView: View {
     /// 横屏时左边竖排切题栏的宽度
     private static let sideTabsWidth: CGFloat = 96
 
-    private var canAnswer: Bool { session.phase == .playing && session.ultimate == nil }
+    private var canAnswer: Bool { session.phase == .playing && session.ultimate == nil && !session.isUnleashing }
 
     /// 场上每只僵尸一道题，点了切到那道
     private var questionTabs: some View {
@@ -82,21 +95,28 @@ struct GameView: View {
         }
     }
 
-    private var answerPanel: some View {
-        AnswerPanel(
-            question: session.current,
-            wrongPicks: session.wrongPicks,
-            onAnswer: session.answer,
-            onReplay: session.replayPrompt,
-            onStartInput: { session.setTyping(true) },
-            onSubmitInput: session.answerInput,
-            compact: !isPortrait)
-        .disabled(!canAnswer)
+    @ViewBuilder private var answerPanel: some View {
+        if session.isUnleashing {
+            Label("雷霆正在清场", systemImage: "bolt.fill")
+                .font(.title2.weight(.bold))
+                .foregroundStyle(Theme.accent)
+                .frame(maxWidth: .infinity, minHeight: 120)
+        } else {
+            AnswerPanel(
+                question: session.current,
+                wrongPicks: session.wrongPicks,
+                onAnswer: session.answer,
+                onReplay: session.replayPrompt,
+                onStartInput: { session.setTyping(true) },
+                onSubmitInput: session.answerInput,
+                compact: !isPortrait)
+            .disabled(!canAnswer)
+        }
     }
 
     var body: some View {
         ZStack {
-            Color(red: 0.24, green: 0.31, blue: 0.12).ignoresSafeArea()
+            Theme.paper.ignoresSafeArea()
 
             if session.isEmpty {
                 VStack(spacing: 20) {
@@ -104,13 +124,9 @@ struct GameView: View {
                     Button("返回", action: onExit).font(.title2)
                 }
             } else {
-                // 战场铺满宽度；卡牌栏、状态栏叠在顶部篱笆上，道具挂在卡牌栏下面、大招在左下角，都叠在左边房子前，不占草坪
+                // 工具栏与操作栏独立排布，种植区保持完整；战场使用剩余可用空间
                 VStack(spacing: 6) {
-                    if isPortrait {
-                        GameHUD(session: session, onExit: onExit)
-                            .frame(maxWidth: .infinity, alignment: .trailing)
-                            .padding(.horizontal, 10)
-                    }
+                    BattleTopBar(session: session, onExit: onExit) { seedPackets }
                     BattlefieldView(session: session, debugOptions: debugOptions)
                         .background(
                             // 直接记下战场位置；用 PreferenceKey 传到外层时真机上一直是 .zero
@@ -127,31 +143,9 @@ struct GameView: View {
                                     .allowsHitTesting(false)
                             }
                         }
-                        .overlay(alignment: .topLeading) {
-                            VStack(alignment: .leading, spacing: 8) {
-                                seedPackets
-                                ItemBar(
-                                    inventory: session.inventory,
-                                    enabled: session.canUseItems,
-                                    onUse: session.useItem(at:))
-                                    .padding(.leading, 2)
-                            }
-                            .padding(6)
-                        }
-                        .overlay(alignment: .topTrailing) {
-                            if !isPortrait {
-                                GameHUD(session: session, onExit: onExit).padding(6)
-                            }
-                        }
-                        .overlay(alignment: .bottomLeading) {
-                            UltimateButton(
-                                energy: session.energy,
-                                maxEnergy: session.tuning.ultimateEnergy,
-                                ready: session.ultimateReady,
-                                action: session.startUltimate)
-                                .padding(8)
-                        }
                         .layoutPriority(-1)
+                    BattleActionBar(session: session)
+                        .padding(.horizontal, 10)
                     Group {
                         if session.phase == .preparing {
                             PreparationPanel(session: session)
@@ -217,6 +211,7 @@ struct GameView: View {
                         Spacer(minLength: 0)
                     }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 // 横屏高度紧：底部的系统安全区也给答题区用（横条已隐藏），多出来的高度让给战场
                 .ignoresSafeArea(.container, edges: isPortrait ? [] : .bottom)
             }
@@ -251,6 +246,9 @@ struct GameView: View {
             }
         }
         .coordinateSpace(name: "gameLayout")
+        .onChange(of: session.map) { _, map in
+            UserDefaults.standard.set(map.rawValue, forKey: BattleMap.preferenceKey)
+        }
         .background(
             GeometryReader { proxy in
                 Color.clear.onChange(of: proxy.size, initial: true) { _, size in
@@ -318,7 +316,7 @@ struct GameHUD: View {
     @ObservedObject var session: GameSession
     let onExit: () -> Void
 
-    /// 叠在战场右上角的状态：暂停、生命、进度、得分。阳光在卡牌栏里，道具在卡牌栏下面，大招在战场左下角
+    /// 顶部状态栏：暂停、生命、回合进度和得分；阳光在同一工具区的种植卡栏里。
     var body: some View {
         HStack(spacing: 18) {
             if session.phase == .preparing {
@@ -366,27 +364,30 @@ struct PreparationPanel: View {
     @ObservedObject var session: GameSession
 
     var body: some View {
-        HStack(spacing: 20) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("准备布阵")
-                    .font(.title2.weight(.heavy))
-                    .foregroundStyle(Theme.ink)
-                Text("把植物卡拖到空草坪。阳光足够就能继续布阵，种下后不能修改，已布阵 \(session.plantedLaneCount)/\(session.tuning.lanes) 路")
-                    .font(.headline)
-                    .foregroundStyle(Theme.muted)
-            }
+        VStack(alignment: .leading, spacing: 12) {
+            BattleMapPicker(selection: session.map, onSelect: session.selectMap)
+            HStack(spacing: 20) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("准备布阵")
+                        .font(.title2.weight(.heavy))
+                        .foregroundStyle(Theme.ink)
+                    Text("把植物卡拖到战场空位。阳光足够就能继续布阵，种下后不能修改，已布阵 \(session.plantedLaneCount)/\(session.tuning.lanes) 路")
+                        .font(.headline)
+                        .foregroundStyle(Theme.muted)
+                }
 
-            Spacer()
+                Spacer()
 
-            Button(action: session.startBattle) {
-                Text(session.canStartBattle ? "开始闯关" : "先种一株植物")
-                    .font(.title2.weight(.heavy))
-                    .frame(minWidth: 210, minHeight: 58)
-                    .background(Capsule().fill(session.canStartBattle ? Theme.jade : Theme.muted.opacity(0.25)))
-                    .foregroundStyle(session.canStartBattle ? .white : Theme.muted)
+                Button(action: session.startBattle) {
+                    Text(session.canStartBattle ? "开始闯关" : "先种一株植物")
+                        .font(.title2.weight(.heavy))
+                        .frame(minWidth: 210, minHeight: 58)
+                        .background(Capsule().fill(session.canStartBattle ? Theme.jade : Theme.muted.opacity(0.25)))
+                        .foregroundStyle(session.canStartBattle ? .white : Theme.muted)
+                }
+                .buttonStyle(PressableStyle())
+                .disabled(!session.canStartBattle)
             }
-            .buttonStyle(PressableStyle())
-            .disabled(!session.canStartBattle)
         }
     }
 }
@@ -411,18 +412,21 @@ private struct MaxHeightReader: ViewModifier {
     }
 }
 
-/// 道具栏：捡到的道具，点一下就用。挂在卡牌栏下面，只显示手里有的道具；
+/// 道具栏：捡到的道具，点一下就用。只显示手里有的道具；
 /// 不止一个时折叠成一个按钮，点开向下展开，免得一长条挡住左边的僵尸和血量
 struct ItemBar: View {
     let inventory: Inventory
     let enabled: Bool
     let onUse: (Int) -> Void
+    var horizontal = false
     @State private var expanded = false
 
-    private var folds: Bool { inventory.items.count > 1 }
+    private var folds: Bool { !horizontal && inventory.items.count > 1 }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        let layout = horizontal ? AnyLayout(HStackLayout(alignment: .center, spacing: 8))
+            : AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
+        layout {
             if folds {
                 Button { expanded.toggle() } label: {
                     HStack(spacing: 4) {
@@ -469,37 +473,88 @@ struct UltimateButton: View {
     let maxEnergy: Int
     let ready: Bool
     let action: () -> Void
+    var casting = false
     @State private var glow = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var shownEnergy: Int { min(max(0, energy), max(0, maxEnergy)) }
+    private var lightning: Color { Color(red: 0.12, green: 0.72, blue: 0.95) }
+
+    private let bronze = Color(red: 0.54, green: 0.28, blue: 0.08)
+
+    private var meter: some View {
+        HStack(spacing: 1.5) {
+            ForEach(0..<max(0, maxEnergy), id: \.self) { i in
+                Capsule()
+                    .fill(LinearGradient(colors: i < shownEnergy
+                        ? [Color(red: 0.58, green: 1, blue: 1), lightning, Color(red: 0, green: 0.68, blue: 0.82)]
+                        : [.white.opacity(0.85), Color(red: 0.7, green: 0.69, blue: 0.66)],
+                        startPoint: .top, endPoint: .bottom))
+                    .overlay(alignment: .top) {
+                        Capsule().fill(.white.opacity(0.6)).frame(height: 3).padding(.horizontal, 2).padding(.top, 2)
+                    }
+                    .overlay(Capsule().stroke(i < shownEnergy ? Color(red: 0, green: 0.48, blue: 0.6) : bronze.opacity(0.4), lineWidth: 0.8))
+            }
+        }
+        .padding(2)
+        .frame(height: 12)
+        .background(Color(red: 0.25, green: 0.32, blue: 0.32), in: Capsule())
+        .overlay(Capsule().stroke(.white.opacity(0.9), lineWidth: 1))
+        .shadow(color: ready ? lightning.opacity(0.55) : .clear, radius: 4)
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.22), value: shownEnergy)
+    }
 
     var body: some View {
         Button(action: action) {
-            // 文字在上、能量点在下，窄一些才放得进房子前
-            VStack(spacing: 6) {
-                Text(ready ? "放大招！" : "大招")
-                    .font(.title3.weight(.heavy))
-                HStack(spacing: 4) {
-                    ForEach(0..<maxEnergy, id: \.self) { i in
-                        Circle()
-                            .fill(i < energy ? Theme.accent : Theme.muted.opacity(0.25))
-                            .frame(width: 14, height: 14)
+            VStack(spacing: 0) {
+                ZStack(alignment: .topLeading) {
+                    if let image = ThunderArtwork.image(.button) {
+                        Image(decorative: image, scale: 1)
+                            .resizable()
+                            .frame(width: 160, height: 160 / 3)
                     }
+                    VStack(spacing: 3) {
+                        HStack(spacing: 2) {
+                            Text(casting ? "释放中" : ready ? "雷霆就绪" : "蓄力中")
+                                .font(.system(size: 12, weight: .black, design: .rounded))
+                            Spacer(minLength: 0)
+                            Text("\(shownEnergy)/\(max(0, maxEnergy))")
+                                .font(.system(size: 10, weight: .heavy).monospacedDigit())
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 4).padding(.vertical, 1)
+                                .background(bronze, in: Capsule())
+                        }
+                        .foregroundStyle(Color(red: 0.31, green: 0.12, blue: 0.04))
+                        meter
+                    }
+                    .frame(width: 97)
+                    .offset(x: 49, y: 11)
                 }
+                .frame(width: 160, height: 160 / 3)
+                Text(casting ? "雷霆降临" : ready ? "点按挑战" : "答对一题 +1 能量")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(ready ? Theme.ink : bronze)
+                    .fixedSize()
+                    .frame(height: 14)
+                    .padding(.top, 1)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(RoundedRectangle(cornerRadius: 16).fill(ready ? Theme.accent.opacity(0.25) : Theme.card))
-            .overlay(RoundedRectangle(cornerRadius: 16).stroke(ready ? Theme.accent : Theme.muted.opacity(0.3), lineWidth: 3))
-            .foregroundStyle(ready ? Theme.accent : Theme.muted)
-            .scaleEffect(ready && glow ? 1.08 : 1)
+            .compositingGroup()
+            .shadow(color: ready ? lightning.opacity(glow ? 0.6 : 0.2) : .clear, radius: ready ? 7 : 0)
+            .scaleEffect(ready && glow && !reduceMotion ? 1.025 : 1)
         }
         .buttonStyle(PressableStyle())
-        .disabled(!ready)
-        .onChange(of: ready) { _, isReady in
-            if isReady {
-                withAnimation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true)) { glow = true }
-            } else {
-                glow = false
+        .disabled(!ready || casting)
+        .accessibilityLabel("雷霆大招")
+        .accessibilityValue("能量 \(shownEnergy)/\(max(0, maxEnergy))，\(casting ? "释放中" : ready ? "已就绪" : "蓄力中")")
+        .accessibilityHint(casting ? "雷霆演出进行中" : ready ? "点按进入挑战，首次答对释放雷霆" : "答对题目积攒能量")
+        .onChange(of: ready, initial: true) { _, isReady in
+            glow = false
+            if isReady && !reduceMotion {
+                withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) { glow = true }
             }
+        }
+        .onChange(of: reduceMotion) { _, reduced in
+            if reduced { glow = false }
         }
     }
 }

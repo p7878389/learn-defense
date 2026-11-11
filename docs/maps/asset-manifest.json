@@ -1,0 +1,45 @@
+{
+  "id": "woodland",
+  "role": "classic battle map",
+  "status": "integrated",
+  "path": "Packages/LearnKit/Sources/LearnGame/Resources/Sprites/Maps/woodland-grass.png",
+  "source": {
+    "tool": "built-in image_gen",
+    "prompt": "woodland-grass-prompt.txt",
+    "edit_base": "Packages/LearnKit/Sources/LearnGame/Resources/Sprites/Maps/woodland-stone.png",
+    "sha256": "dc9d4b63737ea15a2c5be48c4e653e1b81abee5f1fafc1d7f09765f57eede3b8"
+  },
+  "technical": {
+    "dimensions": [
+      1774,
+      887
+    ],
+    "alpha": false,
+    "filtering": "linear",
+    "runtime_dimensions": [
+      1200,
+      600
+    ],
+    "source_lane_edges_top_origin": [
+      120,
+      278,
+      414,
+      551,
+      692,
+      850
+    ],
+    "target_lane_edges_top_origin": [
+      80,
+      180,
+      280,
+      380,
+      480,
+      580
+    ]
+  },
+  "verification": {
+    "native_scale_reviewed": true,
+    "in_engine_reviewed": true,
+    "device_performance_measured": false
+  }
+}

@@ -73,7 +73,7 @@ struct SeedPacketStrip: View {
         )
         .allowsHitTesting(available)
         .accessibilityLabel("\(kind.name)，需要 \(kind.sunCost) 阳光")
-        .accessibilityHint("拖到草坪空位种下")
+        .accessibilityHint("拖到战场空位种下")
     }
 
     private func barricadePacket(for kind: DefenderKind) -> some View {
