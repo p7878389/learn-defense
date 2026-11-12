@@ -161,4 +161,24 @@ final class ForestDefenseTests: XCTestCase {
         battle.answer(correct: true)
         XCTAssertEqual(battle.coins, before + 50)
     }
+    func testRosterKindsOfWaveMatchWhatActuallySpawns() {
+        let waves = ForestRules.defaults.economy.waves
+        for wave in 1...waves {
+            var battle = ForestBattle(boss: .reaper)
+            XCTAssertTrue(battle.build(.rapid, at: 3))
+            battle.wave = wave - 1
+            battle.startWave()
+            var spawned: Set<ForestEnemyKind> = []
+            for _ in 0..<3000 where battle.phase == .fighting {
+                battle.tick(0.1)
+                spawned.formUnion(battle.enemies.map(\.kind))
+                // 只关心出了哪些怪，出场即移除，免得漏怪把这一局打输。
+                battle.enemies.removeAll()
+            }
+            XCTAssertEqual(battle.phase, .question, "第 \(wave) 波")
+            XCTAssertEqual(Set(battle.rosterKinds(inWave: wave)), spawned.subtracting([.skeleton, .boar]), "第 \(wave) 波")
+        }
+        XCTAssertTrue(ForestBattle().rosterKinds(inWave: 1).isEmpty)
+        XCTAssertTrue(ForestBattle(boss: .reaper).rosterKinds(inWave: waves).contains(.reaper))
+    }
 }

@@ -40,14 +40,16 @@ enum ForestRosterArtwork {
 
     private static let lock = NSLock()
     private static var cache: [String: CGImage] = [:]
-    private static var actionOrder: [String] = []
     /// 一次战斗通常只出现一个首领；27 帧覆盖三个动作单位，避免 99 帧全部常驻。
     static let actionCacheLimit = 27
+    private static var actionRecency = ForestFrameRecency(limit: actionCacheLimit)
 
     /// 解码后的位图；第一次用到时解码并缓存。可以在任意线程调用。
     static func bitmap(_ name: String) -> CGImage? {
         lock.lock()
         let cached = cache[name]
+        // 正在显示的动作帧每次命中都记一次使用，超出上限时不会先被淘汰。
+        if cached != nil, actionFiles[name] != nil { _ = actionRecency.touch(name) }
         lock.unlock()
         if let cached { return cached }
         guard let url = files[name] ?? actionFiles[name],
@@ -58,11 +60,7 @@ enum ForestRosterArtwork {
         lock.lock()
         cache[name] = image
         if actionFiles[name] != nil {
-            actionOrder.removeAll { $0 == name }
-            actionOrder.append(name)
-            while actionOrder.count > actionCacheLimit {
-                cache.removeValue(forKey: actionOrder.removeFirst())
-            }
+            for old in actionRecency.touch(name) { cache.removeValue(forKey: old) }
         }
         lock.unlock()
         return image
@@ -81,6 +79,11 @@ enum ForestRosterArtwork {
         await Task.detached(priority: .utility) {
             for index in 0..<9 { _ = bitmap(actionFrame(kind, index)) }
         }.value
+    }
+
+    /// 开波前把这一波会出场的单位一次解好，怪物第一次上屏时不用在主线程现解。
+    static func preload(_ kinds: [ForestEnemyKind]) async {
+        for kind in kinds { await preload(kind) }
     }
 
     static func image(_ name: String) -> Image {
@@ -122,5 +125,26 @@ enum ForestRosterArtwork {
         let candidate = base + (cast.charging ? "-windup" : "-skill")
         // 冲击画面只在释放阶段出现，收招回到无爆炸的主体图。
         return (cast.charging || cast.releasing) && files[candidate] != nil ? candidate : base
+    }
+}
+
+/// 记录每个名字最近一次被用到的先后，超出上限时交出最久没用的。
+struct ForestFrameRecency {
+    let limit: Int
+    private var stamps: [String: Int] = [:]
+    private var clock = 0
+
+    init(limit: Int) { self.limit = limit }
+
+    /// 记一次使用，返回因此该淘汰的名字。
+    mutating func touch(_ name: String) -> [String] {
+        clock += 1
+        stamps[name] = clock
+        var evicted: [String] = []
+        while stamps.count > limit, let oldest = stamps.min(by: { $0.value < $1.value })?.key {
+            stamps.removeValue(forKey: oldest)
+            evicted.append(oldest)
+        }
+        return evicted
     }
 }
