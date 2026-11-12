@@ -108,6 +108,10 @@ struct ForestDefenseView: View {
         .padding(.vertical, 8)
         .background(Color(red: 0.92, green: 0.96, blue: 0.85))
         .task { ForestRosterArtwork.preload() }
+        // 备战阶段就把下一波的动作帧解好；首领只能在开局前换，换了重新预热。
+        .task(id: "\(session.battle.wave)-\(session.battle.boss.rawValue)") {
+            await ForestRosterArtwork.preload(session.battle.rosterKinds(inWave: session.battle.wave + 1))
+        }
         .onChange(of: session.battle.lives) { oldValue, newValue in
             guard newValue < oldValue else { return }
             baseHit = true

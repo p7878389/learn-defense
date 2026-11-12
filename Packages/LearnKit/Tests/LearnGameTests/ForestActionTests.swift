@@ -96,3 +96,26 @@ struct ForestActionTests {
         #expect(try render(.frost) != render(.acid))
     }
 }
+
+@Suite("森林动作帧缓存")
+struct ForestActionCacheTests {
+    @Test func recentlyUsedFramesOutliveOlderOnes() {
+        var order = ForestFrameRecency(limit: 3)
+        #expect(order.touch("a").isEmpty)
+        #expect(order.touch("b").isEmpty)
+        #expect(order.touch("c").isEmpty)
+        // a 刚被再次用到，超出上限时该淘汰的是最久没用的 b。
+        #expect(order.touch("a").isEmpty)
+        #expect(order.touch("d") == ["b"])
+        #expect(order.touch("e") == ["c"])
+        #expect(order.touch("a").isEmpty)
+    }
+
+    @Test func limitLeavesRoomForEveryKindOfOneWave() {
+        let battle = ForestBattle(boss: .reaper)
+        for wave in 1...battle.rules.economy.waves {
+            let frames = battle.rosterKinds(inWave: wave).filter(ForestRosterArtwork.hasActionSheet).count * 9
+            #expect(frames <= ForestRosterArtwork.actionCacheLimit, "第 \(wave) 波")
+        }
+    }
+}

@@ -172,6 +172,16 @@ public struct ForestBattle: Sendable {
         guard phase == .preparing, defenses.values.contains(where: \.alive) else { return }
         wave += 1; spawnRemaining = rules.economy.spawnBase + wave; spawnTimer = 0; phase = .fighting
     }
+    /// 某一波里除骷髅、野猪之外会出场的单位，与 `tick` 的出怪规则保持一致；界面据此提前解码素材。
+    public func rosterKinds(inWave wave: Int) -> [ForestEnemyKind] {
+        guard wave >= 1 else { return [] }
+        let final = wave == rules.economy.waves
+        // 末波最后一只换成首领，顶掉原本的侍僧；出怪数不足两只时轮不到哥布林。
+        var kinds: [ForestEnemyKind] = []
+        if wave >= 2 && rules.economy.spawnBase + wave >= 2 { kinds.append(.goblin) }
+        if final { kinds.append(boss) } else if wave >= 2 { kinds.append(.acolyte) }
+        return kinds
+    }
     public mutating func tick(_ elapsed: Double) {
         guard elapsed.isFinite, elapsed > 0, phase == .preparing || phase == .fighting else { return }
         let dt = min(elapsed, 0.1)
