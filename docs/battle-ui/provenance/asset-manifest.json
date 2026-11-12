@@ -6,7 +6,7 @@
     {
       "id": "button-shell",
       "role": "金色厚边与蓝色闪电徽章，文字和进度槽保持动态",
-      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Sprites/UltimateThunder/button-shell.png",
+      "path": "docs/battle-ui/originals/button-shell.png",
       "status": "integrated",
       "technical": {
         "dimensions": [
@@ -35,12 +35,12 @@
         "approved_by": null,
         "runtime_preview": "../README.md"
       },
-      "runtime_path": "Packages/LearnKit/Sources/LearnGame/Resources/Sprites/UltimateThunder/button-shell.png"
+      "runtime_path": "Packages/LearnKit/Sources/LearnGame/Resources/Sprites/UltimateThunder/button-shell.webp"
     },
     {
       "id": "lightning",
       "role": "天降雷柱，顶部到目标身体中心",
-      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Sprites/UltimateThunder/lightning.png",
+      "path": "docs/battle-ui/originals/lightning.png",
       "status": "integrated",
       "technical": {
         "dimensions": [
@@ -69,12 +69,12 @@
         "approved_by": null,
         "runtime_preview": "../README.md"
       },
-      "runtime_path": "Packages/LearnKit/Sources/LearnGame/Resources/Sprites/UltimateThunder/lightning.png"
+      "runtime_path": "Packages/LearnKit/Sources/LearnGame/Resources/Sprites/UltimateThunder/lightning.webp"
     },
     {
       "id": "impact",
       "role": "独立落点爆光、椭圆电环与金色火花",
-      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Sprites/UltimateThunder/impact.png",
+      "path": "docs/battle-ui/originals/impact.png",
       "status": "integrated",
       "technical": {
         "dimensions": [
@@ -103,12 +103,12 @@
         "approved_by": null,
         "runtime_preview": "../README.md"
       },
-      "runtime_path": "Packages/LearnKit/Sources/LearnGame/Resources/Sprites/UltimateThunder/impact.png"
+      "runtime_path": "Packages/LearnKit/Sources/LearnGame/Resources/Sprites/UltimateThunder/impact.webp"
     },
     {
       "id": "storm-clouds",
       "role": "顶部雷云，聚拢与淡出",
-      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Sprites/UltimateThunder/storm-clouds.png",
+      "path": "docs/battle-ui/originals/storm-clouds.png",
       "status": "integrated",
       "technical": {
         "dimensions": [
@@ -137,7 +137,7 @@
         "approved_by": null,
         "runtime_preview": "../README.md"
       },
-      "runtime_path": "Packages/LearnKit/Sources/LearnGame/Resources/Sprites/UltimateThunder/storm-clouds.png"
+      "runtime_path": "Packages/LearnKit/Sources/LearnGame/Resources/Sprites/UltimateThunder/storm-clouds.webp"
     }
   ]
 }

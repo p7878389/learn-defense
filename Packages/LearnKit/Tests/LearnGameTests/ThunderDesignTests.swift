@@ -1,3 +1,4 @@
+import AVFoundation
 import LearnCore
 import SpriteKit
 import Testing
@@ -11,7 +12,7 @@ import SwiftUI
 @MainActor
 struct ThunderDesignTests {
     @Test func artworkKeepsTransparencyAndSharesBoundedTextures() throws {
-        let limits: [(ThunderArtwork.Asset, Int)] = [(.button, 1024), (.clouds, 1536), (.lightning, 1024), (.impact, 768)]
+        let limits: [(ThunderArtwork.Asset, Int)] = [(.button, 640), (.clouds, 1536), (.lightning, 1024), (.impact, 768)]
         var decodedBytes = 0
         for (asset, limit) in limits {
             let image = try #require(ThunderArtwork.image(asset))
@@ -23,6 +24,111 @@ struct ThunderDesignTests {
             #expect(texture === ThunderArtwork.texture(asset), "多目标与连续大招共享纹理，避免重复创建")
         }
         #expect(decodedBytes <= 8 * 1024 * 1024, "四张素材的解码像素控制在 8 MiB 内，不含 GPU 副本")
+    }
+
+    @Test func artworkShipsPreBakedAndSmall() throws {
+        var packaged = 0
+        for asset in ThunderArtwork.Asset.allCases {
+            let url = try #require(ThunderArtwork.url(asset), "缺少素材 \(asset.rawValue)")
+            #expect(url.pathExtension == "webp")
+            packaged += try #require(try url.resourceValues(forKeys: [.fileSizeKey]).fileSize)
+        }
+        #expect(packaged <= 400 * 1024, "四张素材进包应在 400KB 以内，原图留在 docs/battle-ui/originals")
+        let folder = try #require(ThunderArtwork.url(.button)).deletingLastPathComponent()
+        let shipped = try FileManager.default.contentsOfDirectory(atPath: folder.path)
+        #expect(!shipped.contains { $0.hasSuffix(".png") }, "PNG 原图不进应用包")
+    }
+
+    @Test func strikeUsesBatchableSpritesInsteadOfCropAndShapeNodes() throws {
+        let scene = GameScene(tuning: .make(grade: .g3, difficulty: .normal), theme: .academy)
+        _ = scene.spawn(EnemySpawn(id: 1, sign: "春", kind: .goblin), lane: 1, x: 700)
+        _ = scene.spawn(EnemySpawn(id: 2, sign: "秋", kind: .goblin), lane: 3, x: 880)
+        scene.unleash()
+        let effect = try #require(scene.childNode(withName: "ultimateThunder"))
+        let nodes = descendants(of: effect)
+        #expect(!nodes.contains { $0 is SKCropNode }, "每只怪一个裁剪节点会各占一次离屏渲染")
+        #expect(!nodes.contains { $0 is SKShapeNode }, "带辉光的形状节点无法合批")
+        let sparks = nodes.filter { $0.name == "thunderSpark" }.compactMap { $0 as? SKSpriteNode }
+        #expect(sparks.count == 44)
+        #expect(Set(sparks.compactMap { $0.texture.map(ObjectIdentifier.init) }).count <= 4, "星屑共用少量纹理")
+        let shaders = nodes.compactMap { ($0 as? SKSpriteNode)?.shader }
+        #expect(!shaders.isEmpty)
+        #expect(Set(shaders.map(ObjectIdentifier.init)).count == 1, "电光着色器只编译一次，全部残影共用")
+        advance(scene, seconds: 1.5)
+        _ = scene.spawn(EnemySpawn(id: 3, sign: "冬", kind: .goblin), lane: 2, x: 800)
+        scene.unleash()
+        let second = try #require(scene.childNode(withName: "ultimateThunder"))
+        let again = descendants(of: second).compactMap { ($0 as? SKSpriteNode)?.shader }
+        #expect(again.first === shaders.first, "连续大招不重新编译着色器")
+    }
+
+    @Test func crowdedFieldKeepsSparkBudget() throws {
+        let scene = GameScene(tuning: .make(grade: .g3, difficulty: .normal), theme: .academy)
+        for id in 1...12 {
+            _ = scene.spawn(EnemySpawn(id: id, sign: "春", kind: .goblin), lane: id % 5, x: 560 + CGFloat(id) * 30)
+        }
+        scene.unleash()
+        let effect = try #require(scene.childNode(withName: "ultimateThunder"))
+        let sparks = descendants(of: effect).filter { $0.name == "thunderSpark" }
+        #expect(sparks.count <= ThunderStrikeEffect.sparkBudget)
+        #expect(sparks.count >= 12 * 6, "怪再多，每只也留得下一小簇星屑")
+    }
+
+    @Test func strikesSweepAcrossTheFieldWithALighterShade() throws {
+        let scene = GameScene(tuning: .make(grade: .g3, difficulty: .normal), theme: .academy)
+        let log = DefeatLog()
+        scene.gameDelegate = log
+        let near = scene.spawn(EnemySpawn(id: 1, sign: "春", kind: .goblin), lane: 1, x: 520)
+        let far = scene.spawn(EnemySpawn(id: 2, sign: "秋", kind: .goblin), lane: 3, x: 940)
+        scene.unleash()
+        let effect = try #require(scene.childNode(withName: "ultimateThunder"))
+        advance(scene, seconds: 0.4)
+        #expect(near.parent == nil, "靠近植物一侧的先被击中")
+        #expect(far.parent === scene, "远处的稍后才轮到，不是全场同时爆开")
+        let shade = try #require(effect.childNode(withName: "thunderShade"))
+        #expect(shade.alpha > 0.1 && shade.alpha <= 0.32, "遮罩压暗但不盖住战场")
+        advance(scene, seconds: 0.3, from: 0.4)
+        #expect(far.parent == nil)
+        #expect(log.ids.isEmpty)
+        #expect(ThunderStrikeEffect.duration <= 1.3)
+        advance(scene, seconds: 0.7, from: 0.7)
+        #expect(log.ids == [1, 2])
+    }
+
+    @Test func buttonTellsChargingReadyChallengeAndCastApart() {
+        typealias Status = UltimateButton.Status
+        #expect(Status(ready: false, challenging: false, casting: false) == .charging)
+        #expect(Status(ready: true, challenging: false, casting: false) == .ready)
+        // 进入挑战后 ready 会变回 false，这时不能退回“蓄力中”，也不能提前显示释放。
+        #expect(Status(ready: false, challenging: true, casting: false) == .challenging)
+        #expect(Status(ready: false, challenging: false, casting: true) == .casting)
+        #expect(Set(Status.allCases.map(\.title)).count == 4)
+        #expect(Set(Status.allCases.map(\.hint)).count == 4)
+        #expect(Status.ready.title.contains("就绪"))
+    }
+
+    @Test func meterOnlyPopsTheSegmentThatWasJustGained() {
+        #expect(UltimateButton.gainedSegment(from: 2, to: 3) == 2)
+        #expect(UltimateButton.gainedSegment(from: 0, to: 2) == 1)
+        #expect(UltimateButton.gainedSegment(from: 3, to: 3) == nil)
+        #expect(UltimateButton.gainedSegment(from: 5, to: 0) == nil, "释放后归零不算获得能量")
+    }
+
+    @Test func readyChimeIsShortAndAudible() throws {
+        let data = AnswerFeedback.wave(.ultimateReady)
+        #expect(try AVAudioPlayer(data: data).duration < 0.6)
+        let samples = data.dropFirst(44)
+        var peak = 0
+        var index = samples.startIndex
+        while index + 1 < samples.endIndex {
+            peak = max(peak, abs(Int(Int16(bitPattern: UInt16(samples[index]) | UInt16(samples[index + 1]) << 8))))
+            index += 2
+        }
+        #expect(peak > 4000 && peak < 20000, "比大招释放轻，让位于题目朗读")
+    }
+
+    private func descendants(of node: SKNode) -> [SKNode] {
+        node.children.flatMap { [$0] + descendants(of: $0) }
     }
 
     @Test func castRendersCloudBoltAndImpactFromPackagedArtwork() throws {

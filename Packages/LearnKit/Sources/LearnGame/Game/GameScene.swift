@@ -114,6 +114,7 @@ final class GameScene: SKScene {
         guard !built else { return }
         built = true
         buildBackground()
+        ThunderArtwork.preload()
     }
 
     private func laneY(_ lane: Int) -> CGFloat {

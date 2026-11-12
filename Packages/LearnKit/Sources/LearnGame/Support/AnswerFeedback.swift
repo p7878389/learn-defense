@@ -15,6 +15,8 @@ final class AnswerFeedback {
         case bossDefeated
         /// 大招释放：蓄力的上滑音，接一声轰响和高处的余音
         case ultimateCast
+        /// 大招能量充满：两声上行的轻铃，比释放轻得多
+        case ultimateReady
 
         /// 首领和大招的音效较长，单独占一个播放位，不会被紧跟着的答题提示音掐断
         fileprivate var isBossCue: Bool { self != .correct && self != .wrong }
@@ -31,6 +33,8 @@ final class AnswerFeedback {
         do {
             let player = try AVAudioPlayer(data: Self.wave(cue))
             player.volume = volume
+            // 充满提示只是点缀：首领或大招的长音效还在响时不去打断它。
+            if cue == .ultimateReady && bossPlayer?.isPlaying == true { return }
             if cue.isBossCue { bossPlayer = player } else { self.player = player }
             player.play()
         } catch {
@@ -46,6 +50,7 @@ final class AnswerFeedback {
         case .bossEnrage: wav(Self.bossEnrage)
         case .bossDefeated: wav(Self.bossDefeated)
         case .ultimateCast: wav(Self.ultimateCast)
+        case .ultimateReady: wav(Self.ultimateReady)
         }
     }
 
@@ -88,6 +93,12 @@ final class AnswerFeedback {
         tones.append(Tone(start: 0.44, duration: 0.22, frequency: 140, amplitude: 0.45, glide: 70, decay: 14))
         return tones
     }()
+
+    /// 能量充满：G5、C6 两声轻铃，晚 0.18 秒起，排在答对提示音之后
+    static let ultimateReady: [Tone] = [
+        Tone(start: 0.18, duration: 0.16, frequency: 783.99, amplitude: 0.22, harmonics: [1, 0.3], decay: 9),
+        Tone(start: 0.3, duration: 0.24, frequency: 1046.5, amplitude: 0.26, harmonics: [1, 0.3], decay: 7),
+    ]
 
     /// 大招释放：0.45 秒从 C4 滑到 C6 的蓄力（叠一层高八度），落在一声轰响上，
     /// 再用 C6、E6、G6 三个渐弱的高音收尾

@@ -34,7 +34,8 @@ struct BattleActionBar: View {
     var body: some View {
         HStack(spacing: 14) {
             UltimateButton(energy: session.energy, maxEnergy: session.tuning.ultimateEnergy,
-                           ready: session.ultimateReady, action: session.startUltimate, casting: session.isUnleashing)
+                           ready: session.ultimateReady, action: session.startUltimate,
+                           casting: session.isUnleashing, challenging: session.ultimate != nil)
             Rectangle().fill(Theme.muted.opacity(0.25)).frame(width: 1, height: 40)
             VStack(alignment: .leading, spacing: 2) {
                 Text("道具").font(.caption.weight(.bold)).foregroundStyle(Theme.muted)

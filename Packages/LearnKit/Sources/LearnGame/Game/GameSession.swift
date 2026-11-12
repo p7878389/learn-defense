@@ -240,7 +240,11 @@ final class GameSession: ObservableObject {
                 attempted += 1
                 firstTryCorrect += 1
                 score += 10
+                let wasFull = energy >= tuning.ultimateEnergy
                 energy = min(energy + 1, tuning.ultimateEnergy)
+                if !wasFull && energy >= tuning.ultimateEnergy {
+                    feedback.play(.ultimateReady, volume: speech.effectsVolume)
+                }
                 tuner.record(correct: true)
                 progress.record(entry.item, correct: true)
                 record(shownAt[id])
