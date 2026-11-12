@@ -1,0 +1,18 @@
+{
+  "tool": "built-in image_gen",
+  "reference": "../design-reference.png",
+  "prompts": [
+    [
+      "button",
+      "Use case: ui-mockup. Create a SINGLE production-ready transparent game UI button shell based closely on the gold-and-cyan ultimate charge widgets across the TOP of the reference board. Wide horizontal capsule about 4:1. A large circular medallion on LEFT occupying about 22% of width, luminous cyan blue enamel disk, bold white lightning bolt, dimensional thick champagne-gold concentric rim, warm brown thin outer contour, small white specular highlight, polished cheerful hand-painted 2D mobile-game style. Right 78% is clean warm ivory parchment, gently raised gold capsule frame, smooth rounded cap at far right. Reserve upper-right area fully blank for dynamic Chinese text and numbers, and bottom-right area fully blank for a dynamic progress meter; DO NOT draw any progress slots, any text, numbers, glyphs or runes. Subtle cyan outer glow around the button rim, fine bright bevel, satisfying tactile polish, restrained detail, match the reference exactly in finish and palette, orthographic front view. Only this ONE button shell, centered and entire silhouette visible with a small transparent margin. Actual transparent background, no checkerboard, no scene, no mockup, no labels, no devices."
+    ],
+    [
+      "bolt",
+      "Use case: stylized-concept. Production transparent game VFX sprite. Reference is the approved design board. Create ONE vertical heavenly thunderbolt matching the white-hot cyan lightning in the CENTER game scene of that board. Tall narrow composition about 1:3. Single thick jagged irregular white plasma core, varying thickness and angular silhouette, bright electric cyan inner glow, wide soft cobalt/cyan outer bloom, 4 to 6 delicate secondary branching electrical arcs spreading sideways. Energy travels from top-center toward bottom-center. Top endpoint and bottom endpoint centered on the same vertical axis. Main white core reaches both close to top and close to bottom, but all glow and branches fit with transparent safety margins. No equal-spaced zigzag, no straight neon tube, no outlined vector stroke. Painterly polished 2D cartoon magic, powerful readable thick core at small game scale. NO cloud, NO ground, NO impact ring, NO characters, NO text, NO stars below. ONE coherent bolt only on actual transparent background, not black, no checkerboard. This is a game sprite to stretch vertically to connect cloud bottom to monster body."
+    ],
+    [
+      "impact",
+      "Use case: stylized-concept. Production transparent 2D game VFX sprite, match the thunderbolt ground impact in the center scene of the approved reference board. ONE bright electric cyan elliptical ring viewed from slightly above, flattened horizontal ellipse about 3:1, a white-hot central electric splash rising above the center of the ring, small spiky white/cyan energy jets around the circumference, 8 tiny warm gold spark streaks radiating out. Generous transparent margins around the glow. Polished hand-painted cartoon mobile-game magic with rich white core and cyan bloom. Read clearly at about 160 pixels wide. No giant white disk, center of ring remains mostly transparent, no deep crater, no realistic fire, no lightning column, no clouds, no characters, no floor or scenery, no text or labels, no checkerboard. One coherent impact burst on actual transparent background."
+    ]
+  ]
+}

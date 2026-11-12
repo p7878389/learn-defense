@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "art_direction_brief": "art-direction.md",
+  "stage": "四张美术素材已接入游戏，HTML 样片保留为美术参考",
+  "assets": [
+    {
+      "id": "button-shell",
+      "role": "金色厚边与蓝色闪电徽章，文字和进度槽保持动态",
+      "path": "docs/battle-ui/originals/button-shell.png",
+      "status": "integrated",
+      "technical": {
+        "dimensions": [
+          2172,
+          724
+        ],
+        "alpha": true,
+        "alpha_extrema": [
+          0,
+          254
+        ],
+        "filtering": "linear",
+        "frames": 1,
+        "decoded_max_pixel_size": 1024
+      },
+      "source": {
+        "kind": "generated",
+        "tool": "built-in image_gen",
+        "prompt_record": "prompts.json",
+        "sha256": "7cad9a5d99e7bc5afadfb38af8f0e867523e855372bd8aab54c080ac7eaf077f"
+      },
+      "verification": {
+        "native_scale_reviewed": true,
+        "technical_checks_passed": true,
+        "in_engine_reviewed": true,
+        "approved_by": null,
+        "runtime_preview": "../README.md"
+      },
+      "runtime_path": "Packages/LearnKit/Sources/LearnGame/Resources/Sprites/UltimateThunder/button-shell.webp"
+    },
+    {
+      "id": "lightning",
+      "role": "天降雷柱，顶部到目标身体中心",
+      "path": "docs/battle-ui/originals/lightning.png",
+      "status": "integrated",
+      "technical": {
+        "dimensions": [
+          725,
+          2170
+        ],
+        "alpha": true,
+        "alpha_extrema": [
+          0,
+          254
+        ],
+        "filtering": "linear",
+        "frames": 1,
+        "decoded_max_pixel_size": 1024
+      },
+      "source": {
+        "kind": "generated",
+        "tool": "built-in image_gen",
+        "prompt_record": "prompts.json",
+        "sha256": "bd335baf51c896a4fdc79fc28f60e190378c3fa9c6dcea03d0a4c2d55eb5f23e"
+      },
+      "verification": {
+        "native_scale_reviewed": true,
+        "technical_checks_passed": true,
+        "in_engine_reviewed": true,
+        "approved_by": null,
+        "runtime_preview": "../README.md"
+      },
+      "runtime_path": "Packages/LearnKit/Sources/LearnGame/Resources/Sprites/UltimateThunder/lightning.webp"
+    },
+    {
+      "id": "impact",
+      "role": "独立落点爆光、椭圆电环与金色火花",
+      "path": "docs/battle-ui/originals/impact.png",
+      "status": "integrated",
+      "technical": {
+        "dimensions": [
+          1536,
+          1024
+        ],
+        "alpha": true,
+        "alpha_extrema": [
+          0,
+          254
+        ],
+        "filtering": "linear",
+        "frames": 1,
+        "decoded_max_pixel_size": 768
+      },
+      "source": {
+        "kind": "generated",
+        "tool": "built-in image_gen",
+        "prompt_record": "prompts.json",
+        "sha256": "fbced2a8ad01908999f605320af70ee13ca188cb2bec0a6b77bae9cd3ac09a86"
+      },
+      "verification": {
+        "native_scale_reviewed": true,
+        "technical_checks_passed": true,
+        "in_engine_reviewed": true,
+        "approved_by": null,
+        "runtime_preview": "../README.md"
+      },
+      "runtime_path": "Packages/LearnKit/Sources/LearnGame/Resources/Sprites/UltimateThunder/impact.webp"
+    },
+    {
+      "id": "storm-clouds",
+      "role": "顶部雷云，聚拢与淡出",
+      "path": "docs/battle-ui/originals/storm-clouds.png",
+      "status": "integrated",
+      "technical": {
+        "dimensions": [
+          2172,
+          724
+        ],
+        "alpha": true,
+        "alpha_extrema": [
+          0,
+          255
+        ],
+        "filtering": "linear",
+        "frames": 1,
+        "decoded_max_pixel_size": 1536
+      },
+      "source": {
+        "kind": "generated",
+        "tool": "built-in image_gen",
+        "prompt_record": "cloud-prompt.txt",
+        "sha256": "36c7637f8b1729ceea598d18fa19bd8bed63c8d06398508b55780c66f439f48d"
+      },
+      "verification": {
+        "native_scale_reviewed": true,
+        "technical_checks_passed": true,
+        "in_engine_reviewed": true,
+        "approved_by": null,
+        "runtime_preview": "../README.md"
+      },
+      "runtime_path": "Packages/LearnKit/Sources/LearnGame/Resources/Sprites/UltimateThunder/storm-clouds.webp"
+    }
+  ]
+}

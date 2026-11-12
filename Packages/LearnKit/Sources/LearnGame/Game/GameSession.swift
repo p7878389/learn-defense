@@ -25,6 +25,8 @@ final class GameSession: ObservableObject {
     let isEmpty: Bool
 
     @Published private(set) var phase: Phase = .preparing
+    @Published private(set) var map: BattleMap
+    @Published private(set) var isUnleashing = false
     @Published private(set) var hearts: Int?
     /// 模块内可写，方便测试直接攒满能量
     @Published internal(set) var energy = 0
@@ -118,12 +120,13 @@ final class GameSession: ObservableObject {
     private var ultimateItem: LearningItem?
 
     init(config: GameConfig, library: ContentLibrary, progress: ProgressStore, speech: Speech, growth: GrowthStore? = nil,
-         recorder: GameRecorder? = nil) {
+         recorder: GameRecorder? = nil, map: BattleMap = .courtyard) {
         let packs = config.packIDs.compactMap(library.pack(id:))
         let pool = ItemPool(packs: packs, selection: config.selection)
         let pacing = growth?.catalog.pacing ?? GrowthCatalog.bundled.pacing
         let tuning = GameTuning.make(grade: config.grade, difficulty: config.difficulty, pacing: pacing)
         self.config = config
+        self.map = map
         rules = growth?.rules ?? .defaults
         self.tuning = tuning
         self.progress = progress
@@ -148,10 +151,17 @@ final class GameSession: ObservableObject {
         scene = GameScene(
             tuning: tuning,
             theme: SceneTheme.choose(packs: packs, selection: config.selection, grade: config.grade),
-            loadout: loadout)
+            loadout: loadout, map: map)
         scene.gameDelegate = self
         scene.setPreparing(true)
         if isEmpty { scene.setGamePaused(true) }
+    }
+
+    /// 准备阶段只更换背景，战斗开始后锁定本局地图。
+    func selectMap(_ map: BattleMap) {
+        guard phase == .preparing, self.map != map else { return }
+        scene.setMap(map)
+        self.map = map
     }
 
     /// 能不能用道具栏里的道具
@@ -222,7 +232,7 @@ final class GameSession: ObservableObject {
 
         if correct {
             guard scene.canAttack(id) else {
-                scene.play(FloatingTextEffect(text: "先选卡片，再点草坪", color: Palette.hurt, fontSize: 28))
+                scene.play(FloatingTextEffect(text: "先选卡片，再点战场空位", color: Palette.hurt, fontSize: 28))
                 speech.speak(SpeechText.Line.plantFirst, interrupt: true)
                 return
             }
@@ -230,7 +240,11 @@ final class GameSession: ObservableObject {
                 attempted += 1
                 firstTryCorrect += 1
                 score += 10
+                let wasFull = energy >= tuning.ultimateEnergy
                 energy = min(energy + 1, tuning.ultimateEnergy)
+                if !wasFull && energy >= tuning.ultimateEnergy {
+                    feedback.play(.ultimateReady, volume: speech.effectsVolume)
+                }
                 tuner.record(correct: true)
                 progress.record(entry.item, correct: true)
                 record(shownAt[id])
@@ -371,7 +385,7 @@ final class GameSession: ObservableObject {
                 scene.play(FloatingTextEffect(text: "这里已经有植物了", color: Palette.hurt, fontSize: 26))
                 speech.speak(SpeechText.Line.cellTaken, interrupt: true)
             } else {
-                scene.play(FloatingTextEffect(text: "只能种在空的草坪位置", color: Palette.hurt, fontSize: 26))
+                scene.play(FloatingTextEffect(text: "只能种在战场的空位", color: Palette.hurt, fontSize: 26))
                 speech.speak(SpeechText.Line.cellBlocked, interrupt: true)
             }
             return false
@@ -568,6 +582,9 @@ final class GameSession: ObservableObject {
 }
 
 extension GameSession: GameSceneDelegate {
+    func ultimateAnimationStarted() { isUnleashing = true }
+    func ultimateAnimationFinished() { isUnleashing = false }
+
     /// 拼字块题时战场放慢到一半
     var speedFactor: Double { tuner.speedFactor * (typing ? 0.5 : 1) }
     var holdsTarget: Bool { typing || inNewItemGrace }

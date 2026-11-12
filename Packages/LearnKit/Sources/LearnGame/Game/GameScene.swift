@@ -31,6 +31,8 @@ protocol GameSceneDelegate: AnyObject {
     var holdsTarget: Bool { get }
     /// 首领被打到只剩最后一段血、开始暴走
     func bossEnraged(_ id: Int)
+    func ultimateAnimationStarted()
+    func ultimateAnimationFinished()
 }
 
 extension GameSceneDelegate {
@@ -38,6 +40,8 @@ extension GameSceneDelegate {
     var holdsTarget: Bool { false }
     /// 首领被打到只剩最后一段血、开始暴走
     func bossEnraged(_ id: Int) {}
+    func ultimateAnimationStarted() {}
+    func ultimateAnimationFinished() {}
 }
 
 /// 游戏画面：负责怪物移动、瞄准、战斗结算和动画；答题规则在 GameSession 里。
@@ -49,6 +53,8 @@ final class GameScene: SKScene {
 
     private let tuning: GameTuning
     private let theme: SceneTheme
+    private(set) var map: BattleMap
+    private var backgroundNodes: [SKNode] = []
     /// 孩子装备的外观：子弹和退场特效按它选，场景里不按皮肤写判断
     private let loadout: Loadout
     private var enemies: [Int: EnemyNode] = [:]
@@ -63,6 +69,8 @@ final class GameScene: SKScene {
     private var spawningFinished = false
     private var built = false
     private(set) var gamePaused = false
+    /// 演出清理完成后再结算，避免最后一击被回合暂停冻结。
+    private var thunderEffect: ThunderStrikeEffect?
     /// 诊断日志：上次记录场景节点数量的时间
     private var lastDiagStats: TimeInterval = 0
 
@@ -79,9 +87,10 @@ final class GameScene: SKScene {
     /// 连续答对几题（答错清零）：萤火精灵的光团跟着变亮
     private(set) var answerStreak = 0
 
-    init(tuning: GameTuning, theme: SceneTheme, loadout: Loadout = .standard) {
+    init(tuning: GameTuning, theme: SceneTheme, loadout: Loadout = .standard, map: BattleMap = .courtyard) {
         self.tuning = tuning
         self.theme = theme
+        self.map = map
         self.loadout = loadout
         lawn = Lawn(lanes: tuning.lanes)
         super.init(size: Self.designSize)
@@ -105,6 +114,7 @@ final class GameScene: SKScene {
         guard !built else { return }
         built = true
         buildBackground()
+        ThunderArtwork.preload()
     }
 
     private func laneY(_ lane: Int) -> CGFloat {
@@ -112,9 +122,18 @@ final class GameScene: SKScene {
     }
 
     private func buildBackground() {
+        backgroundNodes.forEach { $0.removeFromParent() }
+        let existing = Set(children.map { ObjectIdentifier($0) })
         // 草坪上方是天空
-        Backdrop(theme: theme, size: size, skyHeight: size.height - Lawn.frame.maxY, lawn: lawn, baseWidth: 64)
+        Backdrop(theme: theme, size: size, skyHeight: size.height - Lawn.frame.maxY, lawn: lawn, baseWidth: 64, map: map)
             .build(in: self)
+        backgroundNodes = children.filter { !existing.contains(ObjectIdentifier($0)) }
+    }
+
+    func setMap(_ map: BattleMap) {
+        guard self.map != map else { return }
+        self.map = map
+        if built { buildBackground() }
     }
 
     /// 把 SwiftUI 里的拖动位置换成场景坐标。frame 是战场在同一坐标系里的位置，
@@ -142,7 +161,18 @@ final class GameScene: SKScene {
             lastDiagStats = currentTime
             logDiagStats()
         }
-        guard !gamePaused, dt > 0, let delegate = gameDelegate else { return }
+        guard !gamePaused, dt > 0 else { return }
+        if let effect = thunderEffect {
+            if effect.advance(by: dt) {
+                thunderEffect = nil
+                gameDelegate?.ultimateAnimationFinished()
+                for defeat in effect.defeats {
+                    gameDelegate?.enemyDefeated(defeat.id, at: defeat.point)
+                }
+            }
+            return
+        }
+        guard let delegate = gameDelegate else { return }
         clock += dt
         let factor = delegate.speedFactor
 
@@ -530,10 +560,25 @@ final class GameScene: SKScene {
 
     /// 全场怪物一起消灭（大招）
     func unleash() {
-        ScreenFlashEffect().play(at: .zero, in: self)
-        for id in enemies.keys.sorted() {
-            fire(at: id, overwhelming: true)
+        guard thunderEffect == nil else { return }
+        // 大招从天空直接命中，不依赖这条路上是否有能射击的植物。
+        // 先移出战斗集合，再通知对局，避免飞行中的普通子弹重复结算。
+        let victims = enemies.values.filter { !$0.doomed }.sorted { $0.enemyID < $1.enemyID }
+        guard !victims.isEmpty else { return }
+        for enemy in victims {
+            enemy.doomed = true
+            _ = enemy.health.take(enemy.health.current)
+            enemy.setTargeted(false)
+            stopChewing(enemy)
+            enemies[enemy.enemyID] = nil
+            enemy.removeAllActions()
+            enemy.alpha = 1
         }
+        let effect = ThunderStrikeEffect(victims: victims, size: size)
+        thunderEffect = effect
+        addChild(effect)
+        updateTarget()
+        gameDelegate?.ultimateAnimationStarted()
     }
 
     /// 全场怪物停住

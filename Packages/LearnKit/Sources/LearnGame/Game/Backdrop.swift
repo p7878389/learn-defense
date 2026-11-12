@@ -23,18 +23,16 @@ struct Backdrop {
     let lawn: Lawn
     /// 基地那一列的宽度
     let baseWidth: CGFloat
+    var map: BattleMap = .courtyard
 
     private var fieldHeight: CGFloat { size.height - skyHeight }
     private var lanes: Int { lawn.lanes }
     private var laneHeight: CGFloat { lawn.rowHeight }
 
     func build(in scene: SKNode) {
-        if let url = Bundle.module.url(forResource: "courtyard", withExtension: "jpg", subdirectory: "Sprites"),
-           let image = PlatformImage(contentsOfFile: url.path) {
-            let full = SKTexture(image: image)
-            let texture = SKTexture(rect: CGRect(x: 100.0 / 1400, y: 0, width: 1200.0 / 1400, height: 1), in: full)
+        if let texture = BattleMapArtwork.texture(map) {
             let courtyard = SKSpriteNode(texture: texture, size: size)
-            courtyard.name = "courtyard"
+            courtyard.name = map.rawValue
             courtyard.anchorPoint = .zero
             courtyard.zPosition = -30
             scene.addChild(courtyard)
