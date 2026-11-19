@@ -37,7 +37,8 @@ struct ParentVoicePane: View {
             }
         }
         .onAppear { draft = model.readerPreferences }
-        .sheet(isPresented: $advanced) { VoiceSettingsView(library: model.speechLibrary) }
+        // 和设置页一样全屏显示，沿用家长专区的纸张底色和糖果卡片
+        .growthCover(isPresented: $advanced) { VoiceSettingsView(library: model.speechLibrary) }
     }
 
     private func source(_ source: ReaderPreferences.Source, title: String, detail: String) -> some View {

@@ -51,21 +51,32 @@ struct ParentSettingsUITests {
         let directory = URL(fileURLWithPath: "/tmp/learn-defense-settings-preview")
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         for section in ParentSection.allCases {
-            let content = ParentSettingsContent(section: section, onClose: {})
-                .environmentObject(model).frame(width: 1194, height: 834)
-            let host = NSHostingView(rootView: content)
-            let window = NSWindow(contentRect: CGRect(x: -5000, y: -5000, width: 1194, height: 834),
-                                  styleMask: .borderless, backing: .buffered, defer: false)
-            window.contentView = host
-            host.frame = CGRect(x: 0, y: 0, width: 1194, height: 834)
-            host.layoutSubtreeIfNeeded()
-            window.displayIfNeeded()
-            let bitmap = try #require(host.bitmapImageRepForCachingDisplay(in: host.bounds))
-            host.cacheDisplay(in: host.bounds, to: bitmap)
-            try #require(bitmap.representation(using: .png, properties: [:]))
-                .write(to: directory.appendingPathComponent(section.id + ".png"))
-            window.orderOut(nil)
+            try render(ParentSettingsContent(section: section, onClose: {}), model: model,
+                       to: directory.appendingPathComponent(section.id + ".png"))
+        }
+        // 豆包语音设置：未配置、已配置（展开旧版账号）两种状态
+        let configured = TTSSettings(apiKey: "demo-api-key", appID: "8392017456", accessToken: "demo-token")
+        for (name, settings) in [("voice-doubao-empty", nil), ("voice-doubao-configured", configured)] as [(String, TTSSettings?)] {
+            let library = SpeechLibrary(database: model.database, settings: settings, premadeDirectories: [])
+            try render(VoiceSettingsView(library: library), model: model, to: directory.appendingPathComponent(name + ".png"))
         }
         #endif
     }
+
+    #if os(macOS)
+    private func render(_ view: some View, model: AppModel, to url: URL) throws {
+        let content = view.environmentObject(model).frame(width: 1194, height: 834)
+        let host = NSHostingView(rootView: content)
+        let window = NSWindow(contentRect: CGRect(x: -5000, y: -5000, width: 1194, height: 834),
+                              styleMask: .borderless, backing: .buffered, defer: false)
+        window.contentView = host
+        host.frame = CGRect(x: 0, y: 0, width: 1194, height: 834)
+        host.layoutSubtreeIfNeeded()
+        window.displayIfNeeded()
+        let bitmap = try #require(host.bitmapImageRepForCachingDisplay(in: host.bounds))
+        host.cacheDisplay(in: host.bounds, to: bitmap)
+        try #require(bitmap.representation(using: .png, properties: [:])).write(to: url)
+        window.orderOut(nil)
+    }
+    #endif
 }
