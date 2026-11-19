@@ -45,7 +45,6 @@ public enum SpeechText {
     /// 游戏里固定的提示语，以及植物、道具的名字
     public static var gameLines: [String] {
         unique(Line.all
-            + UnitCatalog.defenders.map { Line.planted($0.name) }
             + UnitCatalog.items.map(\.name)
             + Line.bossCandidates.map { Line.bossArrive($0.name) }
             + [ItemKind.inkStorm, .rainbow].map { Line.ultimateCast($0.name) })
@@ -81,7 +80,6 @@ public enum SpeechText {
         public static let sample = "你好，我们一起来认字吧！晨，早晨的晨。apple，苹果。"
         public static let englishSample = "Hello! Let's learn the word apple together. A-P-P-L-E, apple."
 
-        public static func planted(_ name: String) -> String { "\(name)种下了" }
         public static func bought(_ name: String) -> String { "买到\(name)啦，已经换上了！" }
 
         // 首领和大招的播报。孩子不一定认得首领的名字，出场时把名字读出来

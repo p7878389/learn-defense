@@ -89,6 +89,32 @@ struct BattlefieldTests {
         #expect(GameScene.scenePoint(at: CGPoint(x: 0, y: 350), in: tall) == CGPoint(x: 0, y: 0))
     }
 
+    @Test func landscapeBattlefieldWidensIntoSideArt() {
+        // 竖屏宽度到头：仍按 2:1
+        #expect(GameScene.battlefieldSize(fitting: CGSize(width: 800, height: 900)) == CGSize(width: 800, height: 400))
+        // 横屏高度到头：宽度跟着可用宽度铺满（iPad Air 11 寸横屏约 1160×445，手机横屏更扁），最多到 4:1
+        #expect(GameScene.battlefieldSize(fitting: CGSize(width: 1160, height: 445)) == CGSize(width: 1160, height: 445))
+        #expect(GameScene.battlefieldSize(fitting: CGSize(width: 830, height: 220)) == CGSize(width: 830, height: 220))
+        #expect(GameScene.battlefieldSize(fitting: CGSize(width: 2000, height: 300)) == CGSize(width: 1200, height: 300))
+        // 加宽的战场仍按高度缩放、左边对齐，草坪坐标不变；右边的延伸区落在场景外
+        let wide = CGRect(x: 0, y: 0, width: 750, height: 300)
+        #expect(GameScene.scenePoint(at: CGPoint(x: 300, y: 150), in: wide) == CGPoint(x: 600, y: 300))
+        #expect(GameScene.scenePoint(at: CGPoint(x: 25, y: 250), in: wide) == CGPoint(x: 50, y: 100))
+        #expect(GameScene.scenePoint(at: CGPoint(x: 725, y: 50), in: wide) == CGPoint(x: 1450, y: 500))
+    }
+
+    @Test func cameraPullsBackToShowSideArt() {
+        // aspectFit 的留边只会画成黑色，靠相机拉远露出右边的背景，左缘仍对齐场景左缘；2:1 的视图不缩放
+        let scene = GameScene(tuning: GameTuning.make(grade: .g3, difficulty: .normal), theme: .academy)
+        scene.didMove(to: SKView(frame: CGRect(x: 0, y: 0, width: 1500, height: 600)))
+        #expect(scene.camera?.position == CGPoint(x: 750, y: 300))
+        #expect(scene.camera?.xScale == 1.25)
+        let fitted = GameScene(tuning: GameTuning.make(grade: .g3, difficulty: .normal), theme: .academy)
+        fitted.didMove(to: SKView(frame: CGRect(x: 0, y: 0, width: 1200, height: 600)))
+        #expect(fitted.camera?.xScale == 1)
+        #expect(fitted.camera?.position == CGPoint(x: 600, y: 300))
+    }
+
     @Test func wordCardAppearsWithoutZoom() throws {
         let scene = GameScene(tuning: GameTuning.make(grade: .g3, difficulty: .normal), theme: .academy)
         scene.didMove(to: SKView(frame: CGRect(origin: .zero, size: scene.size)))

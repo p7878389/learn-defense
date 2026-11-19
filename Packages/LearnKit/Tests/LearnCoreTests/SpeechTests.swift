@@ -42,7 +42,7 @@ struct SpeechTextTests {
     @Test func gameLinesCoverFixedPrompts() {
         let lines = SpeechText.gameLines
         #expect(lines.contains(SpeechText.Line.battleStart))
-        #expect(lines.contains(SpeechText.Line.planted(DefenderKind.inkling.name)))
+        #expect(!lines.contains("\(DefenderKind.inkling.name)种下了"), "种下植物不再播报，也不用预先生成")
         #expect(lines.contains(ItemKind.frostCharm.name))
         #expect(Set(lines).count == lines.count)
         // 首领和大招的播报都会预先生成：每个可能当首领的怪物一句出场，加暴走、击杀、两种大招

@@ -32,7 +32,8 @@ struct GameView: View {
 struct BattleScreen: View {
     @ObservedObject var session: GameSession
     @State private var battlefieldFrame: CGRect = .zero
-    @State private var activeDrag: PlantDrag?
+    /// 拖动中的植物卡；位置只给跟手预览和战场描边读，拖动时整个战斗界面不跟着重算
+    @State private var drag = PlantDragState()
     /// 本局答题区出现过的最高高度。战场占剩下的高度，答题区变矮时战场会跟着放大，
     /// 所以答题区只增不减；准备阶段先按样题留好高度，开局、答对、换题时画面都不跳
     @State private var answerPanelHeight: CGFloat = 0
@@ -53,10 +54,11 @@ struct BattleScreen: View {
             kinds: session.tuning.plantable,
             sun: session.sun,
             enabled: session.canUseShop,
-            draggingID: activeDrag?.kind.id,
+            draggingID: drag.kind?.id,
             skins: session.loadout.defenderSkins,
             onDragChanged: { kind, location in
-                activeDrag = PlantDrag(kind: kind, location: location)
+                if drag.kind != kind { drag.kind = kind }
+                drag.location = location
                 session.previewSeed(at: GameScene.scenePoint(at: location, in: battlefieldFrame))
             },
             onDragEnded: { kind, location in
@@ -66,7 +68,7 @@ struct BattleScreen: View {
                     _ = session.dropSeed(id: kind.id, at: point)
                 }
                 session.previewSeed(at: nil)
-                activeDrag = nil
+                drag.kind = nil
             },
             barricade: session.tuning.barricade,
             barricadeEnabled: session.canDropBarricade,
@@ -128,6 +130,7 @@ struct BattleScreen: View {
                 VStack(spacing: 6) {
                     BattleTopBar(session: session, onExit: onExit) { seedPackets }
                     BattlefieldView(session: session, debugOptions: debugOptions)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                         .background(
                             // 直接记下战场位置；用 PreferenceKey 传到外层时真机上一直是 .zero
                             GeometryReader { proxy in
@@ -135,14 +138,9 @@ struct BattleScreen: View {
                                     battlefieldFrame = frame
                                 }
                             })
-                        .overlay {
-                            if let drag = activeDrag, battlefieldFrame.contains(drag.location) {
-                                RoundedRectangle(cornerRadius: 6)
-                                    .stroke(Theme.jade, lineWidth: 5)
-                                    .padding(4)
-                                    .allowsHitTesting(false)
-                            }
-                        }
+                        .overlay { PlantDropHighlight(drag: drag, battlefield: battlefieldFrame) }
+                        // 和上下的道具栏、答题区一样左右各留 10，宽度对齐
+                        .padding(.horizontal, 10)
                         .layoutPriority(-1)
                     BattleActionBar(session: session)
                         .padding(.horizontal, 10)
@@ -216,10 +214,8 @@ struct BattleScreen: View {
                 .ignoresSafeArea(.container, edges: isPortrait ? [] : .bottom)
             }
 
-            if let drag = activeDrag {
-                PlantDragGhost(kind: drag.kind, skin: session.loadout.defenderSkins[drag.kind.id])
-                    .position(drag.location)
-                    .allowsHitTesting(false)
+            if let kind = drag.kind {
+                PlantDragFollower(drag: drag, kind: kind, skin: session.loadout.defenderSkins[kind.id])
                     .zIndex(20)
             }
 
@@ -234,7 +230,7 @@ struct BattleScreen: View {
             }
 
             if session.phase == .paused {
-                PauseOverlay(onResume: session.togglePause, onExit: session.finishGame)
+                PauseOverlay(onResume: session.togglePause, onFinish: session.finishGame, onQuit: onExit)
             }
 
             if session.phase == .resting {
@@ -269,26 +265,70 @@ private struct BattlefieldView: View {
     let debugOptions: SpriteView.DebugOptions
 
     var body: some View {
-        GeometryReader { geometry in
-            SpriteView(
-                scene: session.scene,
-                preferredFramesPerSecond: 120,
-                debugOptions: debugOptions)
-                .frame(width: geometry.size.width, height: geometry.size.height)
-                .simultaneousGesture(SpatialTapGesture().onEnded { value in
-                    guard session.phase == .playing, session.ultimate == nil,
-                          let point = GameScene.scenePoint(at: value.location,
-                              in: CGRect(origin: .zero, size: geometry.size)) else { return }
-                    session.scene.selectTarget(at: point)
-                })
+        BattlefieldLayout {
+            GeometryReader { geometry in
+                SpriteView(
+                    scene: session.scene,
+                    preferredFramesPerSecond: 120,
+                    debugOptions: debugOptions)
+                    .frame(width: geometry.size.width, height: geometry.size.height)
+                    .simultaneousGesture(SpatialTapGesture().onEnded { value in
+                        guard session.phase == .playing, session.ultimate == nil,
+                              let point = GameScene.scenePoint(at: value.location,
+                                  in: CGRect(origin: .zero, size: geometry.size)) else { return }
+                        session.scene.selectTarget(at: point)
+                    })
+            }
         }
-        .aspectRatio(GameScene.designSize.width / GameScene.designSize.height, contentMode: .fit)
     }
 }
 
-private struct PlantDrag: Equatable {
+/// 战场尺寸按 GameScene.battlefieldSize：横屏时可以比 2:1 宽，两侧由场景画出地图延伸，不留空白
+private struct BattlefieldLayout: Layout {
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        GameScene.battlefieldSize(fitting: proposal.replacingUnspecifiedDimensions(by: GameScene.designSize))
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        for subview in subviews {
+            subview.place(at: bounds.origin, proposal: ProposedViewSize(bounds.size))
+        }
+    }
+}
+
+/// 拖动中的植物卡。DragGesture 每帧都改 location，用 Observation 只让读到它的小视图刷新
+@MainActor @Observable
+private final class PlantDragState {
+    var kind: DefenderKind?
+    var location: CGPoint = .zero
+}
+
+/// 跟着手指走的植物卡预览
+private struct PlantDragFollower: View {
+    let drag: PlantDragState
     let kind: DefenderKind
-    var location: CGPoint
+    let skin: CharacterSkin?
+
+    var body: some View {
+        PlantDragGhost(kind: kind, skin: skin)
+            .position(drag.location)
+            .allowsHitTesting(false)
+    }
+}
+
+/// 拖到战场上方时给战场描一圈绿边
+private struct PlantDropHighlight: View {
+    let drag: PlantDragState
+    let battlefield: CGRect
+
+    var body: some View {
+        if drag.kind != nil, battlefield.contains(drag.location) {
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(Theme.jade, lineWidth: 5)
+                .padding(4)
+                .allowsHitTesting(false)
+        }
+    }
 }
 
 private struct PlantDragGhost: View {
@@ -320,6 +360,13 @@ struct GameHUD: View {
     var body: some View {
         HStack(spacing: 18) {
             if session.phase == .preparing {
+                // 还没开局：直接回到上一页，不结算
+                Button(action: onExit) {
+                    Image(systemName: "chevron.backward.circle.fill").font(.system(size: 40))
+                }
+                .buttonStyle(PressableStyle())
+                .foregroundStyle(Theme.muted)
+                .accessibilityLabel("返回")
                 Label("准备", systemImage: "leaf.fill")
                     .font(.title3.weight(.bold))
                     .foregroundStyle(Theme.jade)
@@ -329,6 +376,7 @@ struct GameHUD: View {
                 }
                 .buttonStyle(PressableStyle())
                 .foregroundStyle(Theme.muted)
+                .accessibilityLabel("暂停")
             }
 
             if let hearts = session.hearts, let maxHearts = session.tuning.hearts {
@@ -683,7 +731,10 @@ struct UltimateOverlay: View {
 
 struct PauseOverlay: View {
     let onResume: () -> Void
-    let onExit: () -> Void
+    /// 结束本局并看结算页
+    let onFinish: () -> Void
+    /// 直接退出游戏回到上一页；离开界面时照常结算（GameSession.end）
+    let onQuit: () -> Void
 
     var body: some View {
         ZStack {
@@ -695,9 +746,15 @@ struct PauseOverlay: View {
                         .background(Capsule().fill(Theme.jade)).foregroundStyle(.white)
                 }
                 .buttonStyle(PressableStyle())
-                Button(action: onExit) {
+                Button(action: onFinish) {
                     Text("结束并结算").font(.title2.weight(.semibold)).frame(width: 240, height: 60)
                         .background(Capsule().stroke(Theme.muted, lineWidth: 2)).foregroundStyle(Theme.muted)
+                }
+                .buttonStyle(PressableStyle())
+                Button(action: onQuit) {
+                    Label("退出游戏", systemImage: "rectangle.portrait.and.arrow.right")
+                        .font(.title3.weight(.semibold)).frame(width: 240, height: 52)
+                        .foregroundStyle(Theme.wrong)
                 }
                 .buttonStyle(PressableStyle())
             }

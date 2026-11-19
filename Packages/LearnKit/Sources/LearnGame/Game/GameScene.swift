@@ -48,6 +48,26 @@ extension GameSceneDelegate {
 /// 怪物和字灵的具体表现都交给各自的种类配置（外观、走法、攻击策略），这里不区分种类
 final class GameScene: SKScene {
     static let designSize = CGSize(width: 1200, height: 600)
+    /// 横屏高度不够时战场可以比 2:1 宽，多出的宽度只接在右边（怪物来的方向），最多这么宽（场景坐标）；
+    /// 左边从地图原有的边缘开始，不拼接。草坪、怪物和所有玩法坐标仍在 designSize 里
+    static let rightOverscan: CGFloat = 1200
+    /// 战场最宽时画面覆盖的场景范围，全屏特效按它铺满
+    static var visibleBounds: CGRect {
+        CGRect(x: 0, y: 0, width: designSize.width + rightOverscan, height: designSize.height)
+    }
+
+    /// 战场在可用空间里的尺寸：比 2:1 窄（竖屏）时宽度占满、按 2:1 定高；
+    /// 比 2:1 宽（横屏）时高度占满，宽度最多到带两侧延伸的比例，再宽才左右留边
+    static func battlefieldSize(fitting available: CGSize) -> CGSize {
+        guard available.width.isFinite || available.height.isFinite else { return designSize }
+        let narrowest = designSize.width / designSize.height
+        let widest = visibleBounds.width / visibleBounds.height
+        let width = max(0, available.width), height = max(0, available.height)
+        guard height.isFinite, width / max(height, 1) > narrowest else {
+            return CGSize(width: width, height: width / narrowest)
+        }
+        return CGSize(width: min(width, height * widest), height: height)
+    }
 
     weak var gameDelegate: GameSceneDelegate?
 
@@ -84,6 +104,10 @@ final class GameScene: SKScene {
     private var laneHeight: CGFloat { lawn.rowHeight }
     /// 拖动植物卡时标出落点格
     private var plantPreview: SKShapeNode?
+    /// 视图比场景宽或高时拉远，整个 designSize 都在画面里；比场景宽时左边对齐场景左缘，多出的部分在右边
+    private let viewCamera = SKCameraNode()
+    /// 画面右缘在场景里的横坐标：视图正好 2:1 时是 1200，横屏加宽时更大
+    private var visibleMaxX = GameScene.designSize.width
     /// 连续答对几题（答错清零）：萤火精灵的光团跟着变亮
     private(set) var answerStreak = 0
 
@@ -94,8 +118,12 @@ final class GameScene: SKScene {
         self.loadout = loadout
         lawn = Lawn(lanes: tuning.lanes)
         super.init(size: Self.designSize)
-        scaleMode = .aspectFit
+        // aspectFit 留出的边 SpriteKit 只画黑色，不画场景外的节点；改由相机拉远，让两侧延伸的背景露出来
+        scaleMode = .aspectFill
         backgroundColor = theme.skyBottom.color
+        viewCamera.position = CGPoint(x: size.width / 2, y: size.height / 2)
+        addChild(viewCamera)
+        camera = viewCamera
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
@@ -113,6 +141,7 @@ final class GameScene: SKScene {
         DiagLog.log("scene didMove(to:) scene=\(DiagLog.id(self)) view=\(DiagLog.id(view)) built=\(built)")
         guard !built else { return }
         built = true
+        fitCamera(in: view)
         buildBackground()
         ThunderArtwork.preload()
     }
@@ -128,6 +157,7 @@ final class GameScene: SKScene {
         Backdrop(theme: theme, size: size, skyHeight: size.height - Lawn.frame.maxY, lawn: lawn, baseWidth: 64, map: map)
             .build(in: self)
         backgroundNodes = children.filter { !existing.contains(ObjectIdentifier($0)) }
+        fitRightArt()
     }
 
     func setMap(_ map: BattleMap) {
@@ -141,12 +171,36 @@ final class GameScene: SKScene {
     static func scenePoint(at location: CGPoint, in frame: CGRect) -> CGPoint? {
         guard frame.width > 0, frame.height > 0, frame.contains(location) else { return nil }
         let scale = min(frame.width / designSize.width, frame.height / designSize.height)
-        let offsetX = (frame.width - designSize.width * scale) / 2
+        // 战场比 2:1 宽时左边对齐、右边是延伸的背景；比 2:1 高时上下居中
         let offsetY = (frame.height - designSize.height * scale) / 2
         // SwiftUI 的 y 向下，SpriteKit 的 y 向上
         return CGPoint(
-            x: (location.x - frame.minX - offsetX) / scale,
+            x: (location.x - frame.minX) / scale,
             y: (frame.maxY - location.y - offsetY) / scale)
+    }
+
+    /// aspectFill 会裁掉比视图多出的那一边，相机按比例拉远补回来，完整显示 designSize（和 scenePoint 的换算一致）：
+    /// 视图更宽时按高度缩放、左缘对齐，右边露出场景外的背景；视图更高时按宽度缩放、上下居中
+    private func fitCamera(in view: SKView?) {
+        guard let bounds = view?.bounds.size, bounds.width > 0, bounds.height > 0 else { return }
+        let viewAspect = bounds.width / bounds.height
+        let sceneAspect = size.width / size.height
+        let scale = max(viewAspect / sceneAspect, sceneAspect / viewAspect)
+        let center = CGPoint(x: viewAspect > sceneAspect ? size.width * scale / 2 : size.width / 2, y: size.height / 2)
+        if viewCamera.xScale != scale { viewCamera.setScale(scale) }
+        if viewCamera.position != center { viewCamera.position = center }
+        let maxX = viewAspect > sceneAspect ? size.width * scale : size.width
+        if visibleMaxX != maxX {
+            visibleMaxX = maxX
+            fitRightArt()
+        }
+    }
+
+    /// 会拉伸的右侧延伸图（庭院）刚好铺到画面右缘；画面不比原画宽时保持原画比例
+    private func fitRightArt() {
+        guard let art = BattleMapArtwork.rightExtension(map, width: Self.rightOverscan), art.stretches,
+              let node = childNode(withName: Backdrop.rightArtName(map)) as? SKSpriteNode else { return }
+        node.size.width = max(art.naturalWidth, visibleMaxX - art.minX)
     }
 
     // MARK: - 主循环
@@ -155,6 +209,7 @@ final class GameScene: SKScene {
     private(set) var clock: TimeInterval = 0
 
     override func update(_ currentTime: TimeInterval) {
+        fitCamera(in: view)
         let dt = lastUpdate == 0 ? 0 : min(currentTime - lastUpdate, 0.1)
         lastUpdate = currentTime
         if currentTime - lastDiagStats >= 5 {

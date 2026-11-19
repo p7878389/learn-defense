@@ -170,11 +170,21 @@ enum UnitSprites {
 
     /// 植物卡、拖动预览、收藏馆卡片用的静态形象：穿着皮肤的第一帧，缺素材时是原版
     static func portrait(of kind: DefenderKind, skin: CharacterSkin?) -> CGImage? {
-        frames(named: characterName("plant-\(kind.id)", skin: skin)).first?.cgImage()
+        portrait(named: characterName("plant-\(kind.id)", skin: skin))
     }
 
     static func portrait(of kind: EnemyKind, skin: CharacterSkin?) -> CGImage? {
-        frames(named: characterName("zombie-\(kind.id)", skin: kind.id == "blob" ? skin : nil)).first?.cgImage()
+        portrait(named: characterName("zombie-\(kind.id)", skin: kind.id == "blob" ? skin : nil))
+    }
+
+    /// 裁切纹理每次 cgImage() 都会重新绘制一张图；卡牌栏和拖动预览随拖动频繁刷新，按资源名缓存
+    private static var cachedPortraits: [String: CGImage] = [:]
+
+    private static func portrait(named name: String) -> CGImage? {
+        if let cached = cachedPortraits[name] { return cached }
+        guard let image = frames(named: name).first?.cgImage() else { return nil }
+        cachedPortraits[name] = image
+        return image
     }
 
     static func enemy(_ kind: EnemyKind, skin: CharacterSkin? = nil) -> SpriteRig? {
