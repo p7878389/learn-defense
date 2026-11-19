@@ -90,12 +90,14 @@ final class ThunderStrikeEffect: SKNode {
     init(victims: [EnemyNode], size: CGSize) {
         self.size = size
         defeats = victims.map { ($0.enemyID, $0.center) }
-        shade = SKSpriteNode(color: SKColor(red: 0.015, green: 0.06, blue: 0.17, alpha: 1), size: size)
+        // 暗幕也盖住横屏时右边露出的背景
+        shade = SKSpriteNode(color: SKColor(red: 0.015, green: 0.06, blue: 0.17, alpha: 1),
+                             size: CGSize(width: size.width + GameScene.rightOverscan, height: size.height))
         super.init()
         name = "ultimateThunder"
         zPosition = 85
         shade.name = "thunderShade"
-        shade.position = CGPoint(x: size.width / 2, y: size.height / 2)
+        shade.position = CGPoint(x: (size.width + GameScene.rightOverscan) / 2, y: size.height / 2)
         addChild(shade)
         buildClouds()
         let nearest = victims.map(\.center.x).min() ?? 0

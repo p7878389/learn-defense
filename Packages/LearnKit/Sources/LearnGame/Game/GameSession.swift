@@ -390,8 +390,8 @@ final class GameSession: ObservableObject {
             }
             return false
         }
+        // 种下成功只有画面上的「种下了」，不再语音播报
         sun -= kind.sunCost
-        speech.speak(SpeechText.Line.planted(kind.name), interrupt: true)
         return true
     }
 

@@ -36,6 +36,7 @@ struct Backdrop {
             courtyard.anchorPoint = .zero
             courtyard.zPosition = -30
             scene.addChild(courtyard)
+            addRightArt(to: scene)
             return
         }
         addSky(to: scene)
@@ -45,6 +46,21 @@ struct Backdrop {
         addDrifters(to: scene)
         addFlutter(to: scene)
         addBase(to: scene)
+    }
+
+    static func rightArtName(_ map: BattleMap) -> String { "\(map.rawValue)-right" }
+
+    /// 横屏战场加宽时，场景右边外侧也会露出来，接上地图背景，免得留出空白。
+    /// 会拉伸的延伸图先按原画宽度放好，由场景按露出的宽度调整（GameScene.fitRightArt）
+    private func addRightArt(to scene: SKNode) {
+        guard let art = BattleMapArtwork.rightExtension(map, width: GameScene.rightOverscan) else { return }
+        let node = SKSpriteNode(texture: art.texture, size: CGSize(width: art.naturalWidth, height: size.height))
+        node.name = Self.rightArtName(map)
+        node.anchorPoint = .zero
+        node.position = CGPoint(x: art.minX, y: 0)
+        // 拉伸的延伸图从场景里面开始，盖在原图上
+        node.zPosition = -29.5
+        scene.addChild(node)
     }
 
     // MARK: - 天空

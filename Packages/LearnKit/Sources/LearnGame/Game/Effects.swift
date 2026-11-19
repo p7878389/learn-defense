@@ -172,8 +172,10 @@ struct ScreenFlashEffect: VisualEffect {
 
     func play(at point: CGPoint, in layer: SKNode) {
         guard let scene = layer.scene else { return }
-        let flash = SKSpriteNode(color: color, size: scene.size)
-        flash.position = CGPoint(x: scene.size.width / 2, y: scene.size.height / 2)
+        // 横屏战场右边露出的背景也一起闪
+        let visible = GameScene.visibleBounds
+        let flash = SKSpriteNode(color: color, size: visible.size)
+        flash.position = CGPoint(x: visible.midX, y: visible.midY)
         flash.zPosition = 100
         flash.alpha = alpha
         layer.addChild(flash)
@@ -202,9 +204,10 @@ struct BossWarningEffect {
         }
 
         // 这条路亮起警示带，一明一暗三次
-        let strip = SKSpriteNode(color: Palette.hurt, size: CGSize(width: size.width, height: laneHeight * 0.9))
+        let visible = GameScene.visibleBounds
+        let strip = SKSpriteNode(color: Palette.hurt, size: CGSize(width: visible.width, height: laneHeight * 0.9))
         strip.name = Self.laneName
-        strip.position = CGPoint(x: center.x, y: laneY)
+        strip.position = CGPoint(x: visible.midX, y: laneY)
         strip.zPosition = 5
         strip.alpha = 0
         scene.addChild(strip)
