@@ -15,6 +15,43 @@ struct UnitSpriteTests {
         #expect(UnitSprites.node(named: "missing-resource", fitting: CGSize(width: 80, height: 80)) == nil)
     }
 
+    @Test func combatPreloadCoversActionsAndSharesTheUsedTextures() throws {
+        let warmed = UnitSprites.preloadCombat(defenders: [.inkling, .stroke], enemies: [.blob], loadout: .standard)
+        for name in ["plant-inkling", "plant-stroke-attack", "fume", "pea", "pea-hit", "zombie-blob-die", "zombie-head"] {
+            let prepared = try #require(warmed[name]?.first, "未预热 \(name)")
+            let used = try #require(UnitSprites.frames(named: name).first)
+            #expect(prepared === used, "战斗必须直接复用预热后的纹理")
+        }
+        #expect(!warmed.keys.contains("zombie-knight"), "本局没有的首领不应提前加载")
+    }
+
+    @Test func combatPreloadUsesEquippedSkinsAndTheirFallbacks() throws {
+        let skinned = UnitSprites.preloadCombat(defenders: [.inkling], enemies: [.blob],
+                                               loadout: Loadout(defenderSkins: ["inkling": .pixel], enemySkin: .party))
+        #expect(skinned["skin-pixel-plant-inkling"]?.isEmpty == false)
+        #expect(skinned["skin-party-zombie-blob-die"]?.isEmpty == false)
+        let fallback = UnitSprites.preloadCombat(defenders: [.inkling], enemies: [.blob],
+                                                loadout: Loadout(defenderSkins: ["inkling": .firefly], enemySkin: .bamboo))
+        #expect(fallback["plant-inkling"]?.isEmpty == false)
+        #expect(fallback["zombie-blob-die"]?.isEmpty == false)
+        #expect(fallback["skin-bamboo-zombie-blob"] == nil)
+    }
+
+    @Test func combatPreloadIncludesTheArmorFallbackAttack() throws {
+        let warmed = UnitSprites.preloadCombat(defenders: [], enemies: [.armored], loadout: .standard)
+        let attack = try #require(warmed["zombie-blob-attack"]?.first, "掉防具后的普通僵尸啃咬也要提前加载")
+        #expect(attack === UnitSprites.frames(named: "zombie-blob-attack").first)
+    }
+
+    @Test func combatPreloadPreservesVectorFallbackForCustomUnits() {
+        let defender = DefenderKind(id: "custom-preload", name: "新字灵", attack: .single(damage: 1),
+                                    look: .init(body: .round, color: .jade), projectile: .init(shape: .heart, color: .coral))
+        let enemy = EnemyKind(id: "custom-preload", name: "新怪物", look: .init(body: .blob, color: .ink))
+        #expect(UnitSprites.preloadCombat(defenders: [defender], enemies: [enemy], loadout: .standard).isEmpty)
+        #expect(DefenderNode(kind: defender, radius: 34).childNode(withName: "//unitSprite") == nil)
+        #expect(EnemyNode(id: 1, kind: enemy, sign: "书", lane: 0, scale: 1).childNode(withName: "//unitSprite") == nil)
+    }
+
     @Test func newspaperBackgroundIsTransparent() throws {
         let texture = try #require(UnitSprites.frames(named: "zombie-drowsy").first)
         let image = texture.cgImage()

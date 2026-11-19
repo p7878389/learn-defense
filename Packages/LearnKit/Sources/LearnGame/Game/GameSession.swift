@@ -154,7 +154,11 @@ final class GameSession: ObservableObject {
             loadout: loadout, map: map)
         scene.gameDelegate = self
         scene.setPreparing(true)
-        if isEmpty { scene.setGamePaused(true) }
+        if isEmpty {
+            scene.setGamePaused(true)
+        } else {
+            UnitSprites.preloadCombat(defenders: tuning.plantable, enemies: spawnPlan, loadout: loadout)
+        }
     }
 
     /// 准备阶段只更换背景，战斗开始后锁定本局地图。
@@ -482,7 +486,7 @@ final class GameSession: ObservableObject {
         current = nil
         targetID = nil
         questionIDs = []
-        scene.setGamePaused(true)
+        scene.setGamePaused(true, keepingAnimations: true)
         progress.save()
         speech.stop()
     }
@@ -504,6 +508,7 @@ final class GameSession: ObservableObject {
         round += 1
         roundQuestions = initialQuestions + (round - 1) * rules.questionIncrement[config.difficulty]
         spawnPlan = tuning.waves.kinds(questions: roundQuestions, using: &rng)
+        UnitSprites.preloadCombat(defenders: tuning.plantable, enemies: spawnPlan, loadout: loadout)
         totalEnemies = spawnPlan.count
         spawned = 0
         resolved = 0

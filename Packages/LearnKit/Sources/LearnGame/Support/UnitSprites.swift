@@ -100,6 +100,37 @@ enum UnitSprites {
         return frames
     }
 
+    /// 准备阶段预热本回合的角色状态、子弹和命中图，战斗中直接复用同一份纹理。
+    @discardableResult
+    static func preloadCombat(defenders: [DefenderKind], enemies: [EnemyKind], loadout: Loadout) -> [String: [SKTexture]] {
+        var names: Set<String> = []
+        func addCharacter(_ name: String) {
+            names.insert(name)
+            names.formUnion(clips[name]?.states?.values.map { $0 } ?? [])
+        }
+        for kind in defenders {
+            addCharacter(characterName("plant-\(kind.id)", skin: loadout.defenderSkins[kind.id]))
+            let projectile = loadout.projectile(for: kind)
+            if let name = projectileName(projectile) {
+                names.insert(name)
+                if let hit = clips[name]?.states?["hit"] { names.insert(hit) }
+            }
+            if projectile.shape == .petal { names.insert("fume") }
+        }
+        for kind in enemies {
+            addCharacter(characterName("zombie-\(kind.id)", skin: kind.id == "blob" ? loadout.enemySkin : nil))
+        }
+        var warmed: [String: [SKTexture]] = [:]
+        for name in names.sorted() {
+            let textures = frames(named: name)
+            if !textures.isEmpty { warmed[name] = textures }
+        }
+        let textures = warmed.values.flatMap { $0 }
+        if !textures.isEmpty { SKTexture.preload(textures) {} }
+        DiagLog.log("combat textures preloaded clips=\(warmed.count) frames=\(textures.count)")
+        return warmed
+    }
+
     /// 读 Sprites 目录下的一张透明 WebP（file 不带扩展名），需要时水平翻转
     static func webp(_ file: String, mirrored: Bool) -> CGImage? {
         guard let folder = Bundle.module.url(forResource: "Sprites", withExtension: nil),
