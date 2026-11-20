@@ -72,7 +72,9 @@ struct VoiceSettingsView: View {
                 : menuItems(selection: $draft.englishSpeaker, voices: TTSSettings.englishVoices)
         }
         .confirmationDialog(
-            "清除语音合成账号和已生成的语音？之后只用系统语音朗读。",
+            library.canDownload
+                ? "清除语音合成账号和已生成的语音？之后用云端语音朗读，没有时用系统语音。"
+                : "清除语音合成账号和已生成的语音？之后只用系统语音朗读。",
             isPresented: $confirmingClear,
             titleVisibility: .visible
         ) {
@@ -121,11 +123,24 @@ struct VoiceSettingsView: View {
     }
 
     private var statusCard: some View {
-        SettingsCard(title: "📊 生成状态") {
-            if library.canGenerate {
+        SettingsCard(title: "📊 语音准备状态") {
+            if library.preparingRemote {
+                ProgressView("正在下载并准备语音包，完成后可离线播放…")
+                    .font(.footnote)
+            }
+            if library.canGenerate || library.canDownload {
                 HStack(spacing: 12) {
-                    statTile(value: library.cachedCount(), title: "已生成", tint: GrowthColors.orangeDark, fill: Theme.accent.opacity(0.1))
+                    if library.canDownload {
+                        statTile(value: library.remoteDownloaded, title: "云端已下载", tint: Theme.jade, fill: Theme.jade.opacity(0.1))
+                    }
+                    if library.canGenerate {
+                        statTile(value: library.cachedCount(), title: "已生成", tint: GrowthColors.orangeDark, fill: Theme.accent.opacity(0.1))
+                    }
                     statTile(value: library.pendingCount, title: "排队中", tint: GrowthColors.calm, fill: GrowthColors.sky.opacity(0.6))
+                }
+                if library.canDownload, library.remoteTotal > 0 {
+                    Text("云端共 \(library.remoteTotal) 句，下载后离线也能播放。配置了自己的账号和音色时，优先用自己的音色生成。")
+                        .font(.footnote).foregroundStyle(Theme.muted)
                 }
             } else {
                 Text("未配置，全部使用系统语音（题库自带的语音仍会播放）")
@@ -133,6 +148,10 @@ struct VoiceSettingsView: View {
             }
             if let error = library.lastError {
                 Label(error, systemImage: "exclamationmark.triangle.fill").font(.callout).foregroundStyle(Theme.wrong)
+                if library.canDownload {
+                    Button("重试下载语音包") { library.retryRemote() }
+                        .disabled(library.preparingRemote)
+                }
             }
             if let message {
                 Label(message, systemImage: "info.circle.fill").font(.callout).foregroundStyle(Theme.muted)

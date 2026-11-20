@@ -3,9 +3,9 @@ import Foundation
 
 /// 朗读文本：音频文件的命名规则、题库里要读的全部文本、游戏里固定的提示语。
 ///
-/// 预先生成的语音（内置、题库自带、运行时缓存）都按「文本」找，不按题目 id 找：
-/// 文件名是规范化文本的 SHA-256 前 32 位十六进制，加 .mp3。
-/// 题库存在 JSON 还是数据库里、题目怎么编号，都不影响语音能否命中。
+/// 语音都按「文本」找，不按题目 id 找，题库存在 JSON 还是数据库里、题目怎么编号，都不影响语音能否命中：
+/// - 预先生成的语音（OSS、内置、题库自带）按目录里的 manifest.json 找，文件按业务分类、以文本命名（见 SpeechCatalog）；
+/// - 运行时缓存和旧版预生成目录的文件名是 key：规范化文本的 SHA-256 前 32 位十六进制，加 .mp3。
 public enum SpeechText {
     public static let audioExtension = "mp3"
 
@@ -44,10 +44,17 @@ public enum SpeechText {
 
     /// 游戏里固定的提示语，以及植物、道具的名字
     public static var gameLines: [String] {
-        unique(Line.all
-            + UnitCatalog.items.map(\.name)
-            + Line.bossCandidates.map { Line.bossArrive($0.name) }
-            + [ItemKind.inkStorm, .rainbow].map { Line.ultimateCast($0.name) })
+        unique(gameLineGroups.flatMap(\.texts))
+    }
+
+    /// 按分类列出游戏固定朗读的句子；预先生成语音时每类放一个目录
+    public static var gameLineGroups: [(folder: String, texts: [String])] {
+        [
+            ("提示语", Line.all),
+            ("植物道具", UnitCatalog.items.map(\.name)),
+            ("首领出场", Line.bossCandidates.map { Line.bossArrive($0.name) }),
+            ("大招", [ItemKind.inkStorm, .rainbow].map { Line.ultimateCast($0.name) }),
+        ]
     }
 
     /// 纯英文：有字母，且所有字母都是拉丁字母（含带重音的）。标点、数字不算

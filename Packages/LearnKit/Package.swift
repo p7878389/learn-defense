@@ -13,6 +13,9 @@ let package = Package(
         .library(name: "LearnGame", targets: ["LearnGame"]),
         .executable(name: "speech-pack", targets: ["SpeechPack"]),
     ],
+    dependencies: [
+        .package(url: "https://github.com/weichsel/ZIPFoundation.git", exact: "0.9.20"),
+    ],
     targets: [
         .target(
             name: "LearnCore",
@@ -21,9 +24,9 @@ let package = Package(
         ),
         .target(
             name: "LearnGame",
-            dependencies: ["LearnCore"],
+            dependencies: ["LearnCore", .product(name: "ZIPFoundation", package: "ZIPFoundation")],
             // 3D 图片与植物/僵尸序列帧分别保存；来源及使用范围见各资源目录
-            // Speech：预先生成的语音（<文本key>.mp3），由 speech-pack 生成
+            // Speech：预先生成的语音（manifest.json + 按分类、以文本命名的 mp3），由 speech-pack 生成
             resources: [.copy("Resources/Pictures"), .copy("Resources/Sprites"), .copy("Resources/Speech")]
         ),
         .executableTarget(
