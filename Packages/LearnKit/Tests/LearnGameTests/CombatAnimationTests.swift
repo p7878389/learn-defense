@@ -18,14 +18,14 @@ private final class SceneClock {
     private(set) var frame = 0
     let texture: MTLTexture
 
-    init(size: CGSize = CGSize(width: 900, height: 360)) throws {
+    init(size: CGSize = CGSize(width: 900, height: 360), scene: SKScene? = nil) throws {
         let device = try #require(MTLCreateSystemDefaultDevice())
-        scene = SKScene(size: size)
-        scene.isPaused = false
+        self.scene = scene ?? SKScene(size: size)
+        self.scene.isPaused = false
         renderer = SKRenderer(device: device)
-        renderer.scene = scene
+        renderer.scene = self.scene
         let descriptor = MTLTextureDescriptor.texture2DDescriptor(
-            pixelFormat: .bgra8Unorm, width: Int(size.width), height: Int(size.height), mipmapped: false)
+            pixelFormat: .bgra8Unorm, width: Int(self.scene.size.width), height: Int(self.scene.size.height), mipmapped: false)
         descriptor.usage = [.renderTarget, .shaderRead]
         texture = try #require(device.makeTexture(descriptor: descriptor))
         queue = try #require(device.makeCommandQueue())
@@ -51,6 +51,12 @@ private final class SceneClock {
     func setBackground(red: Double, green: Double, blue: Double) {
         scene.backgroundColor = SKColor(red: red, green: green, blue: blue, alpha: 1)
         pass.colorAttachments[0].clearColor = MTLClearColor(red: red, green: green, blue: blue, alpha: 1)
+    }
+
+    /// 跳过中间帧，复现主线程卡住后下一帧带着较大的时间间隔恢复。
+    func advanceWithFrameGap(seconds: Double) throws {
+        frame += max(0, Int((seconds * 60).rounded()) - 1)
+        try advance(seconds: 0)
     }
 }
 
@@ -269,6 +275,73 @@ struct CombatAnimationTests {
         // 没有命中图的外观（爱心皮肤）不画
         #expect(UnitSprites.impact(.init(shape: .heart, color: .coral)) == nil)
         #expect(UnitSprites.impact(DefenderKind.starling.projectile) != nil)
+    }
+
+    @Test func peaIsVisibleFromLaunchAndSurvivesAFrameHitch() throws {
+        let clock = try SceneClock()
+        var impacts = 0
+        ShotAttack(count: 1).perform(from: CGPoint(x: 50, y: 100), to: CGPoint(x: 210, y: 100),
+                                    projectile: DefenderKind.inkling.projectile, in: clock.scene) { _ in impacts += 1 }
+        let bullet = try #require(clock.scene.children.first as? SKSpriteNode)
+        try clock.advance(seconds: 0)
+        #expect(bullet.alpha > 0, "第一帧就显示子弹，不能先画一帧全透明")
+        var pixels = [UInt8](repeating: 0, count: 900 * 360 * 4)
+        pixels.withUnsafeMutableBytes { bytes in
+            clock.texture.getBytes(bytes.baseAddress!, bytesPerRow: 900 * 4,
+                                   from: MTLRegionMake2D(0, 0, 900, 360), mipmapLevel: 0)
+        }
+        #expect(stride(from: 0, to: pixels.count, by: 4).contains {
+            pixels[$0] > 32 || pixels[$0 + 1] > 32 || pixels[$0 + 2] > 32
+        }, "空场景的首帧应实际绘出子弹像素")
+        try clock.advanceWithFrameGap(seconds: 0.2)
+        #expect(bullet.parent === clock.scene, "200 毫秒卡顿后仍有可见的飞行过程")
+        #expect(impacts == 0)
+        try clock.advance(seconds: 0.9)
+        #expect(impacts == 1)
+        #expect(clock.scene.children.isEmpty)
+    }
+
+    @Test func volleyKeepsLaterShotsHiddenUntilTheirLaunch() throws {
+        let clock = try SceneClock()
+        var impacts: [Bool] = []
+        ShotAttack(count: 2).perform(from: CGPoint(x: 50, y: 100), to: CGPoint(x: 650, y: 100),
+                                    projectile: DefenderKind.twin.projectile, in: clock.scene) { impacts.append($0) }
+        let bullets = clock.scene.children
+        try clock.advance(seconds: 0)
+        #expect(bullets[0].alpha > 0)
+        #expect(bullets[1].alpha == 0)
+        try clock.advance(seconds: 0.1)
+        #expect(bullets[1].alpha == 0, "等待连发间隔时不能提前显示第二颗")
+        try clock.advance(seconds: 0.06)
+        #expect(bullets[1].alpha > 0)
+        try clock.advance(seconds: 1)
+        #expect(impacts == [false, true])
+        #expect(clock.scene.children.isEmpty)
+    }
+
+    @Test func roundRestLetsTheLastEnemyFinishItsDeathAnimation() throws {
+        let library = ContentLibrary.load(userDirectory: nil)
+        let pack = try #require(library.packs.first { $0.grade == .g3 })
+        let session = GameSession(config: GameConfig(profileID: UUID(), grade: .g3, packIDs: [pack.id],
+                                                     selection: .all, difficulty: .easy),
+                                  library: library, progress: ProgressStore(), speech: Speech())
+        #expect(session.scene.plant(.inkling, in: DefenderCell(lane: 0, column: 0)))
+        session.startBattle()
+        var wave: [EnemySpawn] = []
+        while let spec = session.nextEnemy() { wave.append(spec) }
+        let last = try #require(wave.last)
+        for spec in wave.dropLast() { session.enemyDefeated(spec.id, at: .zero) }
+        let enemy = session.scene.spawn(last, lane: 0, x: 500)
+        let clock = try SceneClock(scene: session.scene)
+        for _ in 0..<last.kind.hp { #expect(session.scene.fire(at: last.id) != nil) }
+        try clock.advance(seconds: 0.9)
+        #expect(session.phase == .resting)
+        #expect(session.scene.gamePaused)
+        let gameplayTime = session.scene.clock
+        try clock.advance(seconds: 2)
+        #expect(session.scene.clock == gameplayTime, "休息时玩法时钟仍然冻结")
+        #expect(enemy.parent == nil, "回合最后一只怪物也应播完退场并移除")
+        #expect(session.scene.childNode(withName: "impactSplat") == nil)
     }
 
     @Test func fumeBeamHitsOnceAtTheSameMomentAndCleansUp() throws {

@@ -28,14 +28,17 @@ struct ShotAttack: AttackStrategy {
     func perform(from origin: CGPoint, to target: CGPoint, projectile: ProjectileLook, in layer: SKNode,
                  onImpact: @escaping (Bool) -> Void) {
         let n = max(1, count)
-        let duration = TimeInterval(max(0.15, min(0.45, (target.x - origin.x) / 2400)))
+        // 留出从答题区看向战场的时间，短距离也不能一闪而过。
+        let distance = hypot(target.x - origin.x, target.y - origin.y)
+        let duration = TimeInterval(max(0.35, min(0.8, distance / 1200)))
         for i in 0..<n {
             let bullet: SKNode = UnitSprites.projectile(projectile) ?? ProjectileArt.make(projectile)
             // 连发时上下错开一点，看得出是几颗
             let offset = (CGFloat(i) - CGFloat(n - 1) / 2) * 12
             bullet.position = CGPoint(x: origin.x, y: origin.y + offset)
             bullet.zPosition = 50
-            bullet.alpha = 0
+            // 第一颗首帧就可见，后续连发仍等到各自发射时才显示。
+            bullet.alpha = i == 0 ? 1 : 0
             layer.addChild(bullet)
             let flight = hypot(target.x - bullet.position.x, target.y - bullet.position.y) / duration
             let trail = IceCombatEffects.supports(projectile) ? IceCombatEffects.trail(on: bullet, speed: flight) : nil
@@ -44,12 +47,12 @@ struct ShotAttack: AttackStrategy {
             bullet.run(.sequence([
                 .wait(forDuration: interval * TimeInterval(i)),
                 .run { [weak bullet, weak layer] in
+                    bullet?.alpha = 1
                     if let trail, let bullet, let layer {
                         trail.particleBirthRate = 45
                         IceCombatEffects.launch(at: bullet.position, in: layer)
                     }
                 },
-                .fadeIn(withDuration: 0.02),
                 .move(to: target, duration: duration),
                 // 冰晶尾迹挂在子弹上，这里一起移除
                 .removeFromParent(),
