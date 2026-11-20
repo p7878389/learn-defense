@@ -1,8 +1,9 @@
 import Foundation
 import LearnCore
 
-// 用火山引擎（豆包语音）为题库预先生成语音：每句一个 <文本key>.mp3。
-// 文件名规则与 App 里查找时相同（SpeechText.key），所以只要文本一样就能命中。
+// 用火山引擎（豆包语音）为题库和游戏提示语预先生成语音。
+// 音频按业务分类存放、以文本命名（见 SpeechCatalog），根目录的 manifest.json 记录「文本 → 路径」，
+// App 按这份清单查找或从 OSS 下载。
 
 let usage = """
 用法：swift run speech-pack [选项]
@@ -10,10 +11,14 @@ let usage = """
   --packs <路径>   题库 JSON 文件或目录（可重复）
   --bundled        加上 App 内置题库
   --game-lines     加上游戏里固定的提示语、植物和道具名
-  --out <目录>     音频输出目录：
+  --out <目录>     语音根目录（manifest.json 和分类目录都放在这里）：
+                   上传 OSS 时放一个单独的目录，再整个同步到 OSS 的音色目录；
                    内置语音放 Sources/LearnGame/Resources/Speech；
-                   随题库分发时放题库 JSON 旁边的 Audio 目录（iPad 上为 Packs/Audio）
-  --list           只列出要朗读的文本和文件名，不调用接口
+                   随题库分发时放题库 JSON 旁边的 Audio 目录（iPad 上为 Packs/Audio），并加 --flat
+  --flat           不分目录，文件名用文本 key（Packs/Audio 的备份和恢复只认这种平铺的文件）
+  --reuse <目录>   旧版按 key 命名的音频目录（如 App 缓存导出的 <音色目录>）：
+                   有同一句话的音频就直接复制过来，不再调用接口
+  --list           只列出要朗读的文本和路径，不生成
   --force          已有的文件也重新生成
 
 账号和音色从环境变量读：
@@ -22,6 +27,7 @@ let usage = """
   VOLC_TTS_SPEAKER：中文、中英混合（默认 \(TTSSettings.defaultSpeaker)）
   VOLC_TTS_ENGLISH_SPEAKER：纯英文（默认 \(TTSSettings.defaultEnglishSpeaker)）
   VOLC_TTS_SPEECH_RATE（[-50, 100]，默认 \(TTSSettings.defaultSpeechRate)）
+只用 --reuse 复制、不需要生成时可以不填账号，但音色和语速要和旧音频一致：清单会记下这套音色。
 """
 
 func fail(_ message: String) -> Never {
@@ -33,8 +39,10 @@ var packPaths: [String] = []
 var includeBundled = false
 var includeGameLines = false
 var outDirectory: String?
+var reuseDirectory: String?
 var listOnly = false
 var force = false
+var flat = false
 
 var args = CommandLine.arguments.dropFirst()
 func value(after flag: String) -> String {
@@ -47,8 +55,10 @@ while let arg = args.popFirst() {
     case "--bundled": includeBundled = true
     case "--game-lines": includeGameLines = true
     case "--out": outDirectory = value(after: arg)
+    case "--reuse": reuseDirectory = value(after: arg)
     case "--list": listOnly = true
     case "--force": force = true
+    case "--flat": flat = true
     case "-h", "--help": print(usage); exit(0)
     default: fail("不认识的参数：\(arg)\n\n\(usage)")
     }
@@ -78,13 +88,14 @@ func loadPacks(at path: String) -> [ContentPack] {
 
 var packs = packPaths.flatMap(loadPacks)
 if includeBundled { packs = ContentLibrary.load(userDirectory: nil).packs + packs }
-var texts = SpeechText.texts(in: packs)
-if includeGameLines { texts = SpeechText.unique(SpeechText.gameLines + texts) }
-guard !texts.isEmpty else { fail("没有要朗读的文本：用 --packs、--bundled 或 --game-lines 指定\n\n\(usage)") }
+let clips = SpeechCatalog.clips(packs: packs, includeGameLines: includeGameLines).map { clip in
+    flat ? SpeechClip(text: clip.text, path: SpeechText.fileName(for: clip.text)) : clip
+}
+guard !clips.isEmpty else { fail("没有要朗读的文本：用 --packs、--bundled 或 --game-lines 指定\n\n\(usage)") }
 
 if listOnly {
-    for text in texts { print("\(SpeechText.fileName(for: text))\t\(text)") }
-    print("共 \(texts.count) 句，\(texts.reduce(0) { $0 + $1.count }) 字")
+    for clip in clips { print("\(clip.path)\t\(clip.text)") }
+    print("共 \(clips.count) 句，\(clips.reduce(0) { $0 + $1.text.count }) 字")
     exit(0)
 }
 
@@ -92,44 +103,99 @@ if listOnly {
 
 guard let outDirectory else { fail("缺少 --out\n\n\(usage)") }
 let settings = TTSSettings.fromEnvironment()
-guard settings.isUsable else { fail("缺少账号：设置 VOLC_TTS_API_KEY（或 VOLC_TTS_APP_ID + VOLC_TTS_ACCESS_TOKEN）") }
-
+let fileManager = FileManager.default
 let out = URL(fileURLWithPath: outDirectory, isDirectory: true)
-try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
+let reuse = reuseDirectory.map { URL(fileURLWithPath: $0, isDirectory: true) }
+try fileManager.createDirectory(at: out, withIntermediateDirectories: true)
 
-// manifest.json：文件名 → 文本，方便人工核对；与已有的合并
-let manifestURL = out.appendingPathComponent("manifest.json")
-var manifest = (try? JSONDecoder().decode([String: String].self, from: Data(contentsOf: manifestURL))) ?? [:]
+// 已有清单：音色必须一致，否则同一目录里会混进两种声音
+let manifestURL = out.appendingPathComponent(SpeechManifest.fileName)
+var manifest = SpeechManifest.load(from: manifestURL) ?? SpeechManifest(voice: settings.voiceTag)
+if manifest.voice != settings.voiceTag {
+    fail("""
+    \(out.path) 里的语音是另一套音色：\(manifest.voice)
+    当前设置：\(settings.voiceTag)
+    换音色请用新的输出目录（OSS 上对应新的音色目录）
+    """)
+}
+let previous = manifest.clips
 
-let client = VolcengineTTS(settings: settings)
+func saveManifest() throws {
+    try manifest.encoded().write(to: manifestURL, options: .atomic)
+}
+
+/// 生成之前先确认账号可用；只复制、不生成时不需要账号
+var client: VolcengineTTS?
+func synthesizer() -> VolcengineTTS {
+    if let client { return client }
+    guard settings.isUsable else { fail("有句子需要生成，但缺少账号：设置 VOLC_TTS_API_KEY（或 VOLC_TTS_APP_ID + VOLC_TTS_ACCESS_TOKEN）") }
+    let made = VolcengineTTS(settings: settings)
+    client = made
+    return made
+}
+
 var generated = 0
+var copied = 0
+var moved = 0
 var skipped = 0
 var failed: [(String, String)] = []
-print("音色 \(settings.voiceTag)，共 \(texts.count) 句 → \(out.path)")
+print("音色 \(settings.voiceTag)，共 \(clips.count) 句 → \(out.path)")
 
-for (index, text) in texts.enumerated() {
-    let name = SpeechText.fileName(for: text)
-    let file = out.appendingPathComponent(name)
-    manifest[name] = text
-    if !force, FileManager.default.fileExists(atPath: file.path) {
+for (index, clip) in clips.enumerated() {
+    let file = out.appendingPathComponent(clip.path)
+    let progress = "[\(index + 1)/\(clips.count)]"
+    if !force, fileManager.fileExists(atPath: file.path) {
+        manifest.clips[clip.text] = clip.path
         skipped += 1
         continue
     }
     do {
-        let audio = try await client.synthesize(text)
-        try audio.write(to: file, options: .atomic)
-        generated += 1
-        print("[\(index + 1)/\(texts.count)] \(name) \(text)")
+        try fileManager.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+        if fileManager.fileExists(atPath: file.path) { try fileManager.removeItem(at: file) }
+        // 题库调整后这句话换了位置：把原来的文件挪过来
+        if !force, let old = previous[clip.text], old != clip.path,
+           fileManager.fileExists(atPath: out.appendingPathComponent(old).path) {
+            try fileManager.moveItem(at: out.appendingPathComponent(old), to: file)
+            moved += 1
+            print("\(progress) 移动 \(old) → \(clip.path)")
+        } else if !force, let reuse,
+                  fileManager.fileExists(atPath: reuse.appendingPathComponent(SpeechText.fileName(for: clip.text)).path) {
+            try fileManager.copyItem(at: reuse.appendingPathComponent(SpeechText.fileName(for: clip.text)), to: file)
+            copied += 1
+        } else {
+            let audio = try await synthesizer().synthesize(clip.text)
+            try audio.write(to: file, options: .atomic)
+            generated += 1
+            print("\(progress) 生成 \(clip.path)")
+        }
+        manifest.clips[clip.text] = clip.path
+        // 生成很慢：每 50 句存一次清单，中途中断也不用从头来
+        if (generated + copied + moved) % 50 == 0 { try saveManifest() }
     } catch {
-        failed.append((text, error.localizedDescription))
-        print("[\(index + 1)/\(texts.count)] 失败：\(text)：\(error.localizedDescription)")
+        failed.append((clip.text, error.localizedDescription))
+        print("\(progress) 失败：\(clip.text)：\(error.localizedDescription)")
         if (error as? TTSError)?.needsSettingsChange == true { break }
     }
 }
 
-let encoder = JSONEncoder()
-encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-try encoder.encode(manifest).write(to: manifestURL, options: .atomic)
+// 清单里文件已经不在的条目去掉（其他题库的条目保留，同一个目录可以分几次生成）
+manifest.clips = manifest.clips.filter { fileManager.fileExists(atPath: out.appendingPathComponent($0.value).path) }
+try saveManifest()
 
-print("生成 \(generated) 句，跳过已有 \(skipped) 句，失败 \(failed.count) 句")
+// 不在清单里的音频：多半是题库删掉的句子，列出来让人决定要不要删
+let listed = Set(manifest.clips.values)
+let root = out.resolvingSymlinksInPath().path
+let orphans = (fileManager.enumerator(at: out, includingPropertiesForKeys: nil)?.compactMap { $0 as? URL } ?? [])
+    .filter { $0.pathExtension == SpeechText.audioExtension }
+    .map { String($0.resolvingSymlinksInPath().path.dropFirst(root.count + 1)) }
+    .filter { !listed.contains($0) }
+    .sorted()
+
+print("生成 \(generated) 句，复制 \(copied) 句，移动 \(moved) 句，跳过已有 \(skipped) 句，失败 \(failed.count) 句")
+print("清单 \(manifestURL.path)：\(manifest.clips.count) 句")
+if !orphans.isEmpty {
+    print("⚠️ 有 \(orphans.count) 个音频不在清单里（可以删掉）：")
+    for path in orphans.prefix(20) { print("  \(path)") }
+    if orphans.count > 20 { print("  …") }
+}
 if !failed.isEmpty { exit(2) }

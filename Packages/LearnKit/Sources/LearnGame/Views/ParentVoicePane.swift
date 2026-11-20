@@ -12,7 +12,7 @@ struct ParentVoicePane: View {
             SettingsCard(title: "🔊 当前朗读方式") {
                 HStack(spacing: 16) {
                     source(.system, title: "🤖 iPad 系统语音", detail: "离线可用")
-                    source(.doubao, title: "☁️ 豆包语音", detail: model.speechLibrary.settings?.isUsable == true ? "已配置 · 不可用时回退系统语音" : "配置账号后可生成语音")
+                    source(.doubao, title: "☁️ 豆包语音", detail: doubaoDetail)
                 }
                 HStack {
                     Text("高级设置可配置豆包账号与中英文音色。").foregroundStyle(Theme.muted)
@@ -39,6 +39,11 @@ struct ParentVoicePane: View {
         .onAppear { draft = model.readerPreferences }
         // 和设置页一样全屏显示，沿用家长专区的纸张底色和糖果卡片
         .growthCover(isPresented: $advanced) { VoiceSettingsView(library: model.speechLibrary) }
+    }
+
+    private var doubaoDetail: String {
+        if model.speechLibrary.settings?.isUsable == true { return "已配置 · 不可用时回退系统语音" }
+        return model.speechLibrary.hasRemote ? "使用云端语音 · 没有时回退系统语音" : "配置账号后可生成语音"
     }
 
     private func source(_ source: ReaderPreferences.Source, title: String, detail: String) -> some View {

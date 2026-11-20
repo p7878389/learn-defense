@@ -30,7 +30,7 @@ Packages/LearnKit/          全部代码
   Sources/LearnCore/        题库、出题、学习记录、难度（纯逻辑，可在 Mac 上直接测试）
     Resources/Packs/        内置题库 JSON
   Sources/LearnGame/        SwiftUI 界面 + SpriteKit 游戏场景
-    Resources/Speech/       内置的预生成语音（<文本key>.mp3）
+    Resources/Speech/       内置的预生成语音（manifest.json + 按分类、以文本命名的 mp3）
   Sources/SpeechPack/       speech-pack 命令行：用火山引擎为题库预先生成语音
   Tests/LearnCoreTests/     单元测试
 docs/题库格式.md             题库 JSON 格式说明
