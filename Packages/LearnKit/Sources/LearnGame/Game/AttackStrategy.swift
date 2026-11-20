@@ -11,10 +11,10 @@ protocol AttackStrategy {
 
 extension AttackStyle {
     @MainActor
-    func makeStrategy() -> any AttackStrategy {
+    func makeStrategy(skin: CharacterSkin? = nil) -> any AttackStrategy {
         switch self {
-        case .single: ShotAttack(count: 1)
-        case let .volley(count, _): ShotAttack(count: count)
+        case .single: ShotAttack(count: 1, skin: skin)
+        case let .volley(count, _): ShotAttack(count: count, skin: skin)
         case .beam: BeamAttack()
         }
     }
@@ -24,6 +24,7 @@ extension AttackStyle {
 struct ShotAttack: AttackStrategy {
     let count: Int
     var interval: TimeInterval = 0.12
+    var skin: CharacterSkin? = nil
 
     func perform(from origin: CGPoint, to target: CGPoint, projectile: ProjectileLook, in layer: SKNode,
                  onImpact: @escaping (Bool) -> Void) {
@@ -32,14 +33,19 @@ struct ShotAttack: AttackStrategy {
         let distance = hypot(target.x - origin.x, target.y - origin.y)
         let duration = TimeInterval(max(0.35, min(0.8, distance / 1200)))
         for i in 0..<n {
-            let bullet: SKNode = UnitSprites.projectile(projectile) ?? ProjectileArt.make(projectile)
+            // 独立装备的子弹外观优先；主题只替换原版豌豆，不改变冰冻等语义。
+            let themed = skin == .spellbook && projectile == DefenderKind.inkling.projectile
+                ? FXLibrary.effect(named: "SpellbookProjectile") : nil
+            let isThemed = themed != nil
+            let bullet: SKNode = themed ?? UnitSprites.projectile(projectile) ?? ProjectileArt.make(projectile)
+            if isThemed { bullet.name = "spellbookProjectile" }
             // 连发时上下错开一点，看得出是几颗
             let offset = (CGFloat(i) - CGFloat(n - 1) / 2) * 12
             bullet.position = CGPoint(x: origin.x, y: origin.y + offset)
             bullet.zPosition = 50
             // 第一颗首帧就可见，后续连发仍等到各自发射时才显示。
             bullet.alpha = i == 0 ? 1 : 0
-            layer.addChild(bullet)
+            if isThemed { FXLibrary.attach(bullet, to: layer) } else { layer.addChild(bullet) }
             let flight = hypot(target.x - bullet.position.x, target.y - bullet.position.y) / duration
             let trail = IceCombatEffects.supports(projectile) ? IceCombatEffects.trail(on: bullet, speed: flight) : nil
             let bulletID = DiagLog.id(bullet)
@@ -48,7 +54,9 @@ struct ShotAttack: AttackStrategy {
                 .wait(forDuration: interval * TimeInterval(i)),
                 .run { [weak bullet, weak layer] in
                     bullet?.alpha = 1
-                    if let trail, let bullet, let layer {
+                    if isThemed, let bullet, let layer {
+                        FXLibrary.playResource("SpellbookMuzzle", at: bullet.position, in: layer)
+                    } else if let trail, let bullet, let layer {
                         trail.particleBirthRate = 45
                         IceCombatEffects.launch(at: bullet.position, in: layer)
                     } else if projectile.shape == .orb, let bullet, let layer {
@@ -61,7 +69,9 @@ struct ShotAttack: AttackStrategy {
             ])) { [weak layer] in
                 DiagLog.log("shot- bullet=\(bulletID) layer=\(layer != nil)")
                 if let layer {
-                    if trail != nil {
+                    if isThemed {
+                        FXLibrary.playResource("SpellbookImpact", at: target, in: layer)
+                    } else if trail != nil {
                         IceCombatEffects.impact(at: target, in: layer)
                     } else {
                         Self.splat(projectile, at: target, in: layer)

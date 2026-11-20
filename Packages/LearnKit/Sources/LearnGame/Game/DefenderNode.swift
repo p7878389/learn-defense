@@ -17,6 +17,7 @@ final class DefenderNode: SKNode {
     private let skin: CharacterSkin?
     /// 序列帧外观；自定义字灵没有，用矢量绘制
     private let rig: SpriteRig?
+    private let sceneSkin: SpellbookSkin?
     private var sprite: SKSpriteNode? { rig?.sprite }
     /// 已经显示到第几档裂纹（0 完好，1、2 越来越破）
     private var crackStage = 0
@@ -24,16 +25,20 @@ final class DefenderNode: SKNode {
     init(kind: DefenderKind, radius: CGFloat, skin: CharacterSkin? = nil) {
         self.kind = kind
         self.radius = radius
-        attack = kind.attack?.makeStrategy()
+        let sceneSkin = SpellbookSkin(kind: kind, skin: skin, radius: radius)
+        self.sceneSkin = sceneSkin
+        attack = kind.attack?.makeStrategy(skin: sceneSkin == nil ? nil : skin)
         hitEffects = kind.effects.map { $0.makeStrategy() }
         guardian = kind.guardStyle?.makeStrategy()
         body = DefenderArt.body(kind.look, radius: radius)
-        let rig = UnitSprites.defender(kind, radius: radius, skin: skin)
+        let rig = sceneSkin == nil ? UnitSprites.defender(kind, radius: radius, skin: skin) : nil
         self.rig = rig
         // 换贴图的皮肤要真有这套素材才算穿上；只加特效的皮肤（萤火精灵）沿用原版贴图，有序列帧就保留
-        self.skin = rig?.base.hasPrefix("skin-") == true || (rig != nil && skin?.isEffectOnly == true) ? skin : nil
+        self.skin = sceneSkin != nil || rig?.base.hasPrefix("skin-") == true || (rig != nil && skin?.isEffectOnly == true) ? skin : nil
         super.init()
-        if let rig {
+        if let sceneSkin {
+            FXLibrary.attach(sceneSkin.root, to: self)
+        } else if let rig {
             addChild(rig.sprite)
         } else {
             addChild(body)
@@ -52,6 +57,7 @@ final class DefenderNode: SKNode {
             }
             return
         }
+        if sceneSkin != nil { return }
         run(.repeatForever(.sequence([
             .moveBy(x: 0, y: 4, duration: 0.8),
             .moveBy(x: 0, y: -4, duration: 0.8),
@@ -70,6 +76,11 @@ final class DefenderNode: SKNode {
 
     /// 子弹出发的位置：有序列帧时从嘴里出来（豌豆射手的嘴在右上方），否则从身体右侧
     var muzzle: CGPoint {
+        if let sceneSkin {
+            let local = sceneSkin.muzzle.convert(CGPoint.zero, to: self)
+            if let parent { return convert(local, to: parent) }
+            return CGPoint(x: position.x + local.x * xScale, y: position.y + local.y * yScale)
+        }
         guard let mouth = rig?.muzzle else {
             return CGPoint(x: position.x + radius * 0.9, y: position.y)
         }
@@ -78,6 +89,7 @@ final class DefenderNode: SKNode {
 
     /// 发射：有发射动画的（大喷菇）播一遍再回到待机。不缩放守卫，避免画面出现晃动
     func shoot() {
+        if let sceneSkin { sceneSkin.shoot(); return }
         if let skin, let rig {
             CharacterSkinEffects.shoot(in: self, skin: skin, at: rig.muzzle ?? .zero)
             rig.sprite.run(.sequence([
@@ -90,6 +102,7 @@ final class DefenderNode: SKNode {
     }
 
     func hurt() {
+        if let sceneSkin { sceneSkin.hurt(); return }
         if let sprite {
             sprite.run(.sequence([
                 .colorize(with: Palette.hurt, colorBlendFactor: 0.75, duration: 0),

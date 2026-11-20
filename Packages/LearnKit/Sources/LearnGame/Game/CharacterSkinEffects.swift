@@ -8,7 +8,7 @@ enum CharacterSkinEffects {
     static let fireflyOrbName = "fireflyOrb"
 
     static func decorate(_ parent: SKNode, skin: CharacterSkin?, radius: CGFloat) {
-        guard let skin else { return }
+        guard let skin, !skin.usesSceneArtwork else { return }
         let root = SKNode()
         root.name = nodeName
         root.zPosition = -0.1
@@ -22,6 +22,7 @@ enum CharacterSkinEffects {
         case .bamboo: [.moss, .jade, .gold]
         case .voxel: [.moss, .gold, .sky]
         case .party, .pixel, .egg, .firefly: [.coral, .sky, .gold]
+        case .spellbook: []
         }
         for i in 0..<6 {
             let color = palette[i % 3].fill

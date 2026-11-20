@@ -1,5 +1,13 @@
 # SpriteKit 特效资源
 
+## 星轨魔导书
+
+新增 `SpellbookBody.sks`、`SpellbookProjectile.sks`、`SpellbookMuzzle.sks`、`SpellbookImpact.sks` 与 10 张 `Spellbook*.png`。本体的 caster、左右独立页片和 muzzle 发射点在场景中编辑；节点 `shootAction` / `hurtAction` 指向 CombatActions.sks 中的命名动作，结束后自动恢复 `action` 指定的待机。
+
+事件动作可能互相打断，收尾必须恢复它接管的完整变换状态；例如 BookRecoil 同时恢复位置、旋转和缩放，避免打断 BookHurt 后留下缩小状态。皮肤整体尺寸由根节点 `referenceRadius` 适配现有角色尺寸。
+
+本体/弹道源图由内置 ImageGen 按已确认概念生成，经透明切片规范化；原图、提示词、素材报告和复现方式在 `docs/spellbook-skin/`。本轮资源已通过原生 API 解档与实际渲染验证，未额外宣称逐文件 Xcode 编辑保存往返均已完成。
+
 本目录的 `.sks` 是维护源文件，构建时直接打包，不重新生成覆盖。V1 的 InkDrop、ImpactRing、ImpactFlash 三张纹理由 CoreGraphics 几何绘制生成；V1 粒子与场景已用 Xcode 27.2 打开并保存验证。
 
 V2 在此基础上使用内置 ImageGen 制作六张透明翡翠/金色特效纹理，增加 PeaMuzzle、PeaFlight、DefeatBloom，升级 PeaImpact 与 CombatActions（12 个命名动作）。这些 V2 资源已做原生 API 加载、实际渲染、暂停/清理验证；未重新宣称所有 V2 文件都完成 Xcode 保存往返。设计与来源见 `docs/superpowers/specs/2026-11-20-sks-emerald-comet-v2.md` 和 `docs/spritekit-fx-mvp/design-v2/`。

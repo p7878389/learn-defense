@@ -9,8 +9,8 @@ import Testing
 @MainActor
 struct CharacterSkinAnimationTests {
     @Test func onlyIntendedCharactersChangeAndMissingResourcesFallBack() throws {
-        // 只加特效的皮肤（萤火精灵）没有自己的序列帧，单独测
-        for skin in CharacterSkin.allCases where !skin.isEffectOnly {
+        // 特效型和场景部件型皮肤由各自运行测试覆盖；此处验证序列帧契约。
+        for skin in CharacterSkin.allCases where !skin.isEffectOnly && !skin.usesSceneArtwork {
             let rig = try #require(UnitSprites.defender(.inkling, radius: 34, skin: skin))
             #expect(rig.base == "skin-\(skin.rawValue)-plant-inkling")
             let original = try #require(UnitSprites.defender(.inkling, radius: 34))
@@ -90,7 +90,7 @@ struct CharacterSkinAnimationTests {
             clock.scene.addChild(zombie)
             zombies.append(zombie)
             let label = SKLabelNode(fontNamed: "PingFangSC-Semibold")
-            label.text = ["经典原版", "软糖派对", "像素方块", "竹筒小侠", "方块工匠", "弹弹蛋", "萤火精灵"][index]
+            label.text = skin.flatMap { GrowthCatalog.bundled.cosmetic(id: "defender.\($0.rawValue)")?.name } ?? "经典原版"
             label.fontColor = SKColor(red: 0.15, green: 0.25, blue: 0.21, alpha: 1)
             label.fontSize = 25
             label.position = CGPoint(x: x, y: 525)

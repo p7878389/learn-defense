@@ -86,12 +86,34 @@ enum FXLibrary {
         }
     }
 
-    private static func attach(_ effect: SKNode, to layer: SKNode) {
+    static func attach(_ effect: SKNode, to layer: SKNode) {
         if effect.userData == nil { effect.userData = NSMutableDictionary() }
         effect.userData?["fxResource"] = true
         layer.addChild(effect)
         let scene = (layer as? SKScene) ?? layer.scene
         applyPause(scene?.speed == 0 || layer.isPaused, to: effect)
+    }
+
+    @discardableResult
+    static func playResource(_ name: String, at point: CGPoint, in layer: SKNode) -> SKNode? {
+        guard let node = effect(named: name) else { return nil }
+        node.name = name
+        node.position = point
+        attach(node, to: layer)
+        return node
+    }
+
+    /// 部件事件动作与待机循环都由 SKS 元数据指定，重复触发只保留最新一次。
+    static func runEvent(_ event: String, on root: SKNode) {
+        if let name = root.userData?[event + "Action"] as? String, let eventAction = action(named: name) {
+            root.removeAction(forKey: "fxResourceAction")
+            root.run(.sequence([eventAction, .run { [weak root] in
+                guard let root, let idleName = root.userData?["action"] as? String,
+                      let idle = action(named: idleName) else { return }
+                root.run(idle, withKey: "fxResourceAction")
+            }]), withKey: "fxEvent")
+        }
+        for child in root.children { runEvent(event, on: child) }
     }
 
     private static func applyPause(_ paused: Bool, to effect: SKNode) {

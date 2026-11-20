@@ -4,9 +4,13 @@ import Foundation
 /// party / pixel 在原图上加装扮，射手和普通僵尸都有；
 /// bamboo「竹筒小侠」、voxel「方块工匠」、egg「弹弹蛋」整株重画，只有射手，僵尸配它们时保持原版。
 /// firefly「萤火精灵」不换贴图，只加身后的金色光晕和身边忽明忽暗的萤火光团，连对越多越亮。
+/// spellbook「星轨魔导书」使用独立的场景部件与动作资源，只有豌豆射手可装备。
 public enum CharacterSkin: String, Codable, CaseIterable, Sendable {
-    case party, pixel, bamboo, voxel, egg, firefly
+    case party, pixel, bamboo, voxel, egg, firefly, spellbook
 
     /// 只加特效、沿用原版贴图的皮肤：没有自己的序列帧，射手也要保留它
     public var isEffectOnly: Bool { self == .firefly }
+
+    /// 全造型资源皮肤由 SpriteKit 场景部件驱动，不使用原角色的序列帧装扮。
+    public var usesSceneArtwork: Bool { self == .spellbook }
 }

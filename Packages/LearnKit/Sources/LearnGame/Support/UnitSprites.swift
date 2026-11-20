@@ -201,7 +201,8 @@ enum UnitSprites {
 
     /// 植物卡、拖动预览、收藏馆卡片用的静态形象：穿着皮肤的第一帧，缺素材时是原版
     static func portrait(of kind: DefenderKind, skin: CharacterSkin?) -> CGImage? {
-        portrait(named: characterName("plant-\(kind.id)", skin: skin))
+        if skin == .spellbook, kind.id == DefenderKind.inkling.id, let image = SpellbookSkin.portrait { return image }
+        return portrait(named: characterName("plant-\(kind.id)", skin: skin))
     }
 
     static func portrait(of kind: EnemyKind, skin: CharacterSkin?) -> CGImage? {
