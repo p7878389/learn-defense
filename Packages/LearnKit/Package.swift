@@ -24,7 +24,8 @@ let package = Package(
             dependencies: ["LearnCore"],
             // 3D 图片与植物/僵尸序列帧分别保存；来源及使用范围见各资源目录
             // Speech：预先生成的语音（<文本key>.mp3），由 speech-pack 生成
-            resources: [.copy("Resources/Pictures"), .copy("Resources/Sprites"), .copy("Resources/Speech")]
+            resources: [.copy("Resources/Pictures"), .copy("Resources/Sprites"), .copy("Resources/Speech"),
+                        .copy("Resources/Effects")]
         ),
         .executableTarget(
             name: "SpeechPack",

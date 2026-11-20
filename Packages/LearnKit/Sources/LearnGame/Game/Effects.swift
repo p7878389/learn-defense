@@ -29,20 +29,7 @@ struct InkBurstEffect: VisualEffect {
     var count = 7
 
     func play(at point: CGPoint, in layer: SKNode) {
-        for i in 0..<count {
-            let dot = Shapes.circle(CGFloat.random(in: 5...10), color, at: point)
-            dot.zPosition = 60
-            layer.addChild(dot)
-            let angle = CGFloat(i) / CGFloat(count) * .pi * 2
-            let distance = CGFloat.random(in: 50...90) * scale
-            dot.run(.sequence([
-                .group([
-                    .moveBy(x: cos(angle) * distance, y: sin(angle) * distance, duration: 0.35),
-                    .fadeOut(withDuration: 0.35),
-                ]),
-                .removeFromParent(),
-            ]))
-        }
+        FXLibrary.playInk(at: point, in: layer, color: color, scale: scale, count: count)
     }
 }
 

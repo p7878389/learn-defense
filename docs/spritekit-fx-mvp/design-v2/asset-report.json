@@ -1,0 +1,125 @@
+{
+  "ok": true,
+  "assets": [
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/CometTail.png",
+      "format": "PNG",
+      "mode": "RGBA",
+      "width": 384,
+      "height": 192,
+      "bytes": 64173,
+      "color_count": 23673,
+      "has_alpha": true,
+      "alpha_min": 0,
+      "alpha_max": 255,
+      "transparent_pixels": 44756,
+      "content_bounds": [
+        12,
+        31,
+        372,
+        160
+      ],
+      "problems": []
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/ImpactStar.png",
+      "format": "PNG",
+      "mode": "RGBA",
+      "width": 256,
+      "height": 256,
+      "bytes": 58207,
+      "color_count": 17970,
+      "has_alpha": true,
+      "alpha_min": 0,
+      "alpha_max": 255,
+      "transparent_pixels": 43323,
+      "content_bounds": [
+        12,
+        15,
+        244,
+        241
+      ],
+      "problems": []
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/EnergySlash.png",
+      "format": "PNG",
+      "mode": "RGBA",
+      "width": 256,
+      "height": 256,
+      "bytes": 48854,
+      "color_count": 15751,
+      "has_alpha": true,
+      "alpha_min": 0,
+      "alpha_max": 255,
+      "transparent_pixels": 46732,
+      "content_bounds": [
+        19,
+        12,
+        237,
+        244
+      ],
+      "problems": []
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/ShockRing.png",
+      "format": "PNG",
+      "mode": "RGBA",
+      "width": 256,
+      "height": 256,
+      "bytes": 54745,
+      "color_count": 16420,
+      "has_alpha": true,
+      "alpha_min": 0,
+      "alpha_max": 255,
+      "transparent_pixels": 44885,
+      "content_bounds": [
+        12,
+        16,
+        244,
+        239
+      ],
+      "problems": []
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/EnergyShard.png",
+      "format": "PNG",
+      "mode": "RGBA",
+      "width": 128,
+      "height": 128,
+      "bytes": 11537,
+      "color_count": 3013,
+      "has_alpha": true,
+      "alpha_min": 0,
+      "alpha_max": 255,
+      "transparent_pixels": 12827,
+      "content_bounds": [
+        13,
+        12,
+        115,
+        116
+      ],
+      "problems": []
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/DefeatCorona.png",
+      "format": "PNG",
+      "mode": "RGBA",
+      "width": 256,
+      "height": 256,
+      "bytes": 73042,
+      "color_count": 17444,
+      "has_alpha": true,
+      "alpha_min": 0,
+      "alpha_max": 255,
+      "transparent_pixels": 41171,
+      "content_bounds": [
+        12,
+        16,
+        244,
+        239
+      ],
+      "problems": []
+    }
+  ]
+}

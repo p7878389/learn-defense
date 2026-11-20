@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "art_direction_brief": "docs/superpowers/specs/2026-11-20-sks-emerald-comet-v2.md",
+  "assets": [
+    {
+      "id": "CometTail",
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/CometTail.png",
+      "role": "飞行彗星尾",
+      "source_crop": [
+        0,
+        70,
+        548,
+        460
+      ],
+      "dimensions": [
+        384,
+        192
+      ],
+      "alpha": true,
+      "transparent_fraction": 0.607,
+      "filtering": "linear",
+      "source": "built-in image_gen, emerald-comet-source.png",
+      "in_engine_reviewed": true,
+      "technical_checks_passed": true
+    },
+    {
+      "id": "ImpactStar",
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/ImpactStar.png",
+      "role": "命中亮核",
+      "source_crop": [
+        548,
+        0,
+        1015,
+        485
+      ],
+      "dimensions": [
+        256,
+        256
+      ],
+      "alpha": true,
+      "transparent_fraction": 0.6611,
+      "filtering": "linear",
+      "source": "built-in image_gen, emerald-comet-source.png",
+      "in_engine_reviewed": true,
+      "technical_checks_passed": true
+    },
+    {
+      "id": "EnergySlash",
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/EnergySlash.png",
+      "role": "旋转能量弧",
+      "source_crop": [
+        1030,
+        0,
+        1536,
+        490
+      ],
+      "dimensions": [
+        256,
+        256
+      ],
+      "alpha": true,
+      "transparent_fraction": 0.7131,
+      "filtering": "linear",
+      "source": "built-in image_gen, emerald-comet-source.png",
+      "in_engine_reviewed": true,
+      "technical_checks_passed": true
+    },
+    {
+      "id": "ShockRing",
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/ShockRing.png",
+      "role": "错峰扩散环",
+      "source_crop": [
+        0,
+        485,
+        520,
+        1024
+      ],
+      "dimensions": [
+        256,
+        256
+      ],
+      "alpha": true,
+      "transparent_fraction": 0.6849,
+      "filtering": "linear",
+      "source": "built-in image_gen, emerald-comet-source.png",
+      "in_engine_reviewed": true,
+      "technical_checks_passed": true
+    },
+    {
+      "id": "EnergyShard",
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/EnergyShard.png",
+      "role": "尖角碎屑",
+      "source_crop": [
+        548,
+        485,
+        1015,
+        1024
+      ],
+      "dimensions": [
+        128,
+        128
+      ],
+      "alpha": true,
+      "transparent_fraction": 0.7829,
+      "filtering": "linear",
+      "source": "built-in image_gen, emerald-comet-source.png",
+      "in_engine_reviewed": true,
+      "technical_checks_passed": true
+    },
+    {
+      "id": "DefeatCorona",
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/DefeatCorona.png",
+      "role": "击败光冠",
+      "source_crop": [
+        1015,
+        485,
+        1536,
+        1024
+      ],
+      "dimensions": [
+        256,
+        256
+      ],
+      "alpha": true,
+      "transparent_fraction": 0.6282,
+      "filtering": "linear",
+      "source": "built-in image_gen, emerald-comet-source.png",
+      "in_engine_reviewed": true,
+      "technical_checks_passed": true
+    }
+  ]
+}

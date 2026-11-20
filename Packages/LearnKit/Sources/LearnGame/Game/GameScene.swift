@@ -668,6 +668,7 @@ final class GameScene: SKScene {
         // 回合休息只停玩法，让最后一次击杀的退场动作和命中特效自行清理。
         // 普通暂停、大招题和离场仍把动画一起停下。
         speed = paused && !keepingAnimations ? 0 : 1
+        FXLibrary.setPaused(paused && !keepingAnimations, in: self)
     }
 
     /// 准备阶段冻结怪物和出怪，但保留植物种植动画

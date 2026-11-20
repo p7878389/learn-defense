@@ -51,6 +51,8 @@ struct ShotAttack: AttackStrategy {
                     if let trail, let bullet, let layer {
                         trail.particleBirthRate = 45
                         IceCombatEffects.launch(at: bullet.position, in: layer)
+                    } else if projectile.shape == .orb, let bullet, let layer {
+                        FXLibrary.launchOrb(on: bullet, towards: target, in: layer)
                     }
                 },
                 .move(to: target, duration: duration),
@@ -72,8 +74,10 @@ struct ShotAttack: AttackStrategy {
 }
 
 extension ShotAttack {
-    /// 子弹打中时溅开（上游豌豆、星星的命中图），停 0.25 秒后淡出；没有素材时不画
+    /// 圆弹使用资源组合；其他弹种保留原命中贴图，缺少资源时可回退。
     static func splat(_ projectile: ProjectileLook, at point: CGPoint, in layer: SKNode) {
+        if projectile.shape == .orb,
+           FXLibrary.playImpact(at: point, in: layer, color: projectile.color.fill) { return }
         guard let splat = UnitSprites.impact(projectile) else { return }
         // 稍微靠前一点，像打在僵尸身前
         splat.position = CGPoint(x: point.x - 8, y: point.y)
