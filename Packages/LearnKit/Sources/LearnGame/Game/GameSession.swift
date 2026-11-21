@@ -5,7 +5,7 @@ import LearnCore
 @MainActor
 final class GameSession: ObservableObject {
     enum Phase: Equatable {
-        case preparing, playing, paused, resting, won, lost
+        case preparing, playing, paused, resting, won, lost, abandoned
     }
 
     struct Mistake: Identifiable {
@@ -371,6 +371,8 @@ final class GameSession: ObservableObject {
         guard canStartBattle else { return }
         phase = .playing
         battleStartedAt = Date()
+        // 先保存成长基线，避免未结算的学习进度在重启后被当作旧档补发奖励。
+        growth?.save()
         scene.setPreparing(false)
         speech.speak(SpeechText.Line.battleStart, interrupt: true)
     }
@@ -465,13 +467,27 @@ final class GameSession: ObservableObject {
         }
     }
 
-    /// 离开游戏界面时调用
+    /// 切到后台只暂停，不结束或记录本局。
+    func suspend() {
+        guard phase != .abandoned else { return }
+        if phase == .playing { phase = .paused }
+        if phase == .paused || phase == .resting { scene.setGamePaused(true) }
+        speech.stop()
+        progress.save()
+    }
+
+    /// 离开界面时放弃未结算对局；已结束的对局保留原结果。
     func end() {
+        guard phase != .abandoned else { return }
         scene.setGamePaused(true)
         speech.stop()
         progress.save()
-        finishGame()
-        speech.stop()
+        guard phase != .won && phase != .lost else { return }
+        phase = .abandoned
+        typing = false
+        ultimate = nil
+        ultimateItem = nil
+        isUnleashing = false
     }
 
     private func checkFinished() {

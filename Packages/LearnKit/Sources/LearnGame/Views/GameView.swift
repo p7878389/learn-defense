@@ -24,12 +24,16 @@ struct GameView: View {
     }
 
     var body: some View {
-        BattleScreen(session: session, onReplay: onReplay, onExit: onExit, onOpenCollection: onOpenCollection)
+        BattleScreen(session: session, onReplay: onReplay, onExit: {
+            session.end()
+            onExit()
+        }, onOpenCollection: onOpenCollection)
     }
 }
 
 /// 完整战斗界面，由 GameView 持有的对局状态驱动。
 struct BattleScreen: View {
+    @Environment(\.scenePhase) private var scenePhase
     @ObservedObject var session: GameSession
     @State private var battlefieldFrame: CGRect = .zero
     /// 拖动中的植物卡；位置只给跟手预览和战场描边读，拖动时整个战斗界面不跟着重算
@@ -242,6 +246,9 @@ struct BattleScreen: View {
             }
         }
         .coordinateSpace(name: "gameLayout")
+        .onChange(of: scenePhase) { _, phase in
+            if phase != .active { session.suspend() }
+        }
         .onChange(of: session.map) { _, map in
             UserDefaults.standard.set(map.rawValue, forKey: BattleMap.preferenceKey)
         }
@@ -252,7 +259,10 @@ struct BattleScreen: View {
                 }
             })
         .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { session.updateRest(now: $0) }
-        .onDisappear { session.end() }
+        .onDisappear {
+            if scenePhase == .active { session.end() }
+            else { session.suspend() }
+        }
         #if os(iOS)
         .statusBarHidden()
         .persistentSystemOverlays(.hidden)
@@ -733,7 +743,7 @@ struct PauseOverlay: View {
     let onResume: () -> Void
     /// 结束本局并看结算页
     let onFinish: () -> Void
-    /// 直接退出游戏回到上一页；离开界面时照常结算（GameSession.end）
+    /// 直接退出并放弃未结算对局，回到上一页。
     let onQuit: () -> Void
 
     var body: some View {

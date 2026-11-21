@@ -150,7 +150,7 @@ public final class AppModel: ObservableObject {
         }
     }
 
-    /// 一局的对局记录器：答题明细先记在内存里，结束或中途退出时写进数据库
+    /// 答题明细先记在内存里，仅结束结算时写入；直接退出丢弃本局记录。
     func recorder(for config: GameConfig) -> GameRecorder {
         GameRecorder(
             database: database,
