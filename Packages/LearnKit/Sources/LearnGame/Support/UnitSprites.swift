@@ -20,7 +20,7 @@ enum UnitSprites {
         /// 这个角色的其他动画：attack 啃咬 / 发射、die 倒下、head 掉头、boom 烧焦、bare 掉了防具…
         let states: [String: String]?
         /// 每一帧的图片（相对 Sprites 目录、不带扩展名的透明 WebP）。
-        /// 有它就不读「动画名/序号.png」，森林怪物借此直接复用森林模式的素材
+        /// 有它就不读「动画名/序号.png」，森林怪物借此加载独立的动作素材
         let files: [String]?
         /// 加载时水平翻转：经典模式的怪物朝左走，朝右画的素材要翻过来。crop 按翻转后的坐标写
         let mirrored: Bool?

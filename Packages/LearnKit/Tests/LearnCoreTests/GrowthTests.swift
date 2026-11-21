@@ -54,17 +54,23 @@ struct PacingTests {
     }
 
     @Test func forestEnemiesJoinClassicWaves() throws {
+        let names = [
+            "goblin": "掷石斥候", "acolyte": "暗影学徒", "knight": "骷髅死亡骑士", "ogre": "巨魔酋长",
+            "berserker": "双斧狂战士", "frostKing": "寒霜魔王", "infernal": "炎狱领主", "reaper": "冥魂收割者",
+            "pharaoh": "古墓法老", "slime": "剧毒史莱姆王", "gargoyle": "暗翼石像鬼王", "shaman": "炼金萨满王"
+        ]
         let all = UnitCatalog.enemies + UnitCatalog.forestEnemies
         #expect(Set(all.map(\.id)).count == all.count, "森林怪物和原版僵尸不能重名")
+        #expect(Set(UnitCatalog.forestEnemies.map(\.id)) == Set(names.keys))
         for kind in UnitCatalog.forestEnemies {
             #expect(UnitCatalog.enemy(id: kind.id) == kind)
-            #expect(ForestEnemyKind(rawValue: kind.id)?.name == kind.name, "\(kind.id) 和森林模式是同一个角色")
+            #expect(names[kind.id] == kind.name)
             #expect(kind.sunReward == kind.hp * 25)
         }
         // 首领血量和铁门僵尸一样，抽到哪个都不改变一局的题量
         #expect(EnemyKind.forestBosses.count == 10)
         #expect(EnemyKind.forestBosses.allSatisfy { $0.hp == EnemyKind.king.hp })
-        #expect(EnemyKind.forestBosses.allSatisfy { ForestEnemyKind(rawValue: $0.id)?.isBoss == true })
+        #expect(Set(EnemyKind.forestBosses.map(\.id)) == Set(names.keys).subtracting(["goblin", "acolyte"]))
         // 飘着的首领能越过矮墙
         #expect(EnemyKind.reaper.canVault && EnemyKind.gargoyle.canVault && !EnemyKind.knight.canVault)
 
