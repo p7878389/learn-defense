@@ -5,7 +5,7 @@ import SwiftData
 /// - 题库：从数据库加载（StoredPackFile），第一次或 JSON 文件有变化时才读文件导入，见 loadContent
 /// - 系统配置：JSON 仍是来源，每次加载后整份同步过来，用来查询
 /// - 孩子档案、成长档案、学习记录：数据库是唯一存储，旧版 JSON 第一次读取时迁移进来
-/// - 对局记录、答题明细：每局结束（或中途退出）时写入
+/// - 对局记录、答题明细：整局结束结算时写入，未结算退出不写对局历史
 /// - 语音缓存：运行时用火山引擎生成的音频索引（音频文件在 AppPaths.speechCacheDirectory）
 public final class LearnDatabase {
     public static let schema = Schema([
