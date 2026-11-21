@@ -13,7 +13,7 @@ struct RetiredCosmeticSlotTests {
         var old = GrowthState()
         old.coins = 500
         old.xp = 2000
-        old.owned = ["projectile.petal", "defeat.confetti", "item.iceCube"]
+        old.owned = ["projectile.petal", "defeat.confetti", "item.iceCube", "defender.spellbook"]
         old.equipped = ["projectile":"projectile.petal", "defeat":"defeat.confetti", "item.frostCharm":"item.iceCube",
                         "defenderSkin":"defender.spellbook"]
         let saved = try JSONDecoder().decode(GrowthState.self, from: JSONEncoder().encode(old))

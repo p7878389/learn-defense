@@ -11,11 +11,15 @@ struct ThemeSkinCatalogTests {
         #expect(catalog.issues.isEmpty)
         #expect(item.shooterID == "inkling")
         var state = GrowthState()
-        state.coins = 120
+        state.xp = catalog.pacing.levelCurve.totalXP(toReach: item.unlockLevel)
+        let level = state.level(catalog.pacing.levelCurve).level
         let monster = try #require(catalog.cosmetic(id: "enemy.goblin"))
+        state.coins = monster.price + item.price
         let bought = state.purchase(monster, level: 1)
         #expect(bought == .bought)
-        let equipped = state.equip(item, level: 1)
+        let skinBought = state.purchase(item, level: level)
+        #expect(skinBought == .bought)
+        let equipped = state.equip(item, level: level)
         #expect(equipped)
         let projectileEquipped = state.equip(try #require(catalog.cosmetic(id: "enemy.goblin")), level: 1)
         #expect(!projectileEquipped, "怪物无需单独装备")
