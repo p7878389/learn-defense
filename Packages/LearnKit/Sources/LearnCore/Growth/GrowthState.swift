@@ -111,6 +111,8 @@ public struct GrowthState: Codable, Sendable, Equatable {
     /// 位置（`CosmeticKind.equipKey`）→ 装备的外观 id；没有记录就是原版
     public var equipped: [String: String] = [:]
     public var stats = GrowthStats()
+    /// 冒险的星级、历史与已付费战斗快照，随成长档案备份和恢复。
+    public var adventure = AdventureProgress()
 
     public init() {}
 
@@ -129,6 +131,7 @@ public struct GrowthState: Codable, Sendable, Equatable {
             !retired.contains($0.value) && $0.key != "projectile" && $0.key != "defeat" && $0.key != "enemySkin" && !$0.key.hasPrefix("item.")
         }
         stats = (try? c.decodeIfPresent(GrowthStats.self, forKey: .stats)) ?? GrowthStats()
+        adventure = try c.decodeIfPresent(AdventureProgress.self, forKey: .adventure) ?? AdventureProgress()
     }
 
     public func level(_ curve: LevelCurve) -> LevelProgress {

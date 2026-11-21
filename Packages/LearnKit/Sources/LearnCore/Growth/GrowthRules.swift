@@ -299,6 +299,21 @@ public final class GrowthStore {
         persist()
     }
 
+    /// 积分与冒险状态一次保存；存储失败时不发布新余额，调用方可提示并重试。
+    func updateAdventureState<T>(_ update: (inout GrowthState) throws -> T) throws -> T {
+        var next = state
+        let result = try update(&next)
+        if let database {
+            do { try database.saveGrowthState(next, profileID: profileID) }
+            catch {
+                database.context.rollback()
+                throw error
+            }
+        }
+        state = next
+        return result
+    }
+
     @discardableResult
     private func persist() -> Bool {
         guard let database else { return false }
