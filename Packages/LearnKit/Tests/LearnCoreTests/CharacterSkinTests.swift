@@ -8,11 +8,13 @@ struct CharacterSkinTests {
         let catalog = GrowthCatalog.bundled
         var state = GrowthState()
         state.xp = 1000
-        state.coins = 120
+        state.coins = 420
+        let level = state.level(catalog.pacing.levelCurve).level
         for id in ["defender.spellbook", "enemy.goblin"] {
             let item = try #require(catalog.cosmetic(id: id))
-            state.purchase(item, level: 2)
-            let equipped = state.equip(item, level: 2)
+            let bought = state.purchase(item, level: level)
+            #expect(bought == .bought)
+            let equipped = state.equip(item, level: level)
             #expect(equipped == (item.slot == .defenderSkin))
         }
         state = try JSONDecoder().decode(GrowthState.self, from: JSONEncoder().encode(state))
@@ -44,7 +46,11 @@ struct CharacterSkinTests {
         #expect(item.characterSkin == skin)
         #expect(!catalog.cosmetics.contains { $0.slot == .enemySkin && $0.characterSkin == skin })
         var state = GrowthState()
-        let equipped = state.equip(item, level: 1)
+        state.xp = catalog.pacing.levelCurve.totalXP(toReach: item.unlockLevel)
+        state.coins = item.price
+        let bought = state.purchase(item, level: item.unlockLevel)
+        #expect(bought == .bought)
+        let equipped = state.equip(item, level: item.unlockLevel)
         #expect(equipped)
         #expect(state.loadout(catalog).defenderSkins == ["inkling": skin])
         #expect(state.loadout(catalog).enemySkin == nil)
@@ -90,7 +96,7 @@ struct CharacterSkinTests {
         #expect(twinOriginal.equipKey == "defenderSkin.twin")
 
         // 旧存档里的键
-        var state = try JSONDecoder().decode(GrowthState.self, from: Data(#"{"equipped":{"defenderSkin":"defender.spellbook"}}"#.utf8))
+        var state = try JSONDecoder().decode(GrowthState.self, from: Data(#"{"xp":2000,"owned":["defender.spellbook"],"equipped":{"defenderSkin":"defender.spellbook"}}"#.utf8))
         #expect(state.loadout(catalog).defenderSkins == ["inkling": .spellbook])
         // 换回双发射手的原版，不影响豌豆射手
         let equipped = state.equip(twinOriginal, level: 1)
@@ -124,16 +130,17 @@ struct CharacterSkinTests {
         #expect(catalog.cosmetics.isEmpty)
         #expect(catalog.issues.count == 1)
     }
-    @Test func bundledSkinsAreAvailableFromFirstLevel() throws {
+    @Test(arguments: UnitCatalog.defenders.filter(\.canShoot).map(\.id))
+    func bundledSkinsAreAvailableFromFirstLevel(shooterID: String) throws {
         let catalog = GrowthCatalog.bundled
-        let item = try #require(catalog.cosmetic(id: "defender.spellbook"))
-        #expect(!item.isOriginal)
+        let item = try #require(catalog.shooterSkins(for: shooterID).first { $0.isOriginal })
+        #expect(item.isOriginal)
         #expect(item.unlockLevel == 1)
         #expect(item.price == 0)
         var state = GrowthState()
         let equipped = state.equip(item, level: 1)
         #expect(equipped)
         #expect(state.isEquipped(item))
-        #expect(state.loadout(catalog) != .standard)
+        #expect(state.loadout(catalog) == .standard)
     }
 }

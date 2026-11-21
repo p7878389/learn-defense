@@ -305,6 +305,9 @@ struct CosmeticTests {
     }
 
     @Test func equipAndLoadout() {
+        var catalog = catalog
+        catalog.cosmetics.removeAll { $0.id == goldStar.id }
+        catalog.cosmetics.append(goldStar)
         var state = GrowthState()
         let notOwned = state.equip(petal, level: 6)
         #expect(!notOwned, "没买不能装")

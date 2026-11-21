@@ -16,7 +16,8 @@ struct SkinSelectionTests {
         let profile = Profile(name: "皮肤测试", grade: .g3, avatar: "🐯")
         try database.saveProfiles([profile])
         var collection = GrowthState()
-        collection.owned = ["enemy.goblin"]
+        collection.xp = GrowthCatalog.bundled.pacing.levelCurve.totalXP(toReach: 3)
+        collection.owned = ["enemy.goblin", "defender.spellbook", "defender.mecha"]
         try database.saveGrowthState(collection, profileID: profile.id)
         let model = model(database: database)
         let book = try #require(model.growthCatalog.cosmetic(id: "defender.spellbook"))
@@ -53,7 +54,8 @@ struct SkinSelectionTests {
         let model = model(database: database)
         let profileID = UUID()
         var collection = GrowthState()
-        collection.owned = ["enemy.goblin"]
+        collection.xp = GrowthCatalog.bundled.pacing.levelCurve.totalXP(toReach: 3)
+        collection.owned = ["enemy.goblin", "defender.mecha"]
         try database.saveGrowthState(collection, profileID: profileID)
         let mecha = try #require(model.growthCatalog.cosmetic(id: "defender.mecha"))
         let original = try #require(model.growthCatalog.cosmetic(id: "defender.original"))
