@@ -1,6 +1,6 @@
 import LearnCore
 
-/// 主页选题库：按版本（人教版等）分组，再按册、单元选。只整理已有题库字段（edition、term、units），不改题库格式
+/// 游戏题库弹窗：按版本分组，再按册、单元选；只整理现有字段，不改变题库格式。
 enum QuestionBankChoice {
     /// 题库没写版本时归到这一组
     static let defaultEdition = "通用版"
@@ -35,8 +35,21 @@ enum QuestionBankChoice {
         let chosen = pack.units.filter { selectedUnits.contains(unitKey(pack: pack, unit: $0)) }
         switch chosen.count {
         case 0: return "\(volumeTitle(pack)) · 全部单元"
+        case pack.units.count: return "\(volumeTitle(pack)) · 全部单元"
         case 1: return chosen[0].title
         default: return "已选 \(chosen.count) 个单元"
         }
+    }
+
+    static func summary(config: GameConfig, library: ContentLibrary) -> String {
+        let packs = config.packIDs.compactMap(library.pack(id:))
+        let subject = packs.first?.subject.displayName ?? "题库待选"
+        let scope: String
+        switch config.selection {
+        case .review: scope = "错题复习"
+        case .units(let units): scope = packs.first.map { courseSummary(pack: $0, selectedUnits: units) } ?? "题库待选"
+        default: scope = packs.first.map { volumeTitle($0) + " · 全部单元" } ?? "题库待选"
+        }
+        return "\(config.grade.displayName) · \(subject) · \(config.difficulty.displayName) · \(scope)"
     }
 }

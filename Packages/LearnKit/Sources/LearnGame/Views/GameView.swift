@@ -3,31 +3,49 @@ import SpriteKit
 import SwiftUI
 
 struct GameView: View {
-    @StateObject private var session: GameSession
-    let onReplay: () -> Void
+    @StateObject private var preparation: GamePreparation
+    let onReplay: (GameConfig) -> Void
     let onExit: () -> Void
     let onOpenCollection: () -> Void
 
-    init(config: GameConfig, model: AppModel, onReplay: @escaping () -> Void, onExit: @escaping () -> Void,
+    init(config: GameConfig, model: AppModel, onReplay: @escaping (GameConfig) -> Void, onExit: @escaping () -> Void,
          onOpenCollection: @escaping () -> Void = {}) {
-        _session = StateObject(wrappedValue: GameSession(
-            config: config,
-            library: model.library,
-            progress: model.progress(for: config.profileID),
-            speech: model.speech,
-            growth: model.growth(for: config.profileID),
-            recorder: model.recorder(for: config),
-            map: UserDefaults.standard.string(forKey: BattleMap.preferenceKey).flatMap(BattleMap.init(rawValue:)) ?? .woodland))
+        _preparation = StateObject(wrappedValue: GamePreparation(config: config, model: model))
         self.onReplay = onReplay
         self.onExit = onExit
         self.onOpenCollection = onOpenCollection
     }
 
     var body: some View {
-        BattleScreen(session: session, onReplay: onReplay, onExit: {
-            session.end()
-            onExit()
-        }, onOpenCollection: onOpenCollection)
+        Group {
+            if let session = preparation.session {
+                BattleScreen(session: session, onReplay: { onReplay(preparation.config.again()) }, onExit: {
+                    session.end()
+                    onExit()
+                }, onOpenCollection: onOpenCollection, onChooseBank: { preparation.chooseBank() },
+                   onRequestStart: { preparation.requestStartConfirmation() },
+                   bankSummary: QuestionBankChoice.summary(config: preparation.config, library: preparation.model.library))
+                .id(session.config.id)
+            } else {
+                VStack(spacing: 20) {
+                    Text("先选好本局题库，再准备布阵").font(.title2.bold())
+                    Button("选择题库") { preparation.chooseBank() }.buttonStyle(.borderedProminent).tint(Theme.jade)
+                    Button("返回主页", action: onExit)
+                }.frame(maxWidth: .infinity, maxHeight: .infinity).background(GrowthPageBackground())
+            }
+        }
+        .sheet(isPresented: $preparation.choosingBank) {
+            QuestionBankPickerView(config: preparation.config, library: preparation.model.library,
+                onConfirm: { preparation.confirm($0) },
+                onCancel: preparation.cancelChoosing, errorMessage: preparation.error)
+                .presentationDetents([.large])
+        }
+        .sheet(isPresented: $preparation.confirmingStart) {
+            if let session = preparation.session {
+                GameStartConfirmationView(session: session, library: preparation.model.library,
+                                          onConfirm: preparation.confirmStart, onCancel: preparation.cancelStartConfirmation)
+            }
+        }
     }
 }
 
@@ -48,6 +66,9 @@ struct BattleScreen: View {
     let onReplay: () -> Void
     let onExit: () -> Void
     let onOpenCollection: () -> Void
+    var onChooseBank: () -> Void = {}
+    var onRequestStart: (() -> Void)? = nil
+    var bankSummary: String? = nil
 
     private var debugOptions: SpriteView.DebugOptions {
         []
@@ -126,7 +147,8 @@ struct BattleScreen: View {
 
             if session.isEmpty {
                 VStack(spacing: 20) {
-                    Text("这里还没有可以出的题").font(.title)
+                    Text(session.bankConfirmed ? "这里还没有可以出的题" : "首次游戏，请先选择题库").font(.title)
+                    Button("选择题库与难度", action: onChooseBank).buttonStyle(.borderedProminent).tint(Theme.jade)
                     Button("返回", action: onExit).font(.title2)
                 }
             } else {
@@ -150,7 +172,7 @@ struct BattleScreen: View {
                         .padding(.horizontal, 10)
                     Group {
                         if session.phase == .preparing {
-                            PreparationPanel(session: session)
+                            PreparationPanel(session: session, onChooseBank: onChooseBank, onStart: onRequestStart, bankSummary: bankSummary)
                                 .background(alignment: .top) {
                                     // 按本局出题方式量一道答错后的样题，开局前就把答题区的高度留出来
                                     if let sample = session.layoutSample {
@@ -420,15 +442,28 @@ struct GameHUD: View {
 
 struct PreparationPanel: View {
     @ObservedObject var session: GameSession
+    var onChooseBank: () -> Void = {}
+    var onStart: (() -> Void)? = nil
+    var bankSummary: String? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            BattleMapPicker(selection: session.map, onSelect: session.selectMap)
+            HStack {
+                BattleMapPicker(selection: session.map, onSelect: session.selectMap)
+                Spacer(minLength: 12)
+                Button(action: onChooseBank) {
+                    CandyButtonLabel(title: session.bankConfirmed ? "题库与难度" : "选择题库与难度", icon: "📚", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
+                                     foreground: Theme.ink, font: .headline, height: 44)
+                }.buttonStyle(PressableStyle())
+            }
             HStack(spacing: 20) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("准备布阵")
                         .font(.title2.weight(.heavy))
                         .foregroundStyle(Theme.ink)
+                    Text(session.bankConfirmed ? bankSummary ?? "\(session.config.grade.displayName) · \(session.config.difficulty.displayName)" : "首次游戏，请先手动选择并确认题库")
+                        .font(.callout.weight(.semibold)).foregroundStyle(session.bankConfirmed ? GrowthColors.jadeDark : GrowthColors.orangeDark)
+                        .lineLimit(2)
                     Text("把植物卡拖到战场空位。阳光足够就能继续布阵，种下后不能修改，已布阵 \(session.plantedLaneCount)/\(session.tuning.lanes) 路")
                         .font(.headline)
                         .foregroundStyle(Theme.muted)
@@ -436,8 +471,8 @@ struct PreparationPanel: View {
 
                 Spacer()
 
-                Button(action: session.startBattle) {
-                    Text(session.canStartBattle ? "开始闯关" : "先种一株植物")
+                Button(action: onStart ?? session.startBattle) {
+                    Text(!session.bankConfirmed ? "请先选择题库" : session.canStartBattle ? "准备好了" : "先种一株植物")
                         .font(.title2.weight(.heavy))
                         .frame(minWidth: 210, minHeight: 58)
                         .background(Capsule().fill(session.canStartBattle ? Theme.jade : Theme.muted.opacity(0.25)))

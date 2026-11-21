@@ -18,6 +18,8 @@ final class GameSession: ObservableObject {
     }
 
     let config: GameConfig
+    /// 首次进入可预览和布阵，但必须先手动确认题库才能开战。
+    let bankConfirmed: Bool
     let rules: GameRules
     private let feedback = AnswerFeedback()
     let tuning: GameTuning
@@ -121,12 +123,13 @@ final class GameSession: ObservableObject {
     private var ultimateItem: LearningItem?
 
     init(config: GameConfig, library: ContentLibrary, progress: ProgressStore, speech: Speech, growth: GrowthStore? = nil,
-         recorder: GameRecorder? = nil, map: BattleMap = .courtyard) {
+         recorder: GameRecorder? = nil, map: BattleMap = .courtyard, bankConfirmed: Bool = true) {
         let packs = config.packIDs.compactMap(library.pack(id:))
         let pool = ItemPool(packs: packs, selection: config.selection)
         let pacing = growth?.catalog.pacing ?? GrowthCatalog.bundled.pacing
         let tuning = GameTuning.make(grade: config.grade, difficulty: config.difficulty, pacing: pacing)
         self.config = config
+        self.bankConfirmed = bankConfirmed
         self.map = map
         rules = growth?.rules ?? .defaults
         self.tuning = tuning
@@ -187,7 +190,7 @@ final class GameSession: ObservableObject {
     }
 
     var canStartBattle: Bool {
-        phase == .preparing && plantedLaneCount > 0
+        phase == .preparing && bankConfirmed && plantedLaneCount > 0
     }
 
     var accuracy: Double {

@@ -66,11 +66,12 @@ struct GrowthCard: View {
     }
 }
 
-/// 收藏馆、徽章墙两个大入口
+/// 主页共用的糖果入口；冒险与收藏、徽章共用一行，不额外占用纵向空间。
 struct GrowthEntryCards: View {
     let growth: GrowthStore
     let onCollection: () -> Void
     let onBadges: () -> Void
+    var onAdventure: (() -> Void)? = nil
 
     var body: some View {
         let level = growth.level.level
@@ -79,9 +80,16 @@ struct GrowthEntryCards: View {
             !$0.isOriginal && $0.unlockLevel <= level && growth.state.status(of: $0, level: level) == .forSale(price: $0.price)
         }
         let earned = catalog.badges.filter { growth.state.badges[$0.id] != nil }
-        HStack(spacing: 20) {
+        HStack(spacing: onAdventure == nil ? 20 : 14) {
+            if let onAdventure {
+                Button(action: onAdventure) {
+                    entry(title: "冒险闯关", subtitle: "15 积分一局 · 专心布阵", icon: "🗺️",
+                          colors: [Theme.jade, GrowthColors.jadeDark], edge: GrowthColors.jadeDark,
+                          badge: nil) { EmptyView() }
+                }
+            }
             Button(action: onCollection) {
-                entry(title: "收藏馆", subtitle: "用积分换子弹和特效", icon: "🎁",
+                entry(title: "收藏馆", subtitle: "用积分换喜欢的外观", icon: "🎁",
                       colors: [GrowthColors.gold, Theme.accent], edge: GrowthColors.orangeDark,
                       badge: newItems.isEmpty ? nil : "可以买 \(newItems.count) 件") {
                     HStack(spacing: 4) { ForEach(["⭐", "🌸", "🎉"], id: \.self) { PictureView(emoji: $0, size: 40) } }
@@ -106,17 +114,22 @@ struct GrowthEntryCards: View {
         HStack {
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 8) {
-                    PictureView(emoji: icon, size: 38)
-                    Text(title).font(.system(size: 32, weight: .heavy, design: .rounded))
+                    PictureView(emoji: icon, size: onAdventure == nil ? 38 : 32)
+                    Text(title).font(.system(size: onAdventure == nil ? 32 : 24, weight: .heavy, design: .rounded))
+                        .lineLimit(1).minimumScaleFactor(0.8)
                 }
-                Text(subtitle).font(.system(size: 18, weight: .bold, design: .rounded)).opacity(0.9)
+                Text(subtitle).font(.system(size: onAdventure == nil ? 18 : 14, weight: .bold, design: .rounded))
+                    .lineLimit(1).minimumScaleFactor(0.8).opacity(0.9)
             }
-            Spacer(minLength: 8)
-            art()
+            if onAdventure == nil {
+                Spacer(minLength: 8)
+                art()
+            }
         }
         .foregroundStyle(.white)
-        .padding(.horizontal, 24)
-        .frame(maxWidth: .infinity, minHeight: 120)
+        .padding(.horizontal, onAdventure == nil ? 24 : 18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(minHeight: onAdventure == nil ? 120 : 100)
         .background(
             RoundedRectangle(cornerRadius: 26)
                 .fill(LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing))
