@@ -2,7 +2,7 @@ import ImageIO
 import LearnCore
 import SpriteKit
 
-/// 机甲与茶壶的资源适配；部件、枪口和动作均在 SKS 中维护。
+/// 全造型主题的资源适配；部件、枪口和动作均在 SKS 中维护，魔导书沿用独立适配器。
 @MainActor
 final class ThemeSkin {
     let root: SKNode
@@ -11,7 +11,7 @@ final class ThemeSkin {
 
     init?(kind: DefenderKind, skin: CharacterSkin?, radius: CGFloat) {
         guard kind.id == DefenderKind.inkling.id,
-              skin == .mecha || skin == .teapot,
+              skin != .spellbook,
               let prefix = Self.resourcePrefix(skin),
               let root = FXLibrary.effect(named: prefix + "Body"),
               let muzzle = root.childNode(withName: "//muzzle"),
@@ -35,6 +35,10 @@ final class ThemeSkin {
         case .spellbook: "Spellbook"
         case .mecha: "Mecha"
         case .teapot: "Teapot"
+        case .emerald: "Emerald"
+        case .astral: "Astral"
+        case .frost: "Frost"
+        case .festival: "Festival"
         default: nil
         }
     }
@@ -42,7 +46,7 @@ final class ThemeSkin {
     private static var portraits: [String: CGImage] = [:]
 
     static func portrait(for skin: CharacterSkin?) -> CGImage? {
-        guard skin == .mecha || skin == .teapot, let prefix = resourcePrefix(skin) else { return nil }
+        guard skin != .spellbook, let prefix = resourcePrefix(skin) else { return nil }
         if let cached = portraits[prefix] { return cached }
         guard let url = Bundle.module.url(forResource: prefix + "Portrait", withExtension: "png", subdirectory: "Effects"),
               let source = CGImageSourceCreateWithURL(url as CFURL, nil),

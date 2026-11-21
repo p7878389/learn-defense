@@ -5,10 +5,10 @@ import SpriteKit
 import Testing
 @testable import LearnGame
 
-@Suite("机甲与茶壶运行", .serialized)
+@Suite("资源主题皮肤运行", .serialized)
 @MainActor
 struct ThemeSkinTests {
-    @Test(arguments: ["mecha", "teapot"])
+    @Test(arguments: ["mecha", "teapot", "emerald", "astral", "frost", "festival"])
     func artworkAnimatesAndRecovers(id: String) throws {
         let skin = try #require(CharacterSkin(rawValue: id))
         let clock = try ThemeClock()
@@ -38,7 +38,7 @@ struct ThemeSkinTests {
         #expect(unit.position == CGPoint(x: 120, y: 150))
     }
 
-    @Test(arguments: ["mecha", "teapot"], [false, true])
+    @Test(arguments: ["mecha", "teapot", "emerald", "astral", "frost", "festival"], [false, true])
     func shotsRespectOverrideAndCleanUp(id: String, override: Bool) throws {
         let skin = try #require(CharacterSkin(rawValue: id))
         let clock = try ThemeClock()
@@ -60,7 +60,7 @@ struct ThemeSkinTests {
         #expect(clock.scene.children.isEmpty)
     }
 
-    @Test(arguments: ["mecha", "teapot"])
+    @Test(arguments: ["mecha", "teapot", "emerald", "astral", "frost", "festival"])
     func battleDamagePauseAndPreview(id: String) throws {
         let skin = try #require(CharacterSkin(rawValue: id))
         let scene = GameScene(tuning: .make(grade: .g3,difficulty: .normal),theme: .academy,
@@ -99,7 +99,7 @@ struct ThemeSkinTests {
         #expect(preview.childNode(withName: "themeProjectile") == nil)
         #expect(preview.children.count == 2)
     }
-    @Test(arguments: ["mecha", "teapot"])
+    @Test(arguments: ["mecha", "teapot", "emerald", "astral", "frost", "festival"])
     func renderRuntime(id: String) throws {
         guard let path = ProcessInfo.processInfo.environment["LEARN_THEME_PREVIEW"] else { return }
         let skin = try #require(CharacterSkin(rawValue: id))

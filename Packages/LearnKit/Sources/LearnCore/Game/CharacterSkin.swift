@@ -7,10 +7,16 @@ import Foundation
 /// spellbook「星轨魔导书」使用独立的场景部件与动作资源，只有豌豆射手可装备。
 public enum CharacterSkin: String, Codable, CaseIterable, Sendable {
     case party, pixel, bamboo, voxel, egg, firefly, spellbook, mecha, teapot
+    case emerald, astral, frost, festival
 
     /// 只加特效、沿用原版贴图的皮肤：没有自己的序列帧，射手也要保留它
     public var isEffectOnly: Bool { self == .firefly }
 
     /// 全造型资源皮肤由 SpriteKit 场景部件驱动，不使用原角色的序列帧装扮。
-    public var usesSceneArtwork: Bool { self == .spellbook || self == .mecha || self == .teapot }
+    public var usesSceneArtwork: Bool {
+        switch self {
+        case .spellbook, .mecha, .teapot, .emerald, .astral, .frost, .festival: true
+        default: false
+        }
+    }
 }

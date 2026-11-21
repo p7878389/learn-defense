@@ -1,0 +1,652 @@
+{
+  "tool": "built-in image_gen",
+  "reference": "../skin-designs/peashooter-themes.png",
+  "referenceRadius": 34,
+  "headWidth": 64,
+  "baseWidth": 51,
+  "skinIDs": [
+    "emerald",
+    "astral",
+    "frost",
+    "festival"
+  ],
+  "sourcePolicy": "Generated from archived project concept; no external reference image imported.",
+  "assets": [
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/EmeraldBase.png",
+      "bytes": 153329,
+      "sha256": "7f8ff2ca2f575bc581bf32c0da6d166fee3e7d7c2d57a68cf8e3bf64bdffa125",
+      "source": "emerald-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 384,
+      "height": 283,
+      "transparentPixels": 45867,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/EmeraldBloom.png",
+      "bytes": 193383,
+      "sha256": "a2f0b7ae55194db4eda491e4c3616b26a2cc98f6de48d19bfa36a5d949b3ffb6",
+      "source": "emerald-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 384,
+      "height": 326,
+      "transparentPixels": 65907,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/EmeraldBody.sks",
+      "bytes": 5832,
+      "sha256": "b19b5c49cb6250bd4334010e552473f112b277a05edcd35e26c1d2e9f04fb3a2",
+      "source": "emerald-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/EmeraldBolt.png",
+      "bytes": 87227,
+      "sha256": "61b64dbd201396196ebd345ee298c21411b8dc2801b08ca65ef1a8c7bf482bec",
+      "source": "emerald-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 384,
+      "height": 130,
+      "transparentPixels": 24653,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/EmeraldDefeat.sks",
+      "bytes": 1915,
+      "sha256": "e21236e4924c56236e262b148d8e360fc578258ebc4c0da9678cc1806af1174c",
+      "source": "emerald-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/EmeraldHead.png",
+      "bytes": 154988,
+      "sha256": "a46ba9f3ea6064c5d02747acfa63853abd3be99905e2adc8ced1bae512e98586",
+      "source": "emerald-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 384,
+      "height": 296,
+      "transparentPixels": 46520,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/EmeraldImpact.sks",
+      "bytes": 1914,
+      "sha256": "8402c2047d1c0a50576661ac1b863e815dd02ca142c608cbba2c908b379596d7",
+      "source": "emerald-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/EmeraldMuzzle.sks",
+      "bytes": 1914,
+      "sha256": "5ada496600e9671a9ca984d1aa2e584481f52eec970f5cf5945d5796d6627e92",
+      "source": "emerald-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/EmeraldPortrait.png",
+      "bytes": 55550,
+      "sha256": "722626d094482eb5bb16e071a21845ef3ec17c72b7f2607e1e45c9cc7cd3b053",
+      "source": "emerald-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 256,
+      "height": 256,
+      "transparentPixels": 47322,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/EmeraldProjectile.sks",
+      "bytes": 1954,
+      "sha256": "65d8ee079bce8505f1242cdffaf8d4570b054e2ad380d8d9c5358fc187bc9bf6",
+      "source": "emerald-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/EmeraldPuff.png",
+      "bytes": 121501,
+      "sha256": "864f0f59b689b54031604f0f6c804b537dad69984e3fe47fda367d6e4ac8cdd4",
+      "source": "emerald-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 280,
+      "height": 312,
+      "transparentPixels": 46257,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/EmeraldRing.png",
+      "bytes": 191494,
+      "sha256": "f202cc850137cf289ee2a4a44bc4cf3494957fb65c4ccb22f838ac028b77a2a7",
+      "source": "emerald-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 339,
+      "height": 323,
+      "transparentPixels": 43244,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/AstralBase.png",
+      "bytes": 146634,
+      "sha256": "794b2aee5caa8af8d9db235b9e54553707c955da1e039ea7a42c8ae882547ec3",
+      "source": "astral-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 384,
+      "height": 254,
+      "transparentPixels": 35450,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/AstralBloom.png",
+      "bytes": 134629,
+      "sha256": "f6aed7a8c375bef96e4071c3fabec92513cb72f2bc1190681ee1634aa5ba441f",
+      "source": "astral-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 339,
+      "height": 317,
+      "transparentPixels": 73976,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/AstralBody.sks",
+      "bytes": 3886,
+      "sha256": "872e33ab7a33d6d0979540c2890c761b5d309ea6d0efd785c72e29ae8f995858",
+      "source": "astral-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/AstralBolt.png",
+      "bytes": 85348,
+      "sha256": "50221baecf2525b7ebbdc99585d20fe7daca47a6f739507f9426f17070915006",
+      "source": "astral-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 384,
+      "height": 126,
+      "transparentPixels": 19892,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/AstralDefeat.sks",
+      "bytes": 1913,
+      "sha256": "4441fb4cdc794d82eb9351bf694add9010314b9741ab8d80bcefa278af494e1a",
+      "source": "astral-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/AstralHead.png",
+      "bytes": 184636,
+      "sha256": "f41f8f4404eeae8e8cffebab39a977379732beb63aaa850a8afad550cc1c6bc1",
+      "source": "astral-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 384,
+      "height": 308,
+      "transparentPixels": 49802,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/AstralImpact.sks",
+      "bytes": 1912,
+      "sha256": "59258c0cee0573335531c6e33f88167e926bc27d0b09d65bde38c3fc1f0d6dfb",
+      "source": "astral-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/AstralMuzzle.sks",
+      "bytes": 1911,
+      "sha256": "8cc30d00307fba01809c104b33247cd59c2140939c61189e050d8c117d9d4cca",
+      "source": "astral-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/AstralPortrait.png",
+      "bytes": 60016,
+      "sha256": "8902e2d888f9fe0dc55f6672937f1d23807f6e1ae18c31616a324d5aa24de0d6",
+      "source": "astral-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 256,
+      "height": 256,
+      "transparentPixels": 47105,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/AstralProjectile.sks",
+      "bytes": 1934,
+      "sha256": "81d1c3fd2d05f3b0e4a7ba4961aa833e19a62f46355172031d53f2989327a0a3",
+      "source": "astral-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/AstralPuff.png",
+      "bytes": 131461,
+      "sha256": "129dcd143f02965a32665cdeb65c78b5bce41177dace91c1396553432d7ce66f",
+      "source": "astral-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 347,
+      "height": 274,
+      "transparentPixels": 51287,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/AstralRing.png",
+      "bytes": 176703,
+      "sha256": "0b733f754e8a15da802ad9fc99ee6c705e833ab9d59307fa9fd022374ed18140",
+      "source": "astral-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 372,
+      "height": 367,
+      "transparentPixels": 83625,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/FrostBase.png",
+      "bytes": 147829,
+      "sha256": "6a1d32ef8b39a71e9e01fe20335f247a0b2d556e0e13c4c3ac287497fd4716a0",
+      "source": "frost-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 381,
+      "height": 263,
+      "transparentPixels": 39778,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/FrostBloom.png",
+      "bytes": 159653,
+      "sha256": "c627c5870b2ad80f1df9483a6f2dd0837c29f38e1ec4d69053f4b9a4c9ff9cf7",
+      "source": "frost-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 341,
+      "height": 370,
+      "transparentPixels": 68196,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/FrostBody.sks",
+      "bytes": 3870,
+      "sha256": "e6b90498983ef92e1bb712c4c43b755d148e8343704a61d2610c58239f5c9a07",
+      "source": "frost-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/FrostBolt.png",
+      "bytes": 83602,
+      "sha256": "4bbfe2bafedd1b2374956b5078c75594499df3bf88ebaba923bd3f4cd9656260",
+      "source": "frost-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 384,
+      "height": 141,
+      "transparentPixels": 21668,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/FrostDefeat.sks",
+      "bytes": 1911,
+      "sha256": "512ac65ee981d3753514e543b4a708dc563838d22af3d242b70ae1ff687d6991",
+      "source": "frost-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/FrostHead.png",
+      "bytes": 153223,
+      "sha256": "e4301b32f45315e5e3eedbfee46384be4a61ddd3e97a332e312c449e77455ff3",
+      "source": "frost-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 384,
+      "height": 291,
+      "transparentPixels": 47774,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/FrostImpact.sks",
+      "bytes": 1910,
+      "sha256": "02f58b19e79dab24b7374c4d60640582ba95a42f4e651f047bd202a3f8698827",
+      "source": "frost-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/FrostMuzzle.sks",
+      "bytes": 1910,
+      "sha256": "5c4dd9872fd02b6de0ca7c48bea94bb42d255c2851dff4e0d3a8db54552b067e",
+      "source": "frost-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/FrostPortrait.png",
+      "bytes": 56310,
+      "sha256": "d07c33d67f558a3d3d763af20d740d2f60467654f18be0b4aede306cc6a08c82",
+      "source": "frost-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 256,
+      "height": 256,
+      "transparentPixels": 47897,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/FrostProjectile.sks",
+      "bytes": 1934,
+      "sha256": "7382eb809606ff9e9395ceb7afa293ae5379ac0dfc0ee1343d6135992be35b94",
+      "source": "frost-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/FrostPuff.png",
+      "bytes": 124664,
+      "sha256": "4fec9dfd1d519e6ad79c27241ada612d04e1bd3de2c1139fe4a3d641b3a90cd0",
+      "source": "frost-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 269,
+      "height": 336,
+      "transparentPixels": 46618,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/FrostRing.png",
+      "bytes": 179866,
+      "sha256": "ff0c4378f146bf8a24a9eb8b2cb621993d0c4850534507d1e68c9acb97605b63",
+      "source": "frost-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 326,
+      "height": 343,
+      "transparentPixels": 53871,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/FestivalBase.png",
+      "bytes": 127876,
+      "sha256": "087985bf0821261031f5c64353e10e021407ec49d5e945ff014fa9d13d588fbd",
+      "source": "festival-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 384,
+      "height": 262,
+      "transparentPixels": 50289,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/FestivalBloom.png",
+      "bytes": 139003,
+      "sha256": "3de282c1aeb9c2258c12c4943eeddbaa76a6cf60e529ce5bdbac4204eeb5b201",
+      "source": "festival-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 384,
+      "height": 358,
+      "transparentPixels": 93698,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/FestivalBody.sks",
+      "bytes": 3868,
+      "sha256": "68ed9b3f8af0bcd92807193ecac6cece388219619c28d3b7ad80351607fe262d",
+      "source": "festival-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/FestivalBolt.png",
+      "bytes": 75477,
+      "sha256": "78aec3390d46b0fac213a018b278baa06f874484e46fc464e176bd30053ba4ef",
+      "source": "festival-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 384,
+      "height": 137,
+      "transparentPixels": 25754,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/FestivalDefeat.sks",
+      "bytes": 1917,
+      "sha256": "e8a1df61b225f7d83845b38d732e8183358fe54e7dfd6476cfd295d4e3447675",
+      "source": "festival-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/FestivalHead.png",
+      "bytes": 173145,
+      "sha256": "e2418d3e1c9d33fe59413223ac26c16b05534f6caace0d17b44e26f5e4c0f821",
+      "source": "festival-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 384,
+      "height": 315,
+      "transparentPixels": 50932,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/FestivalImpact.sks",
+      "bytes": 1916,
+      "sha256": "37da30ddb4aedaaef379ad3ba184c3e8038bb11718507931faf56a73535c5b5f",
+      "source": "festival-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/FestivalMuzzle.sks",
+      "bytes": 1916,
+      "sha256": "3dc0d474978131e5d1c6acaa9ef7f439a45ba246d900ca31724679faf98abfcc",
+      "source": "festival-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/FestivalPortrait.png",
+      "bytes": 57022,
+      "sha256": "562ed465e542395da666a895d190b0ee323ba6f7428aee7f54e6c0d8e35e76e3",
+      "source": "festival-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 256,
+      "height": 256,
+      "transparentPixels": 47702,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/FestivalProjectile.sks",
+      "bytes": 1956,
+      "sha256": "8731660c95644d8041636a2af699626460d92b8b3632b221d9735af78ce95e26",
+      "source": "festival-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/FestivalPuff.png",
+      "bytes": 120547,
+      "sha256": "5072ebf3d2076702c5e19d36e85e536dadd1c9e2e7a8485d5084a3b35126612c",
+      "source": "festival-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 298,
+      "height": 336,
+      "transparentPixels": 61565,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/FestivalRing.png",
+      "bytes": 154986,
+      "sha256": "c24eee671e420f975290509f772bd5c717c58c3d6fa5dab846f77a2d79cd4c67",
+      "source": "festival-source.png",
+      "collision": "none; original defender logic",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 365,
+      "height": 358,
+      "transparentPixels": 76360,
+      "alphaMin": 0,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    }
+  ]
+}

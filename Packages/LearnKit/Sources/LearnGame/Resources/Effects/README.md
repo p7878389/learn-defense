@@ -56,3 +56,7 @@ Xcode 中已将 InkBurst 的速度从 135 修改为 150 并保存，验证编辑
 ## 雷霆小机甲 / 云游茶壶
 
 `Mecha*` 与 `Teapot*` 分别包含本体、活动部件、主题弹、出膛、命中、退场及头像。独立 PNG 由 SKS 元数据引用，命名动作保存在 CombatActions.sks。离线生成器为 `scripts/build-theme-skins.swift`；来源、透明度报告和真实渲染验收见 `docs/defender-theme-skins/README.md`。不修改伤害或附加状态。
+
+## 四款射手主题
+
+Emerald / Astral / Frost / Festival 前缀对应翡翠星使、星轨术士、霜晶骑士、花火游侠。头部与茎叶独立组装，muzzle 跟随头部。每款五类 SKS 和七张 PNG；离线生成器为 scripts/build-peashooter-skins.swift。来源、提示词、透明度检查及真实引擎验收见 docs/peashooter-theme-skins/README.md。霜晶只替换外观，不附加减速。

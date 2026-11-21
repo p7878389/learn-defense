@@ -2,9 +2,9 @@ import Foundation
 import Testing
 @testable import LearnCore
 
-@Suite("机甲与茶壶装备")
+@Suite("资源主题皮肤装备")
 struct ThemeSkinCatalogTests {
-    @Test(arguments: ["mecha", "teapot"])
+    @Test(arguments: ["mecha", "teapot", "emerald", "astral", "frost", "festival"])
     func equipmentSurvivesSaveAndPreservesOtherSlots(id: String) throws {
         let catalog = GrowthCatalog.bundled
         let item = try #require(catalog.cosmetic(id: "defender.\(id)"))

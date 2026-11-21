@@ -1,5 +1,5 @@
 {
-  "status": "concept_only_not_runtime_assets",
+  "status": "concept_reference_with_runtime_implementations",
   "generated_with": "built-in image_gen",
   "concept_image": "peashooter-themes.png",
   "base_identity_reference": "../../Packages/LearnKit/Sources/LearnGame/Resources/Sprites/plant-inkling/0.png",
@@ -67,5 +67,5 @@
     }
   ],
   "source_policy": "Pinterest images are visual references, not imported game assets or verified licensed downloads.",
-  "implementation_status": "四款豌豆射手主题为概念设计；翡翠彗星通用特效已在 e07ca11 实装，完整翡翠星使角色皮肤尚未制作。"
+  "implementation_status": "翡翠星使、星轨术士、霜晶骑士、花火游侠已接入；运行素材、原始图集、提示词及验收见 ../peashooter-theme-skins/。本概念图仍不作为游戏运行素材。"
 }
