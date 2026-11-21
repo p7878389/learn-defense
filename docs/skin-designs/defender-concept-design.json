@@ -1,0 +1,52 @@
+{
+  "date": "2026-11-20",
+  "stage": "concept-design-only",
+  "tool": "built-in image_gen",
+  "game_frame": {
+    "engine": "SpriteKit",
+    "view": "2D side-view tower defense, firing right",
+    "viewport": "1200x600",
+    "target_readability": "about 80px unit height; not yet in-engine validated"
+  },
+  "boards": [
+    {
+      "role": "三款防御单位与特效概念",
+      "path": "defender-themes.png",
+      "prompt": "Use case: stylized-concept. Create an ORIGINAL premium 2D tower-defense unit and VFX DESIGN BOARD, wide landscape, three clearly separated equal columns on a refined dark midnight navy background with subtle panel dividers. This is a concept-art comparison, NOT a gameplay screenshot, NOT final sprite assets. Three radically different stationary defender silhouettes: an enchanted floating BOOK, a small electric ROBOT, and a floating Chinese porcelain TEAPOT. NO peashooters, NO plants with cannon mouths, NO copied existing game characters. Match one cohesive polished hand-painted cartoon game style: chunky readable silhouettes, saturated color accents, sharp material edges, expressive proportions, restrained glow, consistent upper-left lighting. Designed to remain readable when each unit is approximately 80 pixels high in a colorful tablet game. No scenery. Each column: a large fully visible main unit in the upper 55%; in the middle a separate left-to-right projectile demonstration; at bottom three distinct miniature effect samples for launch, impact and defeat. Use ONLY these three short exact Chinese column titles: '星轨魔导书', '雷霆小机甲', '云游茶壶'. No other tiny writing or paragraphs. COLUMN 1: a levitating thick indigo spellbook, open toward the right, deep violet leather covers, elegant chunky gold corner guards, one luminous turquoise gemstone clasp/spine detail, cream pages splaying like wings, one thin tilted golden orbit and THREE tiny gold stars circling the book. No face. A blue-violet light rises from the open page seam, expressing that the book itself is the caster. Projectile: a bright violet-blue star pearl with one thin gold orbit, clear solid core and two slender curved trailing ribbons. Effects: page-shaped golden launch sparks, hollow star-gate impact with a four-point core, constellation-like gold defeat burst. COLUMN 2: a compact adorable electric turret ROBOT on two chunky stable feet, off-white rounded armor with cobalt panels, a dark friendly cyan visor, a small copper coil backpack; one articulated short plasma launcher on its RIGHT side, chest reactor cyan. Clearly mechanical panel joints, no organic stalk. Projectile: a compact cyan-white plasma capsule, short angular electric tail, 2 small square sparks. Effects: two opening muzzle petals and a cyan arc; hexagonal impact ring and blue branching sparks; gold-cyan electrical burst. COLUMN 3: an elegant friendly floating CELADON TEAPOT with rounded porcelain belly, a clear curved spout pointing RIGHT, loop handle on LEFT, fine gold rim and restrained dark jade cloud motif, lid lifted slightly by a soft spiral of steam. Sits visually on a small self-contained cloud wisp, not a pedestal. No face or human limbs. Projectile: a round translucent amber-jade tea droplet with ONE small leaf inside, short curling liquid ribbon and tiny droplets. Effects: cloud-shaped steam puff at spout, hollow turquoise water splash ring, a lotus-shaped water bloom with a few golden tea leaves. IMPORTANT: independent distinct VFX materials (arcane energy / electricity / water) and distinct shapes, not palette swaps. Main silhouettes must not be hidden by effects. Enough empty space between unit, projectile and FX samples. Precise polished art direction board, no logos, no watermark."
+    },
+    {
+      "role": "星轨魔导书六阶段动作分镜",
+      "path": "spellbook-storyboard.png",
+      "prompt": "Create a detailed ANIMATION STORYBOARD concept sheet for the enchanted floating spellbook in the LEFT column of the provided design board. Use that exact indigo-purple book identity: thick cream pages, chunky gold corners, turquoise diamond gem on the spine, gold star ornamentation, thin gold orbital ring. Ignore the robot and teapot. Preserve the SAME recognizable book dimensions, gem shape, page volume and camera across the book panels. Wide landscape sheet, dark midnight navy, six equally sized panels arranged 3 columns x 2 rows with clean thin gold borders and generous margins. Top title in Chinese exactly: '星轨魔导书 · 动作分镜'. Each panel has one short Chinese label: '01 悬浮待机', '02 翻页聚能', '03 展页发射', '04 星珠飞行', '05 星门命中', '06 回落收势'. High-quality colorful 2D hand-painted cartoon game art, readable shapes, indigo and violet magic with gold stars and cyan gemstone light. Panel 1: book floats quietly slightly open, three small gold orbiting stars, subtle shadow ellipse below, no attack. Panel 2: the SAME book opens more, cream pages lift upward, three thin light ribbons travel from the turquoise spine gem toward the open page seam, concentrating into a small violet-white orb toward its RIGHT side. Panel 3: SAME book recoils slightly left while pages fan outward; a clearly spherical star pearl launches horizontally RIGHT from the glowing page seam, a narrow luminous gold crescent muzzle flare, just a few page-shaped sparks. Panel 4: a close view of the solid violet-blue star pearl traveling RIGHT, thin tilted golden orbit around its body, TWO tapered blue-violet trailing ribbons behind, sparse gold sparks; clear direction and negative space, not a huge beam. Panel 5: star pearl contacts a simple unobtrusive dark circular training-target silhouette at right; compact white-gold contact flash, hollow circular star gate expands around the contact with four pointed gold stars, two smaller delayed arcs and a few star fragments; keep target outline visible, no whiteout. Panel 6: SAME book settles to its original idle angle, pages relax downward, orbit reforms, only three fading sparkles remain. Use small subtle motion arrows only where helpful, no long paragraphs and no UI controls. All VFX must have clear start, impact and decay shapes. This is an illustrative animation DESIGN storyboard, not a claim of a working animation or an exact sprite sheet. No other characters, no weapons, no copied game logos or watermarks."
+    }
+  ],
+  "directions": [
+    {
+      "name": "星轨魔导书",
+      "material": "靛紫皮革、金属包角、奶油色书页、青蓝宝石",
+      "motion": "翻页聚能、展页发射、轻后仰后回落",
+      "projectile": "带金色星轨的紫蓝星珠",
+      "impact": "局部亮核、空心星门、错峰弧线和星屑"
+    },
+    {
+      "name": "雷霆小机甲",
+      "material": "乳白装甲、钴蓝面板、铜线圈、青色电浆",
+      "motion": "线圈通电、炮口展开、机械后坐",
+      "projectile": "青白电浆胶囊与短折线电弧",
+      "impact": "六边冲击环、分叉电弧、少量方形火花"
+    },
+    {
+      "name": "云游茶壶",
+      "material": "青瓷、金边、淡云纹、半透明琥珀茶水",
+      "motion": "壶盖轻跳、壶身倾斜、蒸汽收放",
+      "projectile": "包裹茶叶的水珠与短卷曲水带",
+      "impact": "空心水环、水滴、莲花水光"
+    }
+  ],
+  "recommended_first": "星轨魔导书",
+  "limits": [
+    "本目录图片为概念与分镜，不能作为透明运行素材直接导入",
+    "星轨魔导书已在 6fc7f8c 实装，实际素材与验收见 ../spellbook-skin/",
+    "雷霆小机甲、云游茶壶仍为概念设计"
+  ]
+}

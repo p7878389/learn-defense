@@ -229,14 +229,21 @@ struct CollectionView: View {
 
     private func cards(level: Int) -> some View {
         let items = items
-        // 还没有皮肤的射手只有原版：补一张「即将推出」，卡片限宽免得两张卡被拉得很宽
+        // 还没有皮肤的射手只有原版：补一张「即将推出」。
         let comingSoon = slot == .defenderSkin && items.count <= 1
-        // 子弹外观有 6 件：右侧约 900pt 要放下 6 张卡，卡片和按钮都不能有超过 140pt 的最小宽度，否则整页被撑宽、两边被裁掉
-        return HStack(alignment: .top, spacing: 12) {
-            ForEach(items, id: \.id) { card($0, level: level).frame(maxWidth: comingSoon ? 240 : .infinity) }
-            if comingSoon { comingSoonCard.frame(maxWidth: 240) }
+        return ScrollView(.horizontal) {
+            HStack(alignment: .top, spacing: 12) {
+                ForEach(items, id: \.id) {
+                    card($0, level: level).frame(width: 220, height: 330)
+                }
+                if comingSoon { comingSoonCard.frame(width: 220, height: 330) }
+            }
+            // 为卡片描边、阴影和按压动画留出空间。
+            .padding(8)
         }
-        .padding(.horizontal, slot == .itemSkin ? 70 : 0)
+        .frame(height: 354)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .id(slot == .defenderSkin ? "\(slot.rawValue)-\(shooter)" : slot.rawValue)
     }
 
     private func card(_ item: CosmeticKind, level: Int) -> some View {
