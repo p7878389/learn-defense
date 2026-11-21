@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1194, height=834, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>⚠️ 重置所有数据 · 二次确认 - 字灵守卫</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              orange: '#F28C2E',
+              orangeDark: '#D97316',
+              amber: '#F59E0B',
+              green: '#3DA885',
+              greenDark: '#2D8065',
+              bg: '#FAF2DE',
+              danger: '#E5484D',
+              dangerDark: '#C92A2A',
+            }
+          },
+          boxShadow: {
+            'candy': '0 6px 0 rgba(0,0,0,0.12)',
+            'candy-danger': '0 6px 0 #9E1C1F',
+            'modal': '0 24px 60px -15px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0,0,0,0.06)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap');
+    body {
+      font-family: 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    /* Subtle dot grid pattern on background */
+    .bg-grid-dots {
+      background-image: radial-gradient(#d6cbb4 1.5px, transparent 1.5px);
+      background-size: 24px 24px;
+    }
+    /* Modal appearance animation */
+    @keyframes modalPop {
+      0% { transform: scale(0.94) translateY(12px); opacity: 0; }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    .animate-modal {
+      animation: modalPop 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    /* Hold button progress bar shimmer */
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .shimmer-progress {
+      background: linear-gradient(90deg, #b91c1c 0%, #dc2626 50%, #b91c1c 100%);
+      background-size: 200% 100%;
+      animation: shimmer 2s infinite linear;
+    }
+  </style>
+</head>
+<body class="w-[1194px] h-[834px] overflow-hidden bg-brand-bg bg-grid-dots text-stone-800 relative flex flex-col justify-between p-7 select-none">
+
+  <!-- ==================== BACKGROUND: SETTINGS PAGE (SCREEN_2 REPLICA) ==================== -->
+  <!-- Top Navigation Bar -->
+  <header class="w-full flex items-center justify-between h-14 z-0">
+    <button class="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white shadow-sm border border-stone-200/80 text-stone-700 font-bold text-lg active:scale-95 transition-all">
+      <span class="text-xl">←</span> 返回主页
+    </button>
+    <div class="flex items-center gap-3">
+      <span class="text-3xl">⚙️</span>
+      <h1 class="text-2xl font-black text-stone-800 tracking-wide">设置</h1>
+      <span class="px-3.5 py-1 rounded-full bg-amber-100/80 border border-amber-300/80 text-amber-800 text-sm font-bold flex items-center gap-1.5 shadow-sm">
+        🔒 家长专区
+      </span>
+    </div>
+    <button class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white shadow-sm border border-stone-200/80 text-stone-700 font-bold text-lg">
+      🔐 退出家长模式
+    </button>
+  </header>
+
+  <!-- Main Content Layout (Settings 2-Columns) -->
+  <div class="w-full flex-1 flex gap-6 mt-4 relative z-0">
+    <!-- Left Navigation Rail -->
+    <aside class="w-64 bg-white/95 rounded-3xl p-4 shadow-sm border border-stone-200/70 flex flex-col justify-between">
+      <div class="space-y-2">
+        <div class="flex items-center justify-between px-4 py-3.5 rounded-2xl text-stone-600 font-bold text-lg">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">🔊</span>
+            <span>朗读语音</span>
+          </div>
+          <span class="text-stone-400">›</span>
+        </div>
+        <div class="flex items-center justify-between px-4 py-3.5 rounded-2xl text-stone-600 font-bold text-lg">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">📚</span>
+            <span>课本与题库</span>
+          </div>
+          <span class="text-stone-400">›</span>
+        </div>
+        <div class="flex items-center justify-between px-4 py-3.5 rounded-2xl text-stone-600 font-bold text-lg">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">👧</span>
+            <span>孩子档案</span>
+          </div>
+          <span class="text-stone-400">›</span>
+        </div>
+        <div class="flex items-center justify-between px-4 py-3.5 rounded-2xl text-stone-600 font-bold text-lg">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">🎮</span>
+            <span>声音与游戏</span>
+          </div>
+          <span class="text-stone-400">›</span>
+        </div>
+        <!-- Active Tab: 数据与备份 -->
+        <div class="flex items-center justify-between px-4 py-3.5 rounded-2xl bg-brand-orange text-white font-black text-lg shadow-md">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">💾</span>
+            <span>数据与备份</span>
+          </div>
+          <span class="w-3 h-3 rounded-full bg-white"></span>
+        </div>
+        <div class="flex items-center justify-between px-4 py-3.5 rounded-2xl text-stone-600 font-bold text-lg">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">ℹ️</span>
+            <span>关于字灵守卫</span>
+          </div>
+          <span class="text-stone-400">›</span>
+        </div>
+      </div>
+      <!-- Local Encryption Security Card -->
+      <div class="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 flex items-center gap-3">
+        <span class="text-2xl">🛡️</span>
+        <div>
+          <div class="font-bold text-xs text-stone-700">档案和学习记录</div>
+          <div class="text-[11px] text-stone-500">只保存在这台 iPad 上</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right Settings Panel (Storage, Backup, Danger Zone) -->
+    <main class="flex-1 space-y-4">
+      <!-- Storage Card -->
+      <div class="bg-white/95 rounded-3xl p-5 shadow-sm border border-stone-200/70 flex items-center justify-between">
+        <div>
+          <div class="flex items-center gap-2 font-black text-xl text-stone-800">
+            <span>📦 存储空间</span>
+            <span class="text-stone-500 text-sm font-normal">（共 22.6 MB）</span>
+          </div>
+          <div class="w-96 h-3 bg-stone-100 rounded-full mt-3 overflow-hidden flex">
+            <div class="h-full bg-emerald-500 w-[8%]"></div>
+            <div class="h-full bg-amber-400 w-[18%]"></div>
+            <div class="h-full bg-sky-400 w-[74%]"></div>
+          </div>
+        </div>
+        <button class="px-4 py-2 rounded-xl bg-stone-100 text-stone-700 font-bold text-sm">
+          🧹 清理图片缓存
+        </button>
+      </div>
+
+      <!-- Backup Card -->
+      <div class="bg-white/95 rounded-3xl p-5 shadow-sm border border-stone-200/70">
+        <div class="flex items-center justify-between mb-3">
+          <span class="font-black text-xl text-stone-800">🔄 备份与恢复</span>
+          <span class="text-xs text-stone-400">上次备份：11 月 2 日 20:15</span>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="p-4 bg-amber-50/60 rounded-2xl border border-amber-200/80 flex items-center justify-between">
+            <div>
+              <div class="font-black text-stone-800">导出备份</div>
+              <div class="text-xs text-stone-500">存成独立文件，可发到其它 iPad</div>
+            </div>
+            <span class="px-4 py-2 bg-brand-orange text-white font-bold text-sm rounded-xl">立即导出</span>
+          </div>
+          <div class="p-4 bg-emerald-50/60 rounded-2xl border border-emerald-200/80 flex items-center justify-between">
+            <div>
+              <div class="font-black text-stone-800">从备份恢复</div>
+              <div class="text-xs text-stone-500">用备份文件替换现在的全部数据</div>
+            </div>
+            <span class="px-4 py-2 bg-white text-stone-700 border border-stone-300 font-bold text-sm rounded-xl">选择文件</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danger Action Card (Where user clicks 重置所有数据) -->
+      <div class="bg-red-50/90 rounded-3xl p-5 border-2 border-red-200 flex items-center justify-between">
+        <div class="flex items-start gap-4">
+          <div class="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center text-2xl">⚠️</div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-red-700 font-black text-lg">危险操作</span>
+              <span class="px-2 py-0.5 rounded-full bg-red-200 text-red-700 text-xs font-bold">无法撤销</span>
+            </div>
+            <p class="text-stone-600 text-sm mt-1 max-w-md">重置所有用户数据：删除全部孩子档案、学习记录、等级、积分、徽章与设置，App 回到初次打开状态。</p>
+          </div>
+        </div>
+        <button class="px-6 py-3.5 bg-red-600 text-white font-black text-lg rounded-2xl flex items-center gap-2 shadow-md">
+          <span>🗑️</span> 重置所有数据
+        </button>
+      </div>
+    </main>
+  </div>
+
+
+  <!-- ==================== MODAL OVERLAY & POPUP PANEL ==================== -->
+  <!-- Backdrop Overlay: semi-transparent dark, blurred -->
+  <div class="fixed inset-0 bg-stone-950/60 backdrop-blur-md z-40 flex items-center justify-center transition-all duration-300">
+
+    <!-- White Modal Card (width: 680px, max-height tuned for iPad 834px viewport) -->
+    <div class="w-[680px] bg-white rounded-[36px] shadow-modal border border-stone-200/70 overflow-hidden relative z-50 animate-modal flex flex-col">
+
+      <!-- Top 6px Thick Red Danger Border -->
+      <div class="h-2 w-full bg-brand-danger"></div>
+
+      <!-- Modal Content Body -->
+      <div class="px-8 pt-7 pb-8 flex flex-col">
+
+        <!-- Header: Big Emoji + Strong Title + Red Subtitle -->
+        <div class="text-center mb-5">
+          <div class="w-16 h-16 mx-auto rounded-3xl bg-red-50 border-2 border-red-100 flex items-center justify-center text-4xl shadow-inner mb-3">
+            🧹
+          </div>
+          <h2 class="text-[26px] font-black text-stone-900 tracking-tight leading-snug">
+            真的要重置所有数据吗？
+          </h2>
+          <p class="text-sm font-bold text-brand-danger mt-1 flex items-center justify-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-brand-danger animate-pulse"></span>
+            这一步不能撤销，所有本地记录将被永久清空
+          </p>
+        </div>
+
+        <!-- Deletion List Card (会被删除清单) -->
+        <div class="bg-red-50/60 rounded-2xl p-4 border border-red-200/70 mb-4">
+          <div class="text-xs font-black text-red-800 tracking-wide uppercase mb-2.5 flex items-center justify-between">
+            <span class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-red-500"></span>
+              会被删除的内容
+            </span>
+            <span class="text-[11px] text-red-600/80 font-bold">不可恢复</span>
+          </div>
+          <div class="space-y-2 text-stone-700 text-[14px]">
+            <div class="flex items-center gap-2.5">
+              <span class="w-5 h-5 rounded-full bg-red-100 border border-red-300 text-red-600 flex items-center justify-center text-xs font-black shrink-0">✕</span>
+              <span class="font-medium text-stone-800">
+                <strong>3 个孩子档案：</strong>
+                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white text-stone-700 text-xs border border-red-100 ml-1">🐯 小虎</span>
+                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white text-stone-700 text-xs border border-red-100">🐰 朵朵</span>
+                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white text-stone-700 text-xs border border-red-100">🐼 团团</span>
+              </span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="w-5 h-5 rounded-full bg-red-100 border border-red-300 text-red-600 flex items-center justify-center text-xs font-black shrink-0">✕</span>
+              <span>全部<strong>学习记录</strong>、关卡进度与<strong>错题本</strong></span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="w-5 h-5 rounded-full bg-red-100 border border-red-300 text-red-600 flex items-center justify-center text-xs font-black shrink-0">✕</span>
+              <span>已累积的<strong>等级、积分、星星、徽章</strong>及已兑换的外观皮肤</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="w-5 h-5 rounded-full bg-red-100 border border-red-300 text-red-600 flex items-center justify-center text-xs font-black shrink-0">✕</span>
+              <span>自定义<strong>朗读语音引擎</strong>参数与游戏个性化设置</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Keep Imported Textbooks Checkbox (大号勾选项 · 已勾选 · 绿色) -->
+        <label class="flex items-center justify-between p-3.5 rounded-2xl bg-emerald-50/70 border-2 border-emerald-400/80 cursor-pointer mb-3 select-none transition-all hover:bg-emerald-50">
+          <div class="flex items-center gap-3">
+            <!-- Green Checked Indicator Box -->
+            <div class="w-7 h-7 rounded-xl bg-brand-green flex items-center justify-center text-white shadow-sm border border-emerald-600">
+              <svg class="w-[18px] h-[18px] stroke-current stroke-[3] fill-none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <div>
+              <span class="font-black text-stone-800 text-[15px]">保留我导入的课本（3 本）</span>
+              <span class="ml-2 text-xs font-bold text-emerald-700 bg-emerald-100/90 px-2 py-0.5 rounded-full">建议勾选</span>
+            </div>
+          </div>
+          <span class="text-xs text-stone-500 font-medium">免去重新导入题库烦恼</span>
+        </label>
+
+        <!-- Light Backup Reminder Bar (浅色提示条) -->
+        <div class="flex items-center justify-between px-4 py-2.5 rounded-2xl bg-amber-50/70 border border-amber-200/80 mb-4">
+          <div class="flex items-center gap-2 text-amber-900 text-xs font-bold">
+            <span class="text-base">💾</span>
+            <span>还没有备份？重置前先将当前数据留存一份</span>
+          </div>
+          <button class="px-3.5 py-1.5 rounded-xl bg-white border border-amber-300 text-amber-900 font-black text-xs shadow-sm hover:bg-amber-100/60 active:scale-95 transition-all">
+            先导出备份
+          </button>
+        </div>
+
+        <!-- Confirmation Input Area (请输入「重置」两个字确认) -->
+        <div class="mb-5">
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-xs font-black text-stone-700">
+              防误触安全校验：请输入<span class="text-brand-danger font-black px-1.5 py-0.5 mx-1 bg-red-100 rounded text-sm">重置</span>两个字来确认
+            </label>
+            <span class="text-[11px] font-bold text-emerald-600 flex items-center gap-1">
+              <span>✓</span> 校验匹配通过
+            </span>
+          </div>
+          <!-- 64px Height Input with Green Border & Checkmark -->
+          <div class="relative flex items-center">
+            <input
+              type="text"
+              value="重置"
+              readonly
+              class="w-full h-16 px-5 rounded-2xl bg-emerald-50/40 border-2 border-emerald-500 text-stone-900 font-black text-xl tracking-widest outline-none shadow-sm cursor-default"
+            />
+            <div class="absolute right-4 flex items-center gap-2">
+              <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">输入正确</span>
+              <div class="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-black text-sm shadow-sm">
+                ✓
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Action Buttons: Cancel + Hold 3s with Progress -->
+        <div class="flex items-center gap-4">
+          <!-- Cancel Button (大号白色胶囊) -->
+          <button class="flex-1 h-16 rounded-full bg-stone-100 border-2 border-stone-200 text-stone-700 font-black text-lg tracking-wide shadow-sm hover:bg-stone-200/80 active:scale-[0.98] transition-all flex items-center justify-center">
+            取消
+          </button>
+
+          <!-- Danger Hold 3s Button (大号红色实心胶囊，内部有 40% 填充进度) -->
+          <div class="flex-[1.6] h-16 rounded-full bg-brand-danger text-white relative overflow-hidden shadow-candy-danger border-2 border-red-700 active:scale-[0.99] transition-transform cursor-pointer select-none">
+            <!-- 40% Fill Progress Track -->
+            <div class="absolute inset-y-0 left-0 w-[40%] bg-red-800/90 border-r-2 border-red-300/80 shimmer-progress"></div>
+
+            <!-- Button Content Label Overlay -->
+            <div class="absolute inset-0 flex items-center justify-between px-6 z-10">
+              <div class="flex items-center gap-2.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-white animate-ping"></span>
+                <span class="font-black text-lg tracking-wider drop-shadow-sm">按住 3 秒重置</span>
+              </div>
+              <div class="flex items-center gap-1.5 bg-black/25 px-3 py-1 rounded-full text-xs font-black backdrop-blur-sm border border-white/20">
+                <span>松开取消</span>
+                <span class="text-amber-300">40%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Safe Hint -->
+        <div class="text-center mt-3">
+          <span class="text-[11px] text-stone-400 font-medium">
+            提示：手指长按至进度填满 100% 后生效，中途移开即可安全取消
+          </span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

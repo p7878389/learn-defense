@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>字灵守卫 - 家长验证</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {},
+          borderRadius: {
+            "DEFAULT": "1rem",
+            "lg": "2rem",
+            "xl": "3rem",
+            "full": "9999px"
+          },
+          spacing: {},
+          fontFamily: {
+            headline: ["Nunito Sans", "system-ui", "sans-serif"],
+            display: ["Nunito Sans", "system-ui", "sans-serif"],
+            body: ["Nunito Sans", "system-ui", "sans-serif"],
+            label: ["Nunito Sans", "system-ui", "sans-serif"]
+          },
+          fontSize: {}
+        },
+      },
+    }
+  </script>
+</head>
+<body class="font-body text-stone-800 bg-[#FAF2DE] overflow-hidden select-none m-0 p-0 w-screen h-screen">
+<!-- ==================== IPAD 横屏底图（游戏主页：暖米纸质、绿草坪、孩子卡片、向日葵） ==================== -->
+<div class="relative w-full h-full min-w-[1194px] min-h-[834px] flex flex-col justify-between overflow-hidden bg-gradient-to-b from-[#DDF1FF]/40 via-[#FAF2DE] to-[#E6F4D7]/70">
+<header class="flex justify-between items-center w-full px-10 py-5 z-0">
+<div class="flex items-center gap-3">
+<span class="text-3xl">🛡️</span>
+<span class="font-display text-3xl font-black text-amber-600 tracking-wider">字灵守卫</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 bg-white/90 px-5 py-2.5 rounded-full shadow-[0_4px_0_#e5e7eb] font-bold text-stone-700">
+<span class="text-xl">🪙</span>
+<span class="font-black text-amber-600 text-lg">1,280</span>
+</div>
+<div class="w-14 h-14 rounded-full bg-amber-400 border-4 border-white shadow-md flex items-center justify-center text-2xl font-black text-white">
+          ⚙️
+        </div>
+</div>
+</header>
+<main class="relative flex-1 flex flex-col items-center justify-center">
+<div class="absolute top-12 left-24 text-5xl opacity-40 rotate-12">📖</div>
+<div class="absolute top-20 right-28 text-6xl opacity-30 -rotate-12">🌟</div>
+<div class="w-[420px] h-[360px] bg-white/90 rounded-[32px] p-6 shadow-xl border-4 border-amber-200/60 flex flex-col items-center justify-center text-center">
+<div class="w-44 h-44 rounded-full bg-amber-100 flex items-center justify-center text-7xl shadow-inner mb-4 border-4 border-amber-300">
+          🐯
+        </div>
+<h2 class="text-3xl font-black text-stone-800">小虎</h2>
+<p class="text-lg text-stone-500 font-bold mt-1">三年级</p>
+</div>
+</main>
+<footer class="h-32 bg-gradient-to-t from-emerald-500/80 to-emerald-400/40 relative flex items-end justify-between px-16 pb-4">
+<div class="flex items-end gap-6 text-6xl pb-2">
+<span>🌻</span>
+<span>🌱</span>
+<span>🌻</span>
+<span class="text-5xl">🌿</span>
+</div>
+<div class="flex items-end gap-6 text-6xl pb-2">
+<span class="text-5xl">🌿</span>
+<span>🌻</span>
+<span>🌱</span>
+</div>
+</footer>
+<!-- ==================== 毛玻璃深色遮罩 + 家长验证弹窗 ==================== -->
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 backdrop-blur-md transition-all">
+<section aria-labelledby="parent-gate-title" aria-modal="true" class="relative w-[640px] bg-white rounded-[36px] p-9 shadow-2xl border-4 border-amber-100 flex flex-col items-center text-center" role="dialog">
+<!-- 右上角 64px「✕」关闭按钮 -->
+<button aria-label="关闭验证窗口" class="absolute top-5 right-5 w-16 h-16 rounded-full bg-stone-100 hover:bg-stone-200 active:scale-90 shadow-[0_4px_0_#d6d3d1] border-2 border-stone-200/80 flex items-center justify-center text-stone-600 transition-all duration-150 cursor-pointer" onclick="handleClose()" type="button">
+<span class="material-symbols-outlined text-3xl font-black">close</span>
+</button>
+<!-- 顶部光环底座 + 锁图标 -->
+<div class="relative flex items-center justify-center mb-3 mt-1">
+<div class="absolute w-28 h-28 bg-gradient-to-tr from-amber-300/40 via-amber-200/60 to-yellow-100/30 rounded-full blur-xl"></div>
+<div class="relative w-24 h-24 rounded-full bg-gradient-to-b from-amber-100 to-amber-200/90 border-4 border-amber-300/80 flex items-center justify-center shadow-inner">
+<span class="text-5xl drop-shadow-md">🔒</span>
+</div>
+</div>
+<h1 class="font-display text-[36px] font-black text-[#292524] tracking-tight leading-tight mb-2" id="parent-gate-title">
+          请爸爸妈妈来帮忙
+        </h1>
+<p class="text-[18px] text-stone-500 font-bold mb-7">
+          答对下面的题，就能进入设置
+        </p>
+<!-- 算式卡片 -->
+<div class="w-full bg-amber-50/80 rounded-3xl border-2 border-amber-200/90 p-6 mb-7 shadow-[0_4px_0_#fde68a] flex flex-col items-center justify-center">
+<div class="font-display text-[64px] font-black text-stone-900 tracking-wider leading-none py-1">
+            7 × 8 = ?
+          </div>
+<p class="text-[16px] text-amber-800/80 font-bold mt-3 flex items-center gap-1.5">
+<span class="text-lg">✏️</span> 请选出正确答案
+          </p>
+</div>
+<!-- 4 个答案按钮：样式完全一致，不能暗示正确答案 -->
+<div class="w-full flex items-center justify-between gap-3.5 mb-7" id="options">
+<button class="opt w-[124px] h-[88px] rounded-[24px] bg-white border-2 border-stone-200 text-stone-800 shadow-[0_6px_0_#cbd5e1] hover:bg-stone-50 active:translate-y-1.5 active:shadow-[0_1px_0_#cbd5e1] transition-all duration-100 flex items-center justify-center cursor-pointer select-none" data-v="48" type="button"><span class="font-display text-[34px] font-black">48</span></button>
+<button class="opt w-[124px] h-[88px] rounded-[24px] bg-white border-2 border-stone-200 text-stone-800 shadow-[0_6px_0_#cbd5e1] hover:bg-stone-50 active:translate-y-1.5 active:shadow-[0_1px_0_#cbd5e1] transition-all duration-100 flex items-center justify-center cursor-pointer select-none" data-v="54" type="button"><span class="font-display text-[34px] font-black">54</span></button>
+<button class="opt w-[124px] h-[88px] rounded-[24px] bg-white border-2 border-stone-200 text-stone-800 shadow-[0_6px_0_#cbd5e1] hover:bg-stone-50 active:translate-y-1.5 active:shadow-[0_1px_0_#cbd5e1] transition-all duration-100 flex items-center justify-center cursor-pointer select-none" data-v="56" type="button"><span class="font-display text-[34px] font-black">56</span></button>
+<button class="opt w-[124px] h-[88px] rounded-[24px] bg-white border-2 border-stone-200 text-stone-800 shadow-[0_6px_0_#cbd5e1] hover:bg-stone-50 active:translate-y-1.5 active:shadow-[0_1px_0_#cbd5e1] transition-all duration-100 flex items-center justify-center cursor-pointer select-none" data-v="63" type="button"><span class="font-display text-[34px] font-black">63</span></button>
+</div>
+<!-- 答题反馈（默认隐藏） -->
+<div class="hidden mb-3 font-bold text-sm px-4 py-1.5 rounded-full items-center gap-1.5" id="feedback-alert"></div>
+<!-- 底部规则说明（无倒计时） -->
+<div class="flex items-center justify-center gap-1.5 text-stone-400 text-[15px] font-bold">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+<span>每次进入都会换一道题；连续答错 3 次需要等 1 分钟</span>
+</div>
+</section>
+</div>
+</div>
+<script>
+    let wrongAttempts = 0;
+    const ANSWER = 56;
+
+    function handleClose() {
+      const overlay = document.querySelector('.fixed.inset-0');
+      overlay.classList.add('opacity-0', 'pointer-events-none');
+      setTimeout(() => overlay.classList.remove('opacity-0', 'pointer-events-none'), 1500);
+    }
+
+    document.querySelectorAll('.opt').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const feedback = document.getElementById('feedback-alert');
+        if (Number(btn.dataset.v) === ANSWER) {
+          feedback.className = "flex mb-3 text-emerald-600 font-black text-base bg-emerald-50 px-5 py-2 rounded-full border border-emerald-300 items-center gap-2";
+          feedback.innerHTML = "<span>✅</span><span>验证通过，正在进入设置…</span>";
+        } else {
+          wrongAttempts++;
+          feedback.className = "flex mb-3 text-rose-500 font-bold text-sm bg-rose-50 px-4 py-1.5 rounded-full border border-rose-200 items-center gap-1.5";
+          feedback.innerHTML = wrongAttempts >= 3
+            ? "<span>⏸</span><span>已经答错 3 次，请 1 分钟后再试</span>"
+            : `<span>❌</span><span>不对哦，再算一算（已答错 ${wrongAttempts} 次）</span>`;
+        }
+      });
+    });
+  </script>
+</body></html>

@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=1194, height=834, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>字灵守卫 - 家长专区 - 朗读语音设置</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            paper: '#FAF2DE',
+            cream: '#FFFDF9',
+            brandOrange: '#F28C2E',
+            brandOrangeDark: '#D97218',
+            brandEmerald: '#3DA885',
+            brandEmeraldDark: '#247359',
+            brandGold: '#FFC93C',
+            techBlue: '#3B82F6',
+            ink: '#2B2B38',
+            subText: '#8C857A',
+          },
+          borderRadius: {
+            "DEFAULT": "1rem",
+            "lg": "2rem",
+            "xl": "3rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Nunito Sans", "sans-serif"],
+            display: ["Nunito Sans", "sans-serif"],
+            body: ["Nunito Sans", "sans-serif"],
+            label: ["Nunito Sans", "sans-serif"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      background-color: #FAF2DE;
+      color: #2B2B38;
+      width: 1194px;
+      height: 834px;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 600, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .fill-icon {
+      font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;
+    }
+    /* Custom Range Track */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: #E5E0D3;
+      height: 6px;
+      border-radius: 9999px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 16px;
+      width: 16px;
+      border-radius: 50%;
+      background: #F97316;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2), inset 0 1px 1px #fff;
+      cursor: pointer;
+      border: 2px solid #ffffff;
+      transition: transform 0.1s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+  </style>
+</head>
+<body class="flex flex-col w-[1194px] h-[834px] bg-[#FAF2DE] text-ink font-body p-4 gap-3 box-border">
+<!-- 1. Header (62px) -->
+<header class="flex items-center justify-between w-full h-[60px] px-5 bg-white/95 rounded-2xl shadow-[0_4px_0_#E2DAC4] border border-white flex-shrink-0">
+<!-- Back & Title & Badges -->
+<div class="flex items-center gap-3.5">
+<button class="w-10 h-10 rounded-full bg-white border-2 border-amber-300 flex items-center justify-center text-amber-600 shadow-[0_3px_0_#d97706] active:translate-y-0.5 active:shadow-[0_1px_0_#d97706] hover:scale-105 transition-all">
+<span class="material-symbols-outlined text-2xl font-bold">arrow_back</span>
+</button>
+<div class="flex flex-col">
+<div class="flex items-center gap-2.5">
+<h1 class="text-[22px] font-black tracking-tight text-ink flex items-center gap-1.5">
+            朗读语音设置
+          </h1>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-bold border border-amber-300/80 shadow-sm">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+            家长专区
+          </span>
+</div>
+<p class="text-[12px] text-subText font-medium leading-none mt-0.5">
+          题目和拼音的读音来自这里。多家服务按权重轮流用，一家出问题会自动换另一家。
+        </p>
+</div>
+</div>
+<!-- Actions & Unsaved indicator -->
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200">
+<span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+<span class="text-xs font-bold text-amber-900">有 2 处修改未保存</span>
+</div>
+<button class="px-4 py-2 rounded-full bg-white text-stone-700 font-bold text-sm border-2 border-stone-200 shadow-[0_3px_0_#d6d3d1] hover:bg-stone-50 active:translate-y-0.5 active:shadow-[0_1px_0_#d6d3d1] transition-all">
+        撤销
+      </button>
+<button class="flex items-center gap-1 px-5 py-2 rounded-full bg-brandEmerald text-white font-black text-sm shadow-[0_3px_0_#247359] hover:bg-emerald-600 active:translate-y-0.5 active:shadow-[0_1px_0_#247359] transition-all">
+<span class="material-symbols-outlined text-lg fill-icon">check_circle</span>
+        保存
+      </button>
+</div>
+</header>
+<!-- 2. Main Two-Column Layout (H: 746px) -->
+<main class="flex w-full flex-1 gap-3.5 min-h-0">
+<!-- Left Column (350px fixed) -->
+<aside class="w-[350px] flex flex-col gap-3 flex-shrink-0">
+<!-- Card 1: 服务商权重 (Auto Fit) -->
+<section class="bg-white rounded-2xl p-4 shadow-[0_4px_0_#E2DAC4] border border-white flex flex-col gap-3.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5 font-black text-[16px] text-ink">
+<span class="text-xl">⚖️</span>
+<span>服务商权重</span>
+</div>
+<span class="text-[11px] font-bold text-amber-700 bg-amber-100/70 px-2 py-0.5 rounded-full">高可用分流</span>
+</div>
+<!-- 分流比例进度条 -->
+<div class="flex flex-col gap-1.5">
+<div class="h-4 w-full rounded-full bg-stone-100 flex overflow-hidden p-0.5 border border-stone-200 shadow-inner">
+<div class="h-full bg-gradient-to-r from-orange-500 to-amber-500 rounded-l-full transition-all duration-300 flex items-center justify-center text-[10px] text-white font-extrabold" style="width: 70%;">70%</div>
+<div class="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-r-full transition-all duration-300 flex items-center justify-center text-[10px] text-white font-extrabold" style="width: 30%;">30%</div>
+</div>
+<div class="flex justify-between text-[11px] font-bold px-1 text-stone-500">
+<span class="text-orange-600 flex items-center gap-1">● 豆包 70%</span>
+<span class="text-blue-600 flex items-center gap-1">● 讯飞 30%</span>
+</div>
+</div>
+<!-- Row 1: 豆包语音 -->
+<div class="flex items-center justify-between p-2.5 rounded-xl bg-orange-50/70 border border-orange-200/80">
+<div class="flex items-center gap-2.5">
+<span class="text-2xl drop-shadow-sm">🫘</span>
+<div>
+<p class="font-extrabold text-[14px] text-ink leading-tight">豆包语音</p>
+<p class="text-[11px] text-emerald-600 font-bold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                已连接 · 380ms
+              </p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<div class="flex items-center bg-white rounded-lg border border-stone-200 shadow-[0_2px_0_#e5e7eb] px-1 py-0.5">
+<button class="w-6 h-6 rounded text-stone-500 hover:bg-stone-100 active:scale-90 font-black text-sm flex items-center justify-center">−</button>
+<span class="w-5 text-center font-black text-xs text-stone-800">7</span>
+<button class="w-6 h-6 rounded text-stone-500 hover:bg-stone-100 active:scale-90 font-black text-sm flex items-center justify-center">+</button>
+</div>
+<span class="font-black text-[15px] text-orange-600 w-9 text-right">70%</span>
+</div>
+</div>
+<!-- Row 2: 讯飞语音 -->
+<div class="flex items-center justify-between p-2.5 rounded-xl bg-stone-50 border border-stone-200/80">
+<div class="flex items-center gap-2.5">
+<span class="text-2xl drop-shadow-sm">🎙️</span>
+<div>
+<p class="font-extrabold text-[14px] text-ink leading-tight">讯飞语音</p>
+<p class="text-[11px] text-amber-600 font-bold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                额度剩 12%
+              </p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<div class="flex items-center bg-white rounded-lg border border-stone-200 shadow-[0_2px_0_#e5e7eb] px-1 py-0.5">
+<button class="w-6 h-6 rounded text-stone-500 hover:bg-stone-100 active:scale-90 font-black text-sm flex items-center justify-center">−</button>
+<span class="w-5 text-center font-black text-xs text-stone-800">3</span>
+<button class="w-6 h-6 rounded text-stone-500 hover:bg-stone-100 active:scale-90 font-black text-sm flex items-center justify-center">+</button>
+</div>
+<span class="font-black text-[15px] text-blue-600 w-9 text-right">30%</span>
+</div>
+</div>
+<p class="text-[11px] text-stone-400 font-medium">※ 每次朗读按比例挑一家，权重填 0 = 暂停使用</p>
+<!-- iPad 系统语音兜底 -->
+<div class="pt-2.5 border-t border-dashed border-stone-300 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="text-xl">📱</span>
+<div>
+<p class="font-bold text-[13px] text-stone-700 leading-tight">iPad 系统语音（兜底）</p>
+<p class="text-[11px] text-stone-400">没网或两家都失败时使用，不参与权重</p>
+</div>
+</div>
+<span class="inline-flex items-center gap-0.5 px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-bold">
+<span class="material-symbols-outlined text-[14px] text-emerald-600 font-bold">check</span>
+            已就绪
+          </span>
+</div>
+</section>
+<!-- Card 2: 最近 100 次朗读监控 (Flex-1) -->
+<section class="bg-white rounded-2xl p-4 shadow-[0_4px_0_#E2DAC4] border border-white flex-1 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="font-black text-[15px] text-ink flex items-center gap-1.5">
+<span class="text-lg">📊</span>
+<span>最近 100 次朗读</span>
+</span>
+<span class="text-[11px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">健康运转中</span>
+</div>
+<!-- 3 个数据微胶囊 -->
+<div class="grid grid-cols-3 gap-2">
+<div class="bg-orange-50 border border-orange-200/80 rounded-xl p-2 text-center">
+<span class="text-[11px] text-orange-700 font-bold block">豆包</span>
+<span class="text-[18px] font-black text-orange-600 leading-tight">68<span class="text-[11px] font-medium text-orange-500 ml-0.5">次</span></span>
+</div>
+<div class="bg-blue-50 border border-blue-200/80 rounded-xl p-2 text-center">
+<span class="text-[11px] text-blue-700 font-bold block">讯飞</span>
+<span class="text-[18px] font-black text-blue-600 leading-tight">30<span class="text-[11px] font-medium text-blue-500 ml-0.5">次</span></span>
+</div>
+<div class="bg-stone-50 border border-stone-200/80 rounded-xl p-2 text-center">
+<span class="text-[11px] text-stone-600 font-bold block">系统兜底</span>
+<span class="text-[18px] font-black text-stone-600 leading-tight">2<span class="text-[11px] font-medium text-stone-400 ml-0.5">次</span></span>
+</div>
+</div>
+</div>
+<!-- 监控详细统计行 -->
+<div class="bg-amber-50/60 rounded-xl p-2.5 border border-amber-200/60 flex items-center gap-2">
+<span class="material-symbols-outlined text-amber-600 text-lg">info</span>
+<div class="text-[11px] text-stone-600 leading-tight font-medium">
+            失败自动切换 <strong class="text-orange-600 font-bold">3</strong> 次 · 平均出声 <strong class="text-emerald-700 font-bold">0.42 秒</strong> · 已本地缓存 <strong class="text-ink font-bold">312</strong> 条读音
+          </div>
+</div>
+</section>
+</aside>
+<!-- Right Column (760px flex-1) -->
+<div class="flex-1 flex flex-col min-w-0">
+<!-- Top Big Tabs -->
+<div class="flex items-end gap-2 px-3 pt-0">
+<!-- Tab 1: 豆包 (Active) -->
+<button class="relative flex items-center gap-2 px-6 py-2.5 bg-white rounded-t-2xl font-black text-[15px] text-ink shadow-[0_-2px_6px_rgba(0,0,0,0.02)] border-t-4 border-orange-500 border-x border-stone-100 z-10">
+<span class="text-lg">🫘</span>
+<span>豆包语音</span>
+<span class="px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-xs font-bold">权重 70%</span>
+</button>
+<!-- Tab 2: 讯飞 (Inactive) -->
+<button class="flex items-center gap-2 px-6 py-2.5 bg-stone-200/60 hover:bg-stone-200/90 rounded-t-2xl font-bold text-[14px] text-stone-600 transition-colors mb-0.5">
+<span class="text-base">🎙️</span>
+<span>讯飞语音</span>
+<span class="px-2 py-0.5 bg-stone-300/80 text-stone-700 rounded-full text-xs font-bold">权重 30%</span>
+</button>
+</div>
+<!-- Main White Content Card -->
+<div class="bg-white rounded-2xl rounded-tl-none p-4 shadow-[0_4px_0_#E2DAC4] border border-white flex-1 flex flex-col justify-between gap-3 overflow-hidden">
+<!-- Block 1: 账号密钥 -->
+<div class="bg-stone-50/70 border border-stone-200/80 rounded-2xl p-3 flex flex-col gap-2 flex-shrink-0">
+<div class="flex items-center justify-between">
+<span class="font-extrabold text-[13px] text-ink flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-orange-500"></span>
+              账号密钥（火山引擎控制台获取）
+            </span>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1.5">
+<span class="text-xs font-bold text-stone-600">服务启用</span>
+<div class="w-10 h-5 bg-orange-500 rounded-full relative cursor-pointer shadow-inner flex items-center px-0.5">
+<div class="w-4 h-4 bg-white rounded-full shadow-md ml-auto"></div>
+</div>
+</div>
+<button class="px-2.5 py-1 rounded-full bg-white border border-stone-300 font-bold text-xs text-stone-700 shadow-sm hover:bg-stone-50 active:scale-95">
+                测试连接
+              </button>
+<span class="text-[11px] text-emerald-600 font-bold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                已连接 · 380ms
+              </span>
+</div>
+</div>
+<!-- 3 Compact Input Fields -->
+<div class="grid grid-cols-3 gap-3">
+<div class="flex flex-col gap-0.5">
+<span class="text-[10px] font-bold text-stone-500">App ID</span>
+<input class="w-full bg-white border border-stone-300 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-stone-800 focus:outline-none shadow-inner" readonly="" type="text" value="8392017456"/>
+</div>
+<div class="flex flex-col gap-0.5">
+<span class="text-[10px] font-bold text-stone-500">Access Token</span>
+<div class="relative">
+<input class="w-full bg-white border border-stone-300 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-stone-800 pr-7 focus:outline-none shadow-inner" readonly="" type="password" value="abcdefghQk7f"/>
+<span class="material-symbols-outlined absolute right-2 top-2 text-[14px] text-stone-400 cursor-pointer">visibility</span>
+</div>
+</div>
+<div class="flex flex-col gap-0.5">
+<span class="text-[10px] font-bold text-stone-500">Cluster 标识</span>
+<input class="w-full bg-white border border-stone-300 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-stone-800 focus:outline-none shadow-inner" readonly="" type="text" value="volcano_tts"/>
+</div>
+</div>
+</div>
+<!-- Block 2: 音色与权重 (列表 3 行) -->
+<div class="bg-amber-50/40 border border-amber-200/60 rounded-2xl p-3 flex flex-col gap-2 flex-shrink-0">
+<div class="flex items-center justify-between">
+<span class="font-extrabold text-[13px] text-ink flex items-center gap-1.5">
+<span class="text-base">🎭</span>
+              音色与权重（在豆包内部再按比例挑音色）
+            </span>
+<button class="px-2.5 py-1 rounded-full border-2 border-dashed border-orange-400 bg-orange-50/50 hover:bg-orange-100 text-orange-700 font-black text-xs flex items-center gap-1 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[14px]">add</span>
+              添加音色
+            </button>
+</div>
+<!-- 3 紧凑音色条目 -->
+<div class="flex flex-col gap-1.5">
+<!-- 音色 1: 灿灿 -->
+<div class="flex items-center justify-between bg-white px-3 py-1.5 rounded-xl border border-stone-200 shadow-sm">
+<div class="flex items-center gap-2 w-48">
+<span class="text-xl">👩‍🦰</span>
+<div>
+<p class="font-extrabold text-xs text-ink">灿灿 <span class="text-[10px] text-orange-600 font-bold bg-orange-100 px-1 py-0.2 rounded ml-1">推荐拼音</span></p>
+<p class="text-[10px] text-stone-400">温柔女声 · BV700_streaming</p>
+</div>
+</div>
+<button class="w-7 h-7 rounded-full bg-orange-100 hover:bg-orange-200 text-orange-600 flex items-center justify-center active:scale-90 transition-all">
+<span class="material-symbols-outlined text-[16px] fill-icon">play_arrow</span>
+</button>
+<div class="flex items-center gap-2 flex-1 max-w-[200px] mx-4">
+<input class="w-full cursor-pointer accent-orange-500" max="10" min="0" type="range" value="6"/>
+<span class="text-[11px] font-bold text-stone-600 w-7">权重 6</span>
+</div>
+<span class="font-black text-sm text-orange-600 w-10 text-right">60%</span>
+<button class="text-stone-300 hover:text-rose-500 p-1 rounded-md transition-colors ml-2">
+<span class="material-symbols-outlined text-[16px]">delete</span>
+</button>
+</div>
+<!-- 音色 2: 童声 -->
+<div class="flex items-center justify-between bg-white px-3 py-1.5 rounded-xl border border-stone-200 shadow-sm">
+<div class="flex items-center gap-2 w-48">
+<span class="text-xl">🧒</span>
+<div>
+<p class="font-extrabold text-xs text-ink">童声趣味</p>
+<p class="text-[10px] text-stone-400">小朋友 · BV061_streaming</p>
+</div>
+</div>
+<button class="w-7 h-7 rounded-full bg-orange-100 hover:bg-orange-200 text-orange-600 flex items-center justify-center active:scale-90 transition-all">
+<span class="material-symbols-outlined text-[16px] fill-icon">play_arrow</span>
+</button>
+<div class="flex items-center gap-2 flex-1 max-w-[200px] mx-4">
+<input class="w-full cursor-pointer accent-orange-500" max="10" min="0" type="range" value="3"/>
+<span class="text-[11px] font-bold text-stone-600 w-7">权重 3</span>
+</div>
+<span class="font-black text-sm text-stone-700 w-10 text-right">30%</span>
+<button class="text-stone-300 hover:text-rose-500 p-1 rounded-md transition-colors ml-2">
+<span class="material-symbols-outlined text-[16px]">delete</span>
+</button>
+</div>
+<!-- 音色 3: 通用男声 -->
+<div class="flex items-center justify-between bg-white px-3 py-1.5 rounded-xl border border-stone-200 shadow-sm">
+<div class="flex items-center gap-2 w-48">
+<span class="text-xl">👨</span>
+<div>
+<p class="font-extrabold text-xs text-ink">通用男声</p>
+<p class="text-[10px] text-stone-400">讲解说明 · BV002_streaming</p>
+</div>
+</div>
+<button class="w-7 h-7 rounded-full bg-orange-100 hover:bg-orange-200 text-orange-600 flex items-center justify-center active:scale-90 transition-all">
+<span class="material-symbols-outlined text-[16px] fill-icon">play_arrow</span>
+</button>
+<div class="flex items-center gap-2 flex-1 max-w-[200px] mx-4">
+<input class="w-full cursor-pointer accent-orange-500" max="10" min="0" type="range" value="1"/>
+<span class="text-[11px] font-bold text-stone-600 w-7">权重 1</span>
+</div>
+<span class="font-black text-sm text-stone-700 w-10 text-right">10%</span>
+<button class="text-stone-300 hover:text-rose-500 p-1 rounded-md transition-colors ml-2">
+<span class="material-symbols-outlined text-[16px]">delete</span>
+</button>
+</div>
+</div>
+<!-- 提示条 -->
+<div class="flex items-center gap-1.5 text-[11px] text-amber-800 bg-amber-100/60 px-2.5 py-1 rounded-lg">
+<span>💡</span>
+<span class="font-bold">拼音题建议使用「灿灿」：声调与轻声分明，读音最精准。</span>
+</div>
+</div>
+<!-- Block 3: 出错时策略配置 -->
+<div class="flex items-center justify-between bg-stone-50 border border-stone-200/80 rounded-xl px-3.5 py-2 flex-shrink-0">
+<span class="text-xs font-black text-ink flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-rose-500">shield_with_heart</span>
+            容错与故障自愈策略
+          </span>
+<div class="flex items-center gap-4 text-xs">
+<div class="flex items-center gap-1.5">
+<span class="text-stone-500">超时换下一家</span>
+<select class="bg-white border border-stone-300 rounded-lg px-2 py-0.5 text-xs font-bold text-stone-800 focus:outline-none">
+<option>1.5 秒</option>
+<option>1.0 秒</option>
+<option>2.0 秒</option>
+</select>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="text-stone-500">失败重试</span>
+<select class="bg-white border border-stone-300 rounded-lg px-2 py-0.5 text-xs font-bold text-stone-800 focus:outline-none">
+<option>1 次</option>
+<option>2 次</option>
+<option>0 次（立刻切）</option>
+</select>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="text-stone-500">音频格式</span>
+<select class="bg-white border border-stone-300 rounded-lg px-2 py-0.5 text-xs font-bold text-stone-800 focus:outline-none">
+<option>mp3 · 24k</option>
+<option>ogg · 16k</option>
+<option>wav · 原声</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Block 4: 底部两张并排小卡 (参数 + 试读) -->
+<div class="grid grid-cols-2 gap-3 flex-1 min-h-0">
+<!-- 左小卡: 朗读参数 -->
+<div class="bg-stone-50/60 border border-stone-200/90 rounded-2xl p-3 flex flex-col justify-between">
+<div class="flex items-center justify-between mb-1">
+<span class="font-extrabold text-xs text-ink">朗读参数（豆包全部音色共用）</span>
+<span class="text-[10px] text-stone-400 font-bold">儿童默认</span>
+</div>
+<div class="flex flex-col gap-2">
+<!-- 语速 -->
+<div class="flex items-center justify-between">
+<span class="text-[11px] font-bold text-stone-600 w-12">语速</span>
+<input class="flex-1 mx-2 accent-orange-500" max="1.5" min="0.5" step="0.05" type="range" value="0.9"/>
+<span class="font-mono font-bold text-xs text-orange-600 w-10 text-right">0.90×</span>
+</div>
+<!-- 音调 -->
+<div class="flex items-center justify-between">
+<span class="text-[11px] font-bold text-stone-600 w-12">音调</span>
+<input class="flex-1 mx-2 accent-orange-500" max="1.5" min="0.5" step="0.05" type="range" value="1.1"/>
+<span class="font-mono font-bold text-xs text-orange-600 w-10 text-right">1.10×</span>
+</div>
+<!-- 音量 -->
+<div class="flex items-center justify-between">
+<span class="text-[11px] font-bold text-stone-600 w-12">音量</span>
+<input class="flex-1 mx-2 accent-orange-500" max="1.5" min="0.5" step="0.05" type="range" value="1.0"/>
+<span class="font-mono font-bold text-xs text-orange-600 w-10 text-right">1.00×</span>
+</div>
+</div>
+<p class="text-[10px] text-stone-400">适当降低语速与略微提亮音调，更适合低幼识字。</p>
+</div>
+<!-- 右小卡: 试读一句 -->
+<div class="bg-orange-50/40 border border-orange-200/80 rounded-2xl p-3 flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-extrabold text-xs text-ink flex items-center gap-1">
+<span>🔊</span> 试读一句
+              </span>
+<span class="text-[10px] text-orange-600 bg-orange-100 font-bold px-1.5 py-0.5 rounded">真实接口返回</span>
+</div>
+<!-- 试读输入与试听按钮 -->
+<div class="flex items-center gap-2 mt-1">
+<div class="relative flex-1">
+<input class="w-full bg-white border border-stone-300 rounded-xl px-3 py-2 text-xs font-bold text-ink focus:outline-none focus:border-orange-400 shadow-inner" type="text" value="这个字读 shān，高山的山。"/>
+</div>
+<button class="flex items-center gap-1 px-4 py-2 bg-brandOrange text-white rounded-xl font-black text-xs shadow-[0_3px_0_#D97218] hover:bg-orange-600 active:translate-y-0.5 active:shadow-[0_1px_0_#D97218] transition-all flex-shrink-0">
+<span class="material-symbols-outlined text-[16px] fill-icon">play_arrow</span>
+                试听
+              </button>
+</div>
+<!-- 试听状态信息 -->
+<div class="bg-white/90 rounded-xl p-2 border border-orange-200 flex items-center justify-between text-[11px]">
+<span class="text-stone-500 font-medium">按权重随机挑音色 · 上次：<strong class="text-orange-600 font-bold">灿灿</strong></span>
+<span class="text-emerald-700 font-bold font-mono">0.38 秒出声 ✓</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+    // 轻量交互：滑块联动与按压效果
+    document.querySelectorAll('input[type=range]').forEach(slider => {
+      slider.addEventListener('input', (e) => {
+        const valSpan = e.target.parentElement.querySelector('span:last-child');
+        if (valSpan && valSpan.innerText.includes('×')) {
+          valSpan.innerText = parseFloat(e.target.value).toFixed(2) + '×';
+        }
+      });
+    });
+  </script>
+</body></html>

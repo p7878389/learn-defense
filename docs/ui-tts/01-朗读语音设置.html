@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>字灵守卫 · 朗读语音设置</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,300..1000&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>
+  tailwind.config = { theme: { extend: { fontFamily: { body: ["Nunito Sans", "PingFang SC", "sans-serif"] } } } }
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 48; vertical-align: middle; line-height: 1; }
+  input[type=range] { -webkit-appearance: none; appearance: none; height: 10px; border-radius: 999px; background: #E7E1D3; outline: none; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 4px solid var(--c, #F59E0B); box-shadow: 0 2px 0 rgba(0,0,0,.15); cursor: pointer; }
+  .tab-on { background: #fff; box-shadow: 0 -2px 0 inset rgba(0,0,0,0), 0 4px 0 #EAD7B5; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+</style>
+</head>
+<body class="bg-[#FAF2DE] text-[#2B2B38] font-body w-[1194px] h-[834px] overflow-hidden select-none">
+
+<!-- 顶栏 -->
+<header class="h-[76px] px-8 flex items-center justify-between">
+  <div class="flex items-center gap-4">
+    <button class="w-11 h-11 rounded-full bg-white border-2 border-amber-200 shadow-[0_3px_0_#EAD7B5] flex items-center justify-center text-amber-800">
+      <span class="material-symbols-outlined">arrow_back</span>
+    </button>
+    <div>
+      <div class="flex items-center gap-2">
+        <h1 class="font-black text-[26px] text-amber-950 tracking-tight">朗读语音设置</h1>
+        <span class="px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-700 border border-sky-200 text-xs font-black flex items-center gap-1">
+          <span class="material-symbols-outlined text-sm">lock</span>家长专区
+        </span>
+      </div>
+      <p class="text-sm font-bold text-stone-500">题目和拼音的读音来自这里。多家服务按权重轮流用，一家出问题会自动换另一家。</p>
+    </div>
+  </div>
+  <div class="flex items-center gap-3">
+    <span class="text-sm font-bold text-stone-500 flex items-center gap-1"><span class="material-symbols-outlined text-base text-amber-500">edit</span>有 2 处修改未保存</span>
+    <button class="px-5 h-11 rounded-full bg-white border-2 border-stone-200 font-black text-stone-600 shadow-[0_3px_0_#e5e0d4]">撤销</button>
+    <button class="px-7 h-11 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500 text-white font-black shadow-[0_4px_0_#059669] flex items-center gap-1.5">
+      <span class="material-symbols-outlined text-lg">check_circle</span>保存
+    </button>
+  </div>
+</header>
+
+<main class="px-8 pb-6 flex gap-6 h-[758px]">
+
+  <!-- 左栏：服务商权重 -->
+  <aside class="w-[352px] flex-shrink-0 flex flex-col gap-4">
+    <section class="bg-white rounded-3xl p-5 border-4 border-amber-200/80 shadow-[0_6px_0_#EAD7B5]">
+      <div class="flex items-center justify-between mb-1">
+        <h2 class="font-black text-lg text-amber-950 flex items-center gap-1.5"><span class="material-symbols-outlined text-amber-500">balance</span>服务商权重</h2>
+        <span class="text-xs font-bold text-stone-400">合计 <b id="pw-sum" class="text-stone-600">10</b></span>
+      </div>
+      <p class="text-xs font-bold text-stone-500 mb-3">每次朗读按比例挑一家。权重填 0 = 暂停使用。</p>
+
+      <!-- 比例条 -->
+      <div id="pw-bar" class="h-9 rounded-full overflow-hidden flex border-2 border-stone-200 bg-stone-100 mb-4"></div>
+
+      <div id="pw-list" class="flex flex-col gap-3"></div>
+
+      <!-- 兜底 -->
+      <div class="mt-4 pt-3 border-t-2 border-dashed border-stone-200 flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-stone-100 flex items-center justify-center text-xl">📱</div>
+        <div class="flex-1">
+          <div class="font-black text-sm text-stone-700">iPad 系统语音 <span class="text-xs text-stone-400 font-bold">兜底</span></div>
+          <div class="text-xs font-bold text-stone-400">没网或两家都失败时使用，不参与权重</div>
+        </div>
+        <span class="material-symbols-outlined text-emerald-500">verified</span>
+      </div>
+    </section>
+
+    <section class="bg-white rounded-3xl p-5 border-4 border-amber-200/80 shadow-[0_6px_0_#EAD7B5]">
+      <h2 class="font-black text-base text-amber-950 flex items-center gap-1.5 mb-3"><span class="material-symbols-outlined text-sky-500">query_stats</span>最近 100 次朗读</h2>
+      <div class="grid grid-cols-3 gap-2 text-center">
+        <div class="rounded-2xl bg-orange-50 border border-orange-100 py-2"><div class="font-black text-xl text-orange-600">68</div><div class="text-[11px] font-bold text-stone-500">豆包</div></div>
+        <div class="rounded-2xl bg-blue-50 border border-blue-100 py-2"><div class="font-black text-xl text-blue-600">30</div><div class="text-[11px] font-bold text-stone-500">讯飞</div></div>
+        <div class="rounded-2xl bg-stone-50 border border-stone-200 py-2"><div class="font-black text-xl text-stone-600">2</div><div class="text-[11px] font-bold text-stone-500">系统兜底</div></div>
+      </div>
+      <p class="mt-3 text-xs font-bold text-stone-500 flex items-start gap-1"><span class="material-symbols-outlined text-sm text-amber-500">info</span>失败自动切换 3 次 · 平均出声 0.42 秒 · 已缓存 312 条读音</p>
+    </section>
+  </aside>
+
+  <!-- 右栏：Tab + 服务商详情 -->
+  <section class="flex-1 flex flex-col min-w-0">
+    <!-- Tabs -->
+    <div id="tabs" class="flex gap-2 pl-4"></div>
+
+    <div id="panel" class="flex-1 bg-white rounded-3xl rounded-tl-xl p-5 border-4 border-amber-200/80 shadow-[0_6px_0_#EAD7B5] flex flex-col gap-4 -mt-1 relative z-0"></div>
+  </section>
+</main>
+
+<script>
+const providers = {
+  doubao: {
+    name: "豆包语音", short: "豆包", emoji: "🫘", vendor: "火山引擎", color: "#F97316", soft: "bg-orange-50", ring: "border-orange-200", text: "text-orange-600",
+    weight: 7, enabled: true, status: { ok: true, text: "已连接 · 延迟 380ms", short: "已连接 · 380ms" },
+    fields: [
+      { label: "App ID", value: "8392017456", mono: true },
+      { label: "Access Token", value: "••••••••••••••••Qk7f", mono: true, secret: true },
+      { label: "Cluster", value: "volcano_tts", mono: true },
+    ],
+    voices: [
+      { emoji: "👧", name: "灿灿", id: "BV700_streaming", tag: "温柔女声", w: 6 },
+      { emoji: "🧒", name: "童声", id: "BV061_streaming", tag: "小朋友", w: 3 },
+      { emoji: "👨‍🏫", name: "通用男声", id: "BV002_streaming", tag: "讲解", w: 1 },
+    ],
+    params: { speed: 0.9, pitch: 1.1, volume: 1.0 },
+    note: "拼音题建议用「灿灿」：声调读得最清楚。",
+    timeout: "1.5 秒", retry: "1 次", format: "mp3 · 24k",
+  },
+  xfyun: {
+    name: "讯飞语音", short: "讯飞", emoji: "🎙️", vendor: "讯飞开放平台", color: "#3B82F6", soft: "bg-blue-50", ring: "border-blue-200", text: "text-blue-600",
+    weight: 3, enabled: true, status: { ok: false, text: "今天额度剩 12%", short: "额度剩 12%" },
+    fields: [
+      { label: "APPID", value: "5f3a9c21", mono: true },
+      { label: "APIKey", value: "••••••••••••••••a91c", mono: true, secret: true },
+      { label: "APISecret", value: "••••••••••••••••M2Zx", mono: true, secret: true },
+    ],
+    voices: [
+      { emoji: "👩", name: "小燕", id: "xiaoyan", tag: "标准女声", w: 5 },
+      { emoji: "👶", name: "许小宝", id: "aisbabyxu", tag: "童声", w: 5 },
+      { emoji: "🧑", name: "许久", id: "aisjiuxu", tag: "男声", w: 0 },
+    ],
+    params: { speed: 0.85, pitch: 1.0, volume: 1.0 },
+    note: "额度用完会自动把这家的请求转给豆包，不用手动改权重。",
+    timeout: "2 秒", retry: "不重试", format: "mp3 · 16k",
+  },
+};
+let active = (location.hash || "#doubao").slice(1);
+if (!providers[active]) active = "doubao";
+
+const pct = (w, sum) => sum > 0 ? Math.round(w * 100 / sum) : 0;
+
+function renderWeights() {
+  const list = Object.entries(providers);
+  const sum = list.reduce((s, [, p]) => s + (p.enabled ? p.weight : 0), 0);
+  document.getElementById("pw-sum").textContent = sum;
+  document.getElementById("pw-bar").innerHTML = list.filter(([, p]) => p.enabled && p.weight > 0).map(([, p]) =>
+    `<div class="h-full flex items-center justify-center text-white text-sm font-black transition-all" style="width:${pct(p.weight, sum)}%;background:${p.color}">${p.short} ${pct(p.weight, sum)}%</div>`).join("");
+  document.getElementById("pw-list").innerHTML = list.map(([k, p]) => `
+    <div class="rounded-2xl ${k === active ? p.soft + ' border-2 ' + p.ring : 'border-2 border-transparent'} p-2.5 -mx-1">
+      <div class="flex items-center gap-2.5">
+        <div class="w-10 h-10 rounded-2xl ${p.soft} border ${p.ring} flex items-center justify-center text-xl">${p.emoji}</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-black text-sm">${p.name}</div>
+          <div class="text-[11px] font-bold ${p.status.ok ? 'text-emerald-600' : 'text-amber-600'} flex items-center gap-1 whitespace-nowrap">
+            <span class="w-1.5 h-1.5 rounded-full ${p.status.ok ? 'bg-emerald-500' : 'bg-amber-500'}"></span>${p.status.short}</div>
+        </div>
+        <div class="flex items-center bg-white rounded-full border-2 border-stone-200 h-9">
+          <button class="w-8 h-full font-black text-stone-500" onclick="step('${k}',-1)">−</button>
+          <span class="w-7 text-center font-black text-lg">${p.weight}</span>
+          <button class="w-8 h-full font-black text-stone-500" onclick="step('${k}',1)">＋</button>
+        </div>
+        <span class="w-11 text-right font-black ${p.text}">${pct(p.weight, sum)}%</span>
+      </div>
+    </div>`).join("");
+}
+
+function step(k, d) { const p = providers[k]; p.weight = Math.max(0, Math.min(10, p.weight + d)); renderAll(); }
+function voiceW(k, i, v) { providers[k].voices[i].w = +v; renderPanel(); }
+function setTab(k) { active = k; history.replaceState(null, "", "#" + k); renderAll(); }
+
+function renderTabs() {
+  const sum = Object.values(providers).reduce((s, p) => s + p.weight, 0);
+  document.getElementById("tabs").innerHTML = Object.entries(providers).map(([k, p]) => `
+    <button onclick="setTab('${k}')" class="relative z-10 px-6 h-14 rounded-t-3xl flex items-center gap-2 font-black text-lg border-4 border-b-0 ${k === active ? 'bg-white border-amber-200/80 text-amber-950' : 'bg-[#F1E6CC] border-transparent text-stone-500'}">
+      <span class="text-2xl">${p.emoji}</span>${p.name}
+      <span class="ml-1 px-2 py-0.5 rounded-full text-xs font-black text-white" style="background:${k === active ? p.color : '#B8AE99'}">权重 ${pct(p.weight, sum)}%</span>
+      ${k === active ? `<span class="absolute left-4 right-4 -bottom-1 h-1.5 bg-white"></span>` : ""}
+    </button>`).join("");
+}
+
+function slider(label, icon, val, min, max, unit, color) {
+  const pos = (val - min) / (max - min) * 100;
+  return `<div class="flex-1">
+    <div class="flex justify-between text-sm font-black text-stone-600 mb-1.5"><span class="flex items-center gap-1"><span class="material-symbols-outlined text-base text-stone-400">${icon}</span>${label}</span><span>${val.toFixed(2)}${unit}</span></div>
+    <input type="range" min="${min}" max="${max}" step="0.05" value="${val}" class="w-full" style="--c:${color};background:linear-gradient(90deg,${color} ${pos}%,#E7E1D3 ${pos}%)"/>
+  </div>`;
+}
+
+function renderPanel() {
+  const p = providers[active];
+  const vsum = p.voices.reduce((s, v) => s + v.w, 0);
+  document.getElementById("panel").innerHTML = `
+    <!-- 账号 -->
+    <div class="flex items-start gap-4">
+      <div class="flex-1">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="font-black text-base text-amber-950 flex items-center gap-1.5"><span class="material-symbols-outlined text-stone-400">key</span>账号密钥 <span class="text-xs font-bold text-stone-400">（${p.vendor}控制台获取）</span></h3>
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-bold text-stone-500">启用</span>
+            <span class="w-12 h-7 rounded-full p-1 flex ${p.enabled ? 'justify-end' : ''}" style="background:${p.enabled ? p.color : '#d6d3d1'}"><span class="w-5 h-5 rounded-full bg-white shadow"></span></span>
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          ${p.fields.map(f => `
+            <label class="block">
+              <span class="text-xs font-black text-stone-500">${f.label}</span>
+              <div class="mt-1 h-11 px-3 rounded-2xl bg-stone-50 border-2 border-stone-200 flex items-center gap-2">
+                <span class="flex-1 truncate ${f.mono ? 'mono' : ''} text-sm font-bold text-stone-700">${f.value}</span>
+                ${f.secret ? '<span class="material-symbols-outlined text-lg text-stone-400">visibility</span>' : ''}
+              </div>
+            </label>`).join("")}
+        </div>
+      </div>
+      <div class="w-[150px] pt-7 flex flex-col gap-1.5 items-stretch">
+        <button class="h-11 rounded-full border-2 ${p.ring} ${p.soft} ${p.text} font-black flex items-center justify-center gap-1"><span class="material-symbols-outlined text-lg">wifi_tethering</span>测试连接</button>
+        <span class="text-[11px] text-center font-bold ${p.status.ok ? 'text-emerald-600' : 'text-amber-600'}">${p.status.ok ? '✓ ' : '⚠ '}${p.status.text}</span>
+      </div>
+    </div>
+
+    <!-- 音色权重 -->
+    <div class="flex-1 min-h-0 flex flex-col">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="font-black text-base text-amber-950 flex items-center gap-1.5"><span class="material-symbols-outlined text-stone-400">record_voice_over</span>音色与权重 <span class="text-xs font-bold text-stone-400">（在${p.short}内部再按比例挑音色）</span></h3>
+        <button class="px-3 h-8 rounded-full border-2 border-dashed border-stone-300 text-sm font-black text-stone-500 flex items-center gap-0.5"><span class="material-symbols-outlined text-base">add</span>添加音色</button>
+      </div>
+      <div class="rounded-2xl border-2 border-stone-100 divide-y-2 divide-stone-100">
+        ${p.voices.map((v, i) => {
+          const pos = v.w * 10, on = v.w > 0;
+          return `
+          <div class="h-[62px] px-3 flex items-center gap-3 ${on ? '' : 'opacity-50'}">
+            <div class="w-10 h-10 rounded-2xl ${p.soft} flex items-center justify-center text-xl">${v.emoji}</div>
+            <div class="w-[170px]">
+              <div class="font-black text-[15px] flex items-center gap-1.5">${v.name}<span class="px-1.5 rounded-md bg-stone-100 text-stone-500 text-[11px] font-bold">${v.tag}</span></div>
+              <div class="mono text-[11px] text-stone-400">${v.id}</div>
+            </div>
+            <button class="w-9 h-9 rounded-full ${p.soft} ${p.text} flex items-center justify-center flex-shrink-0" title="试听"><span class="material-symbols-outlined">play_arrow</span></button>
+            <input type="range" min="0" max="10" step="1" value="${v.w}" oninput="voiceW('${active}',${i},this.value)" class="flex-1" style="--c:${p.color};background:linear-gradient(90deg,${p.color} ${pos}%,#E7E1D3 ${pos}%)"/>
+            <span class="w-8 text-center font-black text-lg">${v.w}</span>
+            <span class="w-14 text-right font-black ${on ? p.text : 'text-stone-400'}">${on ? pct(v.w, vsum) + '%' : '停用'}</span>
+            <span class="material-symbols-outlined text-stone-300">delete</span>
+          </div>`;
+        }).join("")}
+      </div>
+      <p class="mt-2 text-xs font-bold text-stone-500 flex items-center gap-1"><span class="material-symbols-outlined text-sm text-amber-500">lightbulb</span>${p.note}</p>
+      <div class="mt-auto pt-3 flex items-center gap-3">
+        <h3 class="font-black text-sm text-amber-950 flex items-center gap-1.5 whitespace-nowrap"><span class="material-symbols-outlined text-base text-stone-400">swap_horiz</span>出错时</h3>
+        ${[["超时换下一家", p.timeout], ["失败重试", p.retry], ["音频格式", p.format]].map(([l, v]) => `
+          <div class="flex-1 h-10 px-3 rounded-2xl bg-stone-50 border-2 border-stone-200 flex items-center justify-between">
+            <span class="text-xs font-black text-stone-500">${l}</span>
+            <span class="text-sm font-black text-stone-700 flex items-center gap-0.5">${v}<span class="material-symbols-outlined text-base text-stone-400">expand_more</span></span>
+          </div>`).join("")}
+      </div>
+    </div>
+
+    <!-- 参数 + 试读 -->
+    <div class="grid grid-cols-[1fr_1fr] gap-4">
+      <div class="rounded-2xl bg-stone-50 border-2 border-stone-100 p-4 flex flex-col gap-3">
+        <h3 class="font-black text-sm text-amber-950 flex items-center gap-1.5"><span class="material-symbols-outlined text-base text-stone-400">tune</span>朗读参数（${p.short}全部音色共用）</h3>
+        <div class="flex gap-4">
+          ${slider("语速", "speed", p.params.speed, 0.5, 1.5, "×", p.color)}
+          ${slider("音调", "graphic_eq", p.params.pitch, 0.5, 1.5, "×", p.color)}
+          ${slider("音量", "volume_up", p.params.volume, 0.5, 1.5, "×", p.color)}
+        </div>
+      </div>
+      <div class="rounded-2xl ${p.soft} border-2 ${p.ring} p-4 flex flex-col gap-2.5">
+        <h3 class="font-black text-sm text-amber-950 flex items-center gap-1.5"><span class="material-symbols-outlined text-base ${p.text}">hearing</span>试读一句</h3>
+        <div class="flex gap-2">
+          <div class="flex-1 h-11 px-3 rounded-2xl bg-white border-2 ${p.ring} flex items-center text-sm font-bold text-stone-700 whitespace-nowrap overflow-hidden">这个字读 shān，高山的山。</div>
+          <button class="h-11 px-4 rounded-full text-white font-black flex items-center gap-1 shadow-[0_3px_0_rgba(0,0,0,.18)]" style="background:${p.color}"><span class="material-symbols-outlined">play_circle</span>试听</button>
+        </div>
+        <span class="text-[11px] font-bold text-stone-500">按权重随机挑音色 · 上次：${p.voices[0].name} · ${p.status.ok ? '0.38 秒出声' : '0.61 秒出声'}</span>
+      </div>
+    </div>`;
+}
+
+function renderAll() { renderWeights(); renderTabs(); renderPanel(); }
+renderAll();
+</script>
+</body></html>

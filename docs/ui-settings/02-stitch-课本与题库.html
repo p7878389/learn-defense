@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>字灵守卫 · 设置 · 家长专区 - 课本与题库</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            paper: '#FAF2DE',
+            stone_dark: '#2B2B38',
+            stone_muted: '#8C857A',
+            brand_orange: '#F28C2E',
+            brand_orange_dark: '#C76A14',
+            brand_emerald: '#3DA885',
+            brand_emerald_dark: '#247359',
+            brand_gold: '#FFC93C',
+            brand_gold_dark: '#E0A100'
+          },
+          borderRadius: {
+            "DEFAULT": "1rem",
+            "lg": "2rem",
+            "xl": "3rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Nunito Sans", "system-ui", "sans-serif"],
+            display: ["Nunito Sans", "system-ui", "sans-serif"],
+            body: ["Nunito Sans", "system-ui", "sans-serif"],
+            label: ["Nunito Sans", "system-ui", "sans-serif"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      background-color: #FAF2DE;
+      background-image: radial-gradient(#E5D7BC 1.5px, transparent 1.5px);
+      background-size: 24px 24px;
+      user-select: none;
+      -webkit-user-select: none;
+      overflow: hidden;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .btn-candy {
+      transition: all 0.12s ease-in-out;
+    }
+    .btn-candy:active {
+      transform: translateY(3px) !important;
+      box-shadow: 0 1px 0 rgba(0,0,0,0.1) !important;
+    }
+  </style>
+</head>
+<body class="w-[1194px] h-[834px] mx-auto text-[#2B2B38] font-body flex flex-col justify-between overflow-hidden relative antialiased selection:bg-amber-200">
+<!-- 1. 顶栏 (固定高 88px) -->
+<header class="w-full h-[88px] px-8 flex items-center justify-between z-30 select-none">
+<div class="flex items-center gap-3.5">
+<button class="btn-candy w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-[0_5px_0_#D9CEB6] hover:shadow-[0_6px_0_#D9CEB6] active:translate-y-1 text-[#2B2B38] text-2xl font-black border border-stone-200/60">
+<span class="material-symbols-outlined text-3xl font-bold">arrow_back</span>
+</button>
+<span class="text-stone-500 font-bold text-lg tracking-wide">返回主页</span>
+</div>
+<div class="flex items-center gap-3.5">
+<h1 class="text-[34px] font-black tracking-tight text-[#2B2B38] flex items-center gap-2">
+<span>⚙️</span>
+<span>设置</span>
+</h1>
+<span class="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-stone-200/70 border border-stone-300 text-stone-600 font-bold text-sm shadow-inner">
+<span class="material-symbols-outlined text-base" style="font-variation-settings: 'FILL' 1;">lock</span>
+        家长专区
+      </span>
+</div>
+<div class="flex items-center">
+<button class="btn-candy px-6 h-14 rounded-full bg-white border border-stone-200 shadow-[0_4px_0_#D5C9B3] hover:bg-stone-50 text-stone-700 font-bold text-base flex items-center gap-2">
+<span class="text-lg">🔐</span>
+<span>退出家长模式</span>
+</button>
+</div>
+</header>
+<!-- 主体工作区 -->
+<main class="w-full flex-1 px-8 pb-7 pt-1 flex gap-6 overflow-hidden">
+<!-- 2. 左侧导航栏 (固定宽 280px) -->
+<aside class="w-[280px] h-full bg-white/95 backdrop-blur-sm rounded-[32px] p-4 flex flex-col justify-between shadow-[0_8px_0_#DFD4C0] border border-stone-200/80">
+<nav class="flex flex-col gap-2.5">
+<button class="btn-candy w-full h-[68px] px-5 rounded-2xl bg-stone-50/70 hover:bg-stone-100/90 text-stone-600 flex items-center gap-4 text-left border border-stone-200/50 shadow-[0_3px_0_#E5DFD3]">
+<span class="text-3xl">🔊</span>
+<span class="text-xl font-bold tracking-wide">朗读语音</span>
+</button>
+<button class="btn-candy w-full h-[68px] px-5 rounded-2xl bg-[#F28C2E] text-white flex items-center gap-4 text-left shadow-[0_5px_0_#C76A14] ring-2 ring-amber-400/40 translate-y-0.5">
+<span class="text-3xl drop-shadow-sm">📚</span>
+<span class="text-xl font-extrabold tracking-wide">课本与题库</span>
+<span class="ml-auto w-3 h-3 rounded-full bg-white shadow-sm"></span>
+</button>
+<button class="btn-candy w-full h-[68px] px-5 rounded-2xl bg-stone-50/70 hover:bg-stone-100/90 text-stone-600 flex items-center gap-4 text-left border border-stone-200/50 shadow-[0_3px_0_#E5DFD3]">
+<span class="text-3xl">👧</span>
+<span class="text-xl font-bold tracking-wide">孩子档案</span>
+</button>
+<button class="btn-candy w-full h-[68px] px-5 rounded-2xl bg-stone-50/70 hover:bg-stone-100/90 text-stone-600 flex items-center gap-4 text-left border border-stone-200/50 shadow-[0_3px_0_#E5DFD3]">
+<span class="text-3xl">🎮</span>
+<span class="text-xl font-bold tracking-wide">声音与游戏</span>
+</button>
+<button class="btn-candy w-full h-[68px] px-5 rounded-2xl bg-stone-50/70 hover:bg-stone-100/90 text-stone-600 flex items-center gap-4 text-left border border-stone-200/50 shadow-[0_3px_0_#E5DFD3]">
+<span class="text-3xl">💾</span>
+<span class="text-xl font-bold tracking-wide">数据与备份</span>
+</button>
+<button class="btn-candy w-full h-[68px] px-5 rounded-2xl bg-stone-50/70 hover:bg-stone-100/90 text-stone-600 flex items-center gap-4 text-left border border-stone-200/50 shadow-[0_3px_0_#E5DFD3]">
+<span class="text-3xl">ℹ️</span>
+<span class="text-xl font-bold tracking-wide">关于</span>
+</button>
+</nav>
+<!-- 左下角说明（本地改：原稿写「数据已本地加密」，App 并未加密，改为如实描述） -->
+<div class="px-3.5 py-3 rounded-2xl bg-amber-50/80 border border-amber-200/80 text-center flex flex-col items-center gap-1">
+<div class="flex items-center gap-1 text-emerald-700 text-xs font-black">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span>家长专区</span>
+</div>
+<p class="text-[11px] leading-tight text-stone-500 font-semibold">孩子档案和学习记录<br/>只保存在这台 iPad 上</p>
+</div>
+</aside>
+<!-- 3. 右侧内容区 -->
+<section class="flex-1 h-full flex flex-col gap-3.5 overflow-hidden">
+<!-- 卡片 1【导入课本】 -->
+<div class="w-full bg-white/95 rounded-[30px] p-5 shadow-[0_6px_0_#DFD4C0] border border-stone-200/80 flex flex-col justify-between shrink-0">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-2xl bg-amber-100/80 border border-amber-200 flex items-center justify-center text-3xl shadow-inner">
+              📥
+            </div>
+<div>
+<h2 class="text-2xl font-black text-[#2B2B38] tracking-tight">导入课本</h2>
+<p class="text-stone-500 font-bold text-sm mt-0.5">把课本题库（.json 文件）导入 iPad<br/>孩子就能按课本闯关</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="btn-candy whitespace-nowrap h-14 px-6 rounded-2xl bg-[#F28C2E] hover:bg-amber-600 text-white font-black text-lg flex items-center gap-2 shadow-[0_4px_0_#C76A14]">
+<span class="text-xl">📂</span>
+<span>从文件 App 选择</span>
+</button>
+<button class="btn-candy whitespace-nowrap h-14 px-5 rounded-2xl bg-white hover:bg-stone-50 text-stone-700 border border-stone-200 font-black text-lg flex items-center gap-2 shadow-[0_4px_0_#D5C9B3]">
+<span class="text-xl">📖</span>
+<span>怎么做题库？</span>
+</button>
+</div>
+</div>
+<div class="mt-3 pt-2.5 border-t border-stone-100 flex items-center gap-2 text-stone-400 font-semibold text-xs">
+<span class="material-symbols-outlined text-sm text-stone-400">info</span>
+<span>快捷操作：也可以在 <strong class="text-stone-600 font-bold">文件 App › 我的 iPad › 字灵守卫 › Packs</strong> 里直接放置题库文件。</span>
+</div>
+</div>
+<!-- 卡片 2【已安装的课本 (5 本)】 -->
+<div class="w-full flex-1 bg-white/95 rounded-[30px] p-5 shadow-[0_6px_0_#DFD4C0] border border-stone-200/80 flex flex-col overflow-hidden">
+<div class="flex items-center justify-between mb-3 shrink-0">
+<div class="flex items-center gap-2">
+<h3 class="text-xl font-black text-[#2B2B38]">已安装的课本</h3>
+<span class="px-2.5 py-0.5 rounded-full bg-stone-100 text-stone-600 font-extrabold text-xs border border-stone-200">5 本</span>
+</div>
+<div class="flex items-center bg-stone-100 p-1 rounded-full border border-stone-200">
+<button class="px-4 py-1 rounded-full bg-white text-[#2B2B38] font-black text-xs shadow-sm">全部 (5)</button>
+<button class="px-3 py-1 rounded-full text-stone-500 hover:text-stone-800 font-bold text-xs">语文 (5)</button>
+<button class="px-3 py-1 rounded-full text-stone-400 font-bold text-xs cursor-not-allowed">英语 (0)</button>
+</div>
+</div>
+<div class="flex-1 flex flex-col gap-2 overflow-hidden justify-between">
+<!-- 1. 三年级上册 语文 -->
+<div class="h-[64px] px-4 rounded-2xl bg-amber-50/40 border border-stone-200/70 hover:border-amber-300 flex items-center justify-between transition-colors">
+<div class="flex items-center gap-3.5">
+<span class="text-3xl drop-shadow-sm">📘</span>
+<div>
+<div class="flex items-center gap-2">
+<h4 class="text-base font-black text-[#2B2B38]">三年级上册 语文</h4>
+<span class="text-xs font-bold text-stone-400">部编版</span>
+</div>
+<p class="text-xs font-bold text-stone-500">8 单元 · 412 个字词</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 font-black text-xs border border-emerald-300 flex items-center gap-1 shadow-sm">
+<span>已导入</span>
+<span class="material-symbols-outlined text-sm font-bold">check</span>
+</span>
+<button class="btn-candy px-3.5 py-1.5 rounded-xl bg-white hover:bg-rose-50 text-rose-600 border border-stone-200 font-black text-xs shadow-[0_2px_0_#D5C9B3] flex items-center gap-1">
+<span>🗑</span>
+<span>删除</span>
+</button>
+</div>
+</div>
+<!-- 2. 三年级下册 语文 -->
+<div class="h-[64px] px-4 rounded-2xl bg-amber-50/40 border border-stone-200/70 hover:border-amber-300 flex items-center justify-between transition-colors">
+<div class="flex items-center gap-3.5">
+<span class="text-3xl drop-shadow-sm">📙</span>
+<div>
+<div class="flex items-center gap-2">
+<h4 class="text-base font-black text-[#2B2B38]">三年级下册 语文</h4>
+<span class="text-xs font-bold text-stone-400">部编版</span>
+</div>
+<p class="text-xs font-bold text-stone-500">8 单元 · 398 个字词</p>
+</div>
+</div>
+<div class="flex items-center gap-2.5">
+<span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 font-bold text-[11px]">覆盖了内置</span>
+<span class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 font-black text-xs border border-emerald-300 flex items-center gap-1 shadow-sm">
+<span>已导入</span>
+<span class="material-symbols-outlined text-sm font-bold">check</span>
+</span>
+<button class="btn-candy px-3.5 py-1.5 rounded-xl bg-white hover:bg-rose-50 text-rose-600 border border-stone-200 font-black text-xs shadow-[0_2px_0_#D5C9B3] flex items-center gap-1">
+<span>🗑</span>
+<span>删除</span>
+</button>
+</div>
+</div>
+<!-- 3. 二年级上册 语文 -->
+<div class="h-[64px] px-4 rounded-2xl bg-amber-50/40 border border-stone-200/70 hover:border-amber-300 flex items-center justify-between transition-colors">
+<div class="flex items-center gap-3.5">
+<span class="text-3xl drop-shadow-sm">📗</span>
+<div>
+<div class="flex items-center gap-2">
+<h4 class="text-base font-black text-[#2B2B38]">二年级上册 语文</h4>
+<span class="text-xs font-bold text-stone-400">部编版</span>
+</div>
+<p class="text-xs font-bold text-stone-500">8 单元</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 font-black text-xs border border-emerald-300 flex items-center gap-1 shadow-sm">
+<span>已导入</span>
+<span class="material-symbols-outlined text-sm font-bold">check</span>
+</span>
+<button class="btn-candy px-3.5 py-1.5 rounded-xl bg-white hover:bg-rose-50 text-rose-600 border border-stone-200 font-black text-xs shadow-[0_2px_0_#D5C9B3] flex items-center gap-1">
+<span>🗑</span>
+<span>删除</span>
+</button>
+</div>
+</div>
+<!-- 4. 三年级语文 示例 -->
+<div class="h-[64px] px-4 rounded-2xl bg-stone-50/80 border border-stone-200/60 flex items-center justify-between">
+<div class="flex items-center gap-3.5">
+<span class="text-3xl drop-shadow-sm">📕</span>
+<div>
+<div class="flex items-center gap-2">
+<h4 class="text-base font-black text-[#2B2B38]">三年级语文 示例</h4>
+<span class="text-xs font-bold text-stone-400">内置课本</span>
+</div>
+<p class="text-xs font-bold text-stone-500">2 单元</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="px-3 py-1 rounded-full bg-stone-200/90 text-stone-700 font-black text-xs border border-stone-300">内置</span>
+<span class="text-xs font-bold text-stone-400 px-2">随 App 自带</span>
+</div>
+</div>
+<!-- 5. 中班 语文启蒙 -->
+<div class="h-[64px] px-4 rounded-2xl bg-stone-50/80 border border-stone-200/60 flex items-center justify-between">
+<div class="flex items-center gap-3.5">
+<span class="text-3xl drop-shadow-sm">🐣</span>
+<div>
+<div class="flex items-center gap-2">
+<h4 class="text-base font-black text-[#2B2B38]">中班 语文启蒙</h4>
+<span class="text-xs font-bold text-stone-400">内置课本</span>
+</div>
+<p class="text-xs font-bold text-stone-500">图片词识字</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="px-3 py-1 rounded-full bg-stone-200/90 text-stone-700 font-black text-xs border border-stone-300">内置</span>
+<span class="text-xs font-bold text-stone-400 px-2">随 App 自带</span>
+</div>
+</div>
+</div>
+</div>
+<!-- 卡片 3【温馨提示】 -->
+<div class="w-full bg-[#FFF9E6] border border-[#F4E1A6] rounded-2xl px-5 py-3 flex items-center gap-3 shadow-sm shrink-0">
+<span class="text-2xl">💡</span>
+<p class="text-xs font-bold text-[#8C7436] tracking-wide leading-relaxed">
+          温馨提示：导入后同一本书的学习记录不会丢；若文件修改了字或词本身，将被系统自动识别为新内容继续闯关。
+        </p>
+</div>
+</section>
+</main>
+</body></html>

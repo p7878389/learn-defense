@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1194, height=834, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>💾 数据与备份 · 家长专区 - 字灵守卫</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              orange: '#F28C2E',
+              orangeDark: '#D97316',
+              amber: '#F59E0B',
+              green: '#3DA885',
+              greenDark: '#2D8065',
+              bg: '#FAF2DE',
+              danger: '#E5484D',
+              dangerDark: '#C92A2A',
+            }
+          },
+          boxShadow: {
+            'candy': '0 6px 0 rgba(0,0,0,0.12)',
+            'candy-danger': '0 6px 0 #9E1C1F',
+            'modal': '0 24px 60px -15px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0,0,0,0.06)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap');
+    body {
+      font-family: 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    /* Subtle dot grid pattern on background */
+    .bg-grid-dots {
+      background-image: radial-gradient(#d6cbb4 1.5px, transparent 1.5px);
+      background-size: 24px 24px;
+    }
+    /* Modal appearance animation */
+    @keyframes modalPop {
+      0% { transform: scale(0.94) translateY(12px); opacity: 0; }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    .animate-modal {
+      animation: modalPop 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    /* Hold button progress bar shimmer */
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .shimmer-progress {
+      background: linear-gradient(90deg, #b91c1c 0%, #dc2626 50%, #b91c1c 100%);
+      background-size: 200% 100%;
+      animation: shimmer 2s infinite linear;
+    }
+  </style>
+</head>
+<body class="w-[1194px] h-[834px] overflow-hidden bg-brand-bg bg-grid-dots text-stone-800 relative flex flex-col justify-between p-7 select-none">
+
+  <!-- ==================== BACKGROUND: SETTINGS PAGE (SCREEN_2 REPLICA) ==================== -->
+  <!-- Top Navigation Bar -->
+  <header class="w-full flex items-center justify-between h-14 z-0">
+    <button class="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white shadow-sm border border-stone-200/80 text-stone-700 font-bold text-lg active:scale-95 transition-all">
+      <span class="text-xl">←</span> 返回主页
+    </button>
+    <div class="flex items-center gap-3">
+      <span class="text-3xl">⚙️</span>
+      <h1 class="text-2xl font-black text-stone-800 tracking-wide">设置</h1>
+      <span class="px-3.5 py-1 rounded-full bg-amber-100/80 border border-amber-300/80 text-amber-800 text-sm font-bold flex items-center gap-1.5 shadow-sm">
+        🔒 家长专区
+      </span>
+    </div>
+    <button class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white shadow-sm border border-stone-200/80 text-stone-700 font-bold text-lg">
+      🔐 退出家长模式
+    </button>
+  </header>
+
+  <!-- Main Content Layout (Settings 2-Columns) -->
+  <div class="w-full flex-1 flex gap-6 mt-4 relative z-0">
+    <!-- Left Navigation Rail -->
+    <aside class="w-64 bg-white/95 rounded-3xl p-4 shadow-sm border border-stone-200/70 flex flex-col justify-between">
+      <div class="space-y-2">
+        <div class="flex items-center justify-between px-4 py-3.5 rounded-2xl text-stone-600 font-bold text-lg">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">🔊</span>
+            <span>朗读语音</span>
+          </div>
+          <span class="text-stone-400">›</span>
+        </div>
+        <div class="flex items-center justify-between px-4 py-3.5 rounded-2xl text-stone-600 font-bold text-lg">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">📚</span>
+            <span>课本与题库</span>
+          </div>
+          <span class="text-stone-400">›</span>
+        </div>
+        <div class="flex items-center justify-between px-4 py-3.5 rounded-2xl text-stone-600 font-bold text-lg">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">👧</span>
+            <span>孩子档案</span>
+          </div>
+          <span class="text-stone-400">›</span>
+        </div>
+        <div class="flex items-center justify-between px-4 py-3.5 rounded-2xl text-stone-600 font-bold text-lg">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">🎮</span>
+            <span>声音与游戏</span>
+          </div>
+          <span class="text-stone-400">›</span>
+        </div>
+        <!-- Active Tab: 数据与备份 -->
+        <div class="flex items-center justify-between px-4 py-3.5 rounded-2xl bg-brand-orange text-white font-black text-lg shadow-md">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">💾</span>
+            <span>数据与备份</span>
+          </div>
+          <span class="w-3 h-3 rounded-full bg-white"></span>
+        </div>
+        <div class="flex items-center justify-between px-4 py-3.5 rounded-2xl text-stone-600 font-bold text-lg">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">ℹ️</span>
+            <span>关于字灵守卫</span>
+          </div>
+          <span class="text-stone-400">›</span>
+        </div>
+      </div>
+      <!-- Local Encryption Security Card -->
+      <div class="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 flex items-center gap-3">
+        <span class="text-2xl">🛡️</span>
+        <div>
+          <div class="font-bold text-xs text-stone-700">档案和学习记录</div>
+          <div class="text-[11px] text-stone-500">只保存在这台 iPad 上</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right Settings Panel (Storage, Backup, Danger Zone) -->
+    <main class="flex-1 space-y-3">
+      <!-- Storage Card -->
+      <div class="bg-white/95 rounded-3xl px-5 py-4 shadow-sm border border-stone-200/70 flex items-center justify-between">
+        <div>
+          <div class="flex items-center gap-2 font-black text-xl text-stone-800">
+            <span>📦 存储空间</span>
+            <span class="text-stone-500 text-sm font-normal">（共 22.6 MB）</span>
+          </div>
+          <div class="w-96 h-3 bg-stone-100 rounded-full mt-3 overflow-hidden flex">
+            <div class="h-full bg-emerald-500 w-[8%]"></div>
+            <div class="h-full bg-amber-400 w-[18%]"></div>
+            <div class="h-full bg-sky-400 w-[74%]"></div>
+          </div>
+        </div>
+        <button class="px-4 py-2 rounded-xl bg-stone-100 text-stone-700 font-bold text-sm">
+          🧹 清理图片缓存
+        </button>
+      </div>
+
+      <!-- Backup Card -->
+      <div class="bg-white/95 rounded-3xl p-5 shadow-sm border border-stone-200/70">
+        <div class="flex items-center justify-between mb-3">
+          <span class="font-black text-xl text-stone-800">🔄 备份与恢复</span>
+          <span class="text-xs text-stone-400">上次备份：11 月 2 日 20:15</span>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="p-4 bg-amber-50/60 rounded-2xl border border-amber-200/80 flex items-center justify-between">
+            <div>
+              <div class="font-black text-stone-800">导出备份</div>
+              <div class="text-xs text-stone-500">存成独立文件，可发到其它 iPad</div>
+            </div>
+            <span class="px-4 py-2 bg-brand-orange text-white font-bold text-sm rounded-xl">立即导出</span>
+          </div>
+          <div class="p-4 bg-emerald-50/60 rounded-2xl border border-emerald-200/80 flex items-center justify-between">
+            <div>
+              <div class="font-black text-stone-800">从备份恢复</div>
+              <div class="text-xs text-stone-500">用备份文件替换现在的全部数据</div>
+            </div>
+            <span class="px-4 py-2 bg-white text-stone-700 border border-stone-300 font-bold text-sm rounded-xl">选择文件</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 重置单个孩子（本地加：Stitch 原稿没有这一块） -->
+      <div class="bg-white/95 rounded-3xl p-5 shadow-sm border border-stone-200/70">
+        <div class="flex items-center justify-between mb-3">
+          <span class="font-black text-xl text-stone-800">🧽 重置单个孩子</span>
+          <span class="text-xs text-stone-500">只清空错题本、星星、等级和积分，保留名字和头像</span>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div class="p-3 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="w-11 h-11 rounded-full bg-amber-100 border-2 border-amber-300 flex items-center justify-center text-2xl">🐯</span>
+              <div><div class="font-black text-stone-800">小虎</div><div class="text-xs text-stone-500">三年级</div></div>
+            </div>
+            <button class="px-3 py-2 rounded-xl bg-white border border-stone-300 text-stone-700 font-bold text-xs shadow-[0_2px_0_#d6d3d1]">清空记录</button>
+          </div>
+          <div class="p-3 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="w-11 h-11 rounded-full bg-rose-100 border-2 border-rose-300 flex items-center justify-center text-2xl">🐰</span>
+              <div><div class="font-black text-stone-800">朵朵</div><div class="text-xs text-stone-500">一年级</div></div>
+            </div>
+            <button class="px-3 py-2 rounded-xl bg-white border border-stone-300 text-stone-700 font-bold text-xs shadow-[0_2px_0_#d6d3d1]">清空记录</button>
+          </div>
+          <div class="p-3 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="w-11 h-11 rounded-full bg-emerald-100 border-2 border-emerald-300 flex items-center justify-center text-2xl">🐼</span>
+              <div><div class="font-black text-stone-800">团团</div><div class="text-xs text-stone-500">大班</div></div>
+            </div>
+            <button class="px-3 py-2 rounded-xl bg-white border border-stone-300 text-stone-700 font-bold text-xs shadow-[0_2px_0_#d6d3d1]">清空记录</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danger Action Card (Where user clicks 重置所有数据) -->
+      <div class="bg-red-50/90 rounded-3xl p-5 border-2 border-red-200 flex items-center justify-between">
+        <div class="flex items-start gap-4">
+          <div class="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center text-2xl">⚠️</div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-red-700 font-black text-lg">危险操作</span>
+              <span class="px-2 py-0.5 rounded-full bg-red-200 text-red-700 text-xs font-bold">无法撤销</span>
+            </div>
+            <p class="text-stone-600 text-sm mt-1 max-w-md">重置所有用户数据：删除全部孩子档案、学习记录、等级、积分、徽章与设置，App 回到初次打开状态。<br/><span class="text-xs text-stone-500">导入的课本可以选择保留 · 建议先导出备份</span></p>
+          </div>
+        </div>
+        <button class="px-6 py-3.5 bg-red-600 text-white font-black text-lg rounded-2xl flex items-center gap-2 shadow-md">
+          <span>🗑️</span> 重置所有数据
+        </button>
+      </div>
+    </main>
+  </div>
+
+
+</body>
+</html>
