@@ -209,6 +209,8 @@ struct CandyButtonLabel: View {
     var height: CGFloat = 64
     /// 收藏馆一排卡片较多时传 0，让按钮跟着卡片变窄
     var minWidth: CGFloat = 120
+    /// 收藏馆操作区铺满宽度；其他页面沿用内容宽度。
+    var expands = false
 
     var body: some View {
         HStack(spacing: 6) {
@@ -221,6 +223,7 @@ struct CandyButtonLabel: View {
         .padding(.horizontal, height < 56 ? 12 : 26)
         .frame(height: height)
         .frame(minWidth: minWidth)
+        .frame(maxWidth: expands ? .infinity : nil)
         .background(Capsule().fill(fill).shadow(color: edge, radius: 0, x: 0, y: 5))
     }
 }

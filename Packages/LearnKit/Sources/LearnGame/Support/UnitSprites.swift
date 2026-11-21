@@ -118,7 +118,13 @@ enum UnitSprites {
             if projectile.shape == .petal { names.insert("fume") }
         }
         for kind in enemies {
-            addCharacter(characterName("zombie-\(kind.id)", skin: kind.id == "blob" ? loadout.enemySkin : nil))
+            if loadout.enemyAppearances.isEmpty {
+                addCharacter(enemyName(kind, skin: loadout.enemySkin, appearance: loadout.enemyAppearance))
+            } else {
+                for appearance in loadout.enemyAppearances {
+                    addCharacter(enemyName(kind, appearance: appearance))
+                }
+            }
         }
         var warmed: [String: [SKTexture]] = [:]
         for name in names.sorted() {
@@ -220,9 +226,21 @@ enum UnitSprites {
         return image
     }
 
-    static func enemy(_ kind: EnemyKind, skin: CharacterSkin? = nil) -> SpriteRig? {
-        SpriteRig(named: characterName("zombie-\(kind.id)", skin: kind.id == "blob" ? skin : nil),
+    static func enemy(_ kind: EnemyKind, skin: CharacterSkin? = nil, appearance: String? = nil) -> SpriteRig? {
+        SpriteRig(named: enemyName(kind, skin: skin, appearance: appearance),
                   fitting: CGSize(width: 88, height: 80))
+    }
+
+    /// 只选择渲染素材，不修改 EnemyKind。不存在或缺帧时回退原怪物。
+    static func enemyName(_ kind: EnemyKind, skin: CharacterSkin? = nil, appearance: String? = nil) -> String {
+        if let appearance, UnitCatalog.enemy(id: appearance) != nil {
+            let name = "zombie-\(appearance)"
+            if !frames(named: name).isEmpty,
+               (clips[name]?.states ?? [:]).values.allSatisfy({ !frames(named: $0).isEmpty }) {
+                return name
+            }
+        }
+        return characterName("zombie-\(kind.id)", skin: kind.id == "blob" ? skin : nil)
     }
 
     /// 整套状态完整才换皮，避免行走穿着皮肤，攻击或倒下却突然变回原版。

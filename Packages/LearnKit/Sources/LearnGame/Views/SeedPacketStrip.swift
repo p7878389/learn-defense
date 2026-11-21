@@ -40,29 +40,26 @@ struct SeedPacketStrip: View {
     }
 
     private func packet(for kind: DefenderKind) -> some View {
+        let displayName = HeraldicArtwork.defenderName(kind: kind, skin: skins[kind.id])
         let affordable = sun >= kind.sunCost
         let available = enabled && affordable
+        let rarity = HeraldicArtwork.defenderRarity(kind: kind, skin: skins[kind.id])
         return VStack(spacing: 0) {
             if let image = UnitSprites.portrait(of: kind, skin: skins[kind.id]) {
                 Image(decorative: image, scale: 1)
-                    .resizable().scaledToFit().frame(width: 38, height: 36)
+                    .resizable().scaledToFit().frame(width: 34, height: 29)
             }
-            Text(kind.name)
+            Text(displayName)
                 .font(.system(size: 9, weight: .bold))
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
             Text("☀️\(kind.sunCost)")
                 .font(.system(size: 11, weight: .heavy, design: .rounded).monospacedDigit())
         }
-        .foregroundStyle(Color(red: 0.20, green: 0.27, blue: 0.10))
-        .frame(width: cardWidth, height: 58)
-        .background(
-            Color(red: affordable ? 0.94 : 0.72, green: affordable ? 0.88 : 0.72,
-                  blue: affordable ? 0.62 : 0.68),
-            in: RoundedRectangle(cornerRadius: 3))
-        .overlay(
-            RoundedRectangle(cornerRadius: 3)
-                .stroke(Color(red: 0.38, green: 0.29, blue: 0.12), lineWidth: 2))
+        .foregroundStyle(Color(red: 0.97, green: 0.92, blue: 0.78))
+        .padding(.top, 6)
+        .frame(width: cardWidth, height: 64)
+        .background(CollectionCardFrame(rarity: rarity, locked: false))
         .opacity(available ? 1 : 0.52)
         .contentShape(RoundedRectangle(cornerRadius: 3))
         .scaleEffect(draggingID == kind.id ? 0.94 : 1)
@@ -72,7 +69,7 @@ struct SeedPacketStrip: View {
                 .onEnded { value in onDragEnded(kind, value.location) }
         )
         .allowsHitTesting(available)
-        .accessibilityLabel("\(kind.name)，需要 \(kind.sunCost) 阳光")
+        .accessibilityLabel("\(displayName)，\(rarity.displayName)，需要 \(kind.sunCost) 阳光")
         .accessibilityHint("拖到战场空位种下")
     }
 

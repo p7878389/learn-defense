@@ -51,10 +51,17 @@ public enum SpeechText {
     public static var gameLineGroups: [(folder: String, texts: [String])] {
         [
             ("提示语", Line.all),
+            ("收藏购买", purchaseLines),
             ("植物道具", UnitCatalog.items.map(\.name)),
             ("首领出场", Line.bossCandidates.map { Line.bossArrive($0.name) }),
             ("大招", [ItemKind.inkStorm, .rainbow].map { Line.ultimateCast($0.name) }),
         ]
+    }
+
+    /// 购买反馈必须同时进入 App 预热与离线豆包生成清单，避免动态拼句漏音频。
+    public static var purchaseLines: [String] {
+        GrowthCatalog.bundled.cosmetics.filter { $0.slot.isCollectible && !$0.isOriginal }
+            .map(Line.purchaseSuccess)
     }
 
     /// 纯英文：有字母，且所有字母都是拉丁字母（含带重音的）。标点、数字不算
@@ -87,6 +94,10 @@ public enum SpeechText {
         public static let sample = "你好，我们一起来认字吧！晨，早晨的晨。apple，苹果。"
         public static let englishSample = "Hello! Let's learn the word apple together. A-P-P-L-E, apple."
 
+        public static func purchaseSuccess(_ item: CosmeticKind) -> String {
+            item.slot == .enemySkin ? "买到\(item.name)啦，已经加入怪物队伍！" : bought(item.name)
+        }
+
         public static func bought(_ name: String) -> String { "买到\(name)啦，已经换上了！" }
 
         // 首领和大招的播报。孩子不一定认得首领的名字，出场时把名字读出来
@@ -96,8 +107,8 @@ public enum SpeechText {
         public static let bossDefeated = "太棒了，打败首领啦！"
         public static func ultimateCast(_ name: String) -> String { "\(name)，发射！" }
 
-        /// 会当首领出场的怪物（出场播报要预先生成）
-        static let bossCandidates: [EnemyKind] = [.king] + EnemyKind.forestBosses
+        /// 任意已购外观都可能显示在首领身上，全部名称均需预先生成。
+        static let bossCandidates: [EnemyKind] = UnitCatalog.enemies + UnitCatalog.forestEnemies
 
         /// 预先生成的固定提示语（试听句不在内）
         static let all = [plantFirst, battleStart, notEnoughSun, cellTaken, cellBlocked, won, lost,

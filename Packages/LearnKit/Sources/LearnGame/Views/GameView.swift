@@ -341,7 +341,7 @@ private struct PlantDragGhost: View {
                 Image(decorative: image, scale: 1)
                     .resizable().scaledToFit().frame(width: 54, height: 50)
             }
-            Text(kind.name)
+            Text(HeraldicArtwork.defenderName(kind: kind, skin: skin))
                 .font(.title3.weight(.bold))
                 .foregroundStyle(Theme.ink)
         }

@@ -87,6 +87,23 @@ final class SpeechLibrary: ObservableObject {
         premadeFile(for: text) ?? cachedFile(for: text) ?? remote?.localFile(for: text)
     }
 
+    /// 购买反馈短暂等待高质量音频；共用原下载/豆包生成队列，取消或超时后交给调用方兜底。
+    func audioFileWhenReady(for text: String, timeout: Duration = .seconds(8)) async -> URL? {
+        guard !Task.isCancelled else { return nil }
+        if let file = audioFile(for: text) { return file }
+        guard canGenerate || canDownload else { return nil }
+        requestSoon(text)
+        let clock = ContinuousClock()
+        let deadline = clock.now.advanced(by: timeout)
+        while clock.now < deadline, !Task.isCancelled {
+            if let file = audioFile(for: text) { return file }
+            if !preparingRemote, source(for: text) == nil { return nil }
+            do { try await Task.sleep(for: .milliseconds(80)) }
+            catch { return nil }
+        }
+        return Task.isCancelled ? nil : audioFile(for: text)
+    }
+
     private func premadeFile(for text: String) -> URL? {
         let legacyName = SpeechText.fileName(for: text)
         for (directory, manifest) in zip(premadeDirectories, premadeManifests) {
@@ -132,6 +149,9 @@ final class SpeechLibrary: ObservableObject {
 
     /// 刚才没找到音频、用系统语音读了的文本：排到最前面尽快下载或生成
     func requestSoon(_ text: String) {
+        guard let text = SpeechText.normalize(text) else { return }
+        // 清单尚未到达时也记住临时请求，否则刷新完成后只会重排启动时的题库文本。
+        if !prepared.contains(text) { prepared.append(text) }
         refreshRemote()
         enqueue([text], first: true)
     }

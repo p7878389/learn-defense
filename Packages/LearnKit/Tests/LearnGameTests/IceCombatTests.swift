@@ -12,11 +12,10 @@ import AppKit
 struct IceCombatTests {
     @Test func cosmeticEquipsWithoutChangingCombatRulesAndCanBeRemoved() throws {
         let catalog = GrowthCatalog.bundled
-        let ice = try #require(catalog.cosmetic(id: "projectile.iceCrystal"))
+        var saved = GrowthState()
+        saved.equipped["projectile"] = "projectile.iceCrystal"
+        #expect(saved.loadout(catalog).projectile(for: .inkling) == DefenderKind.inkling.projectile)
         let store = GrowthStore(catalog: catalog)
-        #expect(store.equip(ice))
-        #expect(store.loadout.projectile(for: .inkling).shape == .gem)
-        #expect(store.loadout.projectile(for: .inkling).color == .sky)
         #expect(store.loadout.projectile(for: .frost) == DefenderKind.frost.projectile)
         #expect(store.loadout.projectile(for: .starling) == DefenderKind.starling.projectile)
         store.unequip(key: "projectile")

@@ -20,13 +20,13 @@ struct RetiredSkinTests {
         old.stats.gamesPlayed = 12
         old.owned = ["defender.\(style)", "projectile.flower"]
         old.equipped = ["defenderSkin": "defender.\(style)", "enemySkin": "enemy.party",
-                        "projectile": "projectile.original"]
+                        "defenderSkin.twin": "defender.twin.original"]
         let restored = try JSONDecoder().decode(GrowthState.self, from: JSONEncoder().encode(old))
         #expect(restored.xp == 800)
         #expect(restored.coins == 321)
         #expect(restored.stats.gamesPlayed == 12)
         #expect(restored.owned == old.owned)
-        #expect(restored.equipped == ["projectile": "projectile.original"])
+        #expect(restored.equipped == ["defenderSkin.twin": "defender.twin.original"])
         #expect(restored.loadout(.bundled).defenderSkins.isEmpty)
         #expect(restored.loadout(.bundled).enemySkin == nil)
         let original = try #require(GrowthCatalog.bundled.cosmetic(id: "defender.original"))

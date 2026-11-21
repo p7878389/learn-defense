@@ -18,6 +18,7 @@ final class Speech: NSObject {
     private var utterance: AVSpeechUtterance?
     /// 排队等着读的文本
     private var queue: [String] = []
+    private var purchasePreparation: Task<Void, Never>?
 
     init(library: SpeechLibrary? = nil) {
         self.library = library
@@ -49,7 +50,26 @@ final class Speech: NSObject {
         if !isPlaying { playNext() }
     }
 
+    /// 豆包来源优先等待购买音频；系统来源和关闭提示语时仍尊重家长设置。
+    func speakPurchase(_ item: CosmeticKind) {
+        guard preferences.readGuidance else { return }
+        let text = SpeechText.Line.purchaseSuccess(item)
+        guard preferences.source == .doubao, let library else {
+            speak(text, interrupt: true)
+            return
+        }
+        stop()
+        purchasePreparation = Task { [weak self] in
+            _ = await library.audioFileWhenReady(for: text)
+            guard !Task.isCancelled, let self else { return }
+            self.purchasePreparation = nil
+            self.speak(text, interrupt: true)
+        }
+    }
+
     func stop() {
+        purchasePreparation?.cancel()
+        purchasePreparation = nil
         queue.removeAll()
         player?.stop()
         player = nil

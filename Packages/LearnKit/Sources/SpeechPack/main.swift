@@ -11,6 +11,7 @@ let usage = """
   --packs <路径>   题库 JSON 文件或目录（可重复）
   --bundled        加上 App 内置题库
   --game-lines     加上游戏里固定的提示语、植物和道具名
+  --collection-lines  只加收藏购买成功提示语，可单独增量生成
   --out <目录>     语音根目录（manifest.json 和分类目录都放在这里）：
                    上传 OSS 时放一个单独的目录，再整个同步到 OSS 的音色目录；
                    内置语音放 Sources/LearnGame/Resources/Speech；
@@ -38,6 +39,7 @@ func fail(_ message: String) -> Never {
 var packPaths: [String] = []
 var includeBundled = false
 var includeGameLines = false
+var includeCollectionLines = false
 var outDirectory: String?
 var reuseDirectory: String?
 var listOnly = false
@@ -54,6 +56,7 @@ while let arg = args.popFirst() {
     case "--packs": packPaths.append(value(after: arg))
     case "--bundled": includeBundled = true
     case "--game-lines": includeGameLines = true
+    case "--collection-lines": includeCollectionLines = true
     case "--out": outDirectory = value(after: arg)
     case "--reuse": reuseDirectory = value(after: arg)
     case "--list": listOnly = true
@@ -88,7 +91,13 @@ func loadPacks(at path: String) -> [ContentPack] {
 
 var packs = packPaths.flatMap(loadPacks)
 if includeBundled { packs = ContentLibrary.load(userDirectory: nil).packs + packs }
-let clips = SpeechCatalog.clips(packs: packs, includeGameLines: includeGameLines).map { clip in
+var selectedClips = SpeechCatalog.clips(packs: packs, includeGameLines: includeGameLines)
+if includeCollectionLines {
+    let existing = Set(selectedClips.map(\.text))
+    selectedClips += SpeechCatalog.clips(packs: [], includeGameLines: true)
+        .filter { $0.path.hasPrefix("game/收藏购买/") && !existing.contains($0.text) }
+}
+let clips = selectedClips.map { clip in
     flat ? SpeechClip(text: clip.text, path: SpeechText.fileName(for: clip.text)) : clip
 }
 guard !clips.isEmpty else { fail("没有要朗读的文本：用 --packs、--bundled 或 --game-lines 指定\n\n\(usage)") }

@@ -619,12 +619,13 @@ extension GameSession: GameSceneDelegate {
         enemyQuestions[lastEnemyID] = entry
         enemyKinds[lastEnemyID] = kind
         questionIDs = enemyQuestions.keys.sorted()
-        if tuning.waves.isBoss(kind) {
-            // 画面上的预警由场景在怪物出场时播放，这里配上号角和一句提醒
-            feedback.play(.bossArrive, volume: speech.effectsVolume)
-            speech.speak(SpeechText.Line.bossArrive(kind.name), interrupt: false)
-        }
         return EnemySpawn(id: lastEnemyID, sign: entry.question.signText, kind: kind)
+    }
+
+    func bossAppeared(name: String) {
+        guard phase == .playing else { return }
+        feedback.play(.bossArrive, volume: speech.effectsVolume)
+        speech.speak(SpeechText.Line.bossArrive(name), interrupt: false)
     }
 
     private func makeQuestion() -> (item: LearningItem, question: Question)? {

@@ -58,10 +58,13 @@ public enum CosmeticSlot: String, Codable, CaseIterable, Identifiable, Sendable 
 
     public var id: String { rawValue }
 
+    /// 旧槽位保留解码兼容，收藏馆仅提供角色皮肤。
+    public var isCollectible: Bool { self == .defenderSkin || self == .enemySkin }
+
     public var displayName: String {
         switch self {
         case .defenderSkin: "射手皮肤"
-        case .enemySkin: "僵尸皮肤"
+        case .enemySkin: "怪物皮肤"
         case .projectile: "子弹外观"
         case .defeat: "僵尸退场"
         case .itemSkin: "道具皮肤"
@@ -111,7 +114,7 @@ public struct ProjectilePayload: Codable, Sendable, Equatable {
     public var look: ProjectileLook { ProjectileLook(shape: shape, color: color, size: size ?? 11) }
 }
 
-/// 一件外观：到了 unlockLevel 解锁；price 为 0 的解锁即拥有，大于 0 的要用积分买
+/// 一件外观：等级与附加条件全部满足后解锁；price 为 0 的解锁即拥有，大于 0 的要用积分买
 public struct CosmeticKind: Codable, Identifiable, Sendable, Equatable {
     public var id: String
     public var slot: CosmeticSlot
@@ -126,6 +129,12 @@ public struct CosmeticKind: Codable, Identifiable, Sendable, Equatable {
     public var defeat: DefeatEffect?
     public var itemSkin: ItemSkin?
     public var characterSkin: CharacterSkin? = nil
+    /// 怪物外观引用已有 EnemyKind.id，不改变战斗类型。
+    public var enemyAppearance: String? = nil
+    public var unlockBadge: String? = nil
+    public var unlockStat: GrowthStats.Key? = nil
+    public var unlockCount: Int? = nil
+
     /// 射手皮肤给哪种射手穿（DefenderKind.id）；不写就是豌豆射手。其他槽位不填
     public var defender: String? = nil
 
@@ -133,7 +142,7 @@ public struct CosmeticKind: Codable, Identifiable, Sendable, Equatable {
     public var shooterID: String { defender ?? DefenderKind.inkling.id }
 
     /// 「原版」：不替换任何东西，选它等于卸下
-    public var isOriginal: Bool { projectile == nil && defeat == nil && itemSkin == nil && characterSkin == nil }
+    public var isOriginal: Bool { projectile == nil && defeat == nil && itemSkin == nil && characterSkin == nil && enemyAppearance == nil }
 
     /// 同一个位置只能装一件
     public var equipKey: String {
@@ -218,6 +227,7 @@ public struct GrowthCatalog: Sendable {
             if !valid { issues.append("徽章「\(badge.name)」没有有效的获得条件，已忽略") }
             return valid
         }
+        let badgeIDs = Set(badges.map(\.id))
         seen = []
         cosmetics = cosmetics.filter { item in
             guard seen.insert(item.id).inserted else {
@@ -231,8 +241,15 @@ public struct GrowthCatalog: Sendable {
             case .itemSkin: item.itemSkin != nil && UnitCatalog.item(id: item.itemSkin!.item) != nil && item.characterSkin == nil
             }
             let target = item.slot == .defenderSkin ? UnitCatalog.defender(id: item.shooterID) != nil : item.defender == nil
-            let valid = matches && target && item.unlockLevel >= 1 && item.price >= 0
-            if !valid { issues.append("外观「\(item.name)」的槽位、内容、等级或价格不对，已忽略") }
+            let appearanceValid = item.enemyAppearance.map {
+                item.slot == .enemySkin && item.characterSkin == nil && UnitCatalog.enemy(id: $0) != nil
+            } ?? true
+            let badgeValid = item.unlockBadge.map { badgeIDs.contains($0) } ?? true
+            let statValid = (item.unlockStat == nil && item.unlockCount == nil)
+                || (item.unlockStat != nil && (item.unlockCount ?? 0) > 0)
+            let valid = item.slot.isCollectible && matches && target && appearanceValid && badgeValid && statValid
+                && item.unlockLevel >= 1 && item.price >= 0
+            if !valid { issues.append("外观「\(item.name)」的槽位、内容、解锁条件或价格不对，已忽略") }
             return valid
         }
     }

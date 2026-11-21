@@ -21,7 +21,7 @@ struct PacingTests {
         #expect(catalog.issues.isEmpty, "\(catalog.issues)")
         #expect(catalog.pacing == .defaults, "内置 JSON 和代码里的默认值应保持一致")
         #expect(catalog.badges.count == 12)
-        #expect(Set(CosmeticSlot.allCases) == Set(catalog.cosmetics.map(\.slot)))
+        #expect(Set([CosmeticSlot.defenderSkin, .enemySkin]) == Set(catalog.cosmetics.map(\.slot)))
     }
 
     @Test func questionBudgetPerGradeAndDifficulty() {
@@ -223,6 +223,12 @@ struct SettlementTests {
     }
 
     @Test func levelUpGivesCoinsAndUnlocks() {
+        var catalog = GrowthCatalog.bundled
+        var reward = catalog.cosmetic(id: "defender.mecha")!
+        reward.id = "test.level6"
+        reward.unlockLevel = 6
+        reward.price = 150
+        catalog.cosmetics.append(reward)
         var state = GrowthState()
         state.xp = catalog.pacing.levelCurve.totalXP(toReach: 5) + 400
         state.stats.day = GrowthState.dayKey(day(5), calendar: calendar)
@@ -231,7 +237,7 @@ struct SettlementTests {
         let result = state.settle(report(.hard, questions: 10, correct: 10, stars: 3), catalog: catalog, calendar: calendar)
         #expect(result.leveledUp && result.before.level == 5 && result.after.level == 6)
         #expect(result.levelCoins == 30)
-        #expect(result.unlocked.map(\.id).sorted() == ["defeat.confetti", "item.giftHeart"])
+        #expect(result.unlocked.map(\.id).sorted() == ["test.level6"])
         #expect(result.gifts.isEmpty)
         #expect(state.coins == coinsBefore + result.totalCoins)
     }
@@ -261,14 +267,22 @@ struct SettlementTests {
 
 @Suite("外观")
 struct CosmeticTests {
-    let petal = catalog.cosmetic(id: "projectile.petal")!
-    let goldStar = catalog.cosmetic(id: "projectile.goldStar")!
-    let original = catalog.cosmetic(id: "projectile.original")!
+    private static func sample(_ id: String, price: Int, level: Int) -> CosmeticKind {
+        var item = GrowthCatalog.bundled.cosmetic(id: "defender.mecha")!
+        item.id = id
+        item.price = price
+        item.unlockLevel = level
+        return item
+    }
+
+    let petal = Self.sample("test.paid", price: 100, level: 5)
+    let goldStar = Self.sample("defender.mecha", price: 0, level: 3)
+    let original = catalog.cosmetic(id: "defender.original")!
 
     @Test func purchaseRules() {
         var state = GrowthState()
         state.coins = 120
-        let amethyst = catalog.cosmetic(id: "projectile.amethyst")!
+        let amethyst = Self.sample("test.expensive", price: 150, level: 7)
         let early = state.purchase(petal, level: 4)
         #expect(early == .locked(level: 5))
         let free = state.purchase(goldStar, level: 3)
@@ -281,7 +295,7 @@ struct CosmeticTests {
         let again = state.purchase(petal, level: 5)
         #expect(again == .alreadyOwned && state.coins == 20)
         #expect(state.status(of: petal, level: 5) == .owned)
-        #expect(state.status(of: catalog.cosmetic(id: "projectile.heart")!, level: 5) == .locked(level: 10))
+        #expect(state.status(of: Self.sample("test.locked", price: 250, level: 10), level: 5) == .locked(level: 10))
     }
 
     @Test func equipAndLoadout() {
@@ -295,27 +309,21 @@ struct CosmeticTests {
         state.equipped["defeat"] = "defeat.unknown"
         state.xp = catalog.pacing.levelCurve.totalXP(toReach: 3)
         let loadout = state.loadout(catalog)
-        #expect(loadout.projectile?.shape == .star)
+        #expect(loadout.defenderSkins["inkling"] == .mecha)
         #expect(loadout.defeat == nil, "未知外观回退原版")
-        #expect(loadout.projectile(for: .inkling).shape == .star)
+        #expect(loadout.projectile(for: .inkling) == DefenderKind.inkling.projectile)
         #expect(loadout.projectile(for: .frost) == DefenderKind.frost.projectile, "寒冰射手的子弹不换")
         #expect(loadout.projectile(for: .starling) == DefenderKind.starling.projectile)
         let reset = state.equip(original, level: 3)
-        #expect(reset && state.equipped["projectile"] == nil, "装原版等于卸下")
+        #expect(reset && state.equipped["defenderSkin"] == nil, "装原版等于卸下")
     }
 
     @Test func itemSkinOnlyChangesLook() {
         var state = GrowthState()
-        state.coins = 100
-        state.xp = catalog.pacing.levelCurve.totalXP(toReach: 4)
-        let ice = catalog.cosmetic(id: "item.iceCube")!
-        let bought = state.purchase(ice, level: 4)
-        #expect(bought == .bought)
-        let equipped = state.equip(ice, level: 4)
-        #expect(equipped)
-        let skinned = state.loadout(catalog).skin(.frostCharm)
-        #expect(skinned.icon == "🧊" && skinned.name == "冰块符")
-        #expect(skinned.id == ItemKind.frostCharm.id && skinned.effects == ItemKind.frostCharm.effects)
+        state.owned.insert("item.iceCube")
+        state.equipped["item.frostCharm"] = "item.iceCube"
+        let shown = state.loadout(catalog).skin(.frostCharm)
+        #expect(shown == .frostCharm, "退役换装不能改变道具名称、图标或能力")
         #expect(state.loadout(catalog).skin(.heartLeaf) == .heartLeaf)
     }
 }

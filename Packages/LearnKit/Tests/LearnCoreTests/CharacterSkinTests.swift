@@ -8,20 +8,22 @@ struct CharacterSkinTests {
         let catalog = GrowthCatalog.bundled
         var state = GrowthState()
         state.xp = 1000
-        for id in ["defender.spellbook", "defeat.sparkle", "projectile.iceCrystal"] {
+        state.coins = 120
+        for id in ["defender.spellbook", "enemy.goblin"] {
             let item = try #require(catalog.cosmetic(id: id))
+            state.purchase(item, level: 2)
             let equipped = state.equip(item, level: 2)
-            #expect(equipped)
+            #expect(equipped == (item.slot == .defenderSkin))
         }
         state = try JSONDecoder().decode(GrowthState.self, from: JSONEncoder().encode(state))
         #expect(state.loadout(catalog).defenderSkins["inkling"] == .spellbook)
-        #expect(state.loadout(catalog).defeat != nil)
+        #expect(state.loadout(catalog).enemyAppearances == ["goblin"])
         let original = try #require(catalog.cosmetic(id: "defender.original"))
         let reset = state.equip(original, level: 2)
         #expect(reset)
         #expect(state.loadout(catalog).defenderSkins["inkling"] == nil)
-        #expect(state.loadout(catalog).defeat != nil)
-        #expect(state.loadout(catalog).projectile?.shape == .gem)
+        #expect(state.loadout(catalog).enemyAppearances == ["goblin"])
+        #expect(state.loadout(catalog).projectile == nil)
     }
 
     @Test func oldAndInvalidEquipmentFallBackToOriginal() throws {
@@ -29,7 +31,7 @@ struct CharacterSkinTests {
         #expect(state.loadout(.bundled) == .standard)
         state.equipped = ["enemySkin": "defender.spellbook", "defenderSkin": "defender.missing"]
         #expect(state.loadout(.bundled) == .standard)
-        let original = try #require(GrowthCatalog.bundled.cosmetic(id: "projectile.original"))
+        let original = try #require(GrowthCatalog.bundled.cosmetic(id: "enemy.original"))
         #expect(original.characterSkin == nil)
         #expect(original.isOriginal)
     }

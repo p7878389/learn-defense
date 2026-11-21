@@ -3,12 +3,31 @@ import Foundation
 /// 徽章判定和校准题量用的累计数据。所有字段缺省为 0，旧文件少字段也能读
 public struct GrowthStats: Codable, Sendable, Equatable {
     /// 可以写进 badges.json 的统计项
-    public enum Key: String, CaseIterable, Sendable {
+    public enum Key: String, Codable, CaseIterable, Sendable {
         case gamesPlayed, gamesWon, threeStarGames, perfectGames
         case firstTryCorrect, questionsAnswered
         case bossesDefeated, enemiesDefeated, itemsUsed, ultimatesCast
         case easyWins, normalWins, hardWins
         case playSeconds
+
+        public var displayName: String {
+            switch self {
+            case .gamesPlayed: "累计完成对局"
+            case .gamesWon: "累计通关"
+            case .threeStarGames: "累计三星通关"
+            case .perfectGames: "累计全对通关"
+            case .firstTryCorrect: "累计首答正确"
+            case .questionsAnswered: "累计作答"
+            case .bossesDefeated: "累计击败首领"
+            case .enemiesDefeated: "累计击败怪物"
+            case .itemsUsed: "累计使用道具"
+            case .ultimatesCast: "累计释放大招"
+            case .easyWins: "轻松难度通关"
+            case .normalWins: "普通难度通关"
+            case .hardWins: "挑战难度通关"
+            case .playSeconds: "累计游戏秒数"
+            }
+        }
     }
 
     public var gamesPlayed = 0
@@ -106,7 +125,9 @@ public struct GrowthState: Codable, Sendable, Equatable {
         // 退役皮肤恢复原版；保留积分、拥有记录及其他装备，兼容数据库和旧 JSON 档案。
         let retired: Set<String> = ["defender.party", "defender.pixel", "defender.bamboo", "defender.egg",
                                     "enemy.party", "enemy.pixel", "defender.voxel", "defender.firefly"]
-        equipped = equipped.filter { !retired.contains($0.value) }
+        equipped = equipped.filter {
+            !retired.contains($0.value) && $0.key != "projectile" && $0.key != "defeat" && $0.key != "enemySkin" && !$0.key.hasPrefix("item.")
+        }
         stats = (try? c.decodeIfPresent(GrowthStats.self, forKey: .stats)) ?? GrowthStats()
     }
 
@@ -119,25 +140,39 @@ public struct GrowthState: Codable, Sendable, Equatable {
     public enum CosmeticStatus: Equatable, Sendable {
         /// 等级不够
         case locked(level: Int)
+        case conditionLocked
         /// 已解锁，还没买
         case forSale(price: Int)
         case owned
         case equipped
     }
 
+    /// 所有附加条件必须同时满足；统计与徽章均来自当前孩子的成长档案。
+    public func meetsConditions(_ item: CosmeticKind) -> Bool {
+        guard item.slot.isCollectible else { return false }
+        if let badge = item.unlockBadge, badges[badge] == nil { return false }
+        if let stat = item.unlockStat {
+            guard let count = item.unlockCount, count > 0, stats[stat] >= count else { return false }
+        } else if item.unlockCount != nil { return false }
+        return true
+    }
+
     public func owns(_ item: CosmeticKind, level: Int) -> Bool {
-        guard level >= item.unlockLevel else { return false }
+        guard level >= item.unlockLevel, meetsConditions(item) else { return false }
         return item.price == 0 || owned.contains(item.id)
     }
 
     public func isEquipped(_ item: CosmeticKind) -> Bool {
+        if item.slot == .enemySkin { return false }
         if item.isOriginal { return equipped[item.equipKey] == nil }
         return equipped[item.equipKey] == item.id
     }
 
     public func status(of item: CosmeticKind, level: Int) -> CosmeticStatus {
         if level < item.unlockLevel { return .locked(level: item.unlockLevel) }
+        if !meetsConditions(item) { return .conditionLocked }
         if !owns(item, level: level) { return .forSale(price: item.price) }
+        if item.slot == .enemySkin { return .owned }
         return isEquipped(item) ? .equipped : .owned
     }
 
@@ -145,6 +180,7 @@ public struct GrowthState: Codable, Sendable, Equatable {
         case bought
         case alreadyOwned
         case locked(level: Int)
+        case conditionLocked
         /// 积分不够，还差多少
         case notEnough(short: Int)
     }
@@ -153,6 +189,7 @@ public struct GrowthState: Codable, Sendable, Equatable {
     @discardableResult
     public mutating func purchase(_ item: CosmeticKind, level: Int) -> PurchaseResult {
         if level < item.unlockLevel { return .locked(level: item.unlockLevel) }
+        if !meetsConditions(item) { return .conditionLocked }
         if owns(item, level: level) { return .alreadyOwned }
         guard coins >= item.price else { return .notEnough(short: item.price - coins) }
         coins -= item.price
@@ -163,7 +200,7 @@ public struct GrowthState: Codable, Sendable, Equatable {
     /// 装备一件已拥有的外观；装「原版」等于卸下这个位置
     @discardableResult
     public mutating func equip(_ item: CosmeticKind, level: Int) -> Bool {
-        guard owns(item, level: level) else { return false }
+        guard item.slot != .enemySkin, owns(item, level: level) else { return false }
         equipped[item.equipKey] = item.isOriginal ? nil : item.id
         return true
     }
@@ -180,11 +217,12 @@ public struct GrowthState: Codable, Sendable, Equatable {
         for (key, id) in equipped {
             guard let item = catalog.cosmetic(id: id), item.equipKey == key, owns(item, level: current) else { continue }
             if item.slot == .defenderSkin { loadout.defenderSkins[item.shooterID] = item.characterSkin }
-            if item.slot == .enemySkin { loadout.enemySkin = item.characterSkin }
-            if let p = item.projectile { loadout.projectile = p.look }
-            if let d = item.defeat { loadout.defeat = d }
-            if let s = item.itemSkin { loadout.itemSkins[s.item] = s }
         }
+        loadout.enemyAppearances = Array(Set(catalog.cosmetics(in: .enemySkin).compactMap { item in
+            guard owns(item, level: current), let appearance = item.enemyAppearance,
+                  UnitCatalog.enemy(id: appearance) != nil else { return nil as String? }
+            return appearance
+        })).sorted()
         return loadout
     }
 }
@@ -194,6 +232,9 @@ public struct Loadout: Sendable, Equatable {
     /// 射手 id → 穿的皮肤；没有记录就是原版
     public var defenderSkins: [String: CharacterSkin] = [:]
     public var enemySkin: CharacterSkin?
+    /// 单个外观仅用于显式预览/测试；成长档案使用已拥有的外观池。
+    public var enemyAppearance: String?
+    public var enemyAppearances: [String] = []
     /// 替换普通豌豆类（orb）子弹；寒冰射手、杨桃的子弹保持原样，免得孩子分不清哪个会减速
     public var projectile: ProjectileLook?
     /// 替换所有僵尸的退场特效
@@ -202,9 +243,11 @@ public struct Loadout: Sendable, Equatable {
     public var itemSkins: [String: ItemSkin] = [:]
 
     public init(projectile: ProjectileLook? = nil, defeat: DefeatEffect? = nil, itemSkins: [String: ItemSkin] = [:],
-                defenderSkins: [String: CharacterSkin] = [:], enemySkin: CharacterSkin? = nil) {
+                defenderSkins: [String: CharacterSkin] = [:], enemySkin: CharacterSkin? = nil, enemyAppearance: String? = nil, enemyAppearances: [String] = []) {
         self.defenderSkins = defenderSkins
         self.enemySkin = enemySkin
+        self.enemyAppearance = enemyAppearance
+        self.enemyAppearances = Array(Set(enemyAppearances)).sorted()
         self.projectile = projectile
         self.defeat = defeat
         self.itemSkins = itemSkins

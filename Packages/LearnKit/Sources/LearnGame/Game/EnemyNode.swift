@@ -8,6 +8,8 @@ final class EnemyNode: SKNode {
     let enemyID: Int
     let lane: Int
     let kind: EnemyKind
+    /// 实际展示的名称；战斗属性仍使用 kind。
+    let displayName: String
     var health: Health
     /// 已被打败（子弹在路上），不再移动也不能再被瞄准
     var doomed = false
@@ -34,8 +36,10 @@ final class EnemyNode: SKNode {
     private let halfHeight: CGFloat
     /// 防具（铁桶、铁门）已经被打掉，改用普通僵尸的动画
     private var armorShed = false
+    private let hasAppearanceOverride: Bool
     private var chill: SKShapeNode?
     private let sign = SKShapeNode()
+    private var rarityFrame: SKSpriteNode?
     private let label = SKLabelNode()
     /// 牌子上是单个 emoji（如听音题的 🔊）时，换成 3D 图片
     private var signPicture: SKNode?
@@ -48,7 +52,7 @@ final class EnemyNode: SKNode {
     static let enragedSpeed = 1.2
 
     init(id: Int, kind: EnemyKind, sign text: String, lane: Int, scale: CGFloat, skin: CharacterSkin? = nil,
-         boss: Bool = false) {
+         boss: Bool = false, appearance: String? = nil, defaultAppearance: Bool = false) {
         enemyID = id
         self.lane = lane
         self.kind = kind
@@ -59,7 +63,14 @@ final class EnemyNode: SKNode {
         let look = kind.look
         let s = CGFloat(look.scale)
         let extent = EnemyArt.extent(of: look.body)
-        rig = UnitSprites.enemy(kind, skin: skin)
+        let selectedRig = UnitSprites.enemy(kind, skin: skin, appearance: appearance)
+        rig = selectedRig
+        let renderedKind = appearance.flatMap { id -> EnemyKind? in
+            guard selectedRig?.base == "zombie-\(id)" else { return nil }
+            return UnitCatalog.enemy(id: id)
+        }
+        hasAppearanceOverride = renderedKind != nil
+        displayName = renderedKind?.name ?? kind.name
         // 不管多大，脚底都在同一高度，牌子挡住下半身
         let halfHeight = rig.map { $0.sprite.size.height / 2 } ?? extent.height
         self.halfHeight = halfHeight
@@ -84,8 +95,20 @@ final class EnemyNode: SKNode {
         label.fontColor = Palette.ink
         label.verticalAlignmentMode = .center
         label.horizontalAlignmentMode = .center
-        sign.fillColor = .white
-        sign.strokeColor = Palette.signBorder
+        let rarity = hasAppearanceOverride && !defaultAppearance
+            ? appearance.flatMap { HeraldicArtwork.monsterRarity(appearance: $0) } ?? .common
+            : .common
+        if let texture = HeraldicArtwork.texture(for: rarity) {
+            let frame = SKSpriteNode(texture: texture)
+            frame.name = "monsterRarityFrame"
+            frame.zPosition = -0.5
+            rarityFrame = frame
+            sign.addChild(frame)
+            label.zPosition = 1
+            label.fontColor = SKColor(red: 0.98, green: 0.95, blue: 0.84, alpha: 1)
+        }
+        sign.fillColor = rarityFrame == nil ? .white : .clear
+        sign.strokeColor = rarityFrame == nil ? Palette.signBorder : .clear
         sign.lineWidth = 3
         sign.position = CGPoint(x: 0, y: -20)
         sign.zPosition = 2
@@ -94,7 +117,7 @@ final class EnemyNode: SKNode {
         setSign(text)
 
         if boss {
-            let bar = BossHealthBar(name: kind.name, segments: kind.hp)
+            let bar = BossHealthBar(name: displayName, segments: kind.hp)
             bar.position = CGPoint(x: 0, y: figureBaseY + halfHeight * s + 10)
             bar.zPosition = 3
             addChild(bar)
@@ -200,6 +223,7 @@ final class EnemyNode: SKNode {
         signPicture = nil
         if Pictures.texture(text) != nil {
             let picture = Pictures.node(text, size: 38)
+            picture.zPosition = 1
             sign.addChild(picture)
             signPicture = picture
             label.text = ""
@@ -207,12 +231,14 @@ final class EnemyNode: SKNode {
             label.text = text
         }
         let width = max(64, label.frame.width + 26)
+        // 品质框只跟随题牌大小，题目文字与锁定描边始终在最前面。
+        rarityFrame?.size = CGSize(width: width + 16, height: 64)
         sign.path = CGPath(roundedRect: CGRect(x: -width / 2, y: -22, width: width, height: 44),
                            cornerWidth: 10, cornerHeight: 10, transform: nil)
     }
 
     func setTargeted(_ on: Bool) {
-        sign.strokeColor = on ? Palette.target : Palette.signBorder
+        sign.strokeColor = on ? Palette.target : (rarityFrame == nil ? Palette.signBorder : .clear)
         sign.lineWidth = on ? 6 : 3
         sign.removeAction(forKey: "pulse")
         sign.setScale(1)
@@ -290,7 +316,7 @@ final class EnemyNode: SKNode {
     func showWound() {
         showHealth()
         if isBoss, !isEnraged, health.max > 1, health.current == 1 { enrage() }
-        guard !armorShed, health.max > 1, health.current == 1,
+        guard !hasAppearanceOverride, !armorShed, health.max > 1, health.current == 1,
               let rig, let bare = rig.clip(for: "bare") else { return }
         armorShed = true
         // 正在咬人时先不换，咬完回到走路时自然换成普通僵尸

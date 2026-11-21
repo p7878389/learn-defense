@@ -7,28 +7,32 @@ struct CharacterSkinPreview: View {
     var kind: DefenderKind = .inkling
     let skin: CharacterSkin?
     let enemy: Bool
+    var enemyAppearance: String? = nil
+    var compact = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// 试穿舞台的身份：换皮肤或换角色时整块舞台重建
-    static func stageID(kind: DefenderKind = .inkling, skin: CharacterSkin?, enemy: Bool) -> String {
-        "\(enemy ? "enemy" : kind.id)-\(skin?.rawValue ?? "original")"
+    static func stageID(kind: DefenderKind = .inkling, skin: CharacterSkin?, enemy: Bool, enemyAppearance: String? = nil) -> String {
+        "\(enemy ? "enemy" : kind.id)-\(skin?.rawValue ?? "original")-\(enemy ? (enemyAppearance ?? "default") : "default")"
     }
 
     var body: some View {
         VStack(spacing: 8) {
             // SpriteView 只展示创建时拿到的场景，之后换参数不会重新展示；
             // 所以按皮肤给舞台独立身份，切换时连同场景一起重建。
-            CharacterSkinStage(kind: kind, skin: skin, enemy: enemy, paused: reduceMotion)
-                .id(Self.stageID(kind: kind, skin: skin, enemy: enemy))
-                .frame(maxWidth: .infinity).frame(height: 130)
-                .accessibilityLabel("\(enemy ? "普通僵尸" : kind.name)\(skin == nil ? "原版" : "动画皮肤")试穿")
-            VStack(alignment: .leading, spacing: 8) {
-                Text(enemy ? "普通僵尸 · 行走 / 啃咬" : "\(kind.name) · 待机 / 发射")
-                    .font(.system(size: 14, weight: .heavy, design: .rounded))
-                Text("点选试看，装备后下局生效")
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
+            CharacterSkinStage(kind: kind, skin: skin, enemy: enemy, paused: reduceMotion, enemyAppearance: enemyAppearance)
+                .id(Self.stageID(kind: kind, skin: skin, enemy: enemy, enemyAppearance: enemyAppearance))
+                .frame(maxWidth: .infinity).frame(height: compact ? 110 : 130)
+                .accessibilityLabel("\(enemy ? (enemyAppearance.flatMap { UnitCatalog.enemy(id: $0)?.name } ?? "默认怪物") : kind.name)\(skin == nil && enemyAppearance == nil ? "原版" : "外观")试穿")
+            if !compact {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(enemy ? "\(enemyAppearance.flatMap { UnitCatalog.enemy(id: $0)?.name } ?? "默认怪物") · 行走 / 攻击" : "\(kind.name) · 待机 / 发射")
+                        .font(.system(size: 14, weight: .heavy, design: .rounded))
+                    Text(enemy ? "已解锁并购买的怪物下局自动随机展示" : "点选试看，装备后下局生效")
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                }
+                .foregroundStyle(Theme.ink)
             }
-            .foregroundStyle(Theme.ink)
         }
     }
 }
@@ -39,6 +43,7 @@ private struct CharacterSkinStage: View {
     let skin: CharacterSkin?
     let enemy: Bool
     let paused: Bool
+    var enemyAppearance: String? = nil
     @State private var scene: CharacterSkinPreviewScene?
 
     var body: some View {
@@ -48,24 +53,25 @@ private struct CharacterSkinStage: View {
             }
         }
         .onAppear {
-            if scene == nil { scene = CharacterSkinPreviewScene(kind: kind, skin: skin, enemy: enemy) }
+            if scene == nil { scene = CharacterSkinPreviewScene(kind: kind, skin: skin, enemy: enemy, enemyAppearance: enemyAppearance) }
         }
     }
 }
 
 @MainActor
 final class CharacterSkinPreviewScene: SKScene {
-    init(kind: DefenderKind = .inkling, skin: CharacterSkin?, enemy: Bool) {
+    init(kind: DefenderKind = .inkling, skin: CharacterSkin?, enemy: Bool, enemyAppearance: String? = nil) {
         super.init(size: CGSize(width: 280, height: 130))
         scaleMode = .aspectFit
         backgroundColor = .clear
         let node: SKNode
         var unitX: CGFloat = 140
         if enemy {
-            let zombie = EnemyNode(id: 0, kind: .blob, sign: "春", lane: 0, scale: 1.25, skin: skin)
+            let zombie = EnemyNode(id: 0, kind: .blob, sign: "春", lane: 0, scale: 1.25, skin: skin, appearance: enemyAppearance)
             zombie.run(.repeatForever(.sequence([
                 .wait(forDuration: 2), .run { [weak zombie] in zombie?.lunge() },
-                .wait(forDuration: 0.8), .moveBy(x: 36, y: 0, duration: 0.7),
+                .wait(forDuration: 0.8), .moveBy(x: 18, y: 0, duration: 0.7),
+                .moveBy(x: -18, y: 0, duration: 0.7),
             ])))
             node = zombie
         } else {

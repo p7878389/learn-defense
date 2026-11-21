@@ -130,7 +130,7 @@ struct BossPresentationTests {
         #expect(scene.childNode(withName: BossWarningEffect.bannerName) != nil)
         #expect(scene.childNode(withName: BossWarningEffect.laneName) != nil)
         let banner = try #require(scene.childNode(withName: BossWarningEffect.bannerName))
-        #expect(banner.children.contains { ($0 as? SKLabelNode)?.text == EnemyKind.ogre.name })
+        #expect(banner.children.contains { ($0 as? SKLabelNode)?.text == EnemyKind.blob.name })
 
         // 小怪出场没有预警
         let other = makeScene()

@@ -54,6 +54,29 @@ struct SpeechLibraryTests {
         }
     }
 
+    @Test func purchaseWaitsForHighQualityAudioAndCachesIt() async throws {
+        defer { try? FileManager.default.removeItem(at: root) }
+        let oss = FakeOSS()
+        let text = "买到掷石斥候啦，已经加入怪物队伍！"
+        try publish([text: "game/purchase.mp3"], to: oss)
+        let library = makeLibrary(oss: oss)
+        // 全套 SpriteKit 测试会占用 MainActor；此处验证就绪返回，不测试网络时延。
+        let ready = await library.audioFileWhenReady(for: text, timeout: .seconds(60))
+        let file = try #require(ready)
+        #expect(try Data(contentsOf: file) == Data("audio:game/purchase.mp3".utf8))
+        #expect(library.audioFile(for: text) == file)
+    }
+
+    @Test func cancelledPurchaseDoesNotStartPreparation() async {
+        defer { try? FileManager.default.removeItem(at: root) }
+        let oss = FakeOSS()
+        let library = makeLibrary(oss: oss)
+        let task = Task { await library.audioFileWhenReady(for: "购买成功", timeout: .seconds(2)) }
+        task.cancel()
+        #expect(await task.value == nil)
+        #expect(oss.requests.isEmpty)
+    }
+
     @Test func downloadsListedTextsAndPlaysFromLocalCache() async throws {
         defer { try? FileManager.default.removeItem(at: root) }
         let oss = FakeOSS()

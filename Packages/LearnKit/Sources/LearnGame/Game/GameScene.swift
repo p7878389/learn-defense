@@ -18,6 +18,8 @@ struct DefenderCell: Hashable {
 protocol GameSceneDelegate: AnyObject {
     /// 要生成新怪物时调用，返回 nil 表示这一局的怪物出完了
     func nextEnemy() -> EnemySpawn?
+    /// 已确定实际外观后再播报，避免先报战斗类型再随机换皮。
+    func bossAppeared(name: String)
     /// 当前瞄准的怪物变了（答题针对它）
     func targetChanged(to id: Int?)
     /// 怪物走到书架。返回 true 移除怪物（扣血），false 让它退回起点（不设失败）
@@ -36,6 +38,7 @@ protocol GameSceneDelegate: AnyObject {
 }
 
 extension GameSceneDelegate {
+    func bossAppeared(name: String) {}
     /// 默认不定住目标（测试里的简单代理不用实现）
     var holdsTarget: Bool { false }
     /// 首领被打到只剩最后一段血、开始暴走
@@ -87,6 +90,9 @@ final class GameScene: SKScene {
     private var lastUpdate: TimeInterval = 0
     private var spawnCountdown = 1.0
     private var spawningFinished = false
+    /// 独立于出怪、掉落和题目的随机过程，每轮将已拥有外观打乱用完。
+    private var appearanceBag: [String] = []
+    private var lastAppearance: String?
     private var built = false
     private(set) var gamePaused = false
     /// 演出清理完成后再结算，避免最后一击被回合暂停冻结。
@@ -278,18 +284,35 @@ final class GameScene: SKScene {
         spawn(spec, lane: chooseLane())
     }
 
+    private func nextMonsterAppearance() -> String? {
+        guard !loadout.enemyAppearances.isEmpty else { return loadout.enemyAppearance ?? EnemyKind.blob.id }
+        if appearanceBag.isEmpty {
+            appearanceBag = loadout.enemyAppearances.shuffled()
+            if appearanceBag.count > 1, appearanceBag.last == lastAppearance {
+                appearanceBag.swapAt(0, appearanceBag.count - 1)
+            }
+        }
+        let chosen = appearanceBag.removeLast()
+        lastAppearance = chosen
+        return chosen
+    }
+
     /// 让一只怪物从右边出场；测试里可以指定路和位置
     @discardableResult
     func spawn(_ spec: EnemySpawn, lane: Int, x: CGFloat? = nil) -> EnemyNode {
         let boss = tuning.waves.isBoss(spec.kind)
         let enemy = EnemyNode(id: spec.id, kind: spec.kind, sign: spec.sign, lane: lane,
-                              scale: min(1.2, laneHeight / 104), skin: loadout.enemySkin, boss: boss)
+                              scale: min(1.2, laneHeight / 104), skin: loadout.enemySkin, boss: boss, appearance: nextMonsterAppearance(),
+                              defaultAppearance: loadout.enemyAppearances.isEmpty && loadout.enemyAppearance == nil)
         enemy.position = CGPoint(x: x ?? spawnX, y: laneY(lane))
         enemy.zPosition = 10 + CGFloat(tuning.lanes - lane)
         addChild(enemy)
         enemies[spec.id] = enemy
         enemy.appear()
-        if boss { BossWarningEffect(name: spec.kind.name, laneY: laneY(lane), laneHeight: laneHeight).play(in: self) }
+        if boss {
+            BossWarningEffect(name: enemy.displayName, laneY: laneY(lane), laneHeight: laneHeight).play(in: self)
+            gameDelegate?.bossAppeared(name: enemy.displayName)
+        }
         return enemy
     }
 
