@@ -11,11 +11,15 @@ struct SpellbookCatalogTests {
         #expect(book.shooterID == "inkling")
         #expect(book.slot == .defenderSkin)
         var state = GrowthState()
-        state.coins = 120
+        state.xp = catalog.pacing.levelCurve.totalXP(toReach: book.unlockLevel)
+        let level = state.level(catalog.pacing.levelCurve).level
         let monster = try #require(catalog.cosmetic(id: "enemy.goblin"))
+        state.coins = monster.price + book.price
         let bought = state.purchase(monster, level: 1)
         #expect(bought == .bought)
-        let equipped = state.equip(book, level: 1)
+        let skinBought = state.purchase(book, level: level)
+        #expect(skinBought == .bought)
+        let equipped = state.equip(book, level: level)
         #expect(equipped)
         let projectile = try #require(catalog.cosmetic(id: "enemy.goblin"))
         let projectileEquipped = state.equip(projectile, level: 1)

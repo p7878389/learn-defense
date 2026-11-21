@@ -1,3 +1,4 @@
+import Foundation
 import LearnCore
 import Testing
 @testable import LearnGame
@@ -20,7 +21,13 @@ struct SeedPacketTests {
     }
 
     @Test func cardNameAndPortraitFollowOnlyEquippedSkin() throws {
-        let growth = GrowthStore(catalog: .bundled)
+        let database = try LearnDatabase(url: nil)
+        let profileID = UUID()
+        var state = GrowthState()
+        state.xp = GrowthCatalog.bundled.pacing.levelCurve.totalXP(toReach: 3)
+        state.owned = ["defender.spellbook", "defender.teapot"]
+        try database.saveGrowthState(state, profileID: profileID)
+        let growth = GrowthStore(profileID: profileID, database: database, catalog: .bundled)
         let book = try #require(growth.catalog.cosmetic(id: "defender.spellbook"))
         let teapot = try #require(growth.catalog.cosmetic(id: "defender.teapot"))
         #expect(growth.equip(book))
