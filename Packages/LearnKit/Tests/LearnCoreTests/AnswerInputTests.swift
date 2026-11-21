@@ -47,6 +47,69 @@ struct AnswerInputTests {
         }
     }
 
+    @Test(arguments: [AnswerMode.single, .multi])
+    func idiomSignUsesTheSameBlanksAsTheAnswer(mode: AnswerMode) throws {
+        let pool = ItemPool(packs: Self.library.packs(grade: .g3, subject: .chinese), selection: .all)
+        let generator = QuestionGenerator(pool: pool, settings: GameTuning.make(grade: .g3, difficulty: .hard).generator)
+        let idiom = IdiomItem(text: "春暖花开", pinyin: "chun1 nuan3 hua1 kai1")
+        var rng = SeededRNG(state: 7)
+        for _ in 0..<20 {
+            let q = try #require(generator.makeQuestion(for: .idiom(idiom), mode: mode, using: &rng))
+            let input = try #require(q.input)
+            #expect(q.signText == input.template)
+            #expect(q.signText == q.prompt)
+            var completed = q.signText
+            for blank in input.blanks {
+                let range = try #require(completed.range(of: "□"))
+                completed.replaceSubrange(range, with: blank.answer)
+                #expect(input.groups[blank.group].tiles.contains(blank.answer))
+            }
+            #expect(completed == "春暖花开")
+        }
+    }
+
+    @Test func wordSignShowsTheWordToComplete() throws {
+        let pool = ItemPool(packs: Self.library.packs(grade: .g3, subject: .chinese), selection: .all)
+        let generator = QuestionGenerator(pool: pool, settings: GameTuning.make(grade: .g3, difficulty: .normal).generator)
+        var rng = SeededRNG(state: 9)
+        let q = try #require(generator.makeQuestion(for: .word(WordItem(text: "早晨", pinyin: "zao3 chen2")),
+                                                   mode: .single, using: &rng))
+        let input = try #require(q.input)
+        #expect(q.signText == input.template)
+        #expect(q.signText == q.prompt)
+        let answer = try #require(input.blanks.first?.answer)
+        #expect(q.signText.replacingOccurrences(of: "□", with: answer) == "早晨")
+    }
+
+    @Test func poemSignShowsTheNextLineWithMatchingBlanks() throws {
+        let pool = ItemPool(packs: Self.library.packs(grade: .g3, subject: .chinese), selection: .all)
+        let generator = QuestionGenerator(pool: pool, settings: GameTuning.make(grade: .g3, difficulty: .hard).generator)
+        let poem = PoemItem(title: "静夜思", lines: ["床前明月光", "疑是地上霜"])
+        var rng = SeededRNG(state: 3)
+        let q = try #require(generator.makeQuestion(for: .poemLine(poem, index: 0), mode: .multi, using: &rng))
+        let input = try #require(q.input)
+        #expect(q.prompt == "床前明月光")
+        #expect(q.signText == input.template)
+        var completed = q.signText
+        for blank in input.blanks {
+            let range = try #require(completed.range(of: "□"))
+            completed.replaceSubrange(range, with: blank.answer)
+        }
+        #expect(completed == "疑是地上霜")
+    }
+
+    @Test func spellingSignDoesNotKeepTheEnglishAnswer() throws {
+        let pool = ItemPool(packs: Self.library.packs(grade: .g3, subject: .english), selection: .all)
+        let generator = QuestionGenerator(pool: pool, settings: GameTuning.make(grade: .g3, difficulty: .hard).generator)
+        let base = Question(kind: .englishToMeaning, itemKey: "apple", instruction: "选意思", prompt: "apple",
+                            options: ["苹果", "香蕉"], optionStyle: .text, answerIndex: 0)
+        var rng = SeededRNG(state: 1)
+        let q = try #require(generator.typed(base, item: .englishWord(EnglishWordItem(word: "apple", meaning: "苹果")),
+                                            multi: false, &rng))
+        #expect(q.signText == "苹果")
+        #expect(q.input?.answerText == "apple")
+    }
+
     @Test func pinyinTilesComposeWithTone() {
         let spec = InputSpec(style: .pinyin,
                              blanks: [InputBlank(answer: "ch", group: 0), InputBlank(answer: "en", group: 1), InputBlank(answer: "ˊ", group: 2)],

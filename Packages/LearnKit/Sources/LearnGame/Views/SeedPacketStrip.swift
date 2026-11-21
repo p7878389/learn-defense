@@ -15,8 +15,25 @@ struct SeedPacketStrip: View {
     var barricadeEnabled = false
     var onBarricade: () -> Void = {}
 
+    struct Packet: Identifiable {
+        let kind: DefenderKind
+        let skin: CharacterSkin?
+        let name: String
+        var id: String { kind.id }
+    }
+
+    /// 每种植物只保留一张卡，名称与头像共同使用本局已装备的皮肤。
+    var packets: [Packet] {
+        var seen: Set<String> = []
+        return kinds.filter { seen.insert($0.id).inserted }.map { kind in
+            let skin = skins[kind.id]
+            let name = HeraldicArtwork.defenderName(kind: kind, skin: skin)
+            return Packet(kind: kind, skin: skin, name: name)
+        }
+    }
+
     /// 卡牌多时窄一点，免得挡住右上角的按钮
-    private var cardWidth: CGFloat { kinds.count + (barricade == nil ? 0 : 1) > 7 ? 54 : 62 }
+    private var cardWidth: CGFloat { packets.count + (barricade == nil ? 0 : 1) > 7 ? 54 : 62 }
 
     var body: some View {
         HStack(spacing: 6) {
@@ -28,8 +45,8 @@ struct SeedPacketStrip: View {
                 .overlay(RoundedRectangle(cornerRadius: 5).stroke(Color(red: 0.48, green: 0.31, blue: 0.06), lineWidth: 2))
                 .accessibilityLabel("阳光 \(sun)")
 
-            ForEach(kinds) { kind in
-                packet(for: kind)
+            ForEach(packets) { card in
+                packet(for: card)
             }
             if let barricade {
                 barricadePacket(for: barricade)
@@ -39,17 +56,17 @@ struct SeedPacketStrip: View {
         .background(Color(red: 0.43, green: 0.32, blue: 0.16), in: RoundedRectangle(cornerRadius: 6))
     }
 
-    private func packet(for kind: DefenderKind) -> some View {
-        let displayName = HeraldicArtwork.defenderName(kind: kind, skin: skins[kind.id])
+    private func packet(for card: Packet) -> some View {
+        let kind = card.kind
         let affordable = sun >= kind.sunCost
         let available = enabled && affordable
-        let rarity = HeraldicArtwork.defenderRarity(kind: kind, skin: skins[kind.id])
+        let rarity = HeraldicArtwork.defenderRarity(kind: kind, skin: card.skin)
         return VStack(spacing: 0) {
-            if let image = UnitSprites.portrait(of: kind, skin: skins[kind.id]) {
+            if let image = UnitSprites.portrait(of: kind, skin: card.skin) {
                 Image(decorative: image, scale: 1)
                     .resizable().scaledToFit().frame(width: 34, height: 29)
             }
-            Text(displayName)
+            Text(card.name)
                 .font(.system(size: 9, weight: .bold))
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
@@ -69,7 +86,7 @@ struct SeedPacketStrip: View {
                 .onEnded { value in onDragEnded(kind, value.location) }
         )
         .allowsHitTesting(available)
-        .accessibilityLabel("\(displayName)，\(rarity.displayName)，需要 \(kind.sunCost) 阳光")
+        .accessibilityLabel("\(card.name)，\(rarity.displayName)，需要 \(kind.sunCost) 阳光")
         .accessibilityHint("拖到战场空位种下")
     }
 
