@@ -346,9 +346,10 @@ final class EnemyNode: SKNode {
         ]), withKey: "bossEntrance")
     }
 
-    /// 被打中一下：身体闪白
+    /// 被打中一下：身体闪白，存活精灵叠加资源中的后仰回正。
     func flash() {
         if let sprite {
+            if !doomed { FXLibrary.react(on: sprite) }
             sprite.run(.sequence([
                 .colorize(with: .white, colorBlendFactor: 0.85, duration: 0),
                 .wait(forDuration: 0.08),
@@ -398,6 +399,7 @@ final class EnemyNode: SKNode {
         DiagLog.log("enemy defeat id=\(enemyID) kind=\(kind.id) node=\(DiagLog.id(self)) burnt=\(burnt) rig=\(rig != nil)")
         removeAllActions()
         if let parent {
+            if !burnt { FXLibrary.playDefeat(at: center, in: parent) }
             (effect ?? kind.look.defeat)
                 .makeEffect(color: kind.look.color.fill, scale: CGFloat(kind.look.scale), count: 7 + kind.hp * 2)
                 .play(at: center, in: parent)

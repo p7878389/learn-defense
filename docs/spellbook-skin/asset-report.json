@@ -1,0 +1,205 @@
+{
+  "ok": true,
+  "assets": [
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/SpellbookPortrait.png",
+      "format": "PNG",
+      "mode": "RGBA",
+      "width": 384,
+      "height": 320,
+      "bytes": 135434,
+      "color_count": 33634,
+      "has_alpha": true,
+      "alpha_min": 0,
+      "alpha_max": 255,
+      "transparent_pixels": 67406,
+      "content_bounds": [
+        12,
+        43,
+        372,
+        277
+      ],
+      "problems": []
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/SpellbookLeftPage.png",
+      "format": "PNG",
+      "mode": "RGBA",
+      "width": 256,
+      "height": 256,
+      "bytes": 58130,
+      "color_count": 11189,
+      "has_alpha": true,
+      "alpha_min": 0,
+      "alpha_max": 255,
+      "transparent_pixels": 39776,
+      "content_bounds": [
+        12,
+        24,
+        244,
+        232
+      ],
+      "problems": []
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/SpellbookRightPage.png",
+      "format": "PNG",
+      "mode": "RGBA",
+      "width": 256,
+      "height": 256,
+      "bytes": 48276,
+      "color_count": 9737,
+      "has_alpha": true,
+      "alpha_min": 0,
+      "alpha_max": 255,
+      "transparent_pixels": 44382,
+      "content_bounds": [
+        12,
+        34,
+        244,
+        222
+      ],
+      "problems": []
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/SpellbookPearl.png",
+      "format": "PNG",
+      "mode": "RGBA",
+      "width": 128,
+      "height": 128,
+      "bytes": 17060,
+      "color_count": 5548,
+      "has_alpha": true,
+      "alpha_min": 0,
+      "alpha_max": 255,
+      "transparent_pixels": 10443,
+      "content_bounds": [
+        12,
+        23,
+        116,
+        104
+      ],
+      "problems": []
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/SpellbookTrail.png",
+      "format": "PNG",
+      "mode": "RGBA",
+      "width": 384,
+      "height": 192,
+      "bytes": 60162,
+      "color_count": 18156,
+      "has_alpha": true,
+      "alpha_min": 0,
+      "alpha_max": 255,
+      "transparent_pixels": 44717,
+      "content_bounds": [
+        12,
+        44,
+        372,
+        147
+      ],
+      "problems": []
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/SpellbookStar.png",
+      "format": "PNG",
+      "mode": "RGBA",
+      "width": 128,
+      "height": 128,
+      "bytes": 11366,
+      "color_count": 2362,
+      "has_alpha": true,
+      "alpha_min": 0,
+      "alpha_max": 253,
+      "transparent_pixels": 11549,
+      "content_bounds": [
+        17,
+        12,
+        111,
+        116
+      ],
+      "problems": []
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/SpellbookGate.png",
+      "format": "PNG",
+      "mode": "RGBA",
+      "width": 256,
+      "height": 256,
+      "bytes": 67479,
+      "color_count": 14173,
+      "has_alpha": true,
+      "alpha_min": 0,
+      "alpha_max": 253,
+      "transparent_pixels": 31510,
+      "content_bounds": [
+        12,
+        14,
+        244,
+        242
+      ],
+      "problems": []
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/SpellbookArc.png",
+      "format": "PNG",
+      "mode": "RGBA",
+      "width": 256,
+      "height": 256,
+      "bytes": 51914,
+      "color_count": 13491,
+      "has_alpha": true,
+      "alpha_min": 0,
+      "alpha_max": 255,
+      "transparent_pixels": 41164,
+      "content_bounds": [
+        12,
+        24,
+        244,
+        232
+      ],
+      "problems": []
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/SpellbookFlash.png",
+      "format": "PNG",
+      "mode": "RGBA",
+      "width": 256,
+      "height": 256,
+      "bytes": 72556,
+      "color_count": 16344,
+      "has_alpha": true,
+      "alpha_min": 0,
+      "alpha_max": 255,
+      "transparent_pixels": 33168,
+      "content_bounds": [
+        12,
+        16,
+        244,
+        239
+      ],
+      "problems": []
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/SpellbookConstellation.png",
+      "format": "PNG",
+      "mode": "RGBA",
+      "width": 256,
+      "height": 256,
+      "bytes": 49789,
+      "color_count": 7760,
+      "has_alpha": true,
+      "alpha_min": 0,
+      "alpha_max": 252,
+      "transparent_pixels": 42862,
+      "content_bounds": [
+        12,
+        21,
+        244,
+        235
+      ],
+      "problems": []
+    }
+  ]
+}

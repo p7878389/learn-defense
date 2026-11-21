@@ -1,0 +1,314 @@
+[
+  {
+    "height" : 296,
+    "name" : "EmeraldHead",
+    "sourceCell" : 0,
+    "sourceRect" : [
+      0,
+      0,
+      512,
+      512
+    ],
+    "transparentPixels" : 167775,
+    "width" : 384
+  },
+  {
+    "height" : 283,
+    "name" : "EmeraldBase",
+    "sourceCell" : 1,
+    "sourceRect" : [
+      512,
+      0,
+      512,
+      512
+    ],
+    "transparentPixels" : 192180,
+    "width" : 384
+  },
+  {
+    "height" : 130,
+    "name" : "EmeraldBolt",
+    "sourceCell" : 2,
+    "sourceRect" : [
+      1024,
+      0,
+      512,
+      512
+    ],
+    "transparentPixels" : 223091,
+    "width" : 384
+  },
+  {
+    "height" : 312,
+    "name" : "EmeraldPuff",
+    "sourceCell" : 3,
+    "sourceRect" : [
+      0,
+      512,
+      512,
+      512
+    ],
+    "transparentPixels" : 221041,
+    "width" : 280
+  },
+  {
+    "height" : 323,
+    "name" : "EmeraldRing",
+    "sourceCell" : 4,
+    "sourceRect" : [
+      512,
+      512,
+      512,
+      512
+    ],
+    "transparentPixels" : 195891,
+    "width" : 339
+  },
+  {
+    "height" : 326,
+    "name" : "EmeraldBloom",
+    "sourceCell" : 5,
+    "sourceRect" : [
+      1024,
+      512,
+      512,
+      512
+    ],
+    "transparentPixels" : 198050,
+    "width" : 384
+  },
+  {
+    "height" : 308,
+    "name" : "AstralHead",
+    "sourceCell" : 0,
+    "sourceRect" : [
+      0,
+      0,
+      512,
+      512
+    ],
+    "transparentPixels" : 164408,
+    "width" : 384
+  },
+  {
+    "height" : 254,
+    "name" : "AstralBase",
+    "sourceCell" : 1,
+    "sourceRect" : [
+      512,
+      0,
+      512,
+      512
+    ],
+    "transparentPixels" : 184057,
+    "width" : 384
+  },
+  {
+    "height" : 126,
+    "name" : "AstralBolt",
+    "sourceCell" : 2,
+    "sourceRect" : [
+      1024,
+      0,
+      512,
+      512
+    ],
+    "transparentPixels" : 215755,
+    "width" : 384
+  },
+  {
+    "height" : 274,
+    "name" : "AstralPuff",
+    "sourceCell" : 3,
+    "sourceRect" : [
+      0,
+      512,
+      512,
+      512
+    ],
+    "transparentPixels" : 218347,
+    "width" : 347
+  },
+  {
+    "height" : 367,
+    "name" : "AstralRing",
+    "sourceCell" : 4,
+    "sourceRect" : [
+      512,
+      512,
+      512,
+      512
+    ],
+    "transparentPixels" : 209245,
+    "width" : 372
+  },
+  {
+    "height" : 317,
+    "name" : "AstralBloom",
+    "sourceCell" : 5,
+    "sourceRect" : [
+      1024,
+      512,
+      512,
+      512
+    ],
+    "transparentPixels" : 228657,
+    "width" : 339
+  },
+  {
+    "height" : 291,
+    "name" : "FrostHead",
+    "sourceCell" : 0,
+    "sourceRect" : [
+      0,
+      0,
+      512,
+      512
+    ],
+    "transparentPixels" : 172494,
+    "width" : 384
+  },
+  {
+    "height" : 263,
+    "name" : "FrostBase",
+    "sourceCell" : 1,
+    "sourceRect" : [
+      512,
+      0,
+      512,
+      512
+    ],
+    "transparentPixels" : 201719,
+    "width" : 381
+  },
+  {
+    "height" : 141,
+    "name" : "FrostBolt",
+    "sourceCell" : 2,
+    "sourceRect" : [
+      1024,
+      0,
+      512,
+      512
+    ],
+    "transparentPixels" : 219545,
+    "width" : 384
+  },
+  {
+    "height" : 336,
+    "name" : "FrostPuff",
+    "sourceCell" : 3,
+    "sourceRect" : [
+      0,
+      512,
+      512,
+      512
+    ],
+    "transparentPixels" : 218316,
+    "width" : 269
+  },
+  {
+    "height" : 343,
+    "name" : "FrostRing",
+    "sourceCell" : 4,
+    "sourceRect" : [
+      512,
+      512,
+      512,
+      512
+    ],
+    "transparentPixels" : 204197,
+    "width" : 326
+  },
+  {
+    "height" : 370,
+    "name" : "FrostBloom",
+    "sourceCell" : 5,
+    "sourceRect" : [
+      1024,
+      512,
+      512,
+      512
+    ],
+    "transparentPixels" : 204170,
+    "width" : 341
+  },
+  {
+    "height" : 315,
+    "name" : "FestivalHead",
+    "sourceCell" : 0,
+    "sourceRect" : [
+      0,
+      0,
+      550,
+      512
+    ],
+    "transparentPixels" : 166117,
+    "width" : 384
+  },
+  {
+    "height" : 262,
+    "name" : "FestivalBase",
+    "sourceCell" : 1,
+    "sourceRect" : [
+      550,
+      0,
+      474,
+      512
+    ],
+    "transparentPixels" : 171465,
+    "width" : 384
+  },
+  {
+    "height" : 137,
+    "name" : "FestivalBolt",
+    "sourceCell" : 2,
+    "sourceRect" : [
+      1024,
+      0,
+      512,
+      512
+    ],
+    "transparentPixels" : 220656,
+    "width" : 384
+  },
+  {
+    "height" : 336,
+    "name" : "FestivalPuff",
+    "sourceCell" : 3,
+    "sourceRect" : [
+      0,
+      512,
+      512,
+      512
+    ],
+    "transparentPixels" : 223581,
+    "width" : 298
+  },
+  {
+    "height" : 358,
+    "name" : "FestivalRing",
+    "sourceCell" : 4,
+    "sourceRect" : [
+      512,
+      512,
+      512,
+      512
+    ],
+    "transparentPixels" : 207834,
+    "width" : 365
+  },
+  {
+    "height" : 358,
+    "name" : "FestivalBloom",
+    "sourceCell" : 5,
+    "sourceRect" : [
+      1024,
+      512,
+      512,
+      512
+    ],
+    "transparentPixels" : 215480,
+    "width" : 384
+  }
+]

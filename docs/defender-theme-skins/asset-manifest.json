@@ -1,0 +1,333 @@
+{
+  "tool": "built-in image_gen",
+  "sourceReference": "../skin-designs/defender-themes.png",
+  "gameScale": {
+    "referenceRadius": 34,
+    "bodyWidth": {
+      "Mecha": 57,
+      "Teapot": 75
+    },
+    "partWidth": 32
+  },
+  "sourcePolicy": "Generated from project concept. No third-party reference images imported.",
+  "assets": [
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/MechaBloom.png",
+      "bytes": 218164,
+      "sha256": "07e8add36ddd43341b7c6db2af8471564839f6baf56b8c1a29dd9d4915d58d9a",
+      "collision": "none; original game logic",
+      "source": "mecha-source.png",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 381,
+      "height": 346,
+      "alphaMin": 0,
+      "transparentPixels": 55490,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/MechaBody.sks",
+      "bytes": 4097,
+      "sha256": "f2f9e01ff59f12afcf14f029705bc0fe286692f0ff001e70cd5fef5138455224",
+      "collision": "none; original game logic",
+      "source": "mecha-source.png",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/MechaBolt.png",
+      "bytes": 86375,
+      "sha256": "9048a490a53674b9eb588b58aafc8432e11a8d6fa6db26db048dc360f83d145b",
+      "collision": "none; original game logic",
+      "source": "mecha-source.png",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 384,
+      "height": 123,
+      "alphaMin": 0,
+      "transparentPixels": 16400,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/MechaDefeat.sks",
+      "bytes": 1904,
+      "sha256": "11e860ae5109b9a79f2c42a45614780837ff7679b32b405f3d5466eacceebb4f",
+      "collision": "none; original game logic",
+      "source": "mecha-source.png",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/MechaImpact.sks",
+      "bytes": 1906,
+      "sha256": "606f50b6c9cf59dea2f420bb2deb9c3a30eb867b12aa4d93664375c605b3922d",
+      "collision": "none; original game logic",
+      "source": "mecha-source.png",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/MechaMuzzle.sks",
+      "bytes": 1904,
+      "sha256": "65bec806d65842e399b3bb92b592b80da2ab2c036d566b8b40d96ebeb71ece06",
+      "collision": "none; original game logic",
+      "source": "mecha-source.png",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/MechaPart.png",
+      "bytes": 142401,
+      "sha256": "9567b486257af71999f1021b041cb35d2a22f00e0a38619591f175936c4907ee",
+      "collision": "none; original game logic",
+      "source": "mecha-source.png",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 326,
+      "height": 235,
+      "alphaMin": 0,
+      "transparentPixels": 20230,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/MechaPortrait.png",
+      "bytes": 64592,
+      "sha256": "31c65496bac573baa935e9765f2203baf8c310bb51146f42119aff0b27461a75",
+      "collision": "none; original game logic",
+      "source": "mecha-source.png",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 256,
+      "height": 256,
+      "alphaMin": 0,
+      "transparentPixels": 46011,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/MechaProjectile.sks",
+      "bytes": 1933,
+      "sha256": "8e2abf4ec7e658c104af7f6f9e5fa9bec3cbc42f1202f480c0c51738235c6936",
+      "collision": "none; original game logic",
+      "source": "mecha-source.png",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/MechaPuff.png",
+      "bytes": 65989,
+      "sha256": "9801160f0161f319441fb5875934d994ee45a581e2a553839f98e7c568ab83c6",
+      "collision": "none; original game logic",
+      "source": "mecha-source.png",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 173,
+      "height": 253,
+      "alphaMin": 0,
+      "transparentPixels": 23311,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/MechaRing.png",
+      "bytes": 122844,
+      "sha256": "08dda67fe69b9f3edf705fd7dfc87f9b7ca18e6ae4e925ee94aa289d8d56acc8",
+      "collision": "none; original game logic",
+      "source": "mecha-source.png",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 290,
+      "height": 301,
+      "alphaMin": 0,
+      "transparentPixels": 50728,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/MechaShell.png",
+      "bytes": 253793,
+      "sha256": "7959c06137242de5e02dac236331ba1018c4412909779c735417a0ac15681b11",
+      "collision": "none; original game logic",
+      "source": "mecha-source.png",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 350,
+      "height": 384,
+      "alphaMin": 0,
+      "transparentPixels": 44133,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/TeapotBloom.png",
+      "bytes": 226351,
+      "sha256": "7a91fd07d86495bb6a14f30b709ca3d4f11be8ee3723d1c1dabb3ef92dc5ea63",
+      "collision": "none; original game logic",
+      "source": "teapot-source.png",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 384,
+      "height": 375,
+      "alphaMin": 0,
+      "transparentPixels": 62454,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/TeapotBody.sks",
+      "bytes": 4141,
+      "sha256": "54d0690e4e4920746f65d80a7393bc83edd82c32a5cfcbf8819873747cdf9405",
+      "collision": "none; original game logic",
+      "source": "teapot-source.png",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/TeapotBolt.png",
+      "bytes": 76445,
+      "sha256": "e2f0b06cb8dd0452b477e3282b031a96ffe860f2866504e4d53b3e39008033e4",
+      "collision": "none; original game logic",
+      "source": "teapot-source.png",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 384,
+      "height": 137,
+      "alphaMin": 0,
+      "transparentPixels": 28240,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/TeapotDefeat.sks",
+      "bytes": 1887,
+      "sha256": "fe7fc5420f4459e3f344be495706d644d9eff267f9be95c416d5c5c679953ff0",
+      "collision": "none; original game logic",
+      "source": "teapot-source.png",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/TeapotImpact.sks",
+      "bytes": 1892,
+      "sha256": "7262e278a66aac3105ef6ca0bd2ec429eafb2fd13e7a09df4e041dd0bc905928",
+      "collision": "none; original game logic",
+      "source": "teapot-source.png",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/TeapotMuzzle.sks",
+      "bytes": 1905,
+      "sha256": "8918758c46812602b14e087ea437d68df236bed515d7236da9c4ac48218ab59b",
+      "collision": "none; original game logic",
+      "source": "teapot-source.png",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/TeapotPart.png",
+      "bytes": 123922,
+      "sha256": "177ae7831e64e111749b51146756f49425464f26d0ae2a1ad5c1312ece6aa4c2",
+      "collision": "none; original game logic",
+      "source": "teapot-source.png",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 324,
+      "height": 329,
+      "alphaMin": 0,
+      "transparentPixels": 60128,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/TeapotPortrait.png",
+      "bytes": 61749,
+      "sha256": "19a3749262796b2c8672ec257b9765b36edf8951f524b3eaabae8492230987cf",
+      "collision": "none; original game logic",
+      "source": "teapot-source.png",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 256,
+      "height": 256,
+      "alphaMin": 0,
+      "transparentPixels": 45488,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/TeapotProjectile.sks",
+      "bytes": 1950,
+      "sha256": "c2a48b94ba937bee348032c6c6345d4e48f6b6938f9e5e2fdfe0bee5396da9da",
+      "collision": "none; original game logic",
+      "source": "teapot-source.png",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/TeapotPuff.png",
+      "bytes": 92354,
+      "sha256": "bb4d3f2c4570cbf421d307dd5b3c9a37ae1376d8ab988d80a648bfce3f48b418",
+      "collision": "none; original game logic",
+      "source": "teapot-source.png",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 328,
+      "height": 241,
+      "alphaMin": 0,
+      "transparentPixels": 39009,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/TeapotRing.png",
+      "bytes": 178426,
+      "sha256": "613d591677894cfce3a5dbe8f90f79fa9b17aae02db597942617373f41dcecf7",
+      "collision": "none; original game logic",
+      "source": "teapot-source.png",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 384,
+      "height": 359,
+      "alphaMin": 0,
+      "transparentPixels": 82934,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/TeapotShell.png",
+      "bytes": 172301,
+      "sha256": "2d77806cf4d07bb4904f4a1e5024d386646b2a6d0e2cf1f35d52d857d44abaf6",
+      "collision": "none; original game logic",
+      "source": "teapot-source.png",
+      "status": "validated: alpha/size, SpriteKit runtime, native-scale visual review",
+      "width": 384,
+      "height": 282,
+      "alphaMin": 0,
+      "transparentPixels": 42120,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "filtering": "linear"
+    }
+  ]
+}

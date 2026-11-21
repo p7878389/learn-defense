@@ -1,0 +1,175 @@
+{
+  "generator": "built-in image_gen",
+  "parts": [
+    {
+      "file": "SpellbookPortrait.png",
+      "size": [
+        384,
+        320
+      ],
+      "crop": [
+        0,
+        0,
+        768,
+        512
+      ],
+      "source": "body-source.png",
+      "alpha": true,
+      "in_engine_reviewed": true,
+      "technical_checks_passed": true
+    },
+    {
+      "file": "SpellbookLeftPage.png",
+      "size": [
+        256,
+        256
+      ],
+      "crop": [
+        768,
+        0,
+        1536,
+        512
+      ],
+      "source": "body-source.png",
+      "alpha": true,
+      "in_engine_reviewed": true,
+      "technical_checks_passed": true
+    },
+    {
+      "file": "SpellbookRightPage.png",
+      "size": [
+        256,
+        256
+      ],
+      "crop": [
+        0,
+        512,
+        768,
+        1024
+      ],
+      "source": "body-source.png",
+      "alpha": true,
+      "in_engine_reviewed": true,
+      "technical_checks_passed": true
+    },
+    {
+      "file": "SpellbookPearl.png",
+      "size": [
+        128,
+        128
+      ],
+      "crop": [
+        768,
+        512,
+        1536,
+        1024
+      ],
+      "source": "body-source.png",
+      "alpha": true,
+      "in_engine_reviewed": true,
+      "technical_checks_passed": true
+    },
+    {
+      "file": "SpellbookTrail.png",
+      "size": [
+        384,
+        192
+      ],
+      "crop": [
+        0,
+        0,
+        512,
+        512
+      ],
+      "source": "fx-source.png",
+      "alpha": true,
+      "in_engine_reviewed": true,
+      "technical_checks_passed": true
+    },
+    {
+      "file": "SpellbookStar.png",
+      "size": [
+        128,
+        128
+      ],
+      "crop": [
+        512,
+        0,
+        1024,
+        512
+      ],
+      "source": "fx-source.png",
+      "alpha": true,
+      "in_engine_reviewed": true,
+      "technical_checks_passed": true
+    },
+    {
+      "file": "SpellbookGate.png",
+      "size": [
+        256,
+        256
+      ],
+      "crop": [
+        1024,
+        0,
+        1536,
+        512
+      ],
+      "source": "fx-source.png",
+      "alpha": true,
+      "in_engine_reviewed": true,
+      "technical_checks_passed": true
+    },
+    {
+      "file": "SpellbookArc.png",
+      "size": [
+        256,
+        256
+      ],
+      "crop": [
+        0,
+        512,
+        512,
+        1024
+      ],
+      "source": "fx-source.png",
+      "alpha": true,
+      "in_engine_reviewed": true,
+      "technical_checks_passed": true
+    },
+    {
+      "file": "SpellbookFlash.png",
+      "size": [
+        256,
+        256
+      ],
+      "crop": [
+        512,
+        512,
+        1024,
+        1024
+      ],
+      "source": "fx-source.png",
+      "alpha": true,
+      "in_engine_reviewed": true,
+      "technical_checks_passed": true
+    },
+    {
+      "file": "SpellbookConstellation.png",
+      "size": [
+        256,
+        256
+      ],
+      "crop": [
+        1024,
+        512,
+        1536,
+        1024
+      ],
+      "source": "fx-source.png",
+      "alpha": true,
+      "in_engine_reviewed": true,
+      "technical_checks_passed": true
+    }
+  ]
+}

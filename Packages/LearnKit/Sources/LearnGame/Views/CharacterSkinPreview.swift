@@ -2,7 +2,7 @@ import LearnCore
 import SpriteKit
 import SwiftUI
 
-/// 使用同一套 SpriteRig 试穿；试看不写入孩子的装备。
+/// 使用与战场相同的角色节点试穿；试看不写入孩子的装备。
 struct CharacterSkinPreview: View {
     var kind: DefenderKind = .inkling
     let skin: CharacterSkin?
@@ -60,6 +60,7 @@ final class CharacterSkinPreviewScene: SKScene {
         scaleMode = .aspectFit
         backgroundColor = .clear
         let node: SKNode
+        var unitX: CGFloat = 140
         if enemy {
             let zombie = EnemyNode(id: 0, kind: .blob, sign: "春", lane: 0, scale: 1.25, skin: skin)
             zombie.run(.repeatForever(.sequence([
@@ -69,12 +70,30 @@ final class CharacterSkinPreviewScene: SKScene {
             node = zombie
         } else {
             let shooter = DefenderNode(kind: kind, radius: 44, skin: skin)
+            let showsProjectile = shooter.childNode(withName: "spellbookSkin") != nil
+                || shooter.childNode(withName: "themeSkin") != nil
+            if showsProjectile {
+                unitX = 80
+                let target = EnemyNode(id: 0, kind: .blob, sign: "星", lane: 0, scale: 0.7)
+                target.name = "previewTarget"
+                target.position = CGPoint(x: 230, y: 55)
+                addChild(target)
+            }
             shooter.run(.repeatForever(.sequence([
-                .wait(forDuration: 2), .run { [weak shooter] in shooter?.shoot() },
+                .wait(forDuration: 2), .run { [weak shooter] in
+                    guard let shooter else { return }
+                    shooter.shoot()
+                    if showsProjectile, let parent = shooter.parent,
+                       let target = parent.childNode(withName: "previewTarget") as? EnemyNode {
+                        shooter.attack?.perform(from: shooter.muzzle,
+                            to: CGPoint(x: target.position.x, y: shooter.muzzle.y), projectile: kind.projectile,
+                            in: parent) { [weak target] _ in target?.flash() }
+                    }
+                },
             ])))
             node = shooter
         }
-        node.position = CGPoint(x: 140, y: 56)
+        node.position = CGPoint(x: unitX, y: 56)
         addChild(node)
     }
 

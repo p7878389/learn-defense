@@ -1,0 +1,71 @@
+{
+  "status": "concept_reference_with_runtime_implementations",
+  "generated_with": "built-in image_gen",
+  "concept_image": "peashooter-themes.png",
+  "base_identity_reference": "../../Packages/LearnKit/Sources/LearnGame/Resources/Sprites/plant-inkling/0.png",
+  "prompt": "Create a polished ORIGINAL game art direction concept board for FOUR complete PEASHOOTER SKINS AND THEIR VFX, using the attached tiny sprite ONLY as the base character identity and silhouette reference. Preserve the recognizable round head, long open tubular mouth facing RIGHT, two large dark eyes, slender plant stem and TWO rooted green leaves as feet. These are rooted cartoon plants, NOT humanoids, no human arms or boots. Keep a charming chunky 2D painted game style with crisp silhouettes, deep edge contrast, subtle dimensional shading, top-left lighting, readable at small tablet-game scale. Wide landscape board with FOUR equal clear columns on a muted dark navy background, ample spacing, no scenery. Header text: 'PEASHOOTER / SKIN & VFX CONCEPTS'. Each column shows one large fully visible hero plant at the top, one horizontal projectile with trail in the middle, and three tiny separate VFX samples (muzzle, impact, defeat) along the bottom. Small labels ONLY: 'EMERALD', 'ASTRAL', 'FROST', 'FESTIVAL'. Column 1 EMERALD: emerald-green peashooter wearing tasteful thin golden leaf armor, a small three-leaf gold crown and one glowing amber seed gem near the stem collar; three tiny floating seed-lights behind it. Its mouth rim has a thin gold ring. Projectile: a clear solid green pea core with bright cream-gold highlight and two twisting teal emerald comet ribbons. Impact: gold-white four-petal star and broken emerald arc. Defeat: elegant golden laurel-shaped burst. Column 2 ASTRAL: deep indigo and violet-blue peashooter with small crescent ornament above its head, subtle star-speckled leaf cape, a thin tilted golden orbital ring behind the head that does not obscure the face. Projectile: violet pearl seed with one slim golden orbit ring and two fine cyan-violet trails. Impact: small transparent-center circular star gate with a few gold four-point stars. Defeat: a brief constellation-like sparkle cluster. Column 3 FROST: pale icy-blue peashooter with three short faceted crystalline leaf-crown points and translucent cyan leaf edging; clear readable dark eyes and intact tubular mouth. Projectile: compact faceted ice-seed with two short translucent afterimages and sparse frost shards. Impact: crisp six-branch pale-blue frost pattern, small broken ice chips. Defeat: a hollow ice crystal crown burst. Column 4 FESTIVAL: warm green peashooter with red-orange petal headband, two small curled golden leaf tassels, and copper-gold muzzle rim; festive, child friendly. Projectile: solid amber pea core with bright red-gold pinwheel ribbons and tiny sparks. Impact: compact warm-gold flower-shaped firework; defeat: two layered petals of red-gold confetti. Very important: EACH column must have its own distinct character silhouette accessories, material and motion motif, not just a color swap. Effects do not cover faces. No weapons held in hands, no ground explosions covering plants, no full-screen white blooms, no photorealism, no watermarks, no existing game logos. This is a visual CONCEPT board, not an in-game screenshot or finished animation asset sheet.",
+  "references": [
+    {
+      "title": "Stylized FX Concepts, Kenny Kong",
+      "pin": "https://jp.pinterest.com/pin/719942690441884979/",
+      "original": "https://www.artstation.com/artwork/3da1JY",
+      "use": "发射口、冲击环、弹体分层；已查看 Pin 详情"
+    },
+    {
+      "title": "Projectiles VFX, Dyadich Viktoriya",
+      "pin": "https://jp.pinterest.com/pin/336081190959270691/",
+      "use": "弹体与拖尾配套；已查看搜索缩略图与标题"
+    },
+    {
+      "title": "Toon projectiles, Vladyslav Horobets",
+      "pin": "https://jp.pinterest.com/pin/659777414199998351/",
+      "use": "轮廓和尾迹形态差异；已查看搜索缩略图"
+    },
+    {
+      "title": "Plants vs Zombies: Battle for NeighborVille, Olivier Couston",
+      "pin": "https://jp.pinterest.com/pin/844424998889913753/",
+      "original": "https://www.artstation.com/artwork/58Lw4O",
+      "use": "植物角色配饰层次与材质；已查看详情，主体为植物角色造型参考，并非豌豆皮肤源文件"
+    }
+  ],
+  "skins": [
+    {
+      "id": "emerald",
+      "name": "翡翠星使",
+      "priority": 1,
+      "body": "金边叶冠、琥珀种子胸饰、三颗种子光",
+      "projectile": "金白核心、双翡翠彗星尾",
+      "impact": "四瓣星核、断裂环、叶形碎片",
+      "defeat": "月桂光冠"
+    },
+    {
+      "id": "astral",
+      "name": "星轨术士",
+      "priority": 2,
+      "body": "紫蓝星纹、弯月饰、倾斜星轨",
+      "projectile": "紫色星珠、金色轨道环、双细尾",
+      "impact": "短暂星门与四芒星",
+      "defeat": "星座碎光"
+    },
+    {
+      "id": "frost",
+      "name": "霜晶骑士",
+      "priority": 3,
+      "body": "冰蓝晶冠、透明冰叶边",
+      "projectile": "多面冰种、短残影、稀疏冰屑",
+      "impact": "六瓣霜纹和碎冰",
+      "defeat": "晶冠碎裂；纯外观不新增减速"
+    },
+    {
+      "id": "festival",
+      "name": "花火游侠",
+      "priority": 4,
+      "body": "红金花冠、叶片流苏、铜金嘴环",
+      "projectile": "琥珀种子、红金飘带、火星",
+      "impact": "花形烟火",
+      "defeat": "双层礼花花瓣"
+    }
+  ],
+  "source_policy": "Pinterest images are visual references, not imported game assets or verified licensed downloads.",
+  "implementation_status": "翡翠星使、星轨术士、霜晶骑士、花火游侠已接入；运行素材、原始图集、提示词及验收见 ../peashooter-theme-skins/。本概念图仍不作为游戏运行素材。"
+}

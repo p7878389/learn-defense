@@ -11,10 +11,10 @@ protocol AttackStrategy {
 
 extension AttackStyle {
     @MainActor
-    func makeStrategy() -> any AttackStrategy {
+    func makeStrategy(skin: CharacterSkin? = nil) -> any AttackStrategy {
         switch self {
-        case .single: ShotAttack(count: 1)
-        case let .volley(count, _): ShotAttack(count: count)
+        case .single: ShotAttack(count: 1, skin: skin)
+        case let .volley(count, _): ShotAttack(count: count, skin: skin)
         case .beam: BeamAttack()
         }
     }
@@ -24,6 +24,7 @@ extension AttackStyle {
 struct ShotAttack: AttackStrategy {
     let count: Int
     var interval: TimeInterval = 0.12
+    var skin: CharacterSkin? = nil
 
     func perform(from origin: CGPoint, to target: CGPoint, projectile: ProjectileLook, in layer: SKNode,
                  onImpact: @escaping (Bool) -> Void) {
@@ -32,14 +33,19 @@ struct ShotAttack: AttackStrategy {
         let distance = hypot(target.x - origin.x, target.y - origin.y)
         let duration = TimeInterval(max(0.35, min(0.8, distance / 1200)))
         for i in 0..<n {
-            let bullet: SKNode = UnitSprites.projectile(projectile) ?? ProjectileArt.make(projectile)
+            // 独立装备的子弹外观优先；主题只替换原版豌豆，不改变冰冻等语义。
+            let prefix = projectile == DefenderKind.inkling.projectile ? ThemeSkin.resourcePrefix(skin) : nil
+            let themed = prefix.flatMap { FXLibrary.effect(named: $0 + "Projectile") }
+            let isThemed = themed != nil
+            let bullet: SKNode = themed ?? UnitSprites.projectile(projectile) ?? ProjectileArt.make(projectile)
+            if isThemed { bullet.name = skin == .spellbook ? "spellbookProjectile" : "themeProjectile" }
             // 连发时上下错开一点，看得出是几颗
             let offset = (CGFloat(i) - CGFloat(n - 1) / 2) * 12
             bullet.position = CGPoint(x: origin.x, y: origin.y + offset)
             bullet.zPosition = 50
             // 第一颗首帧就可见，后续连发仍等到各自发射时才显示。
             bullet.alpha = i == 0 ? 1 : 0
-            layer.addChild(bullet)
+            if isThemed { FXLibrary.attach(bullet, to: layer) } else { layer.addChild(bullet) }
             let flight = hypot(target.x - bullet.position.x, target.y - bullet.position.y) / duration
             let trail = IceCombatEffects.supports(projectile) ? IceCombatEffects.trail(on: bullet, speed: flight) : nil
             let bulletID = DiagLog.id(bullet)
@@ -48,9 +54,13 @@ struct ShotAttack: AttackStrategy {
                 .wait(forDuration: interval * TimeInterval(i)),
                 .run { [weak bullet, weak layer] in
                     bullet?.alpha = 1
-                    if let trail, let bullet, let layer {
+                    if isThemed, let prefix, let bullet, let layer {
+                        FXLibrary.playResource(prefix + "Muzzle", at: bullet.position, in: layer)
+                    } else if let trail, let bullet, let layer {
                         trail.particleBirthRate = 45
                         IceCombatEffects.launch(at: bullet.position, in: layer)
+                    } else if projectile.shape == .orb, let bullet, let layer {
+                        FXLibrary.launchOrb(on: bullet, towards: target, in: layer)
                     }
                 },
                 .move(to: target, duration: duration),
@@ -59,7 +69,9 @@ struct ShotAttack: AttackStrategy {
             ])) { [weak layer] in
                 DiagLog.log("shot- bullet=\(bulletID) layer=\(layer != nil)")
                 if let layer {
-                    if trail != nil {
+                    if isThemed, let prefix {
+                        FXLibrary.playResource(prefix + "Impact", at: target, in: layer)
+                    } else if trail != nil {
                         IceCombatEffects.impact(at: target, in: layer)
                     } else {
                         Self.splat(projectile, at: target, in: layer)
@@ -72,8 +84,10 @@ struct ShotAttack: AttackStrategy {
 }
 
 extension ShotAttack {
-    /// 子弹打中时溅开（上游豌豆、星星的命中图），停 0.25 秒后淡出；没有素材时不画
+    /// 圆弹使用资源组合；其他弹种保留原命中贴图，缺少资源时可回退。
     static func splat(_ projectile: ProjectileLook, at point: CGPoint, in layer: SKNode) {
+        if projectile.shape == .orb,
+           FXLibrary.playImpact(at: point, in: layer, color: projectile.color.fill) { return }
         guard let splat = UnitSprites.impact(projectile) else { return }
         // 稍微靠前一点，像打在僵尸身前
         splat.position = CGPoint(x: point.x - 8, y: point.y)
