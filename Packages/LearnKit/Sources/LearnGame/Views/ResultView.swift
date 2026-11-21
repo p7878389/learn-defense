@@ -3,7 +3,7 @@ import SwiftUI
 
 /// 结算页：左边这一局（星星、成绩、经验和积分），右边成长（升级 / 经验条、解锁、新徽章）和「记一记」。
 /// 设计稿：docs/ui-growth/02（升级）、02b（没升级）、02c（失败）、02d（当天第 6 局起减半）
-/// iPad 11 寸横屏要一屏放下整个弹窗和按钮，不整页滚动：内容排得紧凑，「记一记」放不下时只在自己的框里滚动
+/// 弹窗和按钮始终位于屏幕内；右侧收获较多时局部滚动，少量内容保持自然高度。
 struct ResultView: View {
     @ObservedObject var session: GameSession
     let onReplay: () -> Void
@@ -15,14 +15,29 @@ struct ResultView: View {
     private var hasRightColumn: Bool { growth != nil || !session.mistakes.isEmpty }
 
     var body: some View {
+        GeometryReader { geometry in
         ZStack {
             Color.black.opacity(0.45).ignoresSafeArea()
+            ViewThatFits(in: .vertical) {
+                dialog(bounded: false).fixedSize(horizontal: false, vertical: true)
+                dialog(bounded: true)
+            }
+            .frame(maxHeight: max(0, geometry.size.height - 40))
+            .padding(.horizontal, 28)
+            .padding(.vertical, 20)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        }
+    }
+
+    private func dialog(bounded: Bool) -> some View {
             VStack(spacing: 14) {
                 banner
                 HStack(alignment: .top, spacing: 16) {
                     roundColumn
-                    if hasRightColumn { growthColumn }
+                    if hasRightColumn { growthColumn(bounded: bounded) }
                 }
+                .frame(maxHeight: bounded ? .infinity : nil, alignment: .top)
                 buttons
             }
             .padding(.horizontal, 24)
@@ -35,9 +50,6 @@ struct ResultView: View {
                     .shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 6)
                     .overlay(RoundedRectangle(cornerRadius: 32).stroke(GrowthColors.surface, lineWidth: 4))
                     .padding(.top, 22))
-            .padding(.horizontal, 28)
-            .padding(.vertical, 12)
-        }
     }
 
     // MARK: - 横幅
@@ -160,15 +172,31 @@ struct ResultView: View {
 
     // MARK: - 右栏：成长 + 记一记
 
-    private var growthColumn: some View {
+    private func growthColumn(bounded: Bool) -> some View {
         VStack(spacing: 12) {
-            if let growth {
-                levelCard(growth)
-                if !(growth.gifts + growth.unlocked).isEmpty || !growth.newBadges.isEmpty { gainsCard(growth) }
+            if let growth { levelCard(growth) }
+            if bounded {
+                Text("上下滑动查看全部收获与错题")
+                    .font(.caption.weight(.semibold)).foregroundStyle(Theme.muted)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                ScrollView {
+                    gainsAndNotebook.padding(4)
+                }
+                .scrollBounceBehavior(.basedOnSize)
+                .scrollIndicators(.visible)
+                .scrollIndicatorsFlash(onAppear: true)
+            } else {
+                gainsAndNotebook
             }
-            if !session.mistakes.isEmpty { notebook }
         }
         .frame(maxWidth: .infinity)
+    }
+
+    private var gainsAndNotebook: some View {
+        VStack(spacing: 12) {
+            if let growth, !(growth.gifts + growth.unlocked).isEmpty || !growth.newBadges.isEmpty { gainsCard(growth) }
+            if !session.mistakes.isEmpty { notebook }
+        }
     }
 
     private func levelCard(_ g: GrowthResult) -> some View {
@@ -216,6 +244,8 @@ struct ResultView: View {
     /// 这一局新得到的外观和徽章，排在一张卡片里，每样一行
     private func gainsCard(_ g: GrowthResult) -> some View {
         VStack(spacing: 8) {
+            Text("新收获（\(g.gifts.count + g.unlocked.count + g.newBadges.count)）")
+                .font(.headline).foregroundStyle(Theme.ink).frame(maxWidth: .infinity, alignment: .leading)
             ForEach(g.gifts + g.unlocked, id: \.id) { unlockRow($0) }
             ForEach(g.newBadges, id: \.id) { badgeRow($0) }
         }
@@ -246,26 +276,27 @@ struct ResultView: View {
 
     private func gainRow<Icon: View>(title: String, tag: String, tagText: Color, tagFill: Color, detail: String, isNew: Bool,
                                      @ViewBuilder icon: () -> Icon) -> some View {
-        HStack(spacing: 12) {
+        HStack(alignment: .top, spacing: 12) {
             icon()
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title).font(.system(size: 20, weight: .heavy, design: .rounded))
+                    .fixedSize(horizontal: false, vertical: true)
                 HStack(spacing: 8) {
-                    Text(title).font(.system(size: 20, weight: .heavy, design: .rounded))
                     Text(tag).font(.system(size: 12, weight: .heavy, design: .rounded))
                         .foregroundStyle(tagText)
                         .padding(.horizontal, 8).padding(.vertical, 2)
                         .background(Capsule().fill(tagFill))
+                    if isNew {
+                        Text("新！").font(.system(size: 12, weight: .black, design: .rounded)).foregroundStyle(.white)
+                            .padding(.horizontal, 8).padding(.vertical, 2)
+                            .background(Capsule().fill(Theme.wrong))
+                    }
                 }
                 Text(detail)
                     .font(.system(size: 14, weight: .bold, design: .rounded)).foregroundStyle(Theme.muted)
-                    .lineLimit(1).minimumScaleFactor(0.75)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            Spacer(minLength: 0)
-            if isNew {
-                Text("新！").font(.system(size: 13, weight: .black, design: .rounded)).foregroundStyle(.white)
-                    .padding(.horizontal, 10).padding(.vertical, 4)
-                    .background(Capsule().fill(Theme.wrong))
-            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .foregroundStyle(Theme.ink)
         .padding(.horizontal, 10).padding(.vertical, 6)
