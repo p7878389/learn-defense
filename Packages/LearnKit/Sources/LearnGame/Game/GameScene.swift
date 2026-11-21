@@ -108,7 +108,7 @@ final class GameScene: SKScene {
     private let viewCamera = SKCameraNode()
     /// 画面右缘在场景里的横坐标：视图正好 2:1 时是 1200，横屏加宽时更大
     private var visibleMaxX = GameScene.designSize.width
-    /// 连续答对几题（答错清零）：萤火精灵的光团跟着变亮
+    /// 连续答对几题（答错清零）
     private(set) var answerStreak = 0
 
     init(tuning: GameTuning, theme: SceneTheme, loadout: Loadout = .standard, map: BattleMap = .courtyard) {
@@ -395,7 +395,6 @@ final class GameScene: SKScene {
     private func updateStreak(_ streak: Int) {
         guard streak != answerStreak else { return }
         answerStreak = streak
-        for defender in defenders.values { defender.showStreak(streak) }
     }
 
     /// 孩子答对一题：连对数加一；埋着的土豆雷往出土再近一步。返回有没有土豆雷刚出土
@@ -504,7 +503,6 @@ final class GameScene: SKScene {
         ]))
         addChild(defender)
         defenders[cell] = defender
-        defender.showStreak(answerStreak)
         return true
     }
 

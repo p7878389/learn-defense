@@ -103,6 +103,10 @@ public struct GrowthState: Codable, Sendable, Equatable {
         badges = (try? c.decodeIfPresent([String: Date].self, forKey: .badges)) ?? [:]
         owned = (try? c.decodeIfPresent(Set<String>.self, forKey: .owned)) ?? []
         equipped = (try? c.decodeIfPresent([String: String].self, forKey: .equipped)) ?? [:]
+        // 退役皮肤恢复原版；保留积分、拥有记录及其他装备，兼容数据库和旧 JSON 档案。
+        let retired: Set<String> = ["defender.party", "defender.pixel", "defender.bamboo", "defender.egg",
+                                    "enemy.party", "enemy.pixel", "defender.voxel", "defender.firefly"]
+        equipped = equipped.filter { !retired.contains($0.value) }
         stats = (try? c.decodeIfPresent(GrowthStats.self, forKey: .stats)) ?? GrowthStats()
     }
 

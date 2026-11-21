@@ -14,7 +14,6 @@ final class DefenderNode: SKNode {
     var lane = 0
     private let radius: CGFloat
     private let body: SKShapeNode
-    private let skin: CharacterSkin?
     /// 序列帧外观；自定义字灵没有，用矢量绘制
     private let rig: SpriteRig?
     private let sceneSkin: SpellbookSkin?
@@ -37,8 +36,6 @@ final class DefenderNode: SKNode {
         body = DefenderArt.body(kind.look, radius: radius)
         let rig = hasSceneArtwork ? nil : UnitSprites.defender(kind, radius: radius, skin: skin)
         self.rig = rig
-        // 换贴图的皮肤要真有这套素材才算穿上；只加特效的皮肤（萤火精灵）沿用原版贴图，有序列帧就保留
-        self.skin = hasSceneArtwork || rig?.base.hasPrefix("skin-") == true || (rig != nil && skin?.isEffectOnly == true) ? skin : nil
         super.init()
         if let sceneSkin {
             FXLibrary.attach(sceneSkin.root, to: self)
@@ -51,7 +48,6 @@ final class DefenderNode: SKNode {
             if let accessory = DefenderArt.accessory(kind.look, radius: radius) { addChild(accessory) }
             if kind.look.body.hasFace { addChild(DefenderArt.eyes(radius: radius)) }
         }
-        CharacterSkinEffects.decorate(self, skin: self.skin, radius: radius)
 
         // 还没出土的土豆雷埋在土里
         if let mine = guardian as? MineGuard, !mine.isArmed {
@@ -75,11 +71,6 @@ final class DefenderNode: SKNode {
     /// 答对时能不能由它发射
     var canShoot: Bool { attack != nil }
 
-    /// 连对数变了：萤火精灵的光团跟着变亮变多，其他外观不变
-    func showStreak(_ streak: Int) {
-        CharacterSkinEffects.showStreak(streak, on: self, skin: skin)
-    }
-
     /// 子弹出发的位置：有序列帧时从嘴里出来（豌豆射手的嘴在右上方），否则从身体右侧
     var muzzle: CGPoint {
         if let muzzle = sceneSkin?.muzzle ?? themeSkin?.muzzle {
@@ -97,13 +88,6 @@ final class DefenderNode: SKNode {
     func shoot() {
         if let sceneSkin { sceneSkin.shoot(); return }
         if let themeSkin { themeSkin.shoot(); return }
-        if let skin, let rig {
-            CharacterSkinEffects.shoot(in: self, skin: skin, at: rig.muzzle ?? .zero)
-            rig.sprite.run(.sequence([
-                .rotate(toAngle: -0.10, duration: 0.06),
-                .rotate(toAngle: 0, duration: 0.16),
-            ]), withKey: "skinRecoil")
-        }
         guard let rig, let attack = rig.clip(for: "attack") else { return }
         rig.playOnce(attack)
     }

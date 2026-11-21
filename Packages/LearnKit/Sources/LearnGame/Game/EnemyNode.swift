@@ -75,8 +75,6 @@ final class EnemyNode: SKNode {
             if let accessory = EnemyArt.accessory(look) { squash.addChild(accessory) }
         }
         figure.addChild(squash)
-        CharacterSkinEffects.decorate(squash, skin: rig?.base.hasPrefix("skin-") == true ? skin : nil,
-                                      radius: halfHeight * 0.85)
         figure.setScale(s)
         figure.position.y = figureBaseY
         addChild(figure)
@@ -192,10 +190,6 @@ final class EnemyNode: SKNode {
         guard tempo != self.tempo else { return }
         self.tempo = tempo
         rig?.tempo = tempo
-        if let effects = squash.childNode(withName: CharacterSkinEffects.nodeName) {
-            effects.speed = tempo
-            effects.isPaused = tempo == 0
-        }
         if !doomed { breathe(speed: tempo) }
     }
 

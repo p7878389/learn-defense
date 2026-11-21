@@ -8,68 +8,28 @@ import Testing
 @Suite("角色皮肤序列帧")
 @MainActor
 struct CharacterSkinAnimationTests {
-    @Test func onlyIntendedCharactersChangeAndMissingResourcesFallBack() throws {
-        // 特效型和场景部件型皮肤由各自运行测试覆盖；此处验证序列帧契约。
-        for skin in CharacterSkin.allCases where !skin.isEffectOnly && !skin.usesSceneArtwork {
-            let rig = try #require(UnitSprites.defender(.inkling, radius: 34, skin: skin))
-            #expect(rig.base == "skin-\(skin.rawValue)-plant-inkling")
-            let original = try #require(UnitSprites.defender(.inkling, radius: 34))
-            #expect(close(rig.muzzle, original.muzzle))
-            #expect(abs(rig.sprite.size.width - original.sprite.size.width) < 0.01)
-            #expect(abs(rig.sprite.size.height - original.sprite.size.height) < 0.01)
-            // 整株重画的皮肤只有射手；僵尸配它们时整套回退原版
-            #expect(UnitSprites.enemy(.blob, skin: skin)?.base == (redrawn.contains(skin) ? "zombie-blob" : "skin-\(skin.rawValue)-zombie-blob"))
-            #expect(UnitSprites.enemy(.armored, skin: skin)?.base == "zombie-armored")
-            #expect(UnitSprites.defender(.frost, radius: 34, skin: skin)?.base == "plant-frost")
-            #expect(UnitSprites.characterName("plant-missing", skin: skin) == "plant-missing")
-            #expect(rig.sprite.texture?.filteringMode == (skin == .pixel ? .nearest : .linear))
-        }
-    }
 
     @Test func freezeBiteAndDefeatKeepTheirSkin() throws {
         let clock = try SkinClock()
-        let zombie = EnemyNode(id: 1, kind: .blob, sign: "春", lane: 0, scale: 1, skin: .party)
+        let zombie = EnemyNode(id: 1, kind: .blob, sign: "春", lane: 0, scale: 1, skin: .spellbook)
         zombie.position = CGPoint(x: 300, y: 160)
         clock.scene.addChild(zombie)
         let sprite = try #require(zombie.childNode(withName: "//unitSprite") as? SKSpriteNode)
-        let effects = try #require(zombie.childNode(withName: "//characterSkinEffects"))
+        #expect(zombie.childNode(withName: "//characterSkinEffects") == nil)
         try clock.advance(seconds: 0.2)
         zombie.slow(factor: 0, seconds: 3)
         let frozen = sprite.texture
-        let confettiY = try #require(effects.children.first).position.y
         try clock.advance(seconds: 0.4)
         #expect(sprite.texture === frozen)
-        #expect(effects.children.first?.position.y == confettiY)
-        #expect(effects.speed == 0)
         _ = zombie.advance(dt: 4, speed: 1)
-        #expect(effects.speed == 1)
         zombie.lunge()
-        #expect(UnitSprites.frames(named: "skin-party-zombie-blob-attack").contains { $0 === sprite.texture })
+        #expect(UnitSprites.frames(named: "zombie-blob-attack").contains { $0 === sprite.texture })
         try clock.advance(seconds: 0.75)
-        #expect(UnitSprites.frames(named: "skin-party-zombie-blob").contains { $0 === sprite.texture })
+        #expect(UnitSprites.frames(named: "zombie-blob").contains { $0 === sprite.texture })
         zombie.defeat()
-        #expect(UnitSprites.frames(named: "skin-party-zombie-blob-die").contains { $0 === sprite.texture })
+        #expect(UnitSprites.frames(named: "zombie-blob-die").contains { $0 === sprite.texture })
         try clock.advance(seconds: 1.8)
         #expect(zombie.parent == nil)
-    }
-
-    @Test func sceneUsesEquippedSkinAndShotEffectsExpire() throws {
-        let scene = GameScene(tuning: GameTuning.make(grade: .g1, difficulty: .easy), theme: .academy,
-                              loadout: Loadout(defenderSkins: ["inkling": .pixel, "frost": .bamboo]))
-        let planted = scene.plant(.inkling, in: DefenderCell(lane: 0, column: 0))
-        #expect(planted)
-        let defender = try #require(scene.children.compactMap { $0 as? DefenderNode }.first)
-        let sprite = try #require(defender.childNode(withName: "unitSprite") as? SKSpriteNode)
-        #expect(UnitSprites.frames(named: "skin-pixel-plant-inkling").contains { $0 === sprite.texture })
-        let clock = try SkinClock()
-        let shooter = DefenderNode(kind: .inkling, radius: 34, skin: .pixel)
-        clock.scene.addChild(shooter)
-        let initial = shooter.children.count
-        shooter.shoot()
-        #expect(shooter.childNode(withName: "skinMuzzleFlash") != nil)
-        try clock.advance(seconds: 0.5)
-        #expect(shooter.childNode(withName: "skinMuzzleFlash") == nil)
-        #expect(shooter.children.count == initial)
     }
 
     /// 导出真正的 SpriteKit 动画，用于目检衣帽、粒子、攻击以及节点缩放组合。
@@ -116,84 +76,17 @@ struct CharacterSkinAnimationTests {
         #expect(CGImageDestinationFinalize(gif))
     }
 
-    /// 植物卡、拖动预览、收藏馆卡片：穿着皮肤的第一帧；这种射手还没有这套素材时是原版
-    @Test func portraitsFollowEquippedSkin() throws {
-        let bamboo = try #require(UnitSprites.portrait(of: .inkling, skin: .bamboo))
-        let original = try #require(UnitSprites.portrait(of: .inkling, skin: nil))
-        #expect(bamboo.width == original.width * 3)
-        let frost = try #require(UnitSprites.portrait(of: .frost, skin: .bamboo))
-        let frostOriginal = try #require(UnitSprites.portrait(of: .frost, skin: nil))
-        #expect(frost.width == frostOriginal.width)
-        #expect(UnitSprites.defender(.frost, radius: 34, skin: .bamboo)?.base == "plant-frost")
-    }
-
-    /// 萤火精灵：沿用原版贴图，身后一圈光晕、身边固定几颗光团，平时只亮一部分；僵尸配它保持原版
-    @Test func fireflyKeepsOriginalArtAndAddsFixedOrbs() throws {
-        let rig = try #require(UnitSprites.defender(.inkling, radius: 34, skin: .firefly))
-        #expect(rig.base == "plant-inkling")
-        let shooter = DefenderNode(kind: .inkling, radius: 34, skin: .firefly)
-        let effects = try #require(shooter.childNode(withName: CharacterSkinEffects.nodeName))
-        let aura = try #require(effects.childNode(withName: CharacterSkinEffects.fireflyAuraName) as? SKSpriteNode)
-        #expect(aura.size.width > 34 * 2)
-        let holders = effects.children.filter { $0.name == CharacterSkinEffects.fireflyHolderName }
-        #expect(holders.count == CharacterSkinEffects.fireflyOrbs)
-        let orbs = holders.compactMap { $0.childNode(withName: CharacterSkinEffects.fireflyOrbName) as? SKSpriteNode }
-        #expect(orbs.count == CharacterSkinEffects.fireflyOrbs)
-        #expect(holders.filter { $0.alpha > 0 }.count == CharacterSkinEffects.fireflyBaseOrbs)
-        let zombie = EnemyNode(id: 0, kind: .blob, sign: "春", lane: 0, scale: 1, skin: .firefly)
-        #expect(zombie.childNode(withName: "//characterSkinEffects") == nil)
-        // 其他皮肤不受连对影响
-        let party = DefenderNode(kind: .inkling, radius: 34, skin: .party)
-        party.showStreak(5)
-        #expect(party.childNode(withName: CharacterSkinEffects.nodeName)?.action(forKey: "fireflyStreak") == nil)
-    }
-
-    /// 连对越多越亮：3 连对多亮一颗、5 连对全亮；答错清零暗回去；全程节点数不变
-    @Test func fireflyGlowsBrighterWithStreak() throws {
-        let clock = try SkinClock()
-        let shooter = DefenderNode(kind: .inkling, radius: 34, skin: .firefly)
-        shooter.position = CGPoint(x: 300, y: 180)
-        clock.scene.addChild(shooter)
-        let effects = try #require(shooter.childNode(withName: CharacterSkinEffects.nodeName))
-        let initial = shooter.children.count
-        let initialEffects = effects.children.count
-        let base = CharacterSkinEffects.fireflyBaseOrbs
-        func lit() -> Int { effects.children.filter { $0.name == CharacterSkinEffects.fireflyHolderName && $0.alpha > 0.5 }.count }
-
-        shooter.showStreak(3)
-        try clock.advance(seconds: 0.5)
-        #expect(lit() == base + 1)
-        #expect(abs(effects.alpha - CharacterSkinEffects.intensity(streak: 3)) < 0.01)
-
-        shooter.showStreak(5)
-        shooter.shoot()
-        #expect(effects.childNode(withName: "fireflyBurst") != nil)
-        try clock.advance(seconds: 0.5)
-        #expect(effects.childNode(withName: "fireflyBurst") == nil)
-        #expect(lit() == CharacterSkinEffects.fireflyOrbs)
-        #expect(effects.alpha > CharacterSkinEffects.intensity(streak: 3))
-        #expect(abs(effects.xScale - CharacterSkinEffects.glowScale(streak: 5)) < 0.01)
-
-        shooter.showStreak(0)
-        try clock.advance(seconds: 0.5)
-        #expect(lit() == base)
-        #expect(abs(effects.alpha - CharacterSkinEffects.intensity(streak: 0)) < 0.01)
-        #expect(shooter.children.count == initial)
-        #expect(effects.children.count == initialEffects)
-    }
-
-    /// 场景记连对数：答对加一、答错清零；后种下的萤火射手也按当前连对数发光
+    /// 退役萤火皮肤后，场景连对计数与正常种植仍然有效。
     @Test func sceneTracksAnswerStreak() throws {
         let scene = GameScene(tuning: GameTuning.make(grade: .g1, difficulty: .easy), theme: .academy,
-                              loadout: Loadout(defenderSkins: ["inkling": .firefly]))
+                              loadout: Loadout(defenderSkins: ["inkling": .spellbook]))
         scene.noteCorrectAnswer()
         scene.noteCorrectAnswer()
         scene.noteCorrectAnswer()
         #expect(scene.answerStreak == 3)
         #expect(scene.plant(.inkling, in: DefenderCell(lane: 0, column: 0)))
         let shooter = try #require(scene.children.compactMap { $0 as? DefenderNode }.first)
-        let effects = try #require(shooter.childNode(withName: CharacterSkinEffects.nodeName))
-        #expect(effects.action(forKey: "fireflyStreak") != nil)
+        #expect(shooter.childNode(withName: "spellbookSkin") != nil)
         scene.penalize(42)
         #expect(scene.answerStreak == 0)
     }
@@ -206,49 +99,7 @@ struct CharacterSkinAnimationTests {
         #expect(Set(ids).count == ids.count)
     }
 
-    /// 整株重画的皮肤：画布放大 3 倍更清晰，但比例、节奏和子弹出口与原版一致
-    @Test func redrawnSkinsKeepPlacementAndTiming() throws {
-        let original = try #require(UnitSprites.clip(named: "plant-inkling"))
-        for skin in redrawn {
-            let name = "skin-\(skin.rawValue)-plant-inkling"
-            let clip = try #require(UnitSprites.clip(named: name))
-            #expect(clip.frameCount == original.frameCount)
-            #expect(clip.frameTime == original.frameTime)
-            #expect(clip.crop == original.crop.map { $0 * 3 })
-            #expect(clip.muzzle == original.muzzle?.map { $0 * 3 })
-            let frames = UnitSprites.frames(named: name)
-            #expect(frames.count == original.frameCount)
-            #expect(Set(frames.map { ObjectIdentifier($0) }).count == frames.count)
-            let zombie = EnemyNode(id: 0, kind: .blob, sign: "春", lane: 0, scale: 1, skin: skin)
-            #expect(zombie.childNode(withName: "//characterSkinEffects") == nil)
-            let shooter = DefenderNode(kind: .inkling, radius: 34, skin: skin)
-            #expect(shooter.childNode(withName: "characterSkinEffects") != nil)
-        }
-    }
-
-    @Test func everySkinnedStateKeepsOriginalAlignmentAndTiming() throws {
-        for style in ["party", "pixel"] {
-            for source in ["plant-inkling", "zombie-blob", "zombie-blob-attack", "zombie-blob-die", "zombie-head", "zombie-boom"] {
-                let original = try #require(UnitSprites.clip(named: source))
-                let name = "skin-\(style)-\(source)"
-                let skinned = try #require(UnitSprites.clip(named: name))
-                #expect(skinned.frameCount == original.frameCount)
-                #expect(skinned.frameTime == original.frameTime)
-                #expect(skinned.crop == original.crop)
-                #expect(skinned.canvas == original.canvas)
-                #expect(skinned.pivot == original.pivot)
-                #expect(skinned.muzzle == original.muzzle)
-                #expect(UnitSprites.frames(named: name).count == original.frameCount)
-                for (state, target) in original.states ?? [:] {
-                    #expect(UnitSprites.state(state, of: name) == "skin-\(style)-\(target)")
-                }
-            }
-        }
-    }
 }
-
-/// 整株重画、只有射手的皮肤
-private let redrawn: [CharacterSkin] = [.bamboo, .voxel, .egg]
 
 private func close(_ a: CGPoint?, _ b: CGPoint?) -> Bool {
     guard let a, let b else { return a == nil && b == nil }

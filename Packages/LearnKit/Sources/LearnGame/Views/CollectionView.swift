@@ -24,26 +24,113 @@ struct CollectionView: View {
     }
 
     var body: some View {
-        let level = growth.level.level
-        VStack(spacing: 18) {
-            topBar(level: level)
-            HStack(alignment: .top, spacing: 22) {
+        GeometryReader { geometry in
+            let wide = geometry.size.width >= 900
+            VStack(spacing: 18) {
+                topBar(level: growth.level.level)
                 slotTabs
-                VStack(spacing: 18) {
-                    // 射手分类条占用积分提示的位置，整页高度基本不变
-                    if slot == .defenderSkin { shooterTabs }
-                    stage
-                    cards(level: level)
-                    if slot != .defenderSkin {
-                        HintCapsule(icon: "💡", text: "积分怎么来？通关、拿星星、升级、得徽章都能拿积分！", tint: GrowthColors.orangeDark)
+                if wide {
+                    HStack(alignment: .top, spacing: 20) {
+                        ScrollView { sidebar.padding(6) }
+                            .frame(width: 190)
+                        wardrobe
+                        ScrollView { fittingRoom.padding(6) }
+                            .frame(width: 320)
+                    }
+                } else {
+                    ScrollView {
+                        VStack(spacing: 22) {
+                            sidebar
+                            fittingRoom
+                            wardrobe
+                        }
+                        .padding(6)
                     }
                 }
             }
+            .padding(geometry.size.width < 600 ? 14 : 24)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        .padding(28)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(GrowthPageBackground())
         .overlay { if let item = confirming { confirmDialog(item) } }
+    }
+
+    private var sidebar: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(slot == .defenderSkin ? "选择小伙伴" : "当前分类")
+                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .foregroundStyle(Theme.muted)
+            if slot == .defenderSkin {
+                shooterTabs
+            } else {
+                Label(slot.displayName, systemImage: "sparkles")
+                    .font(.system(size: 18, weight: .heavy, design: .rounded))
+                    .foregroundStyle(.white)
+                    .padding(18)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(CandyTileBackground(selected: true))
+                Text(slot == .enemySkin ? "装扮统一应用于怪物" : "挑选喜欢的外观，先试看再装备")
+                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                    .foregroundStyle(Theme.muted)
+            }
+        }
+    }
+
+    private var wardrobe: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Text(slot == .defenderSkin ? shooterKind.name : slot.displayName)
+                    .font(.system(size: 24, weight: .heavy, design: .rounded))
+                    .foregroundStyle(Theme.ink)
+                Spacer(minLength: 8)
+                Text("共 \(items.count) 件")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(GrowthColors.orangeDark)
+            }
+            cards(level: growth.level.level)
+            Text("金边表示试看，绿色标记表示已装备")
+                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .foregroundStyle(Theme.muted)
+        }
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+    }
+
+    private var fittingRoom: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack {
+                Text("试穿小舞台")
+                    .font(.system(size: 17, weight: .heavy, design: .rounded))
+                Spacer()
+                Text(previewItem.map { growth.state.isEquipped($0) } == true ? "已装备" : "仅预览")
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .foregroundStyle(GrowthColors.jadeDark)
+            }
+            stage
+            if let item = previewItem {
+                Text(item.rarity.displayName)
+                    .font(.system(size: 13, weight: .heavy, design: .rounded))
+                    .foregroundStyle(GrowthColors.rarity(item.rarity))
+                Text(item.name)
+                    .font(.system(size: 26, weight: .heavy, design: .rounded))
+                    .foregroundStyle(Theme.ink)
+                Text(item.summary)
+                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .foregroundStyle(Theme.muted)
+                if let skin = item.itemSkin, let base = UnitCatalog.item(id: skin.item) {
+                    Text("原来是 \(base.icon) \(base.name)")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundStyle(Theme.muted)
+                }
+                cardAction(item, status: growth.state.status(of: item, level: growth.level.level), level: growth.level.level)
+            }
+            Text("只换外观，不改变战力")
+                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .foregroundStyle(Theme.muted)
+        }
+        .padding(16)
+        .background(RoundedRectangle(cornerRadius: 26).fill(GrowthColors.surface)
+            .shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 5))
+        .overlay(RoundedRectangle(cornerRadius: 26).stroke(GrowthColors.gold.opacity(0.65), lineWidth: 3))
     }
 
     // MARK: 顶部和分类
@@ -56,39 +143,34 @@ struct CollectionView: View {
     }
 
     private var slotTabs: some View {
-        VStack(spacing: 14) {
-            ForEach(CosmeticSlot.allCases) { s in
-                Button {
-                    slot = s
-                    previewID = nil
-                } label: {
-                    HStack(spacing: 10) {
-                        PictureView(emoji: s.icon, size: 30)
-                        Text(s.displayName).font(.system(size: 22, weight: .heavy, design: .rounded))
-                        Spacer(minLength: 0)
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 12) {
+                ForEach(CosmeticSlot.allCases) { s in
+                    Button {
+                        slot = s
+                        previewID = nil
+                    } label: {
+                        HStack(spacing: 8) {
+                            PictureView(emoji: s.icon, size: 24)
+                            Text(s.displayName)
+                                .font(.system(size: 18, weight: .heavy, design: .rounded))
+                        }
+                        .foregroundStyle(slot == s ? .white : Theme.ink)
+                        .padding(.horizontal, 18)
+                        .frame(height: 52)
+                        .background(CandyTileBackground(selected: slot == s))
                     }
-                    .foregroundStyle(slot == s ? .white : Theme.ink)
-                    .padding(.horizontal, 20)
-                    .frame(height: 64)
-                    .background(CandyTileBackground(selected: slot == s))
+                    .buttonStyle(PressableStyle())
+                    .accessibilityAddTraits(slot == s ? .isSelected : [])
                 }
-                .buttonStyle(PressableStyle())
+                Text("🔒 命中特效 · 待开放")
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundStyle(Theme.muted)
+                    .padding(.horizontal, 16)
             }
-            HStack(spacing: 8) {
-                Text("🔒")
-                Text("命中特效").font(.system(size: 18, weight: .bold, design: .rounded))
-                Spacer()
-                Text("待开放").font(.system(size: 13, weight: .bold, design: .rounded))
-                    .padding(.horizontal, 8).padding(.vertical, 2)
-                    .background(Capsule().fill(Theme.muted.opacity(0.12)))
-            }
-            .foregroundStyle(Theme.muted)
-            .padding(.horizontal, 20)
-            .frame(height: 54)
-            .background(RoundedRectangle(cornerRadius: 22).fill(Theme.muted.opacity(0.06)))
-            .overlay(RoundedRectangle(cornerRadius: 22).stroke(Theme.muted.opacity(0.35), style: StrokeStyle(lineWidth: 2, dash: [6, 5])))
+            .padding(6)
         }
-        .frame(width: 210)
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     // MARK: 射手分类
@@ -98,7 +180,7 @@ struct CollectionView: View {
         let loadout = growth.loadout
         let grade = model.profiles.first { $0.id == profileID }?.grade
         let playable = grade.map { Set(GameTuning.defenders(for: $0).map(\.id)) }
-        return HStack(spacing: 10) {
+        return VStack(spacing: 14) {
             // 只列会射击的植物；坚果墙、土豆雷这类防御植物没有射手皮肤
             ForEach(UnitCatalog.defenders.filter(\.canShoot), id: \.id) { kind in
                 let selected = shooter == kind.id
@@ -128,7 +210,7 @@ struct CollectionView: View {
                     .foregroundStyle(selected ? .white : Theme.ink)
                     .padding(.horizontal, 10)
                     .frame(maxWidth: .infinity)
-                    .frame(height: 62)
+                    .frame(height: 86)
                     .background(CandyTileBackground(selected: selected))
                 }
                 .buttonStyle(PressableStyle())
@@ -159,14 +241,14 @@ struct CollectionView: View {
                 Rectangle().fill(Color(red: 0.46, green: 0.72, blue: 0.2)).frame(height: 14)
             }
             .clipShape(RoundedRectangle(cornerRadius: 26))
-            Text("👁 战场试穿：\(item?.name ?? "")")
+            Text("👁 战场试穿")
                 .font(.system(size: 17, weight: .heavy, design: .rounded))
                 .foregroundStyle(.white)
                 .padding(.horizontal, 16).padding(.vertical, 8)
                 .background(Capsule().fill(Color(red: 0.63, green: 0.39, blue: 0.2)))
                 .padding(16)
         }
-        .frame(height: 190)
+        .frame(height: 230)
         .overlay(RoundedRectangle(cornerRadius: 26).stroke(GrowthColors.gold.opacity(0.7), lineWidth: 4))
     }
 
@@ -178,16 +260,15 @@ struct CollectionView: View {
                 .padding(.top, 30)
         case .projectile:
             HStack {
-                PictureView(emoji: "🌱", size: 70)
+                PictureView(emoji: "🌱", size: 42)
                 Spacer()
                 PictureView(emoji: item?.icon ?? "🟢", size: 46)
                 Spacer()
-                PictureView(emoji: "🧟", size: 70)
+                PictureView(emoji: "🧟", size: 42)
             }
-            .padding(.horizontal, 60)
+            .padding(.horizontal, 16)
         case .defeat:
-            HStack(spacing: 40) {
-                PictureView(emoji: "🌱", size: 60).opacity(0.7)
+            VStack(spacing: 8) {
                 ZStack {
                     PictureView(emoji: "🧟", size: 76).opacity(item?.isOriginal == false ? 0.3 : 1)
                     if let item, !item.isOriginal {
@@ -204,15 +285,15 @@ struct CollectionView: View {
             }
         case .itemSkin:
             let loadout = growth.loadout
-            HStack(spacing: 24) {
+            VStack(spacing: 8) {
                 HStack(spacing: 12) {
                     ForEach([ItemKind.frostCharm, .heartLeaf, .luckyStar], id: \.id) { base in
                         let shown = loadout.skin(base)
                         VStack(spacing: 2) {
-                            PictureView(emoji: shown.icon, size: 44)
+                            PictureView(emoji: shown.icon, size: 34)
                             Text(shown.name).font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(Theme.ink)
                         }
-                        .frame(width: 90, height: 86)
+                        .frame(width: 64, height: 70)
                         .background(RoundedRectangle(cornerRadius: 18).fill(GrowthColors.surface))
                     }
                 }
@@ -228,81 +309,76 @@ struct CollectionView: View {
     // MARK: 卡片
 
     private func cards(level: Int) -> some View {
-        let items = items
-        // 还没有皮肤的射手只有原版：补一张「即将推出」。
-        let comingSoon = slot == .defenderSkin && items.count <= 1
-        return ScrollView(.horizontal) {
-            HStack(alignment: .top, spacing: 12) {
-                ForEach(items, id: \.id) {
-                    card($0, level: level).frame(width: 220, height: 330)
+        ScrollView {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 145), spacing: 14)], spacing: 18) {
+                ForEach(items, id: \.id) { item in
+                    card(item, level: level)
                 }
-                if comingSoon { comingSoonCard.frame(width: 220, height: 330) }
+                if slot == .defenderSkin && items.count <= 1 { comingSoonCard }
             }
-            // 为卡片描边、阴影和按压动画留出空间。
             .padding(8)
         }
-        .frame(height: 354)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(minHeight: 240)
         .id(slot == .defenderSkin ? "\(slot.rawValue)-\(shooter)" : slot.rawValue)
     }
 
     private func card(_ item: CosmeticKind, level: Int) -> some View {
         let status = growth.state.status(of: item, level: level)
         let locked: Bool = if case .locked = status { true } else { false }
-        let isNew = !locked && status == .forSale(price: item.price) && item.unlockLevel == level
-        return VStack(spacing: 8) {
-            Text(item.rarity.displayName)
-                .font(.system(size: 13, weight: .heavy, design: .rounded))
-                .foregroundStyle(item.rarity == .legendary ? Color(red: 0.4, green: 0.28, blue: 0) : GrowthColors.rarity(item.rarity))
-                .padding(.horizontal, 12).padding(.vertical, 3)
-                .background(Capsule().fill(GrowthColors.rarity(item.rarity).opacity(item.rarity == .legendary ? 0.8 : 0.18)))
-            ZStack {
-                Circle().fill(locked ? Color(white: 0.9) : GrowthColors.rarity(item.rarity).opacity(0.15)).frame(width: 96, height: 96)
-                Group {
-                    if let image = portrait(of: item) {
-                        Image(decorative: image, scale: 1).resizable().scaledToFit().frame(width: 78, height: 78)
-                    } else {
-                        PictureView(emoji: item.icon, size: 60)
+        let selected = previewItem?.id == item.id
+        return Button { previewID = item.id } label: {
+            VStack(spacing: 8) {
+                HStack {
+                    Text(item.rarity.displayName)
+                        .foregroundStyle(GrowthColors.rarity(item.rarity))
+                    Spacer(minLength: 0)
+                    if status == .equipped {
+                        Text("已装备").foregroundStyle(GrowthColors.jadeDark)
+                    } else if locked {
+                        Text("🔒").foregroundStyle(Theme.muted)
                     }
                 }
-                .grayscale(locked ? 1 : 0).opacity(locked ? 0.35 : 1)
-                if locked { Text("🔒").font(.system(size: 34)) }
+                .font(.system(size: 12, weight: .heavy, design: .rounded))
+                ZStack {
+                    Circle().fill(GrowthColors.rarity(item.rarity).opacity(0.12))
+                        .frame(width: 86, height: 86)
+                    if let image = portrait(of: item) {
+                        Image(decorative: image, scale: 1).resizable().scaledToFit()
+                            .frame(width: 80, height: 80)
+                    } else {
+                        PictureView(emoji: item.icon, size: 58)
+                    }
+                }
+                .grayscale(locked ? 1 : 0).opacity(locked ? 0.5 : 1)
+                Text(item.name)
+                    .font(.system(size: 17, weight: .heavy, design: .rounded))
+                    .foregroundStyle(Theme.ink)
+                    .lineLimit(2).frame(minHeight: 42)
+                Text(selected ? "◉ 正在试看" : cardStatus(status))
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .foregroundStyle(selected ? GrowthColors.orangeDark : Theme.muted)
             }
-            Text(item.name).font(.system(size: 24, weight: .heavy, design: .rounded))
-                .foregroundStyle(locked ? Theme.muted : Theme.ink)
-                .lineLimit(1).minimumScaleFactor(0.7)
-            Text(item.summary).font(.system(size: 14, weight: .bold, design: .rounded)).foregroundStyle(Theme.muted)
-                .lineLimit(3).minimumScaleFactor(0.85).multilineTextAlignment(.center).frame(minHeight: 36)
-            if let skin = item.itemSkin, let base = UnitCatalog.item(id: skin.item) {
-                Text("原来是 \(base.icon) \(base.name)").font(.system(size: 13, weight: .bold, design: .rounded)).foregroundStyle(Theme.muted)
-            }
-            Spacer(minLength: 0)
-            cardAction(item, status: status, level: level)
+            .padding(12)
+            .frame(maxWidth: .infinity, minHeight: 194)
+            .background(RoundedRectangle(cornerRadius: 24)
+                .fill(selected ? GrowthColors.gold.opacity(0.12) : GrowthColors.surface)
+                .shadow(color: selected ? GrowthColors.goldDark : GrowthColors.cardEdge, radius: 0, x: 0, y: 5))
+            .overlay(RoundedRectangle(cornerRadius: 24).stroke(
+                selected ? GrowthColors.gold : GrowthColors.cardEdge,
+                style: StrokeStyle(lineWidth: selected ? 3 : 2, dash: locked ? [7, 5] : [])))
         }
-        .padding(10)
-        .frame(maxWidth: .infinity, minHeight: 330)
-        .background(
-            RoundedRectangle(cornerRadius: 26)
-                .fill(status == .equipped ? GrowthColors.gold.opacity(0.12) : GrowthColors.surface)
-                .shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 5))
-        // 和主页卡片同一套描边：装扮中金色粗边，还没解锁的虚线，其余浅金细边
-        .overlay {
-            if status == .equipped {
-                RoundedRectangle(cornerRadius: 26).stroke(GrowthColors.gold, lineWidth: 4)
-            } else if locked {
-                RoundedRectangle(cornerRadius: 26).stroke(GrowthColors.cardEdge, style: StrokeStyle(lineWidth: 2, dash: [7, 5]))
-            } else {
-                RoundedRectangle(cornerRadius: 26).stroke(GrowthColors.cardEdge, lineWidth: 2)
-            }
+        .buttonStyle(PressableStyle())
+        .accessibilityLabel("\(item.name)，\(cardStatus(status))，点击预览")
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+
+    private func cardStatus(_ status: GrowthState.CosmeticStatus) -> String {
+        switch status {
+        case .equipped: "已装备"
+        case .owned: "已拥有"
+        case let .forSale(price): "\(price) 积分"
+        case let .locked(level): "Lv.\(level) 解锁"
         }
-        .overlay(alignment: .topTrailing) {
-            if status == .equipped { cornerTag("✨ 装扮中", fill: GrowthColors.gold, text: Color(red: 0.36, green: 0.25, blue: 0)) }
-        }
-        .overlay(alignment: .topLeading) {
-            if isNew { cornerTag("新解锁！", fill: Theme.wrong, text: .white) }
-        }
-        .contentShape(Rectangle())
-        .onTapGesture { previewID = item.id }
     }
 
     /// 角色皮肤卡直接画出穿上后的样子；其他外观用图标
@@ -328,7 +404,7 @@ struct CollectionView: View {
                 .frame(maxWidth: .infinity)
         }
         .padding(10)
-        .frame(maxWidth: .infinity, minHeight: 330)
+        .frame(maxWidth: .infinity, minHeight: 194)
         .background(RoundedRectangle(cornerRadius: 26).fill(GrowthColors.surface.opacity(0.6)))
         .overlay(RoundedRectangle(cornerRadius: 26).stroke(GrowthColors.cardEdge, style: StrokeStyle(lineWidth: 2, dash: [7, 5])))
     }

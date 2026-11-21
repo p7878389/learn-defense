@@ -15,18 +15,18 @@ struct CharacterSkinPreview: View {
     }
 
     var body: some View {
-        HStack(spacing: 12) {
+        VStack(spacing: 8) {
             // SpriteView 只展示创建时拿到的场景，之后换参数不会重新展示；
             // 所以按皮肤给舞台独立身份，切换时连同场景一起重建。
             CharacterSkinStage(kind: kind, skin: skin, enemy: enemy, paused: reduceMotion)
                 .id(Self.stageID(kind: kind, skin: skin, enemy: enemy))
-                .frame(width: 280, height: 130)
+                .frame(maxWidth: .infinity).frame(height: 130)
                 .accessibilityLabel("\(enemy ? "普通僵尸" : kind.name)\(skin == nil ? "原版" : "动画皮肤")试穿")
             VStack(alignment: .leading, spacing: 8) {
                 Text(enemy ? "普通僵尸 · 行走 / 啃咬" : "\(kind.name) · 待机 / 发射")
-                    .font(.system(size: 18, weight: .heavy, design: .rounded))
+                    .font(.system(size: 14, weight: .heavy, design: .rounded))
                 Text("点选试看，装备后下局生效")
-                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
             }
             .foregroundStyle(Theme.ink)
         }

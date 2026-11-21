@@ -32,8 +32,8 @@ enum UnitSprites {
         guard let url = Bundle.module.url(forResource: "clips", withExtension: "json", subdirectory: "Sprites"),
               let data = try? Data(contentsOf: url),
               let clips = try? JSONDecoder().decode([String: Clip].self, from: data) else { return [:] }
-        // 皮肤和森林怪物各有一份清单，由各自的脚本生成；重名时以 clips.json 为准
-        return ["skins", "forest-classic"].reduce(clips) { merged, manifest in
+        // 森林怪物清单由素材脚本生成；重名时以 clips.json 为准
+        return ["forest-classic"].reduce(clips) { merged, manifest in
             guard let url = Bundle.module.url(forResource: manifest, withExtension: "json", subdirectory: "Sprites"),
                   let data = try? Data(contentsOf: url),
                   let extra = try? JSONDecoder().decode([String: Clip].self, from: data) else { return merged }
@@ -93,7 +93,7 @@ enum UnitSprites {
             let rect = CGRect(x: c[0] / size.width, y: 1 - (c[1] + c[3]) / size.height,
                               width: c[2] / size.width, height: c[3] / size.height)
             let texture = SKTexture(rect: rect, in: full)
-            texture.filteringMode = name.hasPrefix("skin-pixel-") ? .nearest : .linear
+            texture.filteringMode = .linear
             frames.append(texture)
         }
         cachedFrames[name] = frames

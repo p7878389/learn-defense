@@ -42,3 +42,9 @@ This project is indexed by GitNexus as **learn-defense** (1537 symbols, 4302 rel
 | Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus-cli/SKILL.md` |
 
 <!-- gitnexus:end -->
+
+## 特效资源约定
+
+- 后续新增或重做的视觉特效统一使用 SpriteKit `.sks` 资源（场景部件、粒子与动作资源），通过现有 `FXLibrary` 加载和复用；代码只负责事件触发、位置、颜色/强度参数以及生命周期。
+- 不再新增以运行时拼装 `SKShapeNode`、手写粒子循环或逐帧生成脚本为主的特效实现。保留的旧特效不在无关需求中批量迁移；需要修改视觉表现时按 `.sks` 路径实施。
+- 资源放在 `Packages/LearnKit/Sources/LearnGame/Resources/Effects`，同步资源加载、清理与战斗语义回归测试；外观不得改变伤害、命中时机或装备规则。

@@ -27,14 +27,14 @@ struct UnitSpriteTests {
 
     @Test func combatPreloadUsesEquippedSkinsAndTheirFallbacks() throws {
         let skinned = UnitSprites.preloadCombat(defenders: [.inkling], enemies: [.blob],
-                                               loadout: Loadout(defenderSkins: ["inkling": .pixel], enemySkin: .party))
-        #expect(skinned["skin-pixel-plant-inkling"]?.isEmpty == false)
-        #expect(skinned["skin-party-zombie-blob-die"]?.isEmpty == false)
+                                               loadout: Loadout(defenderSkins: ["inkling": .spellbook], enemySkin: .spellbook))
+        #expect(skinned["plant-inkling"]?.isEmpty == false)
+        #expect(skinned["zombie-blob-die"]?.isEmpty == false)
         let fallback = UnitSprites.preloadCombat(defenders: [.inkling], enemies: [.blob],
-                                                loadout: Loadout(defenderSkins: ["inkling": .firefly], enemySkin: .bamboo))
+                                                loadout: Loadout(defenderSkins: ["inkling": .spellbook], enemySkin: .spellbook))
         #expect(fallback["plant-inkling"]?.isEmpty == false)
         #expect(fallback["zombie-blob-die"]?.isEmpty == false)
-        #expect(fallback["skin-bamboo-zombie-blob"] == nil)
+        #expect(fallback["skin-spellbook-zombie-blob"] == nil)
     }
 
     @Test func combatPreloadIncludesTheArmorFallbackAttack() throws {
