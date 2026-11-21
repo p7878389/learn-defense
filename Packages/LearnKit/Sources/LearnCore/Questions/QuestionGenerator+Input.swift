@@ -247,6 +247,9 @@ extension QuestionGenerator {
         var q = base
         q.instruction = instruction
         q.prompt = prompt
+        // 改写时可能重新挖空，题牌必须使用最终题面，不能沿用选择题里的空位。
+        let sign = template ?? prompt
+        q.signText = sign.count <= 8 ? sign : "？"
         q.hint = hintLine
         q.options = [spec.answerText]
         q.answerIndex = 0
