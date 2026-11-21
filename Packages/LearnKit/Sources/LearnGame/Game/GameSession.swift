@@ -47,6 +47,7 @@ final class GameSession: ObservableObject {
     /// 场上已经有一道铁栅门；碎了才能再放
     @Published private(set) var barricadeDown = false
 
+    /// 普通题和大招题都只统计第一次有效作答，与学习记录和对局明细一致。
     private(set) var attempted = 0
     private(set) var firstTryCorrect = 0
     private(set) var mistakes: [Mistake] = []
@@ -331,6 +332,8 @@ final class GameSession: ObservableObject {
         if index == question.answerIndex {
             let firstTry = ultimateWrongPicks.isEmpty
             if firstTry {
+                attempted += 1
+                firstTryCorrect += 1
                 progress.record(item, correct: true)
                 recorder?.recordAnswer(question, chosenIndex: index, ultimate: true, shownAt: ultimateShownAt)
             }
@@ -351,6 +354,7 @@ final class GameSession: ObservableObject {
         } else {
             guard !ultimateWrongPicks.contains(index) else { return }
             if ultimateWrongPicks.isEmpty {
+                attempted += 1
                 progress.record(item, correct: false)
                 progress.save()
                 mistakes.append(Mistake(question: question, missed: false))
