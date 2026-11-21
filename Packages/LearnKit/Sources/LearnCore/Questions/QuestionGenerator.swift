@@ -30,6 +30,20 @@ public struct QuestionGenerator: Sendable {
         self.settings = settings
     }
 
+    /// 导入预检：复用实际出题规则，检查知识点能否生成至少一种有效选择题。
+    /// 小学生字固定检查拼音题，避免随机到缺少汉字干扰项的题型而误拒绝。
+    func canGenerateQuestion(for item: LearningItem) -> Bool {
+        var rng = SystemRandomNumberGenerator()
+        let question: Question?
+        if case .character(let c) = item, !settings.preschool {
+            question = character(c, item.key, &rng, kind: .charToPinyin)
+        } else {
+            question = choiceQuestion(for: item, using: &rng)
+        }
+        guard let question else { return false }
+        return question.options.count >= 2 && Set(question.options).count == question.options.count
+    }
+
     /// 按难度的作答方式比例出题
     public func makeQuestion<R: RandomNumberGenerator>(for item: LearningItem, using rng: inout R) -> Question? {
         makeQuestion(for: item, mode: settings.answerMix.pick(using: &rng), using: &rng)
@@ -120,11 +134,12 @@ public struct QuestionGenerator: Sendable {
 
     // MARK: - 各题型
 
-    private func character<R: RandomNumberGenerator>(_ c: CharacterItem, _ key: String, _ rng: inout R) -> Question? {
+    private func character<R: RandomNumberGenerator>(_ c: CharacterItem, _ key: String, _ rng: inout R,
+                                                    kind requestedKind: QuestionKind? = nil) -> Question? {
         let words = Self.charWords(c)
         var kinds: [QuestionKind] = [.charToPinyin, .pinyinToChar]
         if !words.isEmpty { kinds.append(.fillCharInWord) }
-        let kind = kinds.randomElement(using: &rng)!
+        let kind = requestedKind ?? kinds.randomElement(using: &rng)!
         let speech = Self.charSpeech(c)
         let explanation = ([c.char + " " + c.pinyin] + words).joined(separator: "  ")
         let card = charCard(c)

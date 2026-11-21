@@ -41,9 +41,24 @@ public struct PackManager {
                 }
             }
         }
+        let pool = ItemPool(packs: [pack], selection: .all)
         guard !pack.id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-              !pack.title.isEmpty, !ItemPool(packs: [pack], selection: .all).isEmpty else {
+              !pack.title.isEmpty, !pool.isEmpty else {
             throw SettingsError.invalid("课本需要有效的 id、书名和可出题的内容")
+        }
+        guard issues.isEmpty else { throw SettingsError.invalid(issues.joined(separator: "\n")) }
+        // 单元可独立选择，干扰项仍按实际战斗规则取自整册。
+        let generator = QuestionGenerator(pool: pool, settings: GameTuning.make(grade: pack.grade, difficulty: .easy).generator)
+        for unit in pack.units {
+            var itemCount = 0
+            for lesson in unit.lessons {
+                let items = ItemPool.lessonItems(lesson, scope: "\(pack.id)/\(unit.id)/\(lesson.id)")
+                itemCount += items.count
+                for item in items where !generator.canGenerateQuestion(for: item) {
+                    issues.append("\(unit.title)/\(lesson.title)：\(item.summary) 无法生成有效选择题，请补充可区分的同类干扰项")
+                }
+            }
+            if itemCount == 0 { issues.append("\(unit.title)：没有可出题的内容") }
         }
         guard issues.isEmpty else { throw SettingsError.invalid(issues.joined(separator: "\n")) }
         return PackImport(pack: pack, data: data)

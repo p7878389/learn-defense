@@ -82,6 +82,7 @@ public struct ItemPool: Sendable {
         var items: [LearningItem] = []
         var allItems: [LearningItem] = []
         var seenKeys: Set<String> = []
+        var selectedKeys: Set<String> = []
         var characters: [String: CharacterItem] = [:]
         var words: [String: WordItem] = [:]
         var idioms: [String: IdiomItem] = [:]
@@ -96,15 +97,16 @@ public struct ItemPool: Sendable {
                 for lesson in unit.lessons {
                     let lessonItems = Self.lessonItems(lesson, scope: "\(unitKey)/\(lesson.id)")
 
-                    for item in lessonItems where seenKeys.insert(item.key).inserted {
-                        allItems.append(item)
+                    for item in lessonItems {
+                        if seenKeys.insert(item.key).inserted { allItems.append(item) }
                         let selected: Bool
                         switch selection {
                         case .all: selected = true
                         case .units(let keys): selected = keys.contains(unitKey)
                         case .review(let keys): selected = keys.contains(item.key)
                         }
-                        if selected { items.append(item) }
+                        // 未选单元不能抢占知识点；在所选范围内独立去重。
+                        if selected, selectedKeys.insert(item.key).inserted { items.append(item) }
                     }
 
                     for c in lesson.characters { characters[c.char] = characters[c.char] ?? c }
