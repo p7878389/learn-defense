@@ -22,7 +22,7 @@ enum CharacterSkinEffects {
         case .bamboo: [.moss, .jade, .gold]
         case .voxel: [.moss, .gold, .sky]
         case .party, .pixel, .egg, .firefly: [.coral, .sky, .gold]
-        case .spellbook: []
+        case .spellbook, .mecha, .teapot: []
         }
         for i in 0..<6 {
             let color = palette[i % 3].fill

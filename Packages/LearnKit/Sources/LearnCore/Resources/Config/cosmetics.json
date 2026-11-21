@@ -7,6 +7,8 @@
   { "id": "defender.egg", "slot": "defenderSkin", "defender": "inkling", "name": "弹弹蛋", "icon": "🥚", "summary": "整株重画成圆滚滚的果冻蛋，弹呀弹，彩条喇叭照样发射绿豌豆", "rarity": "legendary", "unlockLevel": 1, "price": 0, "characterSkin": "egg" },
   { "id": "defender.firefly", "slot": "defenderSkin", "defender": "inkling", "name": "萤火精灵", "icon": "✨", "summary": "全身笼着金色萤光，光团绕身忽明忽暗；连续答对越多越亮越大，连对 3 题、5 题再多亮一颗", "rarity": "rare", "unlockLevel": 2, "price": 100, "characterSkin": "firefly" },
   { "id": "defender.spellbook", "slot": "defenderSkin", "defender": "inkling", "name": "星轨魔导书", "icon": "📖", "summary": "悬浮魔导书翻页发射星珠；装备其他子弹外观时优先沿用所选子弹", "rarity": "legendary", "unlockLevel": 1, "price": 0, "characterSkin": "spellbook" },
+  { "id": "defender.mecha", "slot": "defenderSkin", "defender": "inkling", "name": "雷霆小机甲", "icon": "🤖", "summary": "机械炮臂后坐，发射青白电浆；纯外观，不增加雷击效果", "rarity": "legendary", "unlockLevel": 1, "price": 0, "characterSkin": "mecha" },
+  { "id": "defender.teapot", "slot": "defenderSkin", "defender": "inkling", "name": "云游茶壶", "icon": "🫖", "summary": "青瓷壶盖轻跳，喷出茶叶水珠与莲花水光；不改变战斗数值", "rarity": "legendary", "unlockLevel": 1, "price": 0, "characterSkin": "teapot" },
   { "id": "defender.twin.original", "slot": "defenderSkin", "defender": "twin", "name": "原版双发射手", "icon": "🌱", "summary": "经典双发射手，随时换回", "rarity": "common", "unlockLevel": 1, "price": 0 },
   { "id": "defender.frost.original", "slot": "defenderSkin", "defender": "frost", "name": "原版寒冰射手", "icon": "❄️", "summary": "经典寒冰射手，随时换回", "rarity": "common", "unlockLevel": 1, "price": 0 },
   { "id": "defender.stroke.original", "slot": "defenderSkin", "defender": "stroke", "name": "原版大喷菇", "icon": "🍄", "summary": "经典大喷菇，随时换回", "rarity": "common", "unlockLevel": 1, "price": 0 },

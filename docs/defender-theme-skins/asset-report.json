@@ -1,0 +1,86 @@
+[
+  {
+    "height" : 384,
+    "name" : "MechaShell",
+    "sourceCell" : 0,
+    "transparentPixels" : 120031,
+    "width" : 350
+  },
+  {
+    "height" : 235,
+    "name" : "MechaPart",
+    "sourceCell" : 1,
+    "transparentPixels" : 205764,
+    "width" : 326
+  },
+  {
+    "height" : 123,
+    "name" : "MechaBolt",
+    "sourceCell" : 2,
+    "transparentPixels" : 217547,
+    "width" : 384
+  },
+  {
+    "height" : 253,
+    "name" : "MechaPuff",
+    "sourceCell" : 3,
+    "transparentPixels" : 241686,
+    "width" : 173
+  },
+  {
+    "height" : 301,
+    "name" : "MechaRing",
+    "sourceCell" : 4,
+    "transparentPixels" : 225582,
+    "width" : 290
+  },
+  {
+    "height" : 346,
+    "name" : "MechaBloom",
+    "sourceCell" : 5,
+    "transparentPixels" : 185806,
+    "width" : 381
+  },
+  {
+    "height" : 282,
+    "name" : "TeapotShell",
+    "sourceCell" : 0,
+    "transparentPixels" : 162100,
+    "width" : 384
+  },
+  {
+    "height" : 329,
+    "name" : "TeapotPart",
+    "sourceCell" : 1,
+    "transparentPixels" : 215676,
+    "width" : 324
+  },
+  {
+    "height" : 137,
+    "name" : "TeapotBolt",
+    "sourceCell" : 2,
+    "transparentPixels" : 223485,
+    "width" : 384
+  },
+  {
+    "height" : 241,
+    "name" : "TeapotPuff",
+    "sourceCell" : 3,
+    "transparentPixels" : 222105,
+    "width" : 328
+  },
+  {
+    "height" : 359,
+    "name" : "TeapotRing",
+    "sourceCell" : 4,
+    "transparentPixels" : 201974,
+    "width" : 384
+  },
+  {
+    "height" : 375,
+    "name" : "TeapotBloom",
+    "sourceCell" : 5,
+    "transparentPixels" : 178328,
+    "width" : 384
+  }
+]

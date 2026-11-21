@@ -71,6 +71,7 @@ final class CharacterSkinPreviewScene: SKScene {
         } else {
             let shooter = DefenderNode(kind: kind, radius: 44, skin: skin)
             let showsProjectile = shooter.childNode(withName: "spellbookSkin") != nil
+                || shooter.childNode(withName: "themeSkin") != nil
             if showsProjectile {
                 unitX = 80
                 let target = EnemyNode(id: 0, kind: .blob, sign: "星", lane: 0, scale: 0.7)

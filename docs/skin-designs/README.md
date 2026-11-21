@@ -22,8 +22,8 @@
 | 主题 | 动作与材质 | 状态 |
 | --- | --- | --- |
 | 星轨魔导书 | 靛紫封面、金属包角、翻页聚能、星珠与星门 | 已实装，提交 `6fc7f8c`；[运行与验收](../spellbook-skin/README.md) |
-| 雷霆小机甲 | 乳白装甲、钴蓝面板、线圈通电、炮口展开、电浆胶囊与六边电弧 | 已有概念图，待制作 |
-| 云游茶壶 | 青瓷金边、壶盖轻跳、倾斜喷射、茶叶水珠与莲花水光 | 已有概念图，待制作 |
+| 雷霆小机甲 | 乳白装甲、钴蓝面板、线圈通电、炮口展开、电浆胶囊与六边电弧 | 已接入；[运行与验收](../defender-theme-skins/README.md) |
+| 云游茶壶 | 青瓷金边、壶盖轻跳、倾斜喷射、茶叶水珠与莲花水光 | 已接入；[运行与验收](../defender-theme-skins/README.md) |
 
 详细设计与完整提示词：[defender-concept-design.json](defender-concept-design.json)。
 
@@ -48,5 +48,6 @@
 - [SKS 资源化 MVP](../spritekit-fx-mvp/README.md)
 - [翡翠彗星 V2](../spritekit-fx-v2/README.md)
 - [魔导书实装](../spellbook-skin/README.md)
+- [雷霆小机甲与云游茶壶实装](../defender-theme-skins/README.md)
 
 归档日期：2026-11-21。本次归档不代表其他概念皮肤已经实装。

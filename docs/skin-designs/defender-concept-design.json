@@ -1,6 +1,6 @@
 {
   "date": "2026-11-20",
-  "stage": "concept-design-only",
+  "stage": "concept-design-with-runtime-implementations",
   "tool": "built-in image_gen",
   "game_frame": {
     "engine": "SpriteKit",
@@ -47,6 +47,6 @@
   "limits": [
     "本目录图片为概念与分镜，不能作为透明运行素材直接导入",
     "星轨魔导书已在 6fc7f8c 实装，实际素材与验收见 ../spellbook-skin/",
-    "雷霆小机甲、云游茶壶仍为概念设计"
+    "雷霆小机甲、云游茶壶已接入；运行资源、提示词与验收见 ../defender-theme-skins/"
   ]
 }

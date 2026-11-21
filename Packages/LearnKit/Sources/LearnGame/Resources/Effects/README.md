@@ -52,3 +52,7 @@ V2 在此基础上使用内置 ImageGen 制作六张透明翡翠/金色特效纹
 Xcode 中已将 InkBurst 的速度从 135 修改为 150 并保存，验证编辑后的归档能继续由应用加载。资源允许重新设计，不通过固定数值断言锁住视觉参数；测试验证实际播放、模板隔离、有限清理和业务语义。
 
 参见仓库 `docs/superpowers/specs/2026-11-20-spritekit-fx-resources.md` 与 `docs/spritekit-fx-mvp/README.md`。
+
+## 雷霆小机甲 / 云游茶壶
+
+`Mecha*` 与 `Teapot*` 分别包含本体、活动部件、主题弹、出膛、命中、退场及头像。独立 PNG 由 SKS 元数据引用，命名动作保存在 CombatActions.sks。离线生成器为 `scripts/build-theme-skins.swift`；来源、透明度报告和真实渲染验收见 `docs/defender-theme-skins/README.md`。不修改伤害或附加状态。

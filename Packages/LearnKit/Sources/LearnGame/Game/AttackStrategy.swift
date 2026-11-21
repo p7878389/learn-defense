@@ -34,11 +34,11 @@ struct ShotAttack: AttackStrategy {
         let duration = TimeInterval(max(0.35, min(0.8, distance / 1200)))
         for i in 0..<n {
             // 独立装备的子弹外观优先；主题只替换原版豌豆，不改变冰冻等语义。
-            let themed = skin == .spellbook && projectile == DefenderKind.inkling.projectile
-                ? FXLibrary.effect(named: "SpellbookProjectile") : nil
+            let prefix = projectile == DefenderKind.inkling.projectile ? ThemeSkin.resourcePrefix(skin) : nil
+            let themed = prefix.flatMap { FXLibrary.effect(named: $0 + "Projectile") }
             let isThemed = themed != nil
             let bullet: SKNode = themed ?? UnitSprites.projectile(projectile) ?? ProjectileArt.make(projectile)
-            if isThemed { bullet.name = "spellbookProjectile" }
+            if isThemed { bullet.name = skin == .spellbook ? "spellbookProjectile" : "themeProjectile" }
             // 连发时上下错开一点，看得出是几颗
             let offset = (CGFloat(i) - CGFloat(n - 1) / 2) * 12
             bullet.position = CGPoint(x: origin.x, y: origin.y + offset)
@@ -54,8 +54,8 @@ struct ShotAttack: AttackStrategy {
                 .wait(forDuration: interval * TimeInterval(i)),
                 .run { [weak bullet, weak layer] in
                     bullet?.alpha = 1
-                    if isThemed, let bullet, let layer {
-                        FXLibrary.playResource("SpellbookMuzzle", at: bullet.position, in: layer)
+                    if isThemed, let prefix, let bullet, let layer {
+                        FXLibrary.playResource(prefix + "Muzzle", at: bullet.position, in: layer)
                     } else if let trail, let bullet, let layer {
                         trail.particleBirthRate = 45
                         IceCombatEffects.launch(at: bullet.position, in: layer)
@@ -69,8 +69,8 @@ struct ShotAttack: AttackStrategy {
             ])) { [weak layer] in
                 DiagLog.log("shot- bullet=\(bulletID) layer=\(layer != nil)")
                 if let layer {
-                    if isThemed {
-                        FXLibrary.playResource("SpellbookImpact", at: target, in: layer)
+                    if isThemed, let prefix {
+                        FXLibrary.playResource(prefix + "Impact", at: target, in: layer)
                     } else if trail != nil {
                         IceCombatEffects.impact(at: target, in: layer)
                     } else {

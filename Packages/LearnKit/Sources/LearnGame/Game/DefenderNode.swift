@@ -18,6 +18,7 @@ final class DefenderNode: SKNode {
     /// 序列帧外观；自定义字灵没有，用矢量绘制
     private let rig: SpriteRig?
     private let sceneSkin: SpellbookSkin?
+    private let themeSkin: ThemeSkin?
     private var sprite: SKSpriteNode? { rig?.sprite }
     /// 已经显示到第几档裂纹（0 完好，1、2 越来越破）
     private var crackStage = 0
@@ -26,18 +27,23 @@ final class DefenderNode: SKNode {
         self.kind = kind
         self.radius = radius
         let sceneSkin = SpellbookSkin(kind: kind, skin: skin, radius: radius)
+        let themeSkin = ThemeSkin(kind: kind, skin: skin, radius: radius)
         self.sceneSkin = sceneSkin
-        attack = kind.attack?.makeStrategy(skin: sceneSkin == nil ? nil : skin)
+        self.themeSkin = themeSkin
+        let hasSceneArtwork = sceneSkin != nil || themeSkin != nil
+        attack = kind.attack?.makeStrategy(skin: hasSceneArtwork ? skin : nil)
         hitEffects = kind.effects.map { $0.makeStrategy() }
         guardian = kind.guardStyle?.makeStrategy()
         body = DefenderArt.body(kind.look, radius: radius)
-        let rig = sceneSkin == nil ? UnitSprites.defender(kind, radius: radius, skin: skin) : nil
+        let rig = hasSceneArtwork ? nil : UnitSprites.defender(kind, radius: radius, skin: skin)
         self.rig = rig
         // 换贴图的皮肤要真有这套素材才算穿上；只加特效的皮肤（萤火精灵）沿用原版贴图，有序列帧就保留
-        self.skin = sceneSkin != nil || rig?.base.hasPrefix("skin-") == true || (rig != nil && skin?.isEffectOnly == true) ? skin : nil
+        self.skin = hasSceneArtwork || rig?.base.hasPrefix("skin-") == true || (rig != nil && skin?.isEffectOnly == true) ? skin : nil
         super.init()
         if let sceneSkin {
             FXLibrary.attach(sceneSkin.root, to: self)
+        } else if let themeSkin {
+            FXLibrary.attach(themeSkin.root, to: self)
         } else if let rig {
             addChild(rig.sprite)
         } else {
@@ -57,7 +63,7 @@ final class DefenderNode: SKNode {
             }
             return
         }
-        if sceneSkin != nil { return }
+        if hasSceneArtwork { return }
         run(.repeatForever(.sequence([
             .moveBy(x: 0, y: 4, duration: 0.8),
             .moveBy(x: 0, y: -4, duration: 0.8),
@@ -76,8 +82,8 @@ final class DefenderNode: SKNode {
 
     /// 子弹出发的位置：有序列帧时从嘴里出来（豌豆射手的嘴在右上方），否则从身体右侧
     var muzzle: CGPoint {
-        if let sceneSkin {
-            let local = sceneSkin.muzzle.convert(CGPoint.zero, to: self)
+        if let muzzle = sceneSkin?.muzzle ?? themeSkin?.muzzle {
+            let local = muzzle.convert(CGPoint.zero, to: self)
             if let parent { return convert(local, to: parent) }
             return CGPoint(x: position.x + local.x * xScale, y: position.y + local.y * yScale)
         }
@@ -90,6 +96,7 @@ final class DefenderNode: SKNode {
     /// 发射：有发射动画的（大喷菇）播一遍再回到待机。不缩放守卫，避免画面出现晃动
     func shoot() {
         if let sceneSkin { sceneSkin.shoot(); return }
+        if let themeSkin { themeSkin.shoot(); return }
         if let skin, let rig {
             CharacterSkinEffects.shoot(in: self, skin: skin, at: rig.muzzle ?? .zero)
             rig.sprite.run(.sequence([
@@ -103,6 +110,7 @@ final class DefenderNode: SKNode {
 
     func hurt() {
         if let sceneSkin { sceneSkin.hurt(); return }
+        if let themeSkin { themeSkin.hurt(); return }
         if let sprite {
             sprite.run(.sequence([
                 .colorize(with: Palette.hurt, colorBlendFactor: 0.75, duration: 0),
@@ -169,7 +177,11 @@ final class DefenderNode: SKNode {
     func crumble() {
         removeAllActions()
         if let parent {
-            InkBurstEffect(color: kind.look.color.dark, scale: 0.8, count: 8).play(at: position, in: parent)
+            if let themeSkin {
+                FXLibrary.playResource(themeSkin.prefix + "Defeat", at: position, in: parent)
+            } else {
+                InkBurstEffect(color: kind.look.color.dark, scale: 0.8, count: 8).play(at: position, in: parent)
+            }
         }
         run(.sequence([
             .group([.scaleY(to: 0.2, duration: 0.25), .fadeOut(withDuration: 0.25)]),
