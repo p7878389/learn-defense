@@ -34,10 +34,10 @@ public extension EnemyKind {
         look: EnemyLook(body: .spiky, color: .ink, accessory: .crown, eyes: .single, scale: 1.3, defeat: .sparkle))
 }
 
-// MARK: - 森林怪物（经典模式也能出场）
+// MARK: - 经典模式的森林怪物
 
-/// 森林模式的小怪和首领，在经典模式里照样是「血量 = 要答对几题」。
-/// id 和 `ForestEnemyKind` 的 rawValue 一致，序列帧复用森林素材（见 `Sprites/forest-classic.json`）。
+/// 森林主题的小怪和首领，沿用「血量 = 要答对几题」。
+/// 序列帧由 `Sprites/forest-classic.json` 加载。
 /// 骷髅步兵、尖刺野猪没有成品图，暂不加入
 public extension EnemyKind {
     static let goblin = EnemyKind(
@@ -139,7 +139,7 @@ public extension DefenderKind {
 public enum UnitCatalog {
     /// 原版的六种僵尸：啃咬、倒下、烧焦、掉防具的动画齐全
     public static let enemies: [EnemyKind] = [.blob, .hopper, .dasher, .drowsy, .armored, .king]
-    /// 从森林模式来的小怪和首领：只有行走和出手动画，被打败时直接用退场特效
+    /// 森林主题的小怪和首领：只有行走和出手动画，被打败时直接用退场特效
     public static let forestEnemies: [EnemyKind] = [.goblin, .acolyte] + EnemyKind.forestBosses
     /// 能种在草坪上的植物：射手和防御道具
     public static let defenders: [DefenderKind] = [.inkling, .twin, .frost, .stroke, .starling,
