@@ -6,8 +6,8 @@
   "source": {
     "tool": "built-in image_gen",
     "prompt": "woodland-grass-prompt.txt",
-    "edit_base": "Packages/LearnKit/Sources/LearnGame/Resources/Sprites/Maps/woodland-stone.png",
-    "sha256": "dc9d4b63737ea15a2c5be48c4e653e1b81abee5f1fafc1d7f09765f57eede3b8"
+    "edit_base": "Existing woodland-grass.png → ancient-tree concept → narrow left-edge production edit",
+    "sha256": "3be0a47cc5a76be66ef2103f8a18d6be2171b56e6cb0b9b6a55e2fbc2794de1a"
   },
   "technical": {
     "dimensions": [
@@ -40,6 +40,10 @@
   "verification": {
     "native_scale_reviewed": true,
     "in_engine_reviewed": true,
-    "device_performance_measured": false
-  }
+    "device_performance_measured": false,
+    "test_command": "DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer BATTLE_MAP_PREVIEW=<output> swift test --filter BattleMapTests",
+    "tests_passed": 5,
+    "review_notes": "macOS SpriteKit 战场与地图选择器渲染已检查，第一列无遮挡，五行对齐；宽屏沿用镜像延伸，无断缝但远景遗迹重复。未做 iOS 真机性能测试。"
+  },
+  "art_direction": "古树秘境：橄榄绿草地、青绿远林、暖金阳光、外围古树与藤蔓遗迹"
 }
