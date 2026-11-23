@@ -105,7 +105,7 @@ struct DoomShroomUnlockView: View {
                                 Label("已拥有", systemImage: "checkmark.circle.fill")
                                     .foregroundStyle(.white).padding(.horizontal, 6).padding(.vertical, 4)
                                     .background(Capsule().fill(Theme.jade))
-                            } else if locked { Text("未解锁").foregroundStyle(Theme.muted) }
+                            }
                         }
                         .font(.system(size: 11, weight: .heavy, design: .rounded)).frame(height: 22)
                         portrait(height: 100).grayscale(locked ? 1 : 0).opacity(locked ? 0.35 : 1)
