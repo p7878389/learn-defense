@@ -102,8 +102,7 @@ public struct AdventureBattle: Codable, Equatable, Identifiable, Sendable {
         guard canPlant(kindID, lane: lane, column: column), let kind = AdventureCatalog.defender(kindID) else { return false }
         if kindID == AdventureDoom.id {
             var state = doomState ?? AdventureDoomState()
-            state.charges.append(AdventureDoomSite(id: nextID, lane: lane, column: column, remaining: AdventureDoom.fuse))
-            state.cooldown = AdventureDoom.cooldown
+            state.plant(id: nextID, lane: lane, column: column)
             doomState = state
             nextID += 1
             sun -= kind.sunCost
@@ -252,20 +251,7 @@ public struct AdventureBattle: Codable, Equatable, Identifiable, Sendable {
 
     private mutating func advanceDoom(events: inout [AdventureEvent]) {
         guard var state = doomState else { return }
-        func tick(_ remaining: Double) -> Double {
-            // 与固定步长一致地量化，避免 49.0000000001 被 UI 向上显示成 50 秒。
-            max(0, (remaining * 20).rounded() - 1) / 20
-        }
-        state.cooldown = tick(state.cooldown)
-        for index in state.craters.indices { state.craters[index].remaining = tick(state.craters[index].remaining) }
-        state.craters.removeAll { $0.remaining <= 0 }
-        for index in state.charges.indices { state.charges[index].remaining = tick(state.charges[index].remaining) }
-        let exploded = state.charges.filter { $0.remaining <= 0 }
-        state.charges.removeAll { $0.remaining <= 0 }
-        for site in exploded {
-            state.craters.append(AdventureDoomSite(id: site.id, lane: site.lane, column: site.column,
-                                                  remaining: AdventureDoom.craterDuration))
-        }
+        let exploded = state.step()
         doomState = state
         for site in exploded {
             events.append(.doomExploded(site))

@@ -74,10 +74,26 @@ struct AdventureDoomSceneTests {
         guard let path = ProcessInfo.processInfo.environment["DOOM_PREVIEW"] else { return }
         let folder = URL(fileURLWithPath: path)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        for (name, xp, coins, owned) in [("locked", 0, 600, false), ("for-sale", 220, 600, false), ("owned", 220, 0, true)] {
+            let db = try LearnDatabase(url: nil)
+            let child = Profile(name: "解锁预览", grade: .g3, avatar: "🌱")
+            try db.saveProfiles([child])
+            var state = GrowthState(); state.xp = xp; state.coins = coins
+            if owned { state.owned.insert("defender.doomShroom") }
+            try db.saveGrowthState(state, profileID: child.id)
+            let previewModel = AppModel(database: db, library: .load(userDirectory: nil), speechLibrary: SpeechLibrary(database: db))
+            for width: CGFloat in [375, 820] {
+                let content = DoomShroomUnlockView(profileID: child.id, onClose: {}).environmentObject(previewModel)
+                try captureStaticView(content, size: CGSize(width: width, height: 720),
+                                      url: folder.appendingPathComponent("unlock-\(name)-\(Int(width)).png"))
+            }
+            #expect(previewModel.growth(for: child.id).state == state, "只查看解锁页不能扣积分或改变拥有记录")
+        }
         let database = try LearnDatabase(url: nil)
         let profile = Profile(name: "毁灭菇预览", grade: .g3, avatar: "🐯")
         try database.saveProfiles([profile])
         var growth = GrowthState(); growth.coins = 80
+        growth.owned.insert("defender.doomShroom")
         try database.saveGrowthState(growth, profileID: profile.id)
         let model = AppModel(database: database, library: .load(userDirectory: nil), speechLibrary: SpeechLibrary(database: database))
         let session = AdventureSession(levelID: 1, model: model, profileID: profile.id, difficulty: .normal,
@@ -138,6 +154,19 @@ struct AdventureDoomSceneTests {
         context.draw(texture.cgImage(), in: CGRect(x: frame.minX * scale, y: y * scale, width: frame.width * scale, height: frame.height * scale))
         let result = try #require(context.makeImage())
         try #require(NSBitmapImageRep(cgImage: result).representation(using: .png, properties: [:])).write(to: url)
+    }
+
+    private func captureStaticView<V: View>(_ screen: V, size: CGSize, url: URL) throws {
+        let host = NSHostingView(rootView: screen.frame(width: size.width, height: size.height))
+        let window = NSWindow(contentRect: CGRect(origin: CGPoint(x: -5000, y: -5000), size: size),
+                              styleMask: .borderless, backing: .buffered, defer: false)
+        window.contentView = host
+        defer { window.orderOut(nil) }
+        host.frame = CGRect(origin: .zero, size: size)
+        for _ in 0..<4 { host.layoutSubtreeIfNeeded(); window.displayIfNeeded(); RunLoop.current.run(until: Date().addingTimeInterval(0.04)) }
+        let bitmap = try #require(host.bitmapImageRepForCachingDisplay(in: host.bounds))
+        host.cacheDisplay(in: host.bounds, to: bitmap)
+        try #require(bitmap.representation(using: .png, properties: [:])).write(to: url)
     }
     #endif
 }

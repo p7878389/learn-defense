@@ -46,7 +46,7 @@ struct AdventureLobbyView: View {
                     .frame(maxHeight: .infinity)
                 } else {
                     VStack(spacing: 16) {
-                        deckPanel(columns: 3, compact: true).frame(height: 264)
+                        deckPanel(columns: 4, compact: true).frame(height: 264)
                         levelGrid(columns: 2)
                     }
                     .frame(maxHeight: .infinity)
@@ -94,7 +94,9 @@ struct AdventureLobbyView: View {
 
     private func deckButton(_ kind: DefenderKind, compact: Bool) -> some View {
         let selected = deck.contains(kind.id)
+        let unlocked = growth.state.canUseDefender(kind.id)
         return Button {
+            guard unlocked else { return }
             if deck.contains(kind.id) { deck.removeAll { $0 == kind.id } }
             else if deck.count < 4 { deck.append(kind.id) }
         } label: {
@@ -105,7 +107,8 @@ struct AdventureLobbyView: View {
                 Text(HeraldicArtwork.defenderName(kind: kind, skin: growth.loadout.defenderSkins[kind.id]))
                     .font(.system(size: compact ? 14 : 16, weight: .bold, design: .rounded)).lineLimit(1).minimumScaleFactor(0.8)
                 HStack(spacing: 6) {
-                    Text("☀️ \(kind.sunCost)")
+                    Text(unlocked ? "☀️ \(kind.sunCost)" : "🔒 300积分")
+                        .lineLimit(1).minimumScaleFactor(0.8)
                     if selected { Image(systemName: "checkmark.circle.fill") }
                 }.font(.system(size: 12, weight: .heavy, design: .rounded))
             }
@@ -114,11 +117,15 @@ struct AdventureLobbyView: View {
             .background(CandyTileBackground(selected: selected, selectedFill: Theme.jade, selectedEdge: GrowthColors.jadeDark, radius: 16))
         }
         .buttonStyle(PressableStyle())
-        .accessibilityLabel("\(kind.name)，\(deck.contains(kind.id) ? "已选择" : "未选择")")
+        .disabled(!unlocked)
+        .opacity(unlocked ? 1 : 0.55)
+        .accessibilityLabel("\(kind.name)，\(unlocked ? (selected ? "已选择" : "未选择") : "未解锁，请在收藏馆购买")")
+        .accessibilityHint(unlocked ? "选入四张冒险卡牌" : "达到 Lv.3 后，在收藏馆用 300 积分永久解锁")
     }
 
     private var validDeck: Bool {
-        deck.count == 4 && deck.contains { AdventureCatalog.defender($0)?.canShoot == true }
+        deck.count == 4 && deck.allSatisfy(growth.state.canUseDefender)
+            && deck.contains { AdventureCatalog.defender($0)?.canShoot == true }
     }
 
     private func levelGrid(columns: Int) -> some View {
@@ -285,7 +292,7 @@ struct AdventureScreen: View {
     private var cards: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
-                SeedPacketStrip(kinds: session.battle.deck.compactMap(AdventureCatalog.defender), sun: session.hud.sun,
+                SeedPacketStrip(kinds: session.plantable, sun: session.hud.sun,
                     enabled: session.battle.canBuild, draggingID: selected, skins: session.loadout.defenderSkins,
                     onDragChanged: { kind, point in
                         selected = kind.id; shoveling = false; placementMessage = nil

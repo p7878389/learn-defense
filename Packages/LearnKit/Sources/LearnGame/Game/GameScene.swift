@@ -35,6 +35,7 @@ protocol GameSceneDelegate: AnyObject {
     func bossEnraged(_ id: Int)
     func ultimateAnimationStarted()
     func ultimateAnimationFinished()
+    func doomCooldownChanged(_ seconds: Int)
 }
 
 extension GameSceneDelegate {
@@ -45,6 +46,7 @@ extension GameSceneDelegate {
     func bossEnraged(_ id: Int) {}
     func ultimateAnimationStarted() {}
     func ultimateAnimationFinished() {}
+    func doomCooldownChanged(_ seconds: Int) {}
 }
 
 /// 游戏画面：负责怪物移动、瞄准、战斗结算和动画；答题规则在 GameSession 里。
@@ -82,6 +84,12 @@ final class GameScene: SKScene {
     private let loadout: Loadout
     private var enemies: [Int: EnemyNode] = [:]
     private var defenders: [DefenderCell: DefenderNode] = [:]
+    private var doomState = AdventureDoomState()
+    private var doomRemainder: Double = 0
+    private var nextDoomID = 0
+    private let doomArtwork = AdventureDoomArtwork()
+    private var displayedDoomCooldown = 0
+    var doomCooldown: Int { max(0, Int(ceil(doomState.cooldown))) }
     /// 战斗中放下的路障（铁栅门），不占种植格
     private var barricades: [DefenderNode] = []
     /// 每只怪物正在啃哪个防御道具
@@ -235,6 +243,8 @@ final class GameScene: SKScene {
         }
         guard let delegate = gameDelegate else { return }
         clock += dt
+        advanceDoom(by: dt)
+        guard !gamePaused else { return }
         let factor = delegate.speedFactor
 
         if !spawningFinished {
@@ -502,12 +512,63 @@ final class GameScene: SKScene {
 
     // MARK: - 由 GameSession 调用
 
+    private func renderDoom() {
+        doomArtwork.render(charges: doomState.charges, craters: doomState.craters, playing: !gamePaused,
+                           in: self, laneOffset: (Lawn.rows - tuning.lanes) / 2)
+        if displayedDoomCooldown != doomCooldown {
+            displayedDoomCooldown = doomCooldown
+            gameDelegate?.doomCooldownChanged(doomCooldown)
+        }
+    }
+
+    private func advanceDoom(by seconds: Double) {
+        doomRemainder += seconds
+        var exploded: [AdventureDoomSite] = []
+        while doomRemainder + 0.0000001 >= 0.05 {
+            doomRemainder = max(0, doomRemainder - 0.05)
+            exploded += doomState.step()
+        }
+        renderDoom()
+        for site in exploded {
+            doomArtwork.explode(site, in: self, laneOffset: (Lawn.rows - tuning.lanes) / 2)
+            let victims = enemies.values.filter {
+                !$0.doomed && AdventureDoom.contains(lane: site.lane, column: site.column,
+                                                     enemyLane: $0.lane, enemyX: Double($0.position.x))
+            }.sorted { $0.enemyID < $1.enemyID }
+            var defeats: [(Int, CGPoint)] = []
+            for enemy in victims where enemy.health.take(AdventureDoom.damage) {
+                enemy.doomed = true
+                enemy.setTargeted(false)
+                stopChewing(enemy)
+                enemies[enemy.enemyID] = nil
+                defeats.append((enemy.enemyID, enemy.center))
+                enemy.defeat(with: loadout.defeat(for: enemy.kind), burnt: true)
+            }
+            updateTarget()
+            for (id, point) in defeats { gameDelegate?.enemyDefeated(id, at: point) }
+        }
+    }
+
+    func hasDoomCrater(at point: CGPoint) -> Bool {
+        guard let cell = lawn.cell(at: point) else { return false }
+        return doomState.craters.contains { $0.lane == cell.lane && $0.column == cell.column }
+    }
+
     /// 把植物种到具体草坪格；格子一旦占用就不能修改
     @discardableResult
     func plant(_ kind: DefenderKind, in cell: DefenderCell) -> Bool {
         guard cell.lane >= 0, cell.lane < tuning.lanes,
               cell.column >= 0, cell.column < Lawn.columns,
-              defenders[cell] == nil else { return false }
+              defenders[cell] == nil,
+              !doomState.charges.contains(where: { $0.lane == cell.lane && $0.column == cell.column }),
+              !doomState.craters.contains(where: { $0.lane == cell.lane && $0.column == cell.column }) else { return false }
+        if kind.id == AdventureDoom.id {
+            guard doomState.cooldown <= 0 else { return false }
+            nextDoomID += 1
+            doomState.plant(id: nextDoomID, lane: cell.lane, column: cell.column)
+            renderDoom()
+            return true
+        }
         let defender = DefenderNode(kind: kind, radius: min(34, laneHeight * 0.32), skin: loadout.defenderSkins[kind.id])
         if kind.canShoot {
             IceCombatEffects.decorate(defender, projectile: loadout.projectile(for: kind), radius: min(34, laneHeight * 0.32))
@@ -543,7 +604,9 @@ final class GameScene: SKScene {
             return
         }
         let preview = plantPreview ?? makePlantPreview()
-        let color = defenders[cell] == nil ? Palette.jade : Palette.hurt
+        let occupied = defenders[cell] != nil || hasDoomCrater(at: point)
+            || doomState.charges.contains { $0.lane == cell.lane && $0.column == cell.column }
+        let color = occupied ? Palette.hurt : Palette.jade
         preview.fillColor = color.withAlphaComponent(0.25)
         preview.strokeColor = color
         preview.position = CGPoint(x: lawn.columnX(cell.column), y: laneY(cell.lane))

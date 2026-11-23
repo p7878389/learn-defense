@@ -41,12 +41,17 @@ final class AdventureSession: ObservableObject {
     private var lastSave: Double = 0
     private var closed = false
 
+    var plantable: [DefenderKind] {
+        battle.deck.filter(growth.state.canUseDefender).compactMap(AdventureCatalog.defender)
+    }
+
     init(levelID: Int, model: AppModel, profileID: UUID, difficulty: Difficulty,
          deck: [String] = AdventureCatalog.defaultDeck) {
         self.model = model
         growth = model.growth(for: profileID)
+        let allowedDeck = deck.allSatisfy(growth.state.canUseDefender) ? deck : AdventureCatalog.defaultDeck
         var state = growth.state.adventure.active
-            ?? AdventureBattle(level: AdventureCatalog.level(levelID) ?? AdventureCatalog.levels[0], difficulty: difficulty, deck: deck)
+            ?? AdventureBattle(level: AdventureCatalog.level(levelID) ?? AdventureCatalog.levels[0], difficulty: difficulty, deck: allowedDeck)
         state.pause()
         battle = state
         hud = AdventureHUD(state)
@@ -59,7 +64,7 @@ final class AdventureSession: ObservableObject {
 
     @discardableResult
     func plant(_ id: String, lane: Int, column: Int) -> Bool {
-        guard !closed, error == nil, battle.plant(id, lane: lane, column: column) else { return false }
+        guard !closed, error == nil, growth.state.canUseDefender(id), battle.plant(id, lane: lane, column: column) else { return false }
         changed(save: battle.phase != .preparing)
         return true
     }

@@ -5,6 +5,7 @@ extension GrowthStore {
         try updateAdventureState { state in
             if state.adventure.active?.id == battle.id { return }
             guard state.adventure.active == nil else { throw AdventureError.activeBattle }
+            guard battle.deck.allSatisfy(state.canUseDefender) else { throw AdventureError.invalidBattle }
             guard battle.phase == .playing, battle.elapsed == 0,
                   battle.level == AdventureCatalog.level(battle.level.id),
                   !state.adventure.results.contains(where: { $0.id == battle.id }) else { throw AdventureError.invalidBattle }

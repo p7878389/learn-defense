@@ -76,7 +76,7 @@ struct BattleScreen: View {
 
     private var seedPackets: some View {
         SeedPacketStrip(
-            kinds: session.tuning.plantable,
+            kinds: session.plantable,
             sun: session.sun,
             enabled: session.canUseShop,
             draggingID: drag.kind?.id,
@@ -97,7 +97,7 @@ struct BattleScreen: View {
             },
             barricade: session.tuning.barricade,
             barricadeEnabled: session.canDropBarricade,
-            onBarricade: { session.dropBarricade() })
+            onBarricade: { session.dropBarricade() }, cooldowns: [AdventureDoom.id: session.doomCooldown])
             .background(
                 GeometryReader { proxy in
                     Color.clear.onChange(of: proxy.frame(in: .named("gameLayout")), initial: true) { _, frame in
