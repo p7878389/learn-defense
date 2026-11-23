@@ -3,6 +3,7 @@ import SpriteKit
 import SwiftUI
 
 struct GameView: View {
+    @Environment(\.dismiss) private var dismiss
     @StateObject private var preparation: GamePreparation
     let onReplay: (GameConfig) -> Void
     let onExit: () -> Void
@@ -19,10 +20,8 @@ struct GameView: View {
     var body: some View {
         Group {
             if let session = preparation.session {
-                BattleScreen(session: session, onReplay: { onReplay(preparation.config.again()) }, onExit: {
-                    session.end()
-                    onExit()
-                }, onOpenCollection: onOpenCollection, onChooseBank: { preparation.chooseBank() },
+                BattleScreen(session: session, onReplay: { onReplay(preparation.config.again()) }, onExit: exitGame,
+                   onOpenCollection: onOpenCollection, onChooseBank: { preparation.chooseBank() },
                    onRequestStart: { preparation.requestStartConfirmation() },
                    bankSummary: QuestionBankChoice.summary(config: preparation.config, library: preparation.model.library))
                 .id(session.config.id)
@@ -30,7 +29,7 @@ struct GameView: View {
                 VStack(spacing: 20) {
                     Text("先选好本局题库，再准备布阵").font(.title2.bold())
                     Button("选择题库") { preparation.chooseBank() }.buttonStyle(.borderedProminent).tint(Theme.jade)
-                    Button("返回主页", action: onExit)
+                    Button("返回主页", action: exitGame)
                 }.frame(maxWidth: .infinity, maxHeight: .infinity).background(GrowthPageBackground())
             }
         }
@@ -46,5 +45,12 @@ struct GameView: View {
                                           onConfirm: preparation.confirmStart, onCancel: preparation.cancelStartConfirmation)
             }
         }
+    }
+
+    private func exitGame() {
+        preparation.session?.end()
+        // 游戏页主动关闭自身，避免只发出退出通知后仍停留在结算界面。
+        dismiss()
+        onExit()
     }
 }
