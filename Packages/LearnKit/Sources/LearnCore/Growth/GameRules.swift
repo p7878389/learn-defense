@@ -3,9 +3,11 @@ import Foundation
 /// 数据库中的运行规则；首次使用写入默认值，后续启动保留数据库配置。
 public struct GameRules: Codable, Sendable, Equatable {
     public var initialRestRounds = 3
-    public var initialRestSeconds = 10
-    public var restIncrementSeconds = 5
-    public var maxRestSeconds = 90
+    public var initialRestSeconds = 3
+    public var restIncrementSeconds = 2
+    public var maxRestSeconds = 15
+    /// 区分旧默认值与更新后家长主动保存的同值设置。
+    private var restScheduleVersion = 1
     public var questionIncrement = ByDifficulty(easy: 2, normal: 3, hard: 4)
     public var reviewEvery = 3
     /// 瞄准的题是孩子第一次见的知识点时，这只怪物先原地等几秒，让孩子看题、听读音；0 表示不等
@@ -24,6 +26,15 @@ public struct GameRules: Codable, Sendable, Equatable {
         reviewEvery = (try? c.decodeIfPresent(Int.self, forKey: .reviewEvery)) ?? d.reviewEvery
         newItemGraceSeconds = (try? c.decodeIfPresent(Int.self, forKey: .newItemGraceSeconds)) ?? d.newItemGraceSeconds
         coinLimits = (try? c.decodeIfPresent([String: Int].self, forKey: .coinLimits)) ?? d.coinLimits
+        let savedRestScheduleVersion = (try? c.decodeIfPresent(Int.self, forKey: .restScheduleVersion)) ?? 0
+        // 只升级完整匹配旧默认节奏的配置，保留自定义时长与其他规则。
+        if savedRestScheduleVersion < restScheduleVersion,
+           initialRestRounds == 3, initialRestSeconds == 10,
+           restIncrementSeconds == 5, maxRestSeconds == 90 {
+            initialRestSeconds = d.initialRestSeconds
+            restIncrementSeconds = d.restIncrementSeconds
+            maxRestSeconds = d.maxRestSeconds
+        }
     }
 
     public static let defaults = GameRules()

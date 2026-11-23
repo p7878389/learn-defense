@@ -37,7 +37,7 @@ struct EndlessRoundTests {
         #expect(s.defeated == 1)
         #expect(s.sun == before + enemy.kind.sunReward)
     }
-    @Test func successiveRoundsGrowAndWaitBeforeContinuing() {
+    @Test func successiveRoundsGrowAndWaitBeforeContinuing() throws {
         let s = session()
         let firstBudget = s.roundQuestions
         for number in 1...4 {
@@ -45,11 +45,16 @@ struct EndlessRoundTests {
             #expect(s.roundQuestions == firstBudget + (number - 1) * 3)
             while let enemy = s.nextEnemy() { s.enemyDefeated(enemy.id, at: .zero) }
             #expect(s.phase == .resting)
-            #expect(s.restRemaining == (number <= 3 ? 10 : 15))
+            #expect(s.restRemaining == (number <= 3 ? 3 : 5))
             #expect(s.growthResult == nil)
             s.continueRound()
             #expect(s.round == number, "休息不足不能继续")
-            s.updateRest(now: Date().addingTimeInterval(100))
+            let deadline = try #require(s.restUntil)
+            s.updateRest(now: deadline.addingTimeInterval(-0.01))
+            #expect(s.restRemaining == 1, "不足一秒仍须等到休息结束")
+            s.updateRest(now: deadline)
+            #expect(s.restRemaining == 0)
+            #expect(s.phase == .resting && s.scene.gamePaused, "休息结束后等待手动继续")
             s.continueRound()
             #expect(s.phase == .playing)
             #expect(!s.scene.gamePaused)
