@@ -214,10 +214,11 @@ extension GrowthState {
 /// 读写一个孩子的成长档案，存在本地数据库（LearnDatabase）里。
 public final class GrowthStore {
     public private(set) var state: GrowthState
+    public private(set) var loadError: String?
     public let catalog: GrowthCatalog
     public let rules: GameRules
-    private let profileID: UUID
-    private let database: LearnDatabase?
+    let profileID: UUID
+    let database: LearnDatabase?
 
     /// - Parameters:
     ///   - database: 为 nil 时只在内存里（测试用，或数据库打不开时），此时只读取 legacyFile、不改动它
@@ -238,7 +239,7 @@ public final class GrowthStore {
                     return
                 }
             } catch {
-                print("读取成长档案失败，从头开始：\(error)")
+                loadError = "成长档案读取失败，已保护原存档：\(error.localizedDescription)"
                 state = GrowthState()
                 return
             }
@@ -263,46 +264,70 @@ public final class GrowthStore {
 
         let correct = legacyCorrectAnswers()
         state = correct > 0 ? GrowthState.migrated(fromCorrectAnswers: correct, catalog: catalog) : GrowthState()
-        if correct > 0 { save() }
+        if correct > 0 { _ = persist() }
     }
 
     public var level: LevelProgress { state.level(catalog.pacing.levelCurve) }
 
     public var loadout: Loadout { state.loadout(catalog) }
 
-    public func settle(_ report: GameReport) -> GrowthResult {
-        let result = state.settle(report, catalog: catalog, rules: rules)
-        save()
-        return result
+    public func settle(_ report: GameReport) throws -> GrowthResult {
+        try updateAdventureState { $0.settle(report, catalog: catalog, rules: rules) }
     }
 
     @discardableResult
-    public func purchase(_ item: CosmeticKind) -> GrowthState.PurchaseResult {
-        let result = state.purchase(item, level: level.level)
-        if result == .bought { save() }
-        return result
+    public func purchase(_ item: CosmeticKind) throws -> GrowthState.PurchaseResult {
+        try updateAdventureState { $0.purchase(item, level: level.level) }
     }
 
     @discardableResult
-    public func equip(_ item: CosmeticKind) -> Bool {
-        let ok = state.equip(item, level: level.level)
-        if ok { save() }
-        return ok
+    public func equip(_ item: CosmeticKind) throws -> Bool {
+        try updateAdventureState { $0.equip(item, level: level.level) }
     }
 
-    public func unequip(key: String) {
-        state.unequip(key: key)
-        save()
+    public func unequip(key: String) throws {
+        try updateAdventureState { $0.unequip(key: key) }
     }
 
-    public func save() {
-        persist()
+    public func save() throws {
+        try ensureReadable()
+        do { try database?.saveGrowthState(state, profileID: profileID) }
+        catch { database?.context.rollback(); throw error }
+    }
+
+    public func reload() throws {
+        guard let database else { return }
+        do {
+            let saved = try database.growthState(profileID: profileID) ?? GrowthState()
+            state = saved
+            loadError = nil
+        } catch {
+            loadError = "成长档案读取失败，已保护原存档：\(error.localizedDescription)"
+            throw error
+        }
+    }
+
+    func ensureReadable() throws {
+        if let loadError { throw SettingsError.invalid(loadError) }
+    }
+
+    func prepareSettlement(_ report: GameReport) throws -> (state: GrowthState, result: GrowthResult) {
+        try ensureReadable()
+        var next = state
+        let result = next.settle(report, catalog: catalog, rules: rules)
+        return (next, result)
+    }
+
+    func acceptSettlement(_ saved: GrowthState) {
+        state = saved
     }
 
     /// 积分与冒险状态一次保存；存储失败时不发布新余额，调用方可提示并重试。
     func updateAdventureState<T>(_ update: (inout GrowthState) throws -> T) throws -> T {
+        try ensureReadable()
         var next = state
         let result = try update(&next)
+        guard next != state else { return result }
         if let database {
             do { try database.saveGrowthState(next, profileID: profileID) }
             catch {
@@ -316,9 +341,9 @@ public final class GrowthStore {
 
     @discardableResult
     private func persist() -> Bool {
-        guard let database else { return false }
+        guard database != nil else { return false }
         do {
-            try database.saveGrowthState(state, profileID: profileID)
+            try save()
             return true
         } catch {
             print("保存成长档案失败：\(error)")

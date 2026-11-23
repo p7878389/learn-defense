@@ -3,7 +3,7 @@ import SwiftUI
 
 /// 准备完成后的最后核对；关闭弹窗不会改变布阵或自动开始。
 struct GameStartConfirmationView: View {
-    let session: GameSession
+    @ObservedObject var session: GameSession
     let library: ContentLibrary
     let onConfirm: () -> Void
     let onCancel: () -> Void
@@ -30,6 +30,9 @@ struct GameStartConfirmationView: View {
                 .padding(20).candyCard().padding(.bottom, 6)
             }
             .scrollBounceBehavior(.basedOnSize)
+            if let error = session.startError {
+                Text(error).font(.callout).foregroundStyle(Theme.wrong)
+            }
             HStack(spacing: 18) {
                 Button(action: onCancel) {
                     CandyButtonLabel(title: "返回修改", icon: "←", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,

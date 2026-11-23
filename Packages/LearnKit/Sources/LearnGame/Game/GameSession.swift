@@ -60,6 +60,9 @@ final class GameSession: ObservableObject {
     private(set) var mistakes: [Mistake] = []
     /// 通关或失败时的成长结算（经验、积分、升级、徽章）；没有成长档案时为 nil
     @Published private(set) var growthResult: GrowthResult?
+    @Published private(set) var settlementError: String?
+    @Published private(set) var startError: String?
+    private var settlementReport: GameReport?
 
     // 成长系统用的本局统计
     private(set) var bossesDefeated = 0
@@ -377,10 +380,17 @@ final class GameSession: ObservableObject {
 
     func startBattle() {
         guard canStartBattle else { return }
+        // 先保存成长基线，避免未结算的学习进度在重启后被当作旧档补发奖励。
+        do {
+            if growth?.loadError != nil { try growth?.reload() }
+            try growth?.save()
+            startError = nil
+        } catch {
+            startError = "无法开始闯关，请重试或返回主页检查存档：\(error.localizedDescription)"
+            return
+        }
         phase = .playing
         battleStartedAt = Date()
-        // 先保存成长基线，避免未结算的学习进度在重启后被当作旧档补发奖励。
-        growth?.save()
         scene.setPreparing(false)
         speech.speak(SpeechText.Line.battleStart, interrupt: true)
     }
@@ -574,17 +584,18 @@ final class GameSession: ObservableObject {
         progress.save()
         playSeconds = battleStartedAt.map { Int(Date().timeIntervalSince($0)) } ?? 0
         speech.speak(won ? SpeechText.Line.won : SpeechText.Line.lost, interrupt: false)
-        settleGrowth()
-        recordGame(won ? .won : .lost)
+        settlementReport = GameReport(
+            won: won, difficulty: config.difficulty, questions: attempted,
+            firstTryCorrect: firstTryCorrect, stars: stars, bossesDefeated: bossesDefeated,
+            enemiesDefeated: defeated, itemsUsed: itemsUsed, ultimatesCast: ultimatesCast, seconds: playSeconds)
+        retrySettlement()
     }
 
-    /// 把这一局和答题明细写进数据库（每局只写一次）
-    private func recordGame(_ outcome: GameOutcome) {
-        guard let recorder, !isEmpty else { return }
-        let seconds = outcome == .quit
-            ? battleStartedAt.map { Int(Date().timeIntervalSince($0)) } ?? 0
-            : playSeconds
-        recorder.finish(outcome, summary: GameSummary(
+    /// 保存成功前保留本局结果；重试沿用同一份报告，不重复计算奖励。
+    func retrySettlement() {
+        guard (phase == .won || phase == .lost), let report = settlementReport, !isEmpty else { return }
+        guard growthResult == nil, recorder?.record == nil else { return }
+        let summary = GameSummary(
             questions: attempted,
             firstTryCorrect: firstTryCorrect,
             stars: stars,
@@ -593,28 +604,22 @@ final class GameSession: ObservableObject {
             bossesDefeated: bossesDefeated,
             itemsUsed: itemsUsed,
             ultimatesCast: ultimatesCast,
-            seconds: seconds,
-            xp: growthResult?.xp,
-            coins: growthResult?.totalCoins))
-    }
-
-    /// 整局只结算一次；所有积分来源受成长系统的每日硬上限约束
-    private func settleGrowth() {
-        guard let growth, growthResult == nil, !isEmpty else { return }
-        let result = growth.settle(GameReport(
-            won: phase == .won,
-            difficulty: config.difficulty,
-            questions: attempted,
-            firstTryCorrect: firstTryCorrect,
-            stars: stars,
-            bossesDefeated: bossesDefeated,
-            enemiesDefeated: defeated,
-            itemsUsed: itemsUsed,
-            ultimatesCast: ultimatesCast,
-            seconds: playSeconds))
-        growthResult = result
-        if result.leveledUp {
-            speech.speak("升到第\(result.after.level)级啦！", interrupt: false)
+            seconds: playSeconds)
+        do {
+            if growth?.loadError != nil { try growth?.reload() }
+            if let recorder {
+                growthResult = try recorder.finish(phase == .won ? .won : .lost, summary: summary,
+                                                   at: report.date,
+                                                   growth: growth, report: growth == nil ? nil : report)
+            } else if let growth {
+                growthResult = try growth.settle(report)
+            }
+            settlementError = nil
+            if let result = growthResult, result.leveledUp {
+                speech.speak("升到第\(result.after.level)级啦！", interrupt: false)
+            }
+        } catch {
+            settlementError = "本局尚未保存，请重试：\(error.localizedDescription)"
         }
     }
 }

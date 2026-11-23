@@ -16,6 +16,7 @@ struct CollectionView: View {
     @State private var confirming: CosmeticKind?
     @State private var equippedNotice: CosmeticKind?
     @State private var showingTools = false
+    @State private var storageError: String?
 
     private var growth: GrowthStore { model.growth(for: profileID) }
 
@@ -78,6 +79,9 @@ struct CollectionView: View {
             if let item = equippedNotice { equipmentSuccessDialog(item) }
             else if let item = confirming { confirmDialog(item) }
         }
+        .alert("操作未完成", isPresented: Binding(get: { storageError != nil }, set: { if !$0 { storageError = nil } })) {
+            Button("知道了") { storageError = nil }
+        } message: { Text(storageError ?? "") }
     }
 
     private var sidebar: some View {
@@ -592,7 +596,8 @@ struct CollectionView: View {
 
     /// 以实际装备结果为准，失败时不显示成功提示。
     private func equipAndConfirm(_ item: CosmeticKind) {
-        model.equip(item, for: profileID)
+        do { try model.equip(item, for: profileID) }
+        catch { storageError = error.localizedDescription; return }
         guard growth.state.status(of: item, level: growth.level.level) == .equipped else { return }
         previewID = item.id
         equippedNotice = item
@@ -673,10 +678,12 @@ struct CollectionView: View {
                     }
                     Button {
                         // 怪物购买即进入外观池；射手沿用原有买后装备逻辑。
-                        if model.purchase(item, for: profileID) == .bought {
-                            if item.slot != .enemySkin { equipAndConfirm(item) }
-                            model.speech.speakPurchase(item)
-                        }
+                        do {
+                            if try model.purchase(item, for: profileID) == .bought {
+                                if item.slot != .enemySkin { equipAndConfirm(item) }
+                                model.speech.speakPurchase(item)
+                            }
+                        } catch { storageError = error.localizedDescription }
                         confirming = nil
                     } label: {
                         CandyButtonLabel(title: "买！", fill: Theme.accent, edge: GrowthColors.orangeDark)

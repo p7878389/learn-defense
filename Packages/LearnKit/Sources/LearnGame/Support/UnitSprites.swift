@@ -41,63 +41,71 @@ enum UnitSprites {
         }
     }()
     private static var cachedFrames: [String: [SKTexture]] = [:]
+    static var cachedAnimationFrameCount: Int { cachedFrames.values.reduce(0) { $0 + $1.count } }
 
     static func frames(named name: String) -> [SKTexture] {
         if let cached = cachedFrames[name] { return cached }
         guard let clip = clips[name], clip.frameCount > 0, clip.crop.count == 4 else { return [] }
-        var frames: [SKTexture] = []
+        var textures: [SKTexture] = []
         for index in 0..<clip.frameCount {
-            let bitmap: CGImage
-            if let files = clip.files {
-                guard files.indices.contains(index),
-                      let image = Self.webp(files[index], mirrored: clip.mirrored == true) else {
-                    cachedFrames[name] = []
-                    return []
-                }
-                bitmap = image
-            } else {
-                guard let url = Bundle.module.url(forResource: String(index), withExtension: "png", subdirectory: "Sprites/\(name)"),
-                      let image = PlatformImage(contentsOfFile: url.path) else {
-                    cachedFrames[name] = []
-                    return []
-                }
-                // PNG 的 DPI 元数据会改变 NSImage 的点尺寸，裁切必须统一使用像素尺寸。
-                #if canImport(UIKit)
-                guard let decoded = image.cgImage else { return [] }
-                #else
-                guard let decoded = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return [] }
-                #endif
-                bitmap = decoded
+            guard let texture = frame(named: name, index: index, clip: clip) else {
+                cachedFrames[name] = []
+                return []
             }
-            let source: CGImage
-            if let key = clip.colorKey, key.count == 3 {
-                // Core Graphics 的色键遮罩不接受带 alpha 的源图；先以 RGB 解码白底帧。
-                guard let context = CGContext(data: nil, width: bitmap.width, height: bitmap.height,
-                                              bitsPerComponent: 8, bytesPerRow: bitmap.width * 4,
-                                              space: CGColorSpaceCreateDeviceRGB(),
-                                              bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue) else { return [] }
-                context.draw(bitmap, in: CGRect(x: 0, y: 0, width: bitmap.width, height: bitmap.height))
-                guard let rgb = context.makeImage(),
-                      let masked = rgb.copy(maskingColorComponents: key.flatMap { [$0, $0] }) else { return [] }
-                source = masked
-            } else {
-                source = bitmap
-            }
-            let full = SKTexture(cgImage: source)
-            let size = full.size()
-            let c = clip.crop
-            guard size.width > 0, size.height > 0,
-                  c[0] >= 0, c[1] >= 0, c[2] > 0, c[3] > 0,
-                  c[0] + c[2] <= size.width, c[1] + c[3] <= size.height else { return [] }
-            // 清单采用左上角像素坐标；SpriteKit 纹理坐标从左下角开始。
-            let rect = CGRect(x: c[0] / size.width, y: 1 - (c[1] + c[3]) / size.height,
-                              width: c[2] / size.width, height: c[3] / size.height)
-            let texture = SKTexture(rect: rect, in: full)
-            texture.filteringMode = .linear
-            frames.append(texture)
+            textures.append(texture)
         }
-        cachedFrames[name] = frames
-        return frames
+        cachedFrames[name] = textures
+        return textures
+    }
+
+    /// 头像与完整动画共用像素解码、透明色键和裁切，静态预览只读取第零帧。
+    private static func frame(named name: String, index: Int, clip: Clip) -> SKTexture? {
+        let bitmap: CGImage
+        if let files = clip.files {
+            guard files.indices.contains(index),
+                  let image = Self.webp(files[index], mirrored: clip.mirrored == true) else {
+                return nil
+            }
+            bitmap = image
+        } else {
+            guard let url = Bundle.module.url(forResource: String(index), withExtension: "png", subdirectory: "Sprites/\(name)"),
+                  let image = PlatformImage(contentsOfFile: url.path) else {
+                return nil
+            }
+            // PNG 的 DPI 元数据会改变 NSImage 的点尺寸，裁切必须统一使用像素尺寸。
+            #if canImport(UIKit)
+            guard let decoded = image.cgImage else { return nil }
+            #else
+            guard let decoded = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return nil }
+            #endif
+            bitmap = decoded
+        }
+        let source: CGImage
+        if let key = clip.colorKey, key.count == 3 {
+            // Core Graphics 的色键遮罩不接受带 alpha 的源图；先以 RGB 解码白底帧。
+            guard let context = CGContext(data: nil, width: bitmap.width, height: bitmap.height,
+                                          bitsPerComponent: 8, bytesPerRow: bitmap.width * 4,
+                                          space: CGColorSpaceCreateDeviceRGB(),
+                                          bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue) else { return nil }
+            context.draw(bitmap, in: CGRect(x: 0, y: 0, width: bitmap.width, height: bitmap.height))
+            guard let rgb = context.makeImage(),
+                  let masked = rgb.copy(maskingColorComponents: key.flatMap { [$0, $0] }) else { return nil }
+            source = masked
+        } else {
+            source = bitmap
+        }
+        let full = SKTexture(cgImage: source)
+        let size = full.size()
+        let c = clip.crop
+        guard size.width > 0, size.height > 0,
+              c[0] >= 0, c[1] >= 0, c[2] > 0, c[3] > 0,
+              c[0] + c[2] <= size.width, c[1] + c[3] <= size.height else { return nil }
+        // 清单采用左上角像素坐标；SpriteKit 纹理坐标从左下角开始。
+        let rect = CGRect(x: c[0] / size.width, y: 1 - (c[1] + c[3]) / size.height,
+                          width: c[2] / size.width, height: c[3] / size.height)
+        let texture = SKTexture(rect: rect, in: full)
+        texture.filteringMode = .linear
+        return texture
     }
 
     /// 准备阶段预热本回合的角色状态、子弹和命中图，战斗中直接复用同一份纹理。
@@ -133,7 +141,7 @@ enum UnitSprites {
         }
         let textures = warmed.values.flatMap { $0 }
         if !textures.isEmpty { SKTexture.preload(textures) {} }
-        DiagLog.log("combat textures preloaded clips=\(warmed.count) frames=\(textures.count)")
+        DiagLog.log("combat textures preloaded clips=\(warmed.count) frames=\(textures.count) cached=\(cachedAnimationFrameCount)")
         return warmed
     }
 
@@ -210,11 +218,11 @@ enum UnitSprites {
         if kind.id == AdventureDoom.id { return AdventureDoomArtwork.portrait }
         if skin == .spellbook, kind.id == DefenderKind.inkling.id, let image = SpellbookSkin.portrait { return image }
         if kind.id == DefenderKind.inkling.id, let image = ThemeSkin.portrait(for: skin) { return image }
-        return portrait(named: characterName("plant-\(kind.id)", skin: skin))
+        return portrait(named: characterName("plant-\(kind.id)", skin: skin, preload: false))
     }
 
     static func portrait(of kind: EnemyKind, skin: CharacterSkin?) -> CGImage? {
-        portrait(named: characterName("zombie-\(kind.id)", skin: kind.id == "blob" ? skin : nil))
+        portrait(named: characterName("zombie-\(kind.id)", skin: kind.id == "blob" ? skin : nil, preload: false))
     }
 
     /// 裁切纹理每次 cgImage() 都会重新绘制一张图；卡牌栏和拖动预览随拖动频繁刷新，按资源名缓存
@@ -222,7 +230,9 @@ enum UnitSprites {
 
     private static func portrait(named name: String) -> CGImage? {
         if let cached = cachedPortraits[name] { return cached }
-        guard let image = frames(named: name).first?.cgImage() else { return nil }
+        guard let clip = clips[name], clip.frameCount > 0, clip.crop.count == 4,
+              let texture = cachedFrames[name]?.first ?? frame(named: name, index: 0, clip: clip) else { return nil }
+        let image = texture.cgImage()
         cachedPortraits[name] = image
         return image
     }
@@ -245,12 +255,25 @@ enum UnitSprites {
     }
 
     /// 整套状态完整才换皮，避免行走穿着皮肤，攻击或倒下却突然变回原版。
-    static func characterName(_ base: String, skin: CharacterSkin?) -> String {
+    static func characterName(_ base: String, skin: CharacterSkin?, preload: Bool = true) -> String {
         guard let skin else { return base }
         let name = "skin-\(skin.rawValue)-\(base)"
-        guard let clip = clips[name], !frames(named: name).isEmpty,
-              (clip.states ?? [:]).values.allSatisfy({ !frames(named: $0).isEmpty }) else { return base }
+        guard let clip = clips[name] else { return base }
+        let resources = [name] + Array((clip.states ?? [:]).values)
+        let complete = resources.allSatisfy { preload ? !frames(named: $0).isEmpty : hasFrameFiles(named: $0) }
+        guard complete else { return base }
         return name
+    }
+
+    private static func hasFrameFiles(named name: String) -> Bool {
+        guard let clip = clips[name], clip.frameCount > 0, clip.crop.count == 4 else { return false }
+        return (0..<clip.frameCount).allSatisfy { index in
+            if let files = clip.files {
+                guard files.indices.contains(index) else { return false }
+                return Bundle.module.url(forResource: files[index], withExtension: "webp", subdirectory: "Sprites") != nil
+            }
+            return Bundle.module.url(forResource: String(index), withExtension: "png", subdirectory: "Sprites/\(name)") != nil
+        }
     }
 
     private static func projectileName(_ look: ProjectileLook) -> String? {

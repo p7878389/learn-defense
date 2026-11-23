@@ -30,7 +30,7 @@ extension LearnDatabase {
         for (index, answer) in answers.enumerated() {
             context.insert(StoredAnswer(answer: answer, gameID: game.id, profileID: game.profileID, index: index))
         }
-        try context.save()
+        try saveChanges()
     }
 
     /// 最近的对局（新的在前）；since 不为 nil 时只看这之后开始的

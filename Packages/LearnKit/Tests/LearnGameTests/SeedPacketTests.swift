@@ -30,7 +30,7 @@ struct SeedPacketTests {
         let growth = GrowthStore(profileID: profileID, database: database, catalog: .bundled)
         let book = try #require(growth.catalog.cosmetic(id: "defender.spellbook"))
         let teapot = try #require(growth.catalog.cosmetic(id: "defender.teapot"))
-        #expect(growth.equip(book))
+        #expect(try growth.equip(book))
         func strip() -> SeedPacketStrip {
             SeedPacketStrip(kinds: [.inkling], sun: 300, enabled: true, draggingID: nil,
                             skins: growth.loadout.defenderSkins,
@@ -40,13 +40,13 @@ struct SeedPacketTests {
         // 收藏馆里存在其他可用皮肤，不会在战斗栏额外生成卡牌。
         #expect(!growth.state.isEquipped(teapot))
         #expect(strip().packets.count == 1)
-        #expect(growth.equip(teapot))
+        #expect(try growth.equip(teapot))
         let packet = try #require(strip().packets.first)
         #expect(packet.name == "云游茶壶")
         #expect(packet.skin == .teapot)
         #expect(UnitSprites.portrait(of: packet.kind, skin: packet.skin) != nil)
         let original = try #require(growth.catalog.cosmetic(id: "defender.original"))
-        #expect(growth.equip(original))
+        #expect(try growth.equip(original))
         #expect(strip().packets.first?.skin == nil)
         #expect(strip().packets.first?.name == DefenderKind.inkling.name)
     }

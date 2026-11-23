@@ -29,8 +29,8 @@ struct GameRecordTests {
         recorder.recordAnswer(shuang, chosenIndex: 1, shownAt: start.addingTimeInterval(3), at: start.addingTimeInterval(7))
         recorder.recordAnswer(poem, chosenIndex: nil, shownAt: nil, at: start.addingTimeInterval(20))
 
-        recorder.finish(.won, summary: summary(questions: 2, correct: 1), at: start.addingTimeInterval(95))
-        recorder.finish(.lost, summary: summary(questions: 9, correct: 9))  // 重复结束不生效
+        try recorder.finish(.won, summary: summary(questions: 2, correct: 1), at: start.addingTimeInterval(95))
+        try recorder.finish(.lost, summary: summary(questions: 9, correct: 9))  // 重复结束不生效
         recorder.recordAnswer(chen, chosenIndex: 0, shownAt: nil)          // 结束后不再记
 
         let games = try db.games(profileID: kid)
@@ -61,13 +61,13 @@ struct GameRecordTests {
                                  packIDs: ["chinese-g3-sample"], selection: .all, startedAt: begin)
             r.recordAnswer(shuang, chosenIndex: 1, shownAt: begin, at: begin.addingTimeInterval(3))
             r.recordAnswer(chen, chosenIndex: 0, shownAt: begin, at: begin.addingTimeInterval(1))
-            r.finish(day == 2 ? .quit : .won, summary: summary(questions: 2, correct: 1), at: begin.addingTimeInterval(60))
+            try r.finish(day == 2 ? .quit : .won, summary: summary(questions: 2, correct: 1), at: begin.addingTimeInterval(60))
         }
         // 别的孩子的数据不应该算进来
         let other = GameRecorder(database: db, profileID: UUID(), grade: .g3, difficulty: .easy,
                                  packIDs: [], selection: .all, startedAt: start)
         other.recordAnswer(chen, chosenIndex: 1, shownAt: nil, at: start)
-        other.finish(.lost, summary: summary(questions: 1, correct: 0))
+        try other.finish(.lost, summary: summary(questions: 1, correct: 0))
 
         let games = try db.games(profileID: kid)
         #expect(games.count == 3)
@@ -92,7 +92,7 @@ struct GameRecordTests {
                              packIDs: [], selection: .review(["pic:苹果"]), startedAt: start)
         r.recordAnswer(question(.listenPickPicture, key: "pic:苹果", prompt: "苹果", options: ["🍎", "🍌"], answer: 0),
                        chosenIndex: 0, shownAt: nil)
-        r.finish(.won, summary: summary(questions: 1, correct: 1))
+        try r.finish(.won, summary: summary(questions: 1, correct: 1))
         #expect(try db.games(profileID: kid).first?.selection == "review")
 
         try db.deletePersonalData(profileID: kid)
@@ -100,12 +100,12 @@ struct GameRecordTests {
         #expect(try db.answers(gameID: r.id).isEmpty)
     }
 
-    @Test func withoutDatabaseKeepsInMemoryOnly() {
+    @Test func withoutDatabaseKeepsInMemoryOnly() throws {
         let r = GameRecorder(database: nil, profileID: UUID(), grade: .g1, difficulty: .easy,
                              packIDs: [], selection: .all)
         r.recordAnswer(question(.choice, key: "choice:x", prompt: "?", options: ["a", "b"], answer: 1),
                        chosenIndex: 0, shownAt: nil)
-        r.finish(.lost, summary: summary(questions: 1, correct: 0))
+        try r.finish(.lost, summary: summary(questions: 1, correct: 0))
         #expect(r.answers.count == 1 && r.record?.outcome == .lost)
     }
 }

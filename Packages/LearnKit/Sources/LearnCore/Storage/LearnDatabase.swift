@@ -19,9 +19,10 @@ public final class LearnDatabase {
     public let container: ModelContainer
     /// 自己管理保存时机（ProgressStore.save、syncContent），不自动保存
     public let context: ModelContext
+    private var transactionDepth = 0
 
     /// url 为 nil 时只在内存里（测试用）
-    public init(url: URL?) throws {
+    public convenience init(url: URL?) throws {
         let config: ModelConfiguration
         if let url {
             try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
@@ -29,18 +30,43 @@ public final class LearnDatabase {
         } else {
             config = ModelConfiguration(schema: Self.schema, isStoredInMemoryOnly: true)
         }
-        container = try ModelContainer(for: Self.schema, configurations: [config])
+        try self.init(configuration: config)
+    }
+
+    init(configuration: ModelConfiguration) throws {
+        container = try ModelContainer(for: Self.schema, configurations: [configuration])
         context = ModelContext(container)
         context.autosaveEnabled = false
+    }
+
+    /// 参与操作只暂存变更，由最外层事务一次提交；任何失败都回滚。
+    func transaction<T>(_ operation: () throws -> T) throws -> T {
+        transactionDepth += 1
+        defer { transactionDepth -= 1 }
+        do {
+            let value = try operation()
+            if transactionDepth == 1, context.hasChanges { try context.save() }
+            return value
+        } catch {
+            context.rollback()
+            throw error
+        }
+    }
+
+    func saveChanges() throws {
+        if transactionDepth == 0, context.hasChanges { try context.save() }
     }
 
     // MARK: - 题库
 
     /// 用当前题库整份替换数据库里的题库查询索引（StoredPack / StoredItem）
     public func syncContent(_ packs: [ContentPack]) throws {
+        try transaction { try replaceContent(packs) }
+    }
+
+    private func replaceContent(_ packs: [ContentPack]) throws {
         for old in try context.fetch(FetchDescriptor<StoredItem>()) { context.delete(old) }
         for old in try context.fetch(FetchDescriptor<StoredPack>()) { context.delete(old) }
-        try context.save()
 
         for (position, pack) in packs.enumerated() {
             context.insert(StoredPack(pack: pack, position: position))
@@ -54,7 +80,6 @@ public final class LearnDatabase {
                 }
             }
         }
-        try context.save()
     }
 
     public func packs(grade: Grade, subject: Subject) throws -> [StoredPack] {
@@ -107,7 +132,7 @@ public final class LearnDatabase {
                 byKey[key] = row
             }
         }
-        try context.save()
+        try saveChanges()
     }
 
     public func deleteStats(profileID: UUID) throws {

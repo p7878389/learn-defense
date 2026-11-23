@@ -348,7 +348,7 @@ struct GrowthStoreTests {
         let id = UUID()
         let store = GrowthStore(profileID: id, database: db, catalog: catalog)
         // 存档里的时间精确到秒，这里用整秒的时间才能逐字段比较
-        _ = store.settle(GameReport(won: true, difficulty: .easy, questions: 10, firstTryCorrect: 9, stars: 2, date: day(5)))
+        _ = try store.settle(GameReport(won: true, difficulty: .easy, questions: 10, firstTryCorrect: 9, stars: 2, date: day(5)))
         let reloaded = GrowthStore(profileID: id, database: db, catalog: catalog)
         #expect(reloaded.state == store.state)
         #expect(reloaded.state.badges["firstWin"] != nil)

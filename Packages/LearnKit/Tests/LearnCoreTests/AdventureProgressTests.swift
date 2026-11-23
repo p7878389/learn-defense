@@ -80,7 +80,7 @@ struct AdventureProgressTests {
 
     @Test func classicEarnedCoinsFundAdventureAndSpendingPreservesDailyAllowance() throws {
         let store = try store(coins: 0)
-        let result = store.settle(GameReport(won: true, difficulty: .easy, questions: 10, firstTryCorrect: 10, stars: 3))
+        let result = try store.settle(GameReport(won: true, difficulty: .easy, questions: 10, firstTryCorrect: 10, stars: 3))
         #expect(result.totalCoins >= 15)
         let balance = store.state.coins
         let allowance = store.state.stats.coinsToday

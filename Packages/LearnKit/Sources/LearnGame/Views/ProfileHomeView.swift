@@ -76,6 +76,16 @@ struct ProfileHomeView: View {
             VStack(alignment: .leading, spacing: 16) {
                 // 三个模式/成长入口共用一行，不再纵向叠加题库配置。
                 let growth = model.growth(for: profile.id)
+                if let issue = growth.loadError {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(issue).foregroundStyle(Theme.wrong)
+                        Button("重试读取成长档案") {
+                            do { try model.reloadGrowth(for: profile.id) }
+                            catch { /* 读取错误继续显示，原存档保持受保护。 */ }
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                }
                 GrowthCard(profile: profile, growth: growth) {
                     editing = EditingProfile(profile: profile, isNew: false)
                 }

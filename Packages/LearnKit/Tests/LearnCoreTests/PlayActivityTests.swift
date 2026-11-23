@@ -72,7 +72,7 @@ struct PlayActivityTests {
                                   bossesDefeated: 0, itemsUsed: 0, ultimatesCast: 0, seconds: 30)
         for (profile, start, outcome) in [(kid, date(day: 5), GameOutcome.won), (kid, date(day: 6), .quit),
                                           (other, date(day: 6, hour: 18), .won)] {
-            GameRecorder(database: db, profileID: profile, grade: .g3, difficulty: .easy,
+            try GameRecorder(database: db, profileID: profile, grade: .g3, difficulty: .easy,
                          packIDs: ["p"], selection: .all, startedAt: start)
                 .finish(outcome, summary: summary, at: start.addingTimeInterval(30))
         }

@@ -18,7 +18,7 @@ struct IceCombatTests {
         let store = GrowthStore(catalog: catalog)
         #expect(store.loadout.projectile(for: .frost) == DefenderKind.frost.projectile)
         #expect(store.loadout.projectile(for: .starling) == DefenderKind.starling.projectile)
-        store.unequip(key: "projectile")
+        try store.unequip(key: "projectile")
         #expect(store.loadout.projectile(for: .inkling) == DefenderKind.inkling.projectile)
     }
 

@@ -162,8 +162,8 @@ public final class AppModel: ObservableObject {
     }
 
     /// 用积分买外观；成功后刷新界面
-    func purchase(_ item: CosmeticKind, for profileID: UUID) -> GrowthState.PurchaseResult {
-        let result = growth(for: profileID).purchase(item)
+    func purchase(_ item: CosmeticKind, for profileID: UUID) throws -> GrowthState.PurchaseResult {
+        let result = try growth(for: profileID).purchase(item)
         objectWillChange.send()
         return result
     }
@@ -174,14 +174,19 @@ public final class AppModel: ObservableObject {
         return result
     }
 
-    func equip(_ item: CosmeticKind, for profileID: UUID) {
-        growth(for: profileID).equip(item)
+    func equip(_ item: CosmeticKind, for profileID: UUID) throws {
+        try growth(for: profileID).equip(item)
         objectWillChange.send()
     }
 
-    func unequip(key: String, for profileID: UUID) {
-        growth(for: profileID).unequip(key: key)
+    func unequip(key: String, for profileID: UUID) throws {
+        try growth(for: profileID).unequip(key: key)
         objectWillChange.send()
+    }
+
+    func reloadGrowth(for profileID: UUID) throws {
+        defer { objectWillChange.send() }
+        try growth(for: profileID).reload()
     }
 
 

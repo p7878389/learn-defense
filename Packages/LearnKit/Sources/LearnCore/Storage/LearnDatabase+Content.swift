@@ -38,6 +38,10 @@ extension LearnDatabase {
     }
 
     func loadContent(sources: [(source: String, directory: URL)]) throws -> ContentLibrary {
+        try transaction { try importContent(sources: sources) }
+    }
+
+    private func importContent(sources: [(source: String, directory: URL)]) throws -> ContentLibrary {
         let keys: [URLResourceKey] = [.fileSizeKey, .contentModificationDateKey]
         var rows = Dictionary(
             try context.fetch(FetchDescriptor<StoredPackFile>()).map { ($0.path, $0) },
@@ -87,7 +91,6 @@ extension LearnDatabase {
         let library = ContentLibrary.assemble(entries)
         if changed {
             do {
-                try context.save()
                 try syncContent(library.packs)
             } catch {
                 // 没写成的改动不要留在 context 里，免得被别处的 save 带进去
