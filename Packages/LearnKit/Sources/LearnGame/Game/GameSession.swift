@@ -21,61 +21,61 @@ final class GameSession: ObservableObject {
     /// 首次进入可预览和布阵，但必须先手动确认题库才能开战。
     let bankConfirmed: Bool
     let rules: GameRules
-    private let feedback = AnswerFeedback()
+    let feedback = AnswerFeedback()
     let tuning: GameTuning
     let scene: GameScene
     let isEmpty: Bool
 
-    @Published private(set) var phase: Phase = .preparing
+    @Published var phase: Phase = .preparing
     @Published private(set) var map: BattleMap
-    @Published private(set) var isUnleashing = false
-    @Published private(set) var hearts: Int?
+    @Published var isUnleashing = false
+    @Published var hearts: Int?
     /// 模块内可写，方便测试直接攒满能量
-    @Published internal(set) var energy = 0
-    @Published private(set) var score = 0
-    @Published private(set) var sun: Int
-    @Published private(set) var defeated = 0
-    @Published private(set) var totalEnemies: Int
+    @Published var energy = 0
+    @Published var score = 0
+    @Published var sun: Int
+    @Published var defeated = 0
+    @Published var totalEnemies: Int
     /// 当前瞄准的怪物的题目
-    @Published private(set) var current: Question?
+    @Published var current: Question?
     /// 当前题目已经点错的选项
     /// 选择题是答错的选项；输入题是第几次答错（1、2、3…），个数就是答错次数
-    @Published private(set) var wrongPicks: Set<Int> = []
+    @Published var wrongPicks: Set<Int> = []
     /// 正在拼字块题：战场放慢，瞄准的怪物停下
-    @Published private(set) var typing = false
-    @Published private(set) var ultimate: Question?
-    @Published private(set) var ultimateWrongPicks: Set<Int> = []
+    @Published var typing = false
+    @Published var ultimate: Question?
+    @Published var ultimateWrongPicks: Set<Int> = []
     @Published private(set) var inventory = Inventory(capacity: 3)
     /// 场上已经有一道铁栅门；碎了才能再放
-    @Published private(set) var barricadeDown = false
-    @Published private(set) var doomCooldown = 0
+    @Published var barricadeDown = false
+    @Published var doomCooldown = 0
 
     var plantable: [DefenderKind] {
         tuning.plantable + UnitCatalog.consumables.filter { growth?.state.canUseDefender($0.id) == true }
     }
 
     /// 普通题和大招题都只统计第一次有效作答，与学习记录和对局明细一致。
-    private(set) var attempted = 0
-    private(set) var firstTryCorrect = 0
-    private(set) var mistakes: [Mistake] = []
+    var attempted = 0
+    var firstTryCorrect = 0
+    var mistakes: [Mistake] = []
     /// 通关或失败时的成长结算（经验、积分、升级、徽章）；没有成长档案时为 nil
-    @Published private(set) var growthResult: GrowthResult?
-    @Published private(set) var settlementError: String?
+    @Published var growthResult: GrowthResult?
+    @Published var settlementError: String?
     @Published private(set) var startError: String?
-    private var settlementReport: GameReport?
+    var settlementReport: GameReport?
 
     // 成长系统用的本局统计
-    private(set) var bossesDefeated = 0
-    private(set) var itemsUsed = 0
-    private(set) var ultimatesCast = 0
-    private var battleStartedAt: Date?
+    var bossesDefeated = 0
+    var itemsUsed = 0
+    var ultimatesCast = 0
+    var battleStartedAt: Date?
     /// 从开始闯关到结束的秒数，结算页显示
-    private(set) var playSeconds = 0
+    var playSeconds = 0
 
-    private var generator: QuestionGenerator
-    private var scheduler = ItemScheduler()
-    private var tuner = AdaptiveTuner()
-    private var rng = SystemRandomNumberGenerator()
+    var generator: QuestionGenerator
+    var scheduler = ItemScheduler()
+    var tuner = AdaptiveTuner()
+    var rng = SystemRandomNumberGenerator()
     /// 准备阶段给答题区预留高度用的样题：按本局出题方式出一道，不计入进度，也不影响出题顺序
     private(set) lazy var layoutSample: Question? = {
         var sampleRng = SystemRandomNumberGenerator()
@@ -92,43 +92,39 @@ final class GameSession: ObservableObject {
         }
         return nil
     }()
-    private let progress: ProgressStore
-    private let speech: Speech
-    private let growth: GrowthStore?
+    let progress: ProgressStore
+    let speech: Speech
+    let growth: GrowthStore?
     /// 对局记录和答题明细；为 nil 时不记录
-    private let recorder: GameRecorder?
-    /// 每个怪物当前这道题第一次成为瞄准目标的时间，算作答用时
-    private var shownAt: [Int: Date] = [:]
-    /// 正在给哪道新题留缓冲时间，以及从战场时钟的哪一刻算起
-    private var graceMark: (question: Question.ID, start: TimeInterval)?
-    private var newItemGrace: TimeInterval { TimeInterval(rules.newItemGraceSeconds) }
-    private var ultimateShownAt: Date?
+    let recorder: GameRecorder?
+    /// 题目、错选和首次展示时间只能通过同一个集合更新。
+    var questions = SessionQuestions()
+    var newItemGrace: TimeInterval { TimeInterval(rules.newItemGraceSeconds) }
+    var ultimateShownAt: Date?
     /// 本局装备的外观（子弹、退场特效、道具皮肤）
     let loadout: Loadout
 
     /// 这一局依次出场的怪物种类
-    private var spawnPlan: [EnemyKind]
-    private let initialQuestions: Int
-    @Published private(set) var round = 1
-    @Published private(set) var roundQuestions: Int
-    @Published private(set) var roundResolved = 0
-    @Published private(set) var completedRounds = 0
-    @Published private(set) var roundScore = 0
-    @Published private(set) var roundAccuracy = 0.0
-    @Published private(set) var restRemaining = 0
-    @Published private(set) var questionIDs: [Int] = []
-    private var restUntil: Date?
-    private var roundStartScore = 0
-    private var roundStartAttempted = 0
-    private var roundStartCorrect = 0
-    private var enemyKinds: [Int: EnemyKind] = [:]
-    private var lastEnemyID = 0
-    private var spawned = 0
-    private var resolved = 0
-    private var enemyQuestions: [Int: (item: LearningItem, question: Question)] = [:]
-    private var enemyWrongPicks: [Int: Set<Int>] = [:]
-    private var targetID: Int?
-    private var ultimateItem: LearningItem?
+    var spawnPlan: [EnemyKind]
+    let initialQuestions: Int
+    @Published var round = 1
+    @Published var roundQuestions: Int
+    @Published var roundResolved = 0
+    @Published var completedRounds = 0
+    @Published var roundScore = 0
+    @Published var roundAccuracy = 0.0
+    @Published var restRemaining = 0
+    @Published var questionIDs: [Int] = []
+    var restUntil: Date?
+    var roundStartScore = 0
+    var roundStartAttempted = 0
+    var roundStartCorrect = 0
+    var enemyKinds: [Int: EnemyKind] = [:]
+    var lastEnemyID = 0
+    var spawned = 0
+    var resolved = 0
+    var targetID: Int?
+    var ultimateItem: LearningItem?
 
     init(config: GameConfig, library: ContentLibrary, progress: ProgressStore, speech: Speech, growth: GrowthStore? = nil,
          recorder: GameRecorder? = nil, map: BattleMap = .courtyard, bankConfirmed: Bool = true) {
@@ -209,171 +205,6 @@ final class GameSession: ObservableObject {
         guard phase == .won else { return 0 }
         if accuracy >= 0.9 && hearts == tuning.hearts { return 3 }
         return accuracy >= 0.7 ? 2 : 1
-    }
-
-    // MARK: - 答题
-
-    func answer(_ index: Int) {
-        guard phase == .playing, ultimate == nil, let id = targetID, let entry = enemyQuestions[id] else { return }
-        let question = entry.question
-        guard question.input == nil, question.options.indices.contains(index) else { return }
-        submit(id: id, entry: entry, correct: index == question.answerIndex, pick: index) { [recorder] shownAt in
-            recorder?.recordAnswer(question, chosenIndex: index, shownAt: shownAt)
-        }
-    }
-
-    /// 字块题交卷：texts 依次是每个空放进去的字块
-    func answerInput(_ texts: [String]) {
-        guard phase == .playing, ultimate == nil, let id = targetID, let entry = enemyQuestions[id],
-              let spec = entry.question.input else { return }
-        let question = entry.question
-        let correct = spec.accepts(texts)
-        let typedText = spec.compose(texts)
-        submit(id: id, entry: entry, correct: correct, pick: (enemyWrongPicks[id]?.count ?? 0) + 1) { [recorder] shownAt in
-            recorder?.recordAnswer(question, typed: typedText, correct: correct, shownAt: shownAt)
-        }
-    }
-
-    /// 孩子开始点字块：战场放慢、瞄准的怪物停下；交卷或换目标后恢复
-    func setTyping(_ on: Bool) {
-        typing = on && phase == .playing && ultimate == nil && current?.input != nil
-    }
-
-    /// 选择题和输入题共用的判题：pick 是这次作答的标记（选项序号或第几次输入），
-    /// record 只在第一次作答时调用，记下这一题的成绩
-    private func submit(id: Int, entry: (item: LearningItem, question: Question), correct: Bool, pick index: Int,
-                        record: (Date?) -> Void) {
-        let question = entry.question
-        var picks = enemyWrongPicks[id] ?? []
-
-        if correct {
-            guard scene.canAttack(id) else {
-                scene.play(FloatingTextEffect(text: "先选卡片，再点战场空位", color: Palette.hurt, fontSize: 28))
-                speech.speak(SpeechText.Line.plantFirst, interrupt: true)
-                return
-            }
-            if picks.isEmpty {
-                attempted += 1
-                firstTryCorrect += 1
-                score += 10
-                let wasFull = energy >= tuning.ultimateEnergy
-                energy = min(energy + 1, tuning.ultimateEnergy)
-                if !wasFull && energy >= tuning.ultimateEnergy {
-                    feedback.play(.ultimateReady, volume: speech.effectsVolume)
-                }
-                tuner.record(correct: true)
-                progress.record(entry.item, correct: true)
-                record(shownAt[id])
-            } else {
-                score += 2
-            }
-            feedback.play(correct: true, volume: speech.effectsVolume)
-            typing = false
-            scene.noteCorrectAnswer()
-
-            enemyQuestions[id] = nil
-            enemyWrongPicks[id] = nil
-            shownAt[id] = nil
-            questionIDs = enemyQuestions.keys.sorted()
-            // 打败时场景会马上瞄准下一个怪物，并回调 targetChanged
-            if scene.fire(at: id) == false {
-                // 还没打倒（血量多的怪物）：换一道题继续打它
-                if let next = makeQuestion() {
-                    enemyQuestions[id] = next
-                    questionIDs = enemyQuestions.keys.sorted()
-                    shownAt[id] = Date()
-                    scene.setSign(id, next.question.signText)
-                    current = next.question
-                    wrongPicks = []
-                    speech.speak(next.question.promptSpeech, interrupt: false, channel: .question)
-                } else {
-                    scene.fire(at: id, overwhelming: true)
-                }
-            }
-        } else {
-            guard !picks.contains(index) else { return }
-            if picks.isEmpty {
-                attempted += 1
-                tuner.record(correct: false)
-                progress.record(entry.item, correct: false)
-                progress.save()
-                mistakes.append(Mistake(question: question, missed: false))
-                record(shownAt[id])
-            }
-            picks.insert(index)
-            enemyWrongPicks[id] = picks
-            wrongPicks = picks
-            feedback.play(correct: false, volume: speech.effectsVolume)
-            scene.penalize(id)
-        }
-    }
-
-    func replayPrompt() {
-        speech.speak((ultimate ?? current)?.promptSpeech, interrupt: true, channel: .preview)
-    }
-
-    // MARK: - 大招
-
-    func startUltimate() {
-        guard ultimateReady, let pair = generator.makeUltimateQuestion(using: &rng) else { return }
-        ultimateItem = pair.0
-        ultimate = pair.1
-        typing = false
-        ultimateWrongPicks = []
-        ultimateShownAt = Date()
-        scene.setGamePaused(true)
-        speech.speak(pair.1.promptSpeech, interrupt: true, channel: .question)
-    }
-
-    /// 不放大招了：关掉题目、继续战斗。还没作答就取消，能量留着下次再放；
-    /// 已经答错过再取消，和「答错后再点对只是关掉」一样清空能量，免得靠取消换一道题
-    func cancelUltimate() {
-        guard ultimate != nil else { return }
-        if !ultimateWrongPicks.isEmpty { energy = 0 }
-        ultimate = nil
-        ultimateItem = nil
-        ultimateWrongPicks = []
-        ultimateShownAt = nil
-        speech.stop()
-        if phase == .playing { scene.setGamePaused(false) }
-    }
-
-    func answerUltimate(_ index: Int) {
-        guard phase == .playing, let question = ultimate, let item = ultimateItem, question.options.indices.contains(index) else { return }
-        if index == question.answerIndex {
-            let firstTry = ultimateWrongPicks.isEmpty
-            if firstTry {
-                attempted += 1
-                firstTryCorrect += 1
-                progress.record(item, correct: true)
-                recorder?.recordAnswer(question, chosenIndex: index, ultimate: true, shownAt: ultimateShownAt)
-            }
-            feedback.play(correct: true, volume: speech.effectsVolume)
-            ultimate = nil
-            ultimateItem = nil
-            energy = 0
-            if phase == .playing { scene.setGamePaused(false) }
-            // 第一次就答对才放大招；答错后再点对只是关掉
-
-            if firstTry {
-                score += 30
-                ultimatesCast += 1
-                feedback.play(.ultimateCast, volume: speech.effectsVolume)
-                speech.speak(SpeechText.Line.ultimateCast(tuning.ultimate.name), interrupt: true)
-                tuning.ultimate.use(on: self)
-            }
-        } else {
-            guard !ultimateWrongPicks.contains(index) else { return }
-            if ultimateWrongPicks.isEmpty {
-                attempted += 1
-                progress.record(item, correct: false)
-                progress.save()
-                mistakes.append(Mistake(question: question, missed: false))
-                recorder?.recordAnswer(question, chosenIndex: index, ultimate: true, shownAt: ultimateShownAt)
-            }
-            ultimateWrongPicks.insert(index)
-            feedback.play(correct: false, volume: speech.effectsVolume)
-        }
     }
 
     // MARK: - 道具
@@ -466,321 +297,12 @@ final class GameSession: ObservableObject {
     }
 
     /// 打败怪物时按概率掉落道具
-    private func rollDrop(from kind: EnemyKind, at point: CGPoint) {
+    func rollDrop(from kind: EnemyKind, at point: CGPoint) {
         // 道具皮肤只换图标和名字，效果不变
         guard let item = kind.drop?.roll(using: &rng).map(loadout.skin) else { return }
         // 不会失败的模式里回血没用
         if !tuning.canLose && item.onlyHeals { return }
         guard inventory.add(item) else { return }
         scene.play(FloatingTextEffect(text: "\(item.icon) +1", color: Palette.jadeDark), at: point)
-    }
-
-    // MARK: - 暂停与结束
-
-    func togglePause() {
-        switch phase {
-        case .playing:
-            phase = .paused
-            scene.setGamePaused(true)
-        case .paused:
-            phase = .playing
-            if ultimate == nil { scene.setGamePaused(false) }
-        default:
-            break
-        }
-    }
-
-    /// 切到后台只暂停，不结束或记录本局。
-    func suspend() {
-        guard phase != .abandoned else { return }
-        if phase == .playing { phase = .paused }
-        if phase == .paused || phase == .resting { scene.setGamePaused(true) }
-        speech.stop()
-        progress.save()
-    }
-
-    /// 离开界面时放弃未结算对局；已结束的对局保留原结果。
-    func end() {
-        guard phase != .abandoned else { return }
-        scene.setGamePaused(true)
-        speech.stop()
-        progress.save()
-        guard phase != .won && phase != .lost else { return }
-        phase = .abandoned
-        typing = false
-        ultimate = nil
-        ultimateItem = nil
-        isUnleashing = false
-    }
-
-    private func checkFinished() {
-        guard phase == .playing, totalEnemies > 0,
-              spawned >= totalEnemies, resolved >= spawned else { return }
-        completedRounds += 1
-        roundScore = score - roundStartScore
-        let answered = attempted - roundStartAttempted
-        roundAccuracy = answered == 0 ? 0 : Double(firstTryCorrect - roundStartCorrect) / Double(answered)
-        restRemaining = rules.restSeconds(afterRound: round)
-        restUntil = Date().addingTimeInterval(Double(restRemaining))
-        phase = .resting
-        typing = false
-        ultimate = nil
-        ultimateItem = nil
-        current = nil
-        targetID = nil
-        questionIDs = []
-        scene.setGamePaused(true, keepingAnimations: true)
-        progress.save()
-        speech.stop()
-    }
-
-    /// 明确结束整局才结算；回合结束不发成长奖励。
-    func finishGame() {
-        finish(won: completedRounds > 0)
-    }
-
-    func updateRest(now: Date = Date()) {
-        guard phase == .resting, let restUntil else { return }
-        restRemaining = max(0, Int(ceil(restUntil.timeIntervalSince(now))))
-        if restRemaining == 0 { self.restUntil = nil }
-    }
-
-    func continueRound() {
-        updateRest()
-        guard phase == .resting, restRemaining == 0 else { return }
-        round += 1
-        roundQuestions = initialQuestions + (round - 1) * rules.questionIncrement[config.difficulty]
-        spawnPlan = tuning.waves.kinds(questions: roundQuestions, using: &rng)
-        UnitSprites.preloadCombat(defenders: plantable, enemies: spawnPlan, loadout: loadout)
-        totalEnemies = spawnPlan.count
-        spawned = 0
-        resolved = 0
-        roundResolved = 0
-        enemyQuestions.removeAll()
-        enemyWrongPicks.removeAll()
-        shownAt.removeAll()
-        wrongPicks = []
-        roundStartScore = score
-        roundStartAttempted = attempted
-        roundStartCorrect = firstTryCorrect
-        restUntil = nil
-        phase = .playing
-        scene.beginRound()
-    }
-
-    var selectedQuestionID: Int? { targetID }
-
-    func selectQuestion(_ id: Int) {
-        guard phase == .playing, ultimate == nil, enemyQuestions[id] != nil else { return }
-        scene.selectTarget(id)
-    }
-
-    private func finish(won: Bool) {
-        guard phase == .playing || phase == .paused || phase == .resting else { return }
-        phase = won ? .won : .lost
-        typing = false
-        ultimate = nil
-        scene.setGamePaused(true)
-        progress.save()
-        playSeconds = battleStartedAt.map { Int(Date().timeIntervalSince($0)) } ?? 0
-        speech.speak(won ? SpeechText.Line.won : SpeechText.Line.lost, interrupt: false)
-        settlementReport = GameReport(
-            won: won, difficulty: config.difficulty, questions: attempted,
-            firstTryCorrect: firstTryCorrect, stars: stars, bossesDefeated: bossesDefeated,
-            enemiesDefeated: defeated, itemsUsed: itemsUsed, ultimatesCast: ultimatesCast, seconds: playSeconds)
-        retrySettlement()
-    }
-
-    /// 保存成功前保留本局结果；重试沿用同一份报告，不重复计算奖励。
-    func retrySettlement() {
-        guard (phase == .won || phase == .lost), let report = settlementReport, !isEmpty else { return }
-        guard growthResult == nil, recorder?.record == nil else { return }
-        let summary = GameSummary(
-            questions: attempted,
-            firstTryCorrect: firstTryCorrect,
-            stars: stars,
-            score: score,
-            enemiesDefeated: defeated,
-            bossesDefeated: bossesDefeated,
-            itemsUsed: itemsUsed,
-            ultimatesCast: ultimatesCast,
-            seconds: playSeconds)
-        do {
-            if growth?.loadError != nil { try growth?.reload() }
-            if let recorder {
-                growthResult = try recorder.finish(phase == .won ? .won : .lost, summary: summary,
-                                                   at: report.date,
-                                                   growth: growth, report: growth == nil ? nil : report)
-            } else if let growth {
-                growthResult = try growth.settle(report)
-            }
-            settlementError = nil
-            if let result = growthResult, result.leveledUp {
-                speech.speak("升到第\(result.after.level)级啦！", interrupt: false)
-            }
-        } catch {
-            settlementError = "本局尚未保存，请重试：\(error.localizedDescription)"
-        }
-    }
-}
-
-extension GameSession: GameSceneDelegate {
-    func ultimateAnimationStarted() { isUnleashing = true }
-    func ultimateAnimationFinished() { isUnleashing = false }
-
-    /// 拼字块题时战场放慢到一半
-    var speedFactor: Double { tuner.speedFactor * (typing ? 0.5 : 1) }
-    var holdsTarget: Bool { typing || inNewItemGrace }
-
-    /// 瞄准的这道题是孩子第一次见的知识点（还没有作答记录）：从瞄准它起的几秒内，
-    /// 这只怪物原地等着。答过一次（对或错）就有了记录，之后照常逼近。
-    /// 按战场时钟计时，暂停时不走
-    private var inNewItemGrace: Bool {
-        guard newItemGrace > 0, let id = targetID, let entry = enemyQuestions[id],
-              progress.stats[entry.item.key] == nil else { return false }
-        if graceMark?.question != entry.question.id {
-            graceMark = (entry.question.id, scene.clock)
-        }
-        return scene.clock - (graceMark?.start ?? scene.clock) < newItemGrace
-    }
-
-    func nextEnemy() -> EnemySpawn? {
-        guard phase == .playing, spawned < totalEnemies else { return nil }
-        guard let entry = makeQuestion() else {
-            // 题库无法继续出题时结束，不能卡在空回合。
-            finishGame()
-            return nil
-        }
-        let kind = spawned < spawnPlan.count ? spawnPlan[spawned] : .blob
-        lastEnemyID += 1
-        spawned += 1
-        enemyQuestions[lastEnemyID] = entry
-        enemyKinds[lastEnemyID] = kind
-        questionIDs = enemyQuestions.keys.sorted()
-        return EnemySpawn(id: lastEnemyID, sign: entry.question.signText, kind: kind)
-    }
-
-    func bossAppeared(name: String) {
-        guard phase == .playing else { return }
-        feedback.play(.bossArrive, volume: speech.effectsVolume)
-        speech.speak(SpeechText.Line.bossArrive(name), interrupt: false)
-    }
-
-    private func makeQuestion() -> (item: LearningItem, question: Question)? {
-        // 个别知识点可能凑不齐干扰项，换一个再试
-        for _ in 0..<8 {
-            guard let item = scheduler.next(from: generator.pool.items, stats: progress.stats, using: &rng, reviewEvery: rules.reviewEvery) else { break }
-            if let question = generator.makeQuestion(for: item, using: &rng) {
-                return (item, question)
-            }
-        }
-        return nil
-    }
-
-    func targetChanged(to id: Int?) {
-        guard phase == .playing else { return }
-        targetID = id
-        typing = false
-        current = id.flatMap { enemyQuestions[$0]?.question }
-        if let id, current != nil, shownAt[id] == nil { shownAt[id] = Date() }
-        wrongPicks = id.flatMap { enemyWrongPicks[$0] } ?? []
-        speech.speak(current?.promptSpeech, interrupt: false, channel: .question)
-    }
-
-    func enemyReachedBase(_ id: Int) -> Bool {
-        guard phase == .playing, enemyKinds[id] != nil, let hearts else { return false }
-        if let entry = enemyQuestions[id] {
-            mistakes.append(Mistake(question: entry.question, missed: true))
-            // 已经答错过的那次作答已记录；一次都没答的记为没来得及答
-            if (enemyWrongPicks[id] ?? []).isEmpty {
-                attempted += 1
-                progress.record(entry.item, correct: false)
-                recorder?.recordAnswer(entry.question, chosenIndex: nil, shownAt: shownAt[id])
-            }
-        }
-        enemyQuestions[id] = nil
-        enemyWrongPicks[id] = nil
-        shownAt[id] = nil
-        enemyKinds[id] = nil
-        resolved += 1
-        roundResolved = resolved
-        questionIDs = enemyQuestions.keys.sorted()
-        self.hearts = hearts - 1
-        if hearts - 1 <= 0 {
-            finish(won: false)
-        } else {
-            checkFinished()
-        }
-        return true
-    }
-
-    func enemyDefeated(_ id: Int, at point: CGPoint) {
-        guard phase == .playing, let kind = enemyKinds.removeValue(forKey: id) else { return }
-        enemyQuestions[id] = nil
-        enemyWrongPicks[id] = nil
-        shownAt[id] = nil
-        questionIDs = enemyQuestions.keys.sorted()
-        if tuning.waves.isBoss(kind) {
-            bossesDefeated += 1
-            feedback.play(.bossDefeated, volume: speech.effectsVolume)
-            scene.play(ScreenFlashEffect(color: Palette.bullet, alpha: 0.5, duration: 0.6))
-            scene.play(FloatingTextEffect(text: "🏆 打败首领！", color: Palette.target, fontSize: 40),
-                       at: CGPoint(x: point.x, y: point.y + 100))
-            speech.speak(SpeechText.Line.bossDefeated, interrupt: false)
-        }
-        if kind.bonus > 0 {
-            score += kind.bonus
-            scene.play(FloatingTextEffect(text: "+\(kind.bonus)"), at: CGPoint(x: point.x, y: point.y + 30))
-        }
-        sun += kind.sunReward
-        scene.play(
-            FloatingTextEffect(text: "☀️ +\(kind.sunReward)", color: Palette.bullet, fontSize: 32),
-            at: CGPoint(x: point.x, y: point.y + 62))
-        rollDrop(from: kind, at: point)
-        defeated += 1
-        resolved += 1
-        roundResolved = resolved
-        checkFinished()
-    }
-
-    func doomCooldownChanged(_ seconds: Int) {
-        if doomCooldown != seconds { doomCooldown = seconds }
-    }
-}
-
-extension GameSession {
-    func bossEnraged(_ id: Int) {
-        guard phase == .playing else { return }
-        feedback.play(.bossEnrage, volume: speech.effectsVolume)
-        speech.speak(SpeechText.Line.bossEnraged, interrupt: false)
-    }
-
-    func barricadeRemoved() {
-        barricadeDown = false
-    }
-}
-
-extension GameSession: Battlefield {
-    func clearField() {
-        scene.unleash()
-    }
-
-    func freezeField(seconds: Double) {
-        scene.freeze(seconds: seconds)
-    }
-
-    func heal(hearts gained: Int) {
-        guard let hearts, let maxHearts = tuning.hearts else { return }
-        self.hearts = min(maxHearts, hearts + gained)
-    }
-
-    func addScore(_ points: Int) {
-        score += points
-    }
-}
-
-private extension GameSession.Mistake {
-    init(question: Question, missed: Bool) {
-        self.init(prompt: question.prompt, answer: question.answer, explanation: question.explanation, missed: missed)
     }
 }
