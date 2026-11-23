@@ -43,7 +43,10 @@ struct CollectionView: View {
             VStack(spacing: 18) {
                 topBar(level: growth.level.level)
                 slotTabs
-                if wide {
+                if showingTools {
+                    DoomShroomUnlockView(profileID: profileID, onClose: { showingTools = false }, embedded: true, wideLayout: wide)
+                        .environmentObject(model)
+                } else if wide {
                     HStack(alignment: .top, spacing: 20) {
                         ScrollView { sidebar.padding(6) }
                             .frame(width: 190)
@@ -66,10 +69,6 @@ struct CollectionView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .background(GrowthPageBackground())
-        .sheet(isPresented: $showingTools) {
-            DoomShroomUnlockView(profileID: profileID, onClose: { showingTools = false })
-                .environmentObject(model)
-        }
         .onAppear {
             // 优先准备少量购买反馈，避免排在整套题库语音之后。
             for line in SpeechText.purchaseLines { model.speechLibrary.requestSoon(line) }
@@ -204,9 +203,7 @@ struct CollectionView: View {
     // MARK: 顶部和分类
 
     private func topBar(level: Int) -> some View {
-        GrowthPageHeader(icon: "🎁", title: "收藏馆", subtitle: "角色装扮", onClose: onClose) {
-            Button("道具解锁") { showingTools = true }
-                .font(.headline).buttonStyle(.bordered).tint(Theme.jade)
+        GrowthPageHeader(icon: "🎁", title: "收藏馆", subtitle: showingTools ? "永久道具" : "角色装扮", onClose: onClose) {
             LevelPill(level: level)
             CoinPill(coins: growth.state.coins, size: 24)
         }
@@ -217,6 +214,7 @@ struct CollectionView: View {
             HStack(spacing: 12) {
                 ForEach(CosmeticSlot.allCases.filter(\.isCollectible)) { s in
                     Button {
+                        showingTools = false
                         slot = s
                         previewID = nil
                     } label: {
@@ -225,14 +223,29 @@ struct CollectionView: View {
                             Text(s.displayName)
                                 .font(.system(size: 18, weight: .heavy, design: .rounded))
                         }
-                        .foregroundStyle(slot == s ? .white : Theme.ink)
+                        .foregroundStyle(!showingTools && slot == s ? .white : Theme.ink)
                         .padding(.horizontal, 18)
                         .frame(height: 52)
-                        .background(CandyTileBackground(selected: slot == s))
+                        .background(CandyTileBackground(selected: !showingTools && slot == s))
                     }
                     .buttonStyle(PressableStyle())
-                    .accessibilityAddTraits(slot == s ? .isSelected : [])
+                    .accessibilityAddTraits(!showingTools && slot == s ? .isSelected : [])
                 }
+                Button {
+                    showingTools = true
+                    previewID = nil
+                } label: {
+                    HStack(spacing: 8) {
+                        PictureView(emoji: "💥", size: 24)
+                        Text("道具解锁").font(.system(size: 18, weight: .heavy, design: .rounded))
+                    }
+                    .foregroundStyle(showingTools ? .white : Theme.ink)
+                    .padding(.horizontal, 18)
+                    .frame(height: 52)
+                    .background(CandyTileBackground(selected: showingTools))
+                }
+                .buttonStyle(PressableStyle())
+                .accessibilityAddTraits(showingTools ? .isSelected : [])
             }
             .padding(6)
         }

@@ -82,10 +82,17 @@ struct AdventureDoomSceneTests {
             if owned { state.owned.insert("defender.doomShroom") }
             try db.saveGrowthState(state, profileID: child.id)
             let previewModel = AppModel(database: db, library: .load(userDirectory: nil), speechLibrary: SpeechLibrary(database: db))
-            for width: CGFloat in [375, 820] {
+            for width: CGFloat in [375, 820, 1180] {
                 let content = DoomShroomUnlockView(profileID: child.id, onClose: {}).environmentObject(previewModel)
                 try captureStaticView(content, size: CGSize(width: width, height: 720),
                                       url: folder.appendingPathComponent("unlock-\(name)-\(Int(width)).png"))
+                let embedded = DoomShroomUnlockView(profileID: child.id, onClose: {}, embedded: true, wideLayout: width >= 900).environmentObject(previewModel)
+                try captureStaticView(embedded, size: CGSize(width: width, height: 600),
+                                      url: folder.appendingPathComponent("unlock-tab-\(name)-\(Int(width)).png"))
+                if name == "for-sale", width == 820 {
+                    try captureStaticView(CollectionView(profileID: child.id, onClose: {}).environmentObject(previewModel),
+                                          size: CGSize(width: 1180, height: 736), url: folder.appendingPathComponent("collection-tabs.png"))
+                }
             }
             #expect(previewModel.growth(for: child.id).state == state, "只查看解锁页不能扣积分或改变拥有记录")
         }
