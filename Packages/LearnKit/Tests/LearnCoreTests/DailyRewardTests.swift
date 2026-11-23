@@ -73,10 +73,10 @@ struct DailyRewardTests {
                                 firstTryCorrect: 10, stars: 0)
         do {
             let store = GrowthStore(profileID: profileID, database: try LearnDatabase(url: url), catalog: .bundled)
-            for _ in 0..<10 { _ = store.settle(report) }
+            for _ in 0..<10 { _ = try store.settle(report) }
         }
         let reopened = GrowthStore(profileID: profileID, database: try LearnDatabase(url: url), catalog: .bundled)
-        #expect(reopened.settle(report).coins == 0)
+        #expect(try reopened.settle(report).coins == 0)
         #expect(reopened.state.stats.coinsToday["answers"] == 100)
     }
 

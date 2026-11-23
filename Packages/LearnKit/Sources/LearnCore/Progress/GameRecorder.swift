@@ -106,6 +106,7 @@ public final class GameRecorder {
     public private(set) var answers: [AnswerRecord] = []
     /// 已经结束的对局；nil 表示还没结束
     public private(set) var record: GameRecord?
+    private var growthResult: GrowthResult?
     private let database: LearnDatabase?
     private let grade: Grade
     private let difficulty: Difficulty
@@ -140,8 +141,17 @@ public final class GameRecorder {
     }
 
     /// 结束对局并写库。重复调用只有第一次生效
-    public func finish(_ outcome: GameOutcome, summary: GameSummary, at date: Date = Date()) {
-        guard record == nil else { return }
+    @discardableResult
+    public func finish(_ outcome: GameOutcome, summary: GameSummary, at date: Date = Date(),
+                       growth: GrowthStore? = nil, report: GameReport? = nil) throws -> GrowthResult? {
+        guard record == nil else { return growthResult }
+        if (growth == nil) != (report == nil) {
+            throw SettingsError.invalid("成长结算必须同时提供档案和报告")
+        }
+        if let growth, growth.database !== database || growth.profileID != profileID {
+            throw SettingsError.invalid("成长档案与对局必须属于同一孩子并使用同一数据库")
+        }
+        let settlement = try report.flatMap { report in try growth?.prepareSettlement(report) }
         let selectionName: String
         var unitKeys: [String] = []
         switch selection {
@@ -157,12 +167,18 @@ public final class GameRecorder {
             questions: summary.questions, firstTryCorrect: summary.firstTryCorrect, stars: summary.stars,
             score: summary.score, enemiesDefeated: summary.enemiesDefeated, bossesDefeated: summary.bossesDefeated,
             itemsUsed: summary.itemsUsed, ultimatesCast: summary.ultimatesCast, seconds: summary.seconds,
-            xp: summary.xp, coins: summary.coins)
-        self.record = record
-        do {
-            try database?.saveGame(record, answers: answers)
-        } catch {
-            print("保存对局记录失败：\(error)")
+            xp: settlement?.result.xp ?? summary.xp, coins: settlement?.result.totalCoins ?? summary.coins)
+        if let database {
+            try database.transaction {
+                if let settlement, let growth {
+                    try database.saveGrowthState(settlement.state, profileID: growth.profileID)
+                }
+                try database.saveGame(record, answers: answers)
+            }
         }
+        if let settlement { growth?.acceptSettlement(settlement.state) }
+        self.record = record
+        growthResult = settlement?.result
+        return growthResult
     }
 }

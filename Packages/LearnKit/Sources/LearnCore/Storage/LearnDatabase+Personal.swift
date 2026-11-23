@@ -48,7 +48,7 @@ extension LearnDatabase {
         } else {
             context.insert(StoredGrowth(profileID: pid, state: state, data: data))
         }
-        try context.save()
+        try saveChanges()
     }
 
     /// 删除一个孩子在数据库里的全部个人数据：档案、成长档案、学习记录、对局和答题明细

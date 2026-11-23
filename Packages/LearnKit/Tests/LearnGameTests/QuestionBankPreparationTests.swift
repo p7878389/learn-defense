@@ -180,7 +180,7 @@ struct QuestionBankPreparationTests {
         let initial = config()
         let recorder = GameRecorder(database: db, profileID: initial.profileID, grade: .g3, difficulty: .easy,
                                     packIDs: ["en"], selection: .units(["en/u2"]))
-        recorder.finish(.lost, summary: GameSummary(questions: 0, firstTryCorrect: 0, stars: 0, score: 0,
+        try recorder.finish(.lost, summary: GameSummary(questions: 0, firstTryCorrect: 0, stars: 0, score: 0,
                                                    enemiesDefeated: 0, bossesDefeated: 0, itemsUsed: 0, ultimatesCast: 0, seconds: 1))
         let model = AppModel(database: db, library: library(), speechLibrary: SpeechLibrary(database: db, settings: nil, premadeDirectories: []))
         let preferences = Preferences()

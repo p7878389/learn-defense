@@ -77,7 +77,7 @@ struct ParentSettingsTests {
             let question = Question(kind: .listenPickChar, itemKey: "char:晨", instruction: "听音选字",
                                     prompt: "🔊", options: ["晨", "霜"], optionStyle: .text, answerIndex: 0)
             recorder.recordAnswer(question, chosenIndex: 0, shownAt: nil)
-            recorder.finish(.won, summary: GameSummary(questions: 1, firstTryCorrect: 1, stars: 1, score: 10,
+            try recorder.finish(.won, summary: GameSummary(questions: 1, firstTryCorrect: 1, stars: 1, score: 10,
                 enemiesDefeated: 1, bossesDefeated: 0, itemsUsed: 0, ultimatesCast: 0, seconds: 5))
             let backup = try SettingsBackup.decode(db.backupData(importedPacks: []))
             try db.restore(backup)

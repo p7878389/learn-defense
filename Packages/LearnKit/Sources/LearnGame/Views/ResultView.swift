@@ -38,7 +38,12 @@ struct ResultView: View {
                     if hasRightColumn { growthColumn(bounded: bounded) }
                 }
                 .frame(maxHeight: bounded ? .infinity : nil, alignment: .top)
+                if let error = session.settlementError {
+                    Text(error).font(.callout).foregroundStyle(Theme.wrong)
+                    Button("重试保存本局", action: session.retrySettlement).buttonStyle(.borderedProminent)
+                }
                 buttons
+                    .disabled(session.settlementError != nil)
             }
             .padding(.horizontal, 24)
             .padding(.top, 40)

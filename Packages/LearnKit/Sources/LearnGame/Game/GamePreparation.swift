@@ -85,8 +85,8 @@ final class GamePreparation: ObservableObject {
 
     func confirmStart() {
         guard confirmingStart, !choosingBank, session?.canStartBattle == true else { return }
-        confirmingStart = false
         session?.startBattle()
+        if session?.phase == .playing { confirmingStart = false }
     }
 
     private func makeSession(_ config: GameConfig, confirmed: Bool) -> GameSession {
