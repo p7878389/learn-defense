@@ -87,7 +87,10 @@ public struct AdventureLevel: Codable, Identifiable, Equatable, Sendable {
 public enum AdventureCatalog {
     public static let entryCost = 15
     public static let ultimateEnergy = 12
-    public static let defenders: [DefenderKind] = [.inkling, .twin, .frost, .stroke, .wallnut, .tallnut]
+    public static let doomShroom = DefenderKind(
+        id: AdventureDoom.id, name: "毁灭菇", sunCost: AdventureDoom.cost,
+        look: DefenderLook(body: .seal, color: .plum))
+    public static let defenders: [DefenderKind] = [.inkling, .twin, .frost, .stroke, .wallnut, .tallnut, doomShroom]
     public static let defaultDeck = ["inkling", "twin", "frost", "wallnut"]
 
     public static let levels: [AdventureLevel] = {

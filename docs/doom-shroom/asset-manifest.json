@@ -1,0 +1,44 @@
+{
+  "date": "2026-11-22",
+  "base_commit": "a8986a5b6c4cf72152a65f6108281e5212231ae3",
+  "tool": "built-in image_gen",
+  "type": "ui-mockup",
+  "status": "concept-awaiting-user-review",
+  "production_asset": false,
+  "asset": {
+    "path": "doom-shroom-ui.png",
+    "pixels": [
+      1448,
+      1086
+    ],
+    "sha256": "1691f89adad7ae69ef27254a2cefb52640035aae4bb3f535f635cf3f3ca7d854",
+    "transparent_background": false
+  },
+  "reference": {
+    "path": "../ui-current/captures/landscape-battle.png",
+    "source": "Real main-branch SwiftUI / SpriteKit capture from AdventureScreenTests, using in-memory sample battle on macOS"
+  },
+  "prompts": [
+    "imagegen-prompt.txt",
+    "imagegen-refinement.txt"
+  ],
+  "generation_history": [
+    "Generated initial board from current real application capture",
+    "Refined range preview to communicate a blast covering multiple lanes; selected the refined board"
+  ],
+  "visual_review": {
+    "checked": [
+      "Four plant card slots plus separate yellow sun tile and shovel",
+      "Five grass lanes; external top HUD and external bottom ultimate control",
+      "Silver/navy heraldic card style matches the current UI family",
+      "Placement preview, mushroom-cloud blast and one locked crater shown",
+      "Crater countdown 03:00, card cooldown 50s, price125 shown as design initial values"
+    ],
+    "limitations": [
+      "AI concept illustration; exact guide geometry and range contour are illustrative, not pixel-accurate implementation",
+      "Damage, boss behavior and balance have not been implemented or playtested",
+      "No production sprites or .sks effects are imported"
+    ]
+  },
+  "provenance_note": "AI-generated proposal referenced against existing project artwork. Existing PvZ-derived materials retain the restrictions documented in Resources/Sprites/SOURCE.md."
+}

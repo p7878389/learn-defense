@@ -205,6 +205,8 @@ struct AdventureScreen: View {
     @State private var frame: CGRect = .zero
     @State private var selected: String?
     @State private var shoveling = false
+    @State private var placementCell: DefenderCell?
+    @State private var placementMessage: String?
     @State private var showExit = false
     let onClose: () -> Void
 
@@ -220,9 +222,13 @@ struct AdventureScreen: View {
                     .background(GeometryReader { proxy in
                         Color.clear.onChange(of: proxy.frame(in: .named("adventure")), initial: true) { _, value in frame = value }
                     })
-                    .overlay { LawnGuide(selected: selected != nil || shoveling) }
+                    .overlay {
+                        LawnGuide(selected: selected != nil || shoveling)
+                        AdventurePlacementPreview(battle: session.battle, kindID: selected, cell: placementCell)
+                    }
                     .contentShape(Rectangle())
                     .gesture(DragGesture(minimumDistance: 0, coordinateSpace: .named("adventure"))
+                        .onChanged { value in updatePreview(at: value.location) }
                         .onEnded { value in place(at: value.location) })
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
@@ -281,16 +287,19 @@ struct AdventureScreen: View {
             HStack(spacing: 12) {
                 SeedPacketStrip(kinds: session.battle.deck.compactMap(AdventureCatalog.defender), sun: session.hud.sun,
                     enabled: session.battle.canBuild, draggingID: selected, skins: session.loadout.defenderSkins,
-                    onDragChanged: { kind, _ in selected = kind.id; shoveling = false },
+                    onDragChanged: { kind, point in
+                        selected = kind.id; shoveling = false; placementMessage = nil
+                        updatePreview(at: point)
+                    },
                     onDragEnded: { kind, point in
                         selected = kind.id
                         if frame.contains(point) { place(at: point) }
-                    })
+                    }, gestureSpace: "adventure", cooldowns: [AdventureDoom.id: session.hud.doomCooldown])
                 AdventureAction(title: shoveling ? "铲子已选中" : "铲除", icon: "🛠",
                                 fill: shoveling ? Theme.accent : GrowthColors.surface,
                                 edge: shoveling ? GrowthColors.orangeDark : GrowthColors.cardEdge,
                                 foreground: shoveling ? .white : Theme.ink) {
-                    shoveling.toggle(); selected = nil
+                    shoveling.toggle(); selected = nil; placementCell = nil; placementMessage = nil
                 }
                 .disabled(!session.battle.canBuild)
             }
@@ -304,14 +313,19 @@ struct AdventureScreen: View {
                 AdventureAction(title: "重试保存", action: session.retrySave)
             }
             if session.hud.phase == .preparing {
-                Text("点击卡牌再点草坪，或拖动卡牌布阵；铲除不返还阳光。至少种下一位射手。")
-                    .font(.callout).foregroundStyle(Theme.muted)
+                HStack {
+                    Text(placementPrompt ?? "点击卡牌再点草坪，或拖动卡牌布阵；铲除不返还阳光。毁灭菇开战后引爆，至少种下一位射手。")
+                        .font(.callout).foregroundStyle(Theme.muted).lineLimit(2)
+                    placementCancel
+                }
+                .frame(height: 44)
                 AdventureAction(title: "开始战斗 · 消耗 15 积分", icon: "▶", height: 52, action: session.start)
                     .disabled(!session.battle.towers.contains { AdventureCatalog.defender($0.kindID)?.canShoot == true })
             } else {
                 HStack {
-                    Text(session.hud.rest > 0 ? "下一波将在 \(session.hud.rest) 秒后到来" : "击败 \(session.hud.defeated) 只怪物")
+                    Text(placementPrompt ?? (session.hud.rest > 0 ? "下一波将在 \(session.hud.rest) 秒后到来" : "击败 \(session.hud.defeated) 只怪物"))
                         .font(.callout).foregroundStyle(Theme.muted)
+                    placementCancel
                     Spacer()
                     AdventureAction(title: "雷霆大招 \(session.hud.energy)/12", icon: "⚡️", fill: Theme.accent,
                                     edge: GrowthColors.orangeDark, action: session.unleash).disabled(!session.hud.ultimateReady)
@@ -319,6 +333,17 @@ struct AdventureScreen: View {
             }
             Text("\(session.hud.rest > 0 ? "本波预告" : "敌人预告")：\(session.battle.currentWave?.preview ?? "")")
                 .font(.caption).foregroundStyle(Theme.muted).lineLimit(2)
+        }
+    }
+
+    private var placementPrompt: String? {
+        placementMessage ?? (selected == AdventureDoom.id ? "选择空格放置毁灭菇 · 原格禁种 180 秒" : nil)
+    }
+
+    @ViewBuilder private var placementCancel: some View {
+        if placementPrompt != nil {
+            Button("取消") { selected = nil; placementCell = nil; placementMessage = nil }
+                .font(.headline).frame(minHeight: 44)
         }
     }
 
@@ -361,7 +386,20 @@ struct AdventureScreen: View {
     private func place(at location: CGPoint) {
         guard let point = GameScene.scenePoint(at: location, in: frame), let cell = Lawn(lanes: 5).cell(at: point) else { return }
         if shoveling { session.shovel(lane: cell.lane, column: cell.column) }
-        else if let selected { session.plant(selected, lane: cell.lane, column: cell.column) }
+        else if let selected {
+            if session.plant(selected, lane: cell.lane, column: cell.column) {
+                placementCell = nil; placementMessage = nil
+                if selected == AdventureDoom.id { self.selected = nil }
+            } else {
+                placementCell = cell
+                placementMessage = session.battle.doomCraters.contains { $0.lane == cell.lane && $0.column == cell.column }
+                    ? "焦坑恢复后才能种植" : "这里暂时不能放置，请选择其他空格"
+            }
+        }
+    }
+
+    private func updatePreview(at location: CGPoint) {
+        placementCell = GameScene.scenePoint(at: location, in: frame).flatMap { Lawn(lanes: 5).cell(at: $0) }
     }
 }
 

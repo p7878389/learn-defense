@@ -14,6 +14,8 @@ struct SeedPacketStrip: View {
     var barricade: DefenderKind? = nil
     var barricadeEnabled = false
     var onBarricade: () -> Void = {}
+    var gestureSpace = "gameLayout"
+    var cooldowns: [String: Int] = [:]
 
     struct Packet: Identifiable {
         let kind: DefenderKind
@@ -59,7 +61,8 @@ struct SeedPacketStrip: View {
     private func packet(for card: Packet) -> some View {
         let kind = card.kind
         let affordable = sun >= kind.sunCost
-        let available = enabled && affordable
+        let cooldown = cooldowns[kind.id] ?? 0
+        let available = enabled && affordable && cooldown == 0
         let rarity = HeraldicArtwork.defenderRarity(kind: kind, skin: card.skin)
         return VStack(spacing: 0) {
             if let image = UnitSprites.portrait(of: kind, skin: card.skin) {
@@ -77,17 +80,27 @@ struct SeedPacketStrip: View {
         .padding(.top, 6)
         .frame(width: cardWidth, height: 64)
         .background(CollectionCardFrame(rarity: rarity, locked: false))
+        .overlay {
+            if cooldown > 0 {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 3).fill(.black.opacity(0.65))
+                    Text("\(cooldown)s").font(.system(size: 17, weight: .heavy, design: .rounded)).foregroundStyle(.white)
+                }
+            } else if draggingID == kind.id {
+                RoundedRectangle(cornerRadius: 3).stroke(kind.id == AdventureDoom.id ? .purple : Theme.jade, lineWidth: 3)
+            }
+        }
         .opacity(available ? 1 : 0.52)
         .contentShape(RoundedRectangle(cornerRadius: 3))
         .scaleEffect(draggingID == kind.id ? 0.94 : 1)
         .gesture(
-            DragGesture(minimumDistance: 0, coordinateSpace: .named("gameLayout"))
+            DragGesture(minimumDistance: 0, coordinateSpace: .named(gestureSpace))
                 .onChanged { value in onDragChanged(kind, value.location) }
                 .onEnded { value in onDragEnded(kind, value.location) }
         )
         .allowsHitTesting(available)
         .accessibilityLabel("\(card.name)，\(rarity.displayName)，需要 \(kind.sunCost) 阳光")
-        .accessibilityHint("拖到战场空位种下")
+        .accessibilityHint(cooldown > 0 ? "冷却还有 \(cooldown) 秒" : "拖到战场空位种下")
     }
 
     private func barricadePacket(for kind: DefenderKind) -> some View {

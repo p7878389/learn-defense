@@ -1,0 +1,44 @@
+[
+  {
+    "name" : "DoomBody",
+    "size" : [
+      512,
+      413
+    ],
+    "sourceRect" : [
+      0,
+      0,
+      704,
+      724
+    ],
+    "transparentPixels" : 310697
+  },
+  {
+    "name" : "DoomCloud",
+    "size" : [
+      715,
+      483
+    ],
+    "sourceRect" : [
+      704,
+      0,
+      800,
+      724
+    ],
+    "transparentPixels" : 348273
+  },
+  {
+    "name" : "DoomCrater",
+    "size" : [
+      256,
+      109
+    ],
+    "sourceRect" : [
+      1504,
+      0,
+      668,
+      724
+    ],
+    "transparentPixels" : 439053
+  }
+]

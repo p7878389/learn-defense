@@ -1,0 +1,213 @@
+{
+  "date": "2026-11-22",
+  "scope": "all",
+  "repo": "learn-defense@wt-codex-doom-shroom-ui-cf3391efb65c",
+  "summary": {
+    "changed_count": 224,
+    "affected_count": 43,
+    "changed_files": 21,
+    "risk_level": "critical"
+  },
+  "partial": false,
+  "truncated": false,
+  "changed_files": [
+    "Packages/LearnKit/Sources/LearnCore/Adventure/AdventureBattle.swift",
+    "Packages/LearnKit/Sources/LearnCore/Adventure/AdventureCatalog.swift",
+    "Packages/LearnKit/Sources/LearnCore/Adventure/AdventureDoom.swift",
+    "Packages/LearnKit/Sources/LearnGame/Adventure/AdventureDoomArtwork.swift",
+    "Packages/LearnKit/Sources/LearnGame/Adventure/AdventureScene.swift",
+    "Packages/LearnKit/Sources/LearnGame/Adventure/AdventureSession.swift",
+    "Packages/LearnKit/Sources/LearnGame/Resources/Effects/README.md",
+    "Packages/LearnKit/Sources/LearnGame/Support/UnitSprites.swift",
+    "Packages/LearnKit/Sources/LearnGame/Views/AdventurePlacementPreview.swift",
+    "Packages/LearnKit/Sources/LearnGame/Views/AdventureView.swift",
+    "Packages/LearnKit/Sources/LearnGame/Views/SeedPacketStrip.swift",
+    "Packages/LearnKit/Tests/LearnCoreTests/AdventureDoomTests.swift",
+    "Packages/LearnKit/Tests/LearnGameTests/AdventureDoomSceneTests.swift",
+    "Packages/LearnKit/Tests/LearnGameTests/AdventureDoomSessionTests.swift",
+    "README.md",
+    "docs/ui-growth/README.md",
+    "docs/ui-home/README.md",
+    "docs/成长系统设计方案.md",
+    "docs/角色与道具扩展.md",
+    "scripts/build-doom-shroom.swift"
+  ],
+  "affected_processes": [
+    {
+      "name": "Explode → ProgressStore",
+      "step_count": 8
+    },
+    {
+      "name": "Explode → ProgressFile",
+      "step_count": 8
+    },
+    {
+      "name": "Explode → CoinIcon",
+      "step_count": 8
+    },
+    {
+      "name": "Explode → GameConfig",
+      "step_count": 7
+    },
+    {
+      "name": "Explode → PressableStyle",
+      "step_count": 7
+    },
+    {
+      "name": "Place → ApplyPause",
+      "step_count": 7
+    },
+    {
+      "name": "Explode → Texture",
+      "step_count": 6
+    },
+    {
+      "name": "Explode → Log",
+      "step_count": 6
+    },
+    {
+      "name": "Place → LaneBottom",
+      "step_count": 6
+    },
+    {
+      "name": "Place → AdventureHUD",
+      "step_count": 6
+    },
+    {
+      "name": "Place → Defender",
+      "step_count": 5
+    },
+    {
+      "name": "Place → Projectile",
+      "step_count": 5
+    },
+    {
+      "name": "Place → Pause",
+      "step_count": 5
+    },
+    {
+      "name": "Step → Enemies",
+      "step_count": 4
+    },
+    {
+      "name": "Place → AdventureDoomState",
+      "step_count": 4
+    },
+    {
+      "name": "Packet → AssetName",
+      "step_count": 4
+    },
+    {
+      "name": "Step → Tick",
+      "step_count": 3
+    },
+    {
+      "name": "Step → Contains",
+      "step_count": 3
+    },
+    {
+      "name": "Step → AdventureDoomSite",
+      "step_count": 3
+    },
+    {
+      "name": "Portrait → ResourcePrefix",
+      "step_count": 3
+    },
+    {
+      "name": "Place → Shovel",
+      "step_count": 3
+    },
+    {
+      "name": "Packet → Rarity",
+      "step_count": 3
+    },
+    {
+      "name": "Render → ProgressStore",
+      "step_count": 8
+    },
+    {
+      "name": "Render → ProgressFile",
+      "step_count": 8
+    },
+    {
+      "name": "Render → CoinIcon",
+      "step_count": 8
+    },
+    {
+      "name": "Render → GameConfig",
+      "step_count": 7
+    },
+    {
+      "name": "Render → PressableStyle",
+      "step_count": 7
+    },
+    {
+      "name": "Render → Texture",
+      "step_count": 6
+    },
+    {
+      "name": "Render → Log",
+      "step_count": 6
+    },
+    {
+      "name": "Unleash → LaneBottom",
+      "step_count": 5
+    },
+    {
+      "name": "RetrySave → AdventureHUD",
+      "step_count": 4
+    },
+    {
+      "name": "Unleash → Defender",
+      "step_count": 4
+    },
+    {
+      "name": "Unleash → Projectile",
+      "step_count": 4
+    },
+    {
+      "name": "Unleash → AdventureHUD",
+      "step_count": 4
+    },
+    {
+      "name": "Place → DefenderSkins",
+      "step_count": 5
+    },
+    {
+      "name": "Explode → ApplyPause",
+      "step_count": 4
+    },
+    {
+      "name": "Render → ApplyPause",
+      "step_count": 4
+    },
+    {
+      "name": "Packet → Cosmetics",
+      "step_count": 4
+    },
+    {
+      "name": "Unleash → DefenderSkins",
+      "step_count": 4
+    },
+    {
+      "name": "Portrait → SpeechClip",
+      "step_count": 6
+    },
+    {
+      "name": "Portrait → Segment",
+      "step_count": 7
+    },
+    {
+      "name": "Portrait → Normalize",
+      "step_count": 8
+    },
+    {
+      "name": "Portrait → LessonItems",
+      "step_count": 5
+    }
+  ],
+  "limitations": [
+    "Symbol results cover Swift/source changes; binary SKS and PNGs are verified through native loading, rendering, alpha reports and the test suite.",
+    "Index flow extraction may omit dynamic/framework dispatch; graph results are combined with direct source review and full regression tests."
+  ]
+}

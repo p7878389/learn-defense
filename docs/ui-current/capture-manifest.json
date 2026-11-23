@@ -1,0 +1,116 @@
+{
+  "date": "2026-11-22",
+  "base_commit": "a8986a5b6c4cf72152a65f6108281e5212231ae3",
+  "source": "Existing AdventureScreenTests.rendersRealMapAndBattleAtBothOrientations; NSHostingView and SpriteKit texture capture on macOS",
+  "scope": "Current real UI with in-memory sample data; not an iPad device capture",
+  "tests": {
+    "suite": "AdventureScreenTests",
+    "passed": 3
+  },
+  "images": [
+    {
+      "path": "captures/landscape-battle.png",
+      "pixels": [
+        2360,
+        1472
+      ],
+      "sha256": "2c2fc5b25a17db73749e2c5504615a6812ca4a4d20fac796d0b4362addd8e803"
+    },
+    {
+      "path": "captures/landscape-home.png",
+      "pixels": [
+        2360,
+        1472
+      ],
+      "sha256": "79beca98c150ba26103f6ba3722db6eee1aa132661ac69c423408664d360ebbe"
+    },
+    {
+      "path": "captures/landscape-map.png",
+      "pixels": [
+        2360,
+        1472
+      ],
+      "sha256": "01c4db4e8ed9d2a4bef80a0202710d10cab1158e306ccbde638cddf7f6787bcf"
+    },
+    {
+      "path": "captures/landscape-preparing.png",
+      "pixels": [
+        2360,
+        1472
+      ],
+      "sha256": "7dad689fb360ff8e228c9fba328bb21b53cabe6216900f9ce346bdd5d9507536"
+    },
+    {
+      "path": "captures/landscape-saved-map.png",
+      "pixels": [
+        2360,
+        1472
+      ],
+      "sha256": "8066912dd4876d7453e83cfc7f3e828176a1ea5867693accfbd7e835c9a767c9"
+    },
+    {
+      "path": "captures/portrait-battle.png",
+      "pixels": [
+        1640,
+        2200
+      ],
+      "sha256": "89fee4258a2cd6c95fd9548b6a91995fa4dac65a77738b867402ce0eee6adaf6"
+    },
+    {
+      "path": "captures/portrait-home.png",
+      "pixels": [
+        1640,
+        2200
+      ],
+      "sha256": "55ad565dd989c49bc7c6a930cfb5992835202ee87d0bd05b1644fbf8dd382d89"
+    },
+    {
+      "path": "captures/portrait-map.png",
+      "pixels": [
+        1640,
+        2200
+      ],
+      "sha256": "5dd8e17be4574350dae26f2be7ca0268dd46b5a07eb8a936b36cc01decbc6b95"
+    },
+    {
+      "path": "captures/portrait-preparing.png",
+      "pixels": [
+        1640,
+        2200
+      ],
+      "sha256": "fee8c1588148e08bb08aeb7bd057c665ce8857f901b25857f6ff194ef4875348"
+    },
+    {
+      "path": "captures/portrait-saved-map.png",
+      "pixels": [
+        1640,
+        2200
+      ],
+      "sha256": "b8c43a5073eefb611b836c1d60d66f2bb23cbb03fcee609419da27ca36504c9c"
+    },
+    {
+      "path": "captures/question-bank-partial.png",
+      "pixels": [
+        1800,
+        1400
+      ],
+      "sha256": "83357ed5fabbd80cdc4d70554ef1a3fe506d4884b9c704e5b6af3d8bf5d8660d"
+    },
+    {
+      "path": "captures/question-bank.png",
+      "pixels": [
+        1800,
+        1400
+      ],
+      "sha256": "26ed68d8bd323784dbc56e7ea2c738e29ddb479c5561d90f57221a82d76568da"
+    },
+    {
+      "path": "captures/start-confirmation.png",
+      "pixels": [
+        1520,
+        1280
+      ],
+      "sha256": "08d14f3617c44452afed666f1c2464ead5e3b86a85c930b8b0df66dfac11eb48"
+    }
+  ]
+}
