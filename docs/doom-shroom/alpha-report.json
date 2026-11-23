@@ -1,0 +1,65 @@
+{
+  "ok": true,
+  "assets": [
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/DoomBody.png",
+      "format": "PNG",
+      "mode": "RGBA",
+      "width": 512,
+      "height": 413,
+      "bytes": 259102,
+      "color_count": 51869,
+      "has_alpha": true,
+      "alpha_min": 0,
+      "alpha_max": 255,
+      "transparent_pixels": 73956,
+      "content_bounds": [
+        0,
+        0,
+        509,
+        412
+      ],
+      "problems": []
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/DoomCloud.png",
+      "format": "PNG",
+      "mode": "RGBA",
+      "width": 715,
+      "height": 483,
+      "bytes": 510617,
+      "color_count": ">65535",
+      "has_alpha": true,
+      "alpha_min": 0,
+      "alpha_max": 254,
+      "transparent_pixels": 92403,
+      "content_bounds": [
+        0,
+        0,
+        715,
+        483
+      ],
+      "problems": []
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/DoomCrater.png",
+      "format": "PNG",
+      "mode": "RGBA",
+      "width": 256,
+      "height": 109,
+      "bytes": 44063,
+      "color_count": 12598,
+      "has_alpha": true,
+      "alpha_min": 0,
+      "alpha_max": 255,
+      "transparent_pixels": 9349,
+      "content_bounds": [
+        2,
+        3,
+        254,
+        109
+      ],
+      "problems": []
+    }
+  ]
+}

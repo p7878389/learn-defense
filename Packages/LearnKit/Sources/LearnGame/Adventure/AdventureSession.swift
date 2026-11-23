@@ -12,6 +12,7 @@ struct AdventureHUD: Equatable {
     let defeated: Int
     let towers: Int
     let ultimateReady: Bool
+    let doomCooldown: Int
 
     init(_ battle: AdventureBattle) {
         phase = battle.phase
@@ -24,6 +25,7 @@ struct AdventureHUD: Equatable {
         defeated = battle.defeated
         towers = battle.towers.count
         ultimateReady = battle.ultimateReady
+        doomCooldown = max(0, Int(ceil(battle.doomCooldown)))
     }
 }
 
@@ -55,9 +57,11 @@ final class AdventureSession: ObservableObject {
         if state.isFinished { persist() }
     }
 
-    func plant(_ id: String, lane: Int, column: Int) {
-        guard !closed, battle.plant(id, lane: lane, column: column) else { return }
+    @discardableResult
+    func plant(_ id: String, lane: Int, column: Int) -> Bool {
+        guard !closed, error == nil, battle.plant(id, lane: lane, column: column) else { return false }
         changed(save: battle.phase != .preparing)
+        return true
     }
 
     func shovel(lane: Int, column: Int) {

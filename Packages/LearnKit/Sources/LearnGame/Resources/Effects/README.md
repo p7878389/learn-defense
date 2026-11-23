@@ -27,6 +27,8 @@ V2 在此基础上使用内置 ImageGen 制作六张透明翡翠/金色特效纹
 
 ## 如何调整
 
+毁灭菇使用 `DoomBody.sks`（本体）、`DoomExplosion.sks`（云与冲击波）、`DoomCrater.sks`（单格焦坑），引用三张同名家族 PNG；动作 `DoomCharge`、`DoomBlastLife`、`DoomCloudPop`、`DoomWave` 在 `CombatActions.sks` 中维护。只通过冒险纯规则事件触发，不在动画回调扣血。离线导入器为 `scripts/build-doom-shroom.swift`，来源、透明度报告与运行导出见仓库 `docs/doom-shroom/`。已完成原生加载、独立实例、暂停和有限清理验证；未宣称 Xcode 逐文件打开保存或 iPad 实机验收。
+
 1. 在 Xcode 打开 `.sks`。粒子选 Attributes Inspector；动作库选对应命名动作的时间线。
 2. 修改粒子速度、寿命、方向、透明度与大小曲线，或动作的时长、角度、缩放。
 3. 保存文件。重新运行 `FXResourceTests` 或导出预览；修改资源不会改变 Swift 业务逻辑，但仍需重新打包。

@@ -31,6 +31,7 @@ public enum AdventureEvent: Equatable, Sendable {
     case towerBroken(AdventureTower)
     case wave(Int)
     case ultimate
+    case doomExploded(AdventureDoomSite)
 }
 
 /// 可保存的完整玩法状态；使用固定步长，使不同帧率和存档恢复具有相同结果。
@@ -56,6 +57,8 @@ public struct AdventureBattle: Codable, Equatable, Identifiable, Sendable {
     private var spawnIndex = 0
     private var nextID = 1
     private var remainder: Double = 0
+    // Optional 保留旧存档的合成 Codable 兼容：缺字段即没有蓄力、焦坑或冷却。
+    private var doomState: AdventureDoomState?
 
     public init(level: AdventureLevel, difficulty: Difficulty = .normal, deck: [String] = AdventureCatalog.defaultDeck) {
         id = UUID()
@@ -74,6 +77,18 @@ public struct AdventureBattle: Codable, Equatable, Identifiable, Sendable {
     public var currentWave: AdventureWave? { level.waves.indices.contains(wave - 1) ? level.waves[wave - 1] : nil }
     public var nextWave: AdventureWave? { level.waves.indices.contains(wave) ? level.waves[wave] : nil }
     public var canBuild: Bool { phase == .preparing || phase == .playing }
+    public var doomCharges: [AdventureDoomSite] { doomState?.charges ?? [] }
+    public var doomCraters: [AdventureDoomSite] { doomState?.craters ?? [] }
+    public var doomCooldown: Double { doomState?.cooldown ?? 0 }
+
+    public func canPlant(_ kindID: String, lane: Int, column: Int) -> Bool {
+        guard canBuild, deck.contains(kindID), let kind = AdventureCatalog.defender(kindID),
+              (0..<5).contains(lane), (0..<9).contains(column), sun >= kind.sunCost,
+              !towers.contains(where: { $0.lane == lane && $0.column == column }),
+              !doomCharges.contains(where: { $0.lane == lane && $0.column == column }),
+              !doomCraters.contains(where: { $0.lane == lane && $0.column == column }) else { return false }
+        return kindID != AdventureDoom.id || doomCooldown <= 0
+    }
 
     public var advice: String {
         guard let worst = leaksByLane.indices.max(by: { leaksByLane[$0] < leaksByLane[$1] }), leaksByLane[worst] > 0 else {
@@ -84,9 +99,16 @@ public struct AdventureBattle: Codable, Equatable, Identifiable, Sendable {
 
     @discardableResult
     public mutating func plant(_ kindID: String, lane: Int, column: Int) -> Bool {
-        guard canBuild, deck.contains(kindID), let kind = AdventureCatalog.defender(kindID),
-              (0..<5).contains(lane), (0..<9).contains(column), sun >= kind.sunCost,
-              !towers.contains(where: { $0.lane == lane && $0.column == column }) else { return false }
+        guard canPlant(kindID, lane: lane, column: column), let kind = AdventureCatalog.defender(kindID) else { return false }
+        if kindID == AdventureDoom.id {
+            var state = doomState ?? AdventureDoomState()
+            state.charges.append(AdventureDoomSite(id: nextID, lane: lane, column: column, remaining: AdventureDoom.fuse))
+            state.cooldown = AdventureDoom.cooldown
+            doomState = state
+            nextID += 1
+            sun -= kind.sunCost
+            return true
+        }
         var tower = AdventureTower(id: nextID, kindID: kindID, lane: lane, column: column, durability: 0)
         tower.durability = tower.maxDurability
         nextID += 1
@@ -121,6 +143,7 @@ public struct AdventureBattle: Codable, Equatable, Identifiable, Sendable {
             remainder = max(0, remainder - 0.05)
             step(events: &events)
         }
+        if remainder < 0.0000001 { remainder = 0 }
         return events
     }
 
@@ -136,6 +159,7 @@ public struct AdventureBattle: Codable, Equatable, Identifiable, Sendable {
         ticks += 1
         if ticks % 100 == 0 { sun += 25 }
         if restRemaining > 0 {
+            advanceDoom(events: &events)
             restRemaining = max(0, restRemaining - 0.05)
             return
         }
@@ -153,6 +177,7 @@ public struct AdventureBattle: Codable, Equatable, Identifiable, Sendable {
             events.append(.spawned(enemy))
             spawnIndex += 1
         }
+        advanceDoom(events: &events)
 
         // 同路、射手前方的最靠近基地者优先；大喷菇只打近距离目标。
         for index in towers.indices {
@@ -223,5 +248,31 @@ public struct AdventureBattle: Codable, Equatable, Identifiable, Sendable {
         sun += enemy.kind.bounty
         if chargesEnergy { energy = min(AdventureCatalog.ultimateEnergy, energy + 1) }
         events.append(.defeated(enemy))
+    }
+
+    private mutating func advanceDoom(events: inout [AdventureEvent]) {
+        guard var state = doomState else { return }
+        func tick(_ remaining: Double) -> Double {
+            // 与固定步长一致地量化，避免 49.0000000001 被 UI 向上显示成 50 秒。
+            max(0, (remaining * 20).rounded() - 1) / 20
+        }
+        state.cooldown = tick(state.cooldown)
+        for index in state.craters.indices { state.craters[index].remaining = tick(state.craters[index].remaining) }
+        state.craters.removeAll { $0.remaining <= 0 }
+        for index in state.charges.indices { state.charges[index].remaining = tick(state.charges[index].remaining) }
+        let exploded = state.charges.filter { $0.remaining <= 0 }
+        state.charges.removeAll { $0.remaining <= 0 }
+        for site in exploded {
+            state.craters.append(AdventureDoomSite(id: site.id, lane: site.lane, column: site.column,
+                                                  remaining: AdventureDoom.craterDuration))
+        }
+        doomState = state
+        for site in exploded {
+            events.append(.doomExploded(site))
+            let victims = enemies.filter {
+                AdventureDoom.contains(lane: site.lane, column: site.column, enemyLane: $0.lane, enemyX: $0.x)
+            }.map(\.id)
+            for id in victims { hit(id, damage: AdventureDoom.damage, events: &events) }
+        }
     }
 }

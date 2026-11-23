@@ -14,6 +14,7 @@ final class AdventureScene: SKScene {
     private var pausedGameplay = true
     private var freezesAnimations = false
     private var built = false
+    private let doomArtwork = AdventureDoomArtwork()
 
     init(loadout: Loadout) {
         self.loadout = loadout
@@ -89,6 +90,8 @@ final class AdventureScene: SKScene {
                 for node in enemyNodes.values {
                     FXLibrary.playResource("AstralImpact", at: node.position, in: self)?.setScale(2)
                 }
+            case .doomExploded(let site):
+                doomArtwork.explode(site, in: self)
             case .spawned, .wave:
                 break
             }
@@ -113,6 +116,7 @@ final class AdventureScene: SKScene {
             let chewing = battle.towers.contains { $0.lane == enemy.lane && abs($0.x + 36 - enemy.x) < 2 }
             node.setChewing(chewing)
         }
+        doomArtwork.render(battle, in: self)
         setPaused(battle.phase == .paused)
         pausedGameplay = battle.phase != .playing
         // 准备和结算阶段保留角色待机、子弹及退场动画。

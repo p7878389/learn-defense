@@ -1,0 +1,132 @@
+{
+  "date": "2026-11-22",
+  "status": "implemented-on-task-branch-not-merged",
+  "branch": "codex/doom-shroom-ui",
+  "base_commit": "a8986a5b6c4cf72152a65f6108281e5212231ae3",
+  "generation": {
+    "tool": "built-in image_gen",
+    "prompt": "asset-prompt.txt",
+    "source": "asset-source.png",
+    "normalizer": "scripts/build-doom-shroom.swift",
+    "alpha_report": "alpha-report.json"
+  },
+  "assets": [
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/DoomBody.png",
+      "sha256": "4d42052bbc21a6f7934d726da6fd4a83aaf0e1e36c45a791b6fe6c301f59ddca",
+      "bytes": 259102,
+      "pixels": [
+        512,
+        413
+      ]
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/DoomBody.sks",
+      "sha256": "28309284b5b7532c869c36be1b705b16f28f07dab7ee28097872f8a1bbc8d65b",
+      "bytes": 1849
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/DoomCloud.png",
+      "sha256": "701a1866e9ddfb7d9f9f97da9165c1eb11140c6fa569bc2417df7af5d3836e8f",
+      "bytes": 510617,
+      "pixels": [
+        715,
+        483
+      ]
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/DoomCrater.png",
+      "sha256": "8468d193e57b06a1ea3dede919fd2bd9940bc55bb1d0c14a0f6b1054aa888fad",
+      "bytes": 44063,
+      "pixels": [
+        256,
+        109
+      ]
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/DoomCrater.sks",
+      "sha256": "fd82d5475715e2346d4597ee71397ef823885ee26624fe5a1c72e8541e38c98d",
+      "bytes": 1838
+    },
+    {
+      "path": "Packages/LearnKit/Sources/LearnGame/Resources/Effects/DoomExplosion.sks",
+      "sha256": "1a7470abf9fc550924eeb1191ad0b1f4774d43a090fdcc681602d55951d52fbc",
+      "bytes": 2889
+    }
+  ],
+  "captures": [
+    {
+      "path": "runtime/engine-blast.png",
+      "pixels": [
+        1200,
+        600
+      ],
+      "sha256": "30d09731a20e8b24f087391c272c096aad80dcd68f40168ec0bb63a642e4f66a"
+    },
+    {
+      "path": "runtime/engine-crater.png",
+      "pixels": [
+        1200,
+        600
+      ],
+      "sha256": "177c77f340f2a123195f058f564ba8dddc712c6a1e582c5082ad60fcfa7031ee"
+    },
+    {
+      "path": "runtime/landscape-charge.png",
+      "pixels": [
+        2360,
+        1472
+      ],
+      "sha256": "b7273652d2e744c72a5cbf3e062154448567c99d937a98f48fa7435521464272"
+    },
+    {
+      "path": "runtime/landscape-crater.png",
+      "pixels": [
+        2360,
+        1472
+      ],
+      "sha256": "a40c7533b83b8c3fe2e5ffd8b11f30c0aa2e1d75e92d5241912574541840b24b"
+    },
+    {
+      "path": "runtime/landscape-ready.png",
+      "pixels": [
+        2360,
+        1472
+      ],
+      "sha256": "c89c0a2e93fe070f5e57ea3f7b48f437cdacba3dcbd0e808de2ec38bd334daad"
+    },
+    {
+      "path": "runtime/placement-blocked.png",
+      "pixels": [
+        1200,
+        600
+      ],
+      "sha256": "fc93dad48aa060b557a58ba22966e753ea0530949198419086e4c729f19755a2"
+    },
+    {
+      "path": "runtime/placement-ready.png",
+      "pixels": [
+        1200,
+        600
+      ],
+      "sha256": "997279f80764375b929b2216acaf683364d7cd14d051770153bb08eb2641ea1f"
+    },
+    {
+      "path": "runtime/portrait-crater.png",
+      "pixels": [
+        1640,
+        2200
+      ],
+      "sha256": "d0f38b9bd1338b5b1185be35531b50d7c0fa2f01a25d875885696d0517f55afe"
+    }
+  ],
+  "validation": {
+    "swift_tests": 407,
+    "learn_game_tests": 213,
+    "learn_core_tests": 194,
+    "ios_generic_simulator_build": "passed",
+    "diff_check": "passed",
+    "visual_review": "Native macOS SwiftUI and SpriteKit outputs reviewed; no iPad touch/performance/balance validation"
+  },
+  "rights_note": "Generated new assets; reference materials retain project Sprites/SOURCE.md restrictions."
+}
