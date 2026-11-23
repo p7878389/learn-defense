@@ -384,8 +384,6 @@ struct CollectionView: View {
                                     .foregroundStyle(.white)
                                     .padding(.horizontal, 6).padding(.vertical, 4)
                                     .background(Capsule().fill(Theme.jade))
-                            } else if locked {
-                                Text("未解锁").foregroundStyle(Theme.muted)
                             }
                         }
                         .font(.system(size: 11, weight: .heavy, design: .rounded))
