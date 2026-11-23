@@ -78,30 +78,85 @@ struct PauseOverlay: View {
 
 /// 回合只评分，所有成长奖励留到整局结束。
 struct RoundRestOverlay: View {
+    @Environment(\.scenePhase) private var scenePhase
     @ObservedObject var session: GameSession
+
+    private var isReady: Bool { session.restRemaining == 0 }
 
     var body: some View {
         ZStack {
             Color.black.opacity(0.45).ignoresSafeArea()
-            VStack(spacing: 18) {
-                Text("第 \(session.round) 回合完成").font(.largeTitle.bold())
-                Text("本回合评分 \(session.roundScore) · 首答正确率 \(Int((session.roundAccuracy * 100).rounded()))%")
-                    .font(.title2)
-                Text("本回合 \(session.roundQuestions) 题 · 积分将在整局结束后统一结算")
-                    .foregroundStyle(Theme.muted)
-                Text(session.restRemaining > 0 ? "休息 \(session.restRemaining) 秒，看看远处吧" : "休息好了，准备下一回合")
-                    .font(.title2.bold())
-                HStack(spacing: 24) {
-                    Button("结束并结算", action: session.finishGame)
-                    Button("继续下一回合", action: session.continueRound)
-                        .disabled(session.restRemaining > 0)
+            GeometryReader { proxy in
+                ScrollView {
+                    VStack(spacing: 20) {
+                        Label("第 \(session.round) 回合完成", systemImage: "checkmark.seal.fill")
+                            .font(.largeTitle.bold())
+                            .foregroundStyle(Theme.jade)
+                        Text("本回合 \(session.roundQuestions) 题 · 评分 \(session.roundScore) · 首答正确率 \(Int((session.roundAccuracy * 100).rounded()))%")
+                            .font(.headline)
+
+                        ZStack {
+                            Circle().stroke(Theme.jade.opacity(0.15), lineWidth: 8)
+                            Circle()
+                                .trim(from: 0, to: 1 - min(1, Double(session.restRemaining) / Double(session.rules.restSeconds(afterRound: session.round))))
+                                .stroke(Theme.jade, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                                .rotationEffect(.degrees(-90))
+                            VStack(spacing: 2) {
+                                if isReady {
+                                    Image(systemName: "checkmark").font(.system(size: 44, weight: .bold))
+                                    Text("准备好了").font(.subheadline.bold())
+                                } else {
+                                    Text("\(session.restRemaining)")
+                                        .font(.system(size: 44, weight: .bold, design: .rounded))
+                                        .monospacedDigit()
+                                    Text("秒后可继续").font(.subheadline)
+                                }
+                            }
+                            .foregroundStyle(Theme.jade)
+                        }
+                        .frame(width: 132, height: 132)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel(isReady ? "休息结束，可以开始下一回合" : "休息还剩 \(session.restRemaining) 秒")
+
+                        VStack(spacing: 6) {
+                            Text(isReady ? "休息好了，按自己的节奏继续" : "放下屏幕，看看远处，伸个懒腰吧")
+                                .font(.title3.bold())
+                            Text("下一回合：第 \(session.round + 1) 回合 · \(session.roundQuestions + session.rules.questionIncrement[session.config.difficulty]) 题")
+                                .foregroundStyle(Theme.muted)
+                        }
+                        Button(action: session.continueRound) {
+                            Text(isReady ? "开始下一回合" : "休息中 · \(session.restRemaining) 秒")
+                                .font(.title2.bold())
+                                .frame(maxWidth: .infinity, minHeight: 52)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(Theme.jade)
+                        .disabled(!isReady)
+                        VStack(spacing: 8) {
+                            Button("结束并结算", action: session.finishGame)
+                                .font(.headline)
+                                .buttonStyle(.bordered)
+                            Text("随时可以结束，积分将在整局结束后统一结算")
+                                .font(.footnote)
+                                .foregroundStyle(Theme.muted)
+                        }
+                    }
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(Theme.ink)
+                    .padding(28)
+                    .frame(maxWidth: 560)
+                    .background(Theme.paper, in: RoundedRectangle(cornerRadius: 24))
+                    .padding(16)
+                    .frame(maxWidth: .infinity, minHeight: proxy.size.height)
                 }
-                .font(.title2.bold())
-                .buttonStyle(.borderedProminent)
+                .scrollIndicators(.hidden)
             }
-            .padding(32)
-            .background(Theme.paper, in: RoundedRectangle(cornerRadius: 24))
-            .padding(24)
         }
+        .onAppear { session.updateRest() }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { session.updateRest() }
+        }
+        // 面板离开后自动取消订阅，战斗阶段无需唤醒休息计时器。
+        .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { session.updateRest(now: $0) }
     }
 }

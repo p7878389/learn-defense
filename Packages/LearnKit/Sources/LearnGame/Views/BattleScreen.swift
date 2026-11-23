@@ -234,7 +234,6 @@ struct BattleScreen: View {
                     isPortrait = size.height > size.width
                 }
             })
-        .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { session.updateRest(now: $0) }
         .onDisappear {
             if scenePhase == .active { session.end() }
             else { session.suspend() }
