@@ -12,6 +12,7 @@ struct AdventureDoomSessionTests {
         try database.saveProfiles([profile])
         var growth = GrowthState()
         growth.coins = 50
+        growth.owned.insert("defender.doomShroom")
         try database.saveGrowthState(growth, profileID: profile.id)
         let model = AppModel(database: database, library: .load(userDirectory: nil),
                              speechLibrary: SpeechLibrary(database: database))

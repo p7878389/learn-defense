@@ -106,7 +106,7 @@ public struct GrowthState: Codable, Sendable, Equatable {
     public var coins = 0
     /// 已获得的徽章 id → 获得时间
     public var badges: [String: Date] = [:]
-    /// 用积分买下的外观 id（免费外观到等级自动拥有，不记在这里）
+    /// 用积分买下的外观或功能道具 id（免费外观到等级自动拥有，不记在这里）
     public var owned: Set<String> = []
     /// 位置（`CosmeticKind.equipKey`）→ 装备的外观 id；没有记录就是原版
     public var equipped: [String: String] = [:]

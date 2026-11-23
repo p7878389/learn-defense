@@ -144,6 +144,8 @@ public enum UnitCatalog {
     /// 能种在草坪上的植物：射手和防御道具
     public static let defenders: [DefenderKind] = [.inkling, .twin, .frost, .stroke, .starling,
                                                    .wallnut, .tallnut, .potato]
+    /// 一次性种植道具使用独立特效，不作为持续射手或阻挡植物创建。
+    public static let consumables: [DefenderKind] = [AdventureCatalog.doomShroom]
     /// 战斗中花阳光放下的路障，不占种植格
     public static let barricades: [DefenderKind] = [.ironGate]
 
@@ -152,7 +154,7 @@ public enum UnitCatalog {
     }
 
     public static func defender(id: String) -> DefenderKind? {
-        (defenders + barricades).first { $0.id == id }
+        (defenders + barricades + consumables).first { $0.id == id }
     }
 }
 

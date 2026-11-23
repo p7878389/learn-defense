@@ -48,6 +48,11 @@ final class GameSession: ObservableObject {
     @Published private(set) var inventory = Inventory(capacity: 3)
     /// 场上已经有一道铁栅门；碎了才能再放
     @Published private(set) var barricadeDown = false
+    @Published private(set) var doomCooldown = 0
+
+    var plantable: [DefenderKind] {
+        tuning.plantable + UnitCatalog.consumables.filter { growth?.state.canUseDefender($0.id) == true }
+    }
 
     /// 普通题和大招题都只统计第一次有效作答，与学习记录和对局明细一致。
     private(set) var attempted = 0
@@ -161,7 +166,7 @@ final class GameSession: ObservableObject {
         if isEmpty {
             scene.setGamePaused(true)
         } else {
-            UnitSprites.preloadCombat(defenders: tuning.plantable, enemies: spawnPlan, loadout: loadout)
+            UnitSprites.preloadCombat(defenders: plantable, enemies: spawnPlan, loadout: loadout)
         }
     }
 
@@ -387,13 +392,18 @@ final class GameSession: ObservableObject {
 
     /// 把拖到战场上的卡牌落到对应草坪；成功后立即扣除阳光
     func dropSeed(id: String, at point: CGPoint) -> Bool {
-        guard canUseShop, let kind = tuning.plantable.first(where: { $0.id == id }) else { return false }
+        guard canUseShop, let kind = plantable.first(where: { $0.id == id }) else { return false }
+        if id == AdventureDoom.id, scene.doomCooldown > 0 { return false }
         guard sun >= kind.sunCost else {
             scene.play(FloatingTextEffect(text: "阳光不够", color: Palette.hurt, fontSize: 30))
             speech.speak(SpeechText.Line.notEnoughSun, interrupt: true)
             return false
         }
         guard scene.plant(kind, at: point) else {
+            if scene.hasDoomCrater(at: point) {
+                scene.play(FloatingTextEffect(text: "焦坑恢复后才能种植", color: Palette.hurt, fontSize: 26))
+                return false
+            }
             if scene.isPlantable(point) {
                 scene.play(FloatingTextEffect(text: "这里已经有植物了", color: Palette.hurt, fontSize: 26))
                 speech.speak(SpeechText.Line.cellTaken, interrupt: true)
@@ -531,7 +541,7 @@ final class GameSession: ObservableObject {
         round += 1
         roundQuestions = initialQuestions + (round - 1) * rules.questionIncrement[config.difficulty]
         spawnPlan = tuning.waves.kinds(questions: roundQuestions, using: &rng)
-        UnitSprites.preloadCombat(defenders: tuning.plantable, enemies: spawnPlan, loadout: loadout)
+        UnitSprites.preloadCombat(defenders: plantable, enemies: spawnPlan, loadout: loadout)
         totalEnemies = spawnPlan.count
         spawned = 0
         resolved = 0
@@ -726,6 +736,10 @@ extension GameSession: GameSceneDelegate {
         resolved += 1
         roundResolved = resolved
         checkFinished()
+    }
+
+    func doomCooldownChanged(_ seconds: Int) {
+        if doomCooldown != seconds { doomCooldown = seconds }
     }
 }
 

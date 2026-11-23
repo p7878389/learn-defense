@@ -15,27 +15,32 @@ final class AdventureDoomArtwork {
     private var craters: [Int: SKNode] = [:]
 
     func render(_ battle: AdventureBattle, in scene: SKNode) {
-        let chargeIDs = Set(battle.doomCharges.map(\.id))
+        render(charges: battle.doomCharges, craters: battle.doomCraters, playing: battle.phase == .playing, in: scene)
+    }
+
+    func render(charges sites: [AdventureDoomSite], craters holes: [AdventureDoomSite], playing: Bool,
+                in scene: SKNode, laneOffset: Int = 0) {
+        let chargeIDs = Set(sites.map(\.id))
         for id in Array(charges.keys) where !chargeIDs.contains(id) { charges.removeValue(forKey: id)?.removeFromParent() }
-        for site in battle.doomCharges {
+        for site in sites {
             if charges[site.id] == nil,
-               let node = FXLibrary.playResource("DoomBody", at: point(site), in: scene) {
+               let node = FXLibrary.playResource("DoomBody", at: point(site, laneOffset: laneOffset), in: scene) {
                 node.name = "doom-charge-\(site.id)"
                 node.zPosition = 8
                 charges[site.id] = node
             }
-            if let node = charges[site.id], battle.phase == .playing, node.userData?["armed"] as? Bool != true {
+            if let node = charges[site.id], playing, node.userData?["armed"] as? Bool != true {
                 if node.userData == nil { node.userData = NSMutableDictionary() }
                 node.userData?["armed"] = true
                 node.speed = AdventureDoom.fuse / max(0.05, site.remaining)
                 FXLibrary.runEvent("arm", on: node)
             }
         }
-        let craterIDs = Set(battle.doomCraters.map(\.id))
+        let craterIDs = Set(holes.map(\.id))
         for id in Array(craters.keys) where !craterIDs.contains(id) { craters.removeValue(forKey: id)?.removeFromParent() }
-        for site in battle.doomCraters {
+        for site in holes {
             if craters[site.id] == nil,
-               let node = FXLibrary.playResource("DoomCrater", at: point(site), in: scene) {
+               let node = FXLibrary.playResource("DoomCrater", at: point(site, laneOffset: laneOffset), in: scene) {
                 node.name = "doom-crater-\(site.id)"
                 node.zPosition = 7
                 let label = SKLabelNode(fontNamed: "PingFangSC-Semibold")
@@ -51,11 +56,11 @@ final class AdventureDoomArtwork {
         }
     }
 
-    func explode(_ site: AdventureDoomSite, in scene: SKNode) {
-        FXLibrary.playResource("DoomExplosion", at: point(site), in: scene)
+    func explode(_ site: AdventureDoomSite, in scene: SKNode, laneOffset: Int = 0) {
+        FXLibrary.playResource("DoomExplosion", at: point(site, laneOffset: laneOffset), in: scene)
     }
 
-    private func point(_ site: AdventureDoomSite) -> CGPoint {
-        CGPoint(x: AdventureDoom.x(site.column), y: AdventureDoom.y(site.lane))
+    private func point(_ site: AdventureDoomSite, laneOffset: Int) -> CGPoint {
+        CGPoint(x: AdventureDoom.x(site.column), y: AdventureDoom.y(site.lane + laneOffset))
     }
 }

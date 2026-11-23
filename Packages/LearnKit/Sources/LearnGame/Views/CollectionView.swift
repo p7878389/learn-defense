@@ -15,6 +15,7 @@ struct CollectionView: View {
     @State private var monsterGroup = "全部"
     @State private var confirming: CosmeticKind?
     @State private var equippedNotice: CosmeticKind?
+    @State private var showingTools = false
 
     private var growth: GrowthStore { model.growth(for: profileID) }
 
@@ -65,6 +66,10 @@ struct CollectionView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .background(GrowthPageBackground())
+        .sheet(isPresented: $showingTools) {
+            DoomShroomUnlockView(profileID: profileID, onClose: { showingTools = false })
+                .environmentObject(model)
+        }
         .onAppear {
             // 优先准备少量购买反馈，避免排在整套题库语音之后。
             for line in SpeechText.purchaseLines { model.speechLibrary.requestSoon(line) }
@@ -200,6 +205,8 @@ struct CollectionView: View {
 
     private func topBar(level: Int) -> some View {
         GrowthPageHeader(icon: "🎁", title: "收藏馆", subtitle: "角色装扮", onClose: onClose) {
+            Button("道具解锁") { showingTools = true }
+                .font(.headline).buttonStyle(.bordered).tint(Theme.jade)
             LevelPill(level: level)
             CoinPill(coins: growth.state.coins, size: 24)
         }

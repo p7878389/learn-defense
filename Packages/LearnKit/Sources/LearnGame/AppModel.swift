@@ -168,6 +168,12 @@ public final class AppModel: ObservableObject {
         return result
     }
 
+    func purchaseDoomShroom(for profileID: UUID) throws -> GrowthState.PurchaseResult {
+        let result = try growth(for: profileID).purchaseDoomShroom()
+        objectWillChange.send()
+        return result
+    }
+
     func equip(_ item: CosmeticKind, for profileID: UUID) {
         growth(for: profileID).equip(item)
         objectWillChange.send()
