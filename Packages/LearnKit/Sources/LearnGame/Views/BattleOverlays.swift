@@ -18,24 +18,26 @@ struct UltimateOverlay: View {
                 .onTapGesture(perform: onCancel)
                 .accessibilityAddTraits(.isButton)
                 .accessibilityLabel("取消大招")
-            VStack(spacing: 20) {
-                Text(title)
-                    .font(.system(size: 34, weight: .heavy, design: .rounded))
-                    .foregroundStyle(Theme.accent)
+            CandyModalCard(
+                bannerTitle: title,
+                bannerIcon: "⚡️",
+                bannerColors: [GrowthColors.lightning, Theme.accent],
+                bannerEdge: GrowthColors.lightningDark,
+                borderColor: GrowthColors.lightning.opacity(0.8),
+                maxWidth: 900
+            ) {
                 AnswerPanel(question: question, wrongPicks: wrongPicks, onAnswer: onAnswer, onReplay: onReplay, retrying: retrying)
                 Button(action: onCancel) {
-                    Label("先不放了", systemImage: "xmark.circle.fill")
-                        .font(.system(size: 20, weight: .bold, design: .rounded))
-                        .foregroundStyle(Theme.muted)
+                    CandyButtonLabel(title: "先不放了", icon: "✕", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
+                                     foreground: Theme.muted, font: .system(size: 18, weight: .heavy, design: .rounded),
+                                     height: 46, minWidth: 140)
+                        .overlay(Capsule().stroke(GrowthColors.cardEdge, lineWidth: 1.5))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(PressableStyle())
                 Text(!retrying ? "点空白处也能取消，能量会留着" : "已经答错过，答对或取消都会用掉这次能量")
-                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
                     .foregroundStyle(Theme.muted)
             }
-            .padding(32)
-            .frame(maxWidth: 900)
-            .background(RoundedRectangle(cornerRadius: 28).fill(Theme.paper))
             .padding(40)
         }
         .transition(.opacity)
@@ -52,27 +54,35 @@ struct PauseOverlay: View {
     var body: some View {
         ZStack {
             Color.black.opacity(0.45).ignoresSafeArea()
-            VStack(spacing: 24) {
-                Text("休息一下").font(.system(size: 40, weight: .heavy, design: .rounded))
-                Button(action: onResume) {
-                    Text("继续").font(.title.weight(.bold)).frame(width: 240, height: 70)
-                        .background(Capsule().fill(Theme.jade)).foregroundStyle(.white)
+            CandyModalCard(
+                bannerTitle: "休息一下",
+                bannerIcon: "⏸️",
+                bannerColors: [GrowthColors.gold, Theme.accent],
+                bannerEdge: GrowthColors.orangeDark,
+                maxWidth: 440
+            ) {
+                VStack(spacing: 16) {
+                    Button(action: onResume) {
+                        CandyButtonLabel(title: "继续闯关", icon: "▶", fill: Theme.jade, edge: GrowthColors.jadeDark,
+                                         font: .system(size: 26, weight: .heavy, design: .rounded), height: 64, minWidth: 240)
+                    }
+                    .buttonStyle(PressableStyle())
+                    Button(action: onFinish) {
+                        CandyButtonLabel(title: "结束并结算", icon: "🏁", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
+                                         foreground: Theme.ink, font: .system(size: 22, weight: .heavy, design: .rounded), height: 56, minWidth: 240)
+                            .overlay(Capsule().stroke(GrowthColors.cardEdge, lineWidth: 2))
+                    }
+                    .buttonStyle(PressableStyle())
+                    Button(action: onQuit) {
+                        Label("退出游戏", systemImage: "rectangle.portrait.and.arrow.right")
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                            .frame(width: 240, height: 44)
+                            .foregroundStyle(Theme.wrong)
+                    }
+                    .buttonStyle(PressableStyle())
                 }
-                .buttonStyle(PressableStyle())
-                Button(action: onFinish) {
-                    Text("结束并结算").font(.title2.weight(.semibold)).frame(width: 240, height: 60)
-                        .background(Capsule().stroke(Theme.muted, lineWidth: 2)).foregroundStyle(Theme.muted)
-                }
-                .buttonStyle(PressableStyle())
-                Button(action: onQuit) {
-                    Label("退出游戏", systemImage: "rectangle.portrait.and.arrow.right")
-                        .font(.title3.weight(.semibold)).frame(width: 240, height: 52)
-                        .foregroundStyle(Theme.wrong)
-                }
-                .buttonStyle(PressableStyle())
             }
-            .padding(48)
-            .background(RoundedRectangle(cornerRadius: 28).fill(Theme.paper))
+            .padding(24)
         }
     }
 }
@@ -121,24 +131,43 @@ struct RoundRestOverlay: View {
 
                         VStack(spacing: 6) {
                             Text(isReady ? "休息好了，按自己的节奏继续" : "放下屏幕，看看远处，伸个懒腰吧")
-                                .font(.title3.bold())
+                                .font(.system(size: 20, weight: .heavy, design: .rounded))
                             Text("下一回合：第 \(session.round + 1) 回合 · \(session.roundQuestions + session.rules.questionIncrement[session.config.difficulty]) 题")
+                                .font(.system(size: 15, weight: .bold, design: .rounded))
                                 .foregroundStyle(Theme.muted)
                         }
                         Button(action: session.continueRound) {
-                            Text(isReady ? "开始下一回合" : "休息中 · \(session.restRemaining) 秒")
-                                .font(.title2.bold())
-                                .frame(maxWidth: .infinity, minHeight: 52)
+                            CandyButtonLabel(
+                                title: isReady ? "开始下一回合" : "休息中 · \(session.restRemaining) 秒",
+                                icon: isReady ? "▶" : "⏳",
+                                fill: isReady ? Theme.jade : GrowthColors.disabledFill,
+                                edge: isReady ? GrowthColors.jadeDark : GrowthColors.disabledEdge,
+                                foreground: isReady ? .white : Theme.muted,
+                                font: .system(size: 22, weight: .heavy, design: .rounded),
+                                height: 56,
+                                minWidth: 0,
+                                expands: true
+                            )
                         }
-                        .buttonStyle(.borderedProminent)
-                        .tint(Theme.jade)
+                        .buttonStyle(PressableStyle())
                         .disabled(!isReady)
                         VStack(spacing: 8) {
-                            Button("结束并结算", action: session.finishGame)
-                                .font(.headline)
-                                .buttonStyle(.bordered)
+                            Button(action: session.finishGame) {
+                                CandyButtonLabel(
+                                    title: "结束并结算",
+                                    icon: "🏁",
+                                    fill: GrowthColors.surface,
+                                    edge: GrowthColors.cardEdge,
+                                    foreground: Theme.ink,
+                                    font: .system(size: 18, weight: .heavy, design: .rounded),
+                                    height: 46,
+                                    minWidth: 180
+                                )
+                                .overlay(Capsule().stroke(GrowthColors.cardEdge, lineWidth: 2))
+                            }
+                            .buttonStyle(PressableStyle())
                             Text("随时可以结束，积分将在整局结束后统一结算")
-                                .font(.footnote)
+                                .font(.system(size: 13, weight: .semibold, design: .rounded))
                                 .foregroundStyle(Theme.muted)
                         }
                     }
@@ -146,7 +175,12 @@ struct RoundRestOverlay: View {
                     .foregroundStyle(Theme.ink)
                     .padding(28)
                     .frame(maxWidth: 560)
-                    .background(Theme.paper, in: RoundedRectangle(cornerRadius: 24))
+                    .background(
+                        RoundedRectangle(cornerRadius: 28)
+                            .fill(Theme.paper)
+                            .shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 6)
+                    )
+                    .overlay(RoundedRectangle(cornerRadius: 28).stroke(GrowthColors.gold.opacity(0.75), lineWidth: 3))
                     .padding(16)
                     .frame(maxWidth: .infinity, minHeight: proxy.size.height)
                 }

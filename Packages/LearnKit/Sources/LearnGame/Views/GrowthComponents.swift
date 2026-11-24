@@ -16,6 +16,13 @@ enum GrowthColors {
     static let jadeDark = Color(red: 0.14, green: 0.45, blue: 0.36)
     static let orangeDark = Color(red: 0.78, green: 0.4, blue: 0.04)
     static let calm = Color(red: 0.36, green: 0.55, blue: 0.85)
+    static let answerTray = Color(red: 0.98, green: 0.94, blue: 0.80)
+    static let tileFill = Color(red: 1.0, green: 0.97, blue: 0.86)
+    static let wrongDark = Color(red: 0.68, green: 0.20, blue: 0.18)
+    static let lightning = Color(red: 0.12, green: 0.72, blue: 0.95)
+    static let lightningDark = Color(red: 0.04, green: 0.48, blue: 0.68)
+    static let disabledFill = Color(white: 0.88)
+    static let disabledEdge = Color(white: 0.75)
 
     static func rarity(_ rarity: CosmeticRarity) -> Color {
         switch rarity {
@@ -225,5 +232,56 @@ struct CandyButtonLabel: View {
         .frame(minWidth: minWidth)
         .frame(maxWidth: expands ? .infinity : nil)
         .background(Capsule().fill(fill).shadow(color: edge, radius: 0, x: 0, y: 5))
+    }
+}
+
+/// 战斗与成长弹窗共用的糖果弹窗框体：可选顶部悬浮横幅 + 暖纸底 + 描边与厚底
+struct CandyModalCard<Content: View>: View {
+    var bannerTitle: String? = nil
+    var bannerIcon: String? = nil
+    var bannerColors: [Color] = [GrowthColors.gold, Theme.accent]
+    var bannerEdge: Color = GrowthColors.orangeDark
+    var borderColor: Color = GrowthColors.gold.opacity(0.75)
+    var maxWidth: CGFloat = 560
+    var radius: CGFloat = 30
+    @ViewBuilder var content: () -> Content
+
+    var body: some View {
+        VStack(spacing: 18) {
+            if let bannerTitle {
+                HStack(spacing: 10) {
+                    if let bannerIcon { Text(bannerIcon).font(.system(size: 26)) }
+                    Text(bannerTitle)
+                        .font(.system(size: 28, weight: .heavy, design: .rounded))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 28)
+                .frame(height: 54)
+                .background(
+                    Capsule()
+                        .fill(LinearGradient(colors: bannerColors, startPoint: .top, endPoint: .bottom))
+                        .shadow(color: bannerEdge, radius: 0, x: 0, y: 5)
+                )
+                .overlay(Capsule().stroke(.white.opacity(0.85), lineWidth: 2))
+                .padding(.top, -46)
+            }
+            content()
+        }
+        .padding(.horizontal, 28)
+        .padding(.top, bannerTitle == nil ? 28 : 24)
+        .padding(.bottom, 26)
+        .frame(maxWidth: maxWidth)
+        .background(
+            RoundedRectangle(cornerRadius: radius)
+                .fill(Theme.paper)
+                .shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 6)
+                .shadow(color: .black.opacity(0.18), radius: 20, y: 10)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: radius)
+                .stroke(borderColor, lineWidth: 3)
+        )
     }
 }

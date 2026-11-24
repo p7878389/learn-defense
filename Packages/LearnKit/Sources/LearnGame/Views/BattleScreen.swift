@@ -68,11 +68,20 @@ struct BattleScreen: View {
     /// 场上每只僵尸一道题，点了切到那道
     private var questionTabs: some View {
         ForEach(Array(session.questionIDs.enumerated()), id: \.element) { offset, id in
-            Button("题目 \(offset + 1)") { session.selectQuestion(id) }
-                .font(.headline)
-                .padding(.horizontal, 14).padding(.vertical, 8)
-                .background(session.selectedQuestionID == id ? Theme.jade : Theme.card, in: Capsule())
-                .foregroundStyle(session.selectedQuestionID == id ? .white : Theme.ink)
+            let selected = session.selectedQuestionID == id
+            Button { session.selectQuestion(id) } label: {
+                Text("题目 \(offset + 1)")
+                    .font(.system(size: 16, weight: .heavy, design: .rounded))
+                    .padding(.horizontal, 14).padding(.vertical, 8)
+                    .background(
+                        Capsule()
+                            .fill(selected ? Theme.jade : GrowthColors.surface)
+                            .shadow(color: selected ? GrowthColors.jadeDark : GrowthColors.cardEdge, radius: 0, x: 0, y: 3)
+                    )
+                    .overlay(Capsule().stroke(selected ? GrowthColors.jadeDark : GrowthColors.cardEdge, lineWidth: 1.5))
+                    .foregroundStyle(selected ? .white : Theme.ink)
+            }
+            .buttonStyle(PressableStyle())
         }
     }
 
@@ -184,7 +193,12 @@ struct BattleScreen: View {
                     .frame(maxWidth: .infinity, minHeight: answerPanelHeight)
                     .padding(.horizontal, 10)
                     .padding(.vertical, isPortrait ? 10 : 6)
-                    .background(Color(red: 0.98, green: 0.94, blue: 0.80), in: RoundedRectangle(cornerRadius: 12))
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(GrowthColors.answerTray)
+                            .shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 3)
+                    )
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(GrowthColors.cardEdge, lineWidth: 2))
                     .padding(.horizontal, 10)
                     .padding(.bottom, isPortrait ? 0 : 6)
                     // 竖屏时战场宽度到头，下面会空出一大块，去掉占位让战场和答题区整体居中

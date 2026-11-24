@@ -73,10 +73,14 @@ struct AnswerPanel: View {
             if q.promptSpeech != nil {
                 Button(action: onReplay) {
                     Label("再听一遍", systemImage: "speaker.wave.2.fill")
-                        .font(.title2.weight(.bold))
+                        .font(.system(size: 20, weight: .heavy, design: .rounded))
                         .padding(.horizontal, 20)
-                        .padding(.vertical, 12)
-                        .background(Capsule().fill(Theme.accent))
+                        .padding(.vertical, 11)
+                        .background(
+                            Capsule()
+                                .fill(Theme.accent)
+                                .shadow(color: GrowthColors.orangeDark, radius: 0, x: 0, y: 4)
+                        )
                         .foregroundStyle(.white)
                 }
                 .buttonStyle(PressableStyle())
@@ -113,9 +117,12 @@ struct OptionButton: View {
             label
                 .padding(.horizontal, 10)
                 .frame(maxWidth: .infinity, minHeight: style == .emoji ? 116 : 86)
-                .background(RoundedRectangle(cornerRadius: 22).fill(background))
+                .background(
+                    RoundedRectangle(cornerRadius: 22)
+                        .fill(background)
+                        .shadow(color: edgeShadow, radius: 0, x: 0, y: state == .wrong ? 0 : 4)
+                )
                 .overlay(RoundedRectangle(cornerRadius: 22).stroke(border, lineWidth: state == .reveal ? 5 : 2))
-                .shadow(color: .black.opacity(0.08), radius: 4, y: 3)
         }
         .buttonStyle(PressableStyle())
         .disabled(state == .wrong)
@@ -141,17 +148,25 @@ struct OptionButton: View {
 
     private var background: Color {
         switch state {
-        case .normal: Theme.card
-        case .wrong: Theme.wrong.opacity(0.25)
+        case .normal: GrowthColors.surface
+        case .wrong: Theme.wrong.opacity(0.22)
         case .reveal: Theme.jade.opacity(0.25)
         }
     }
 
     private var border: Color {
         switch state {
-        case .normal: Theme.muted.opacity(0.4)
+        case .normal: GrowthColors.cardEdge
         case .wrong: Theme.wrong
         case .reveal: Theme.jade
+        }
+    }
+
+    private var edgeShadow: Color {
+        switch state {
+        case .normal: GrowthColors.cardEdge
+        case .wrong: .clear
+        case .reveal: GrowthColors.jadeDark
         }
     }
 }

@@ -48,12 +48,20 @@ struct BattleActionBar: View {
             }
             Spacer(minLength: 0)
             Label(session.map.name, systemImage: "map.fill")
-                .font(.caption.weight(.semibold)).foregroundStyle(Theme.muted)
+                .font(.system(size: 13, weight: .heavy, design: .rounded))
+                .foregroundStyle(GrowthColors.orangeDark)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(Capsule().fill(GrowthColors.gold.opacity(0.22)))
         }
         .frame(minHeight: 72)
         .padding(.horizontal, 12)
         .padding(.vertical, 3)
-        .background(Theme.paper, in: RoundedRectangle(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.accent.opacity(0.4), lineWidth: 1))
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(GrowthColors.surface)
+                .shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 3)
+        )
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(GrowthColors.cardEdge, lineWidth: 2))
     }
 }

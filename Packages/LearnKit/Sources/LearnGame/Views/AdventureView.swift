@@ -85,9 +85,19 @@ struct AdventureScreen: View {
         HStack(spacing: 18) {
             Label("\(session.hud.lives)/10", systemImage: "heart.fill").foregroundStyle(Theme.wrong)
             Label("\(session.hud.sun)", systemImage: "sun.max.fill").foregroundStyle(Theme.accent)
-            Text(String(format: "%02d:%02d", session.hud.seconds / 60, session.hud.seconds % 60)).monospacedDigit()
+            Text(String(format: "%02d:%02d", session.hud.seconds / 60, session.hud.seconds % 60))
+                .monospacedDigit()
+                .foregroundStyle(Theme.ink)
         }
-        .font(.headline)
+        .font(.system(size: 17, weight: .heavy, design: .rounded))
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(
+            Capsule()
+                .fill(GrowthColors.surface)
+                .shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 3)
+        )
+        .overlay(Capsule().stroke(GrowthColors.cardEdge, lineWidth: 2))
     }
 
     private var pauseButton: some View {
@@ -143,8 +153,12 @@ struct AdventureScreen: View {
                         .font(.callout).foregroundStyle(Theme.muted)
                     placementCancel
                     Spacer()
-                    AdventureAction(title: "雷霆大招 \(session.hud.energy)/12", icon: "⚡️", fill: Theme.accent,
-                                    edge: GrowthColors.orangeDark, action: session.unleash).disabled(!session.hud.ultimateReady)
+                    AdventureAction(title: session.hud.ultimateReady ? "雷霆就绪 · 释放" : "雷霆大招 \(session.hud.energy)/12",
+                                    icon: "⚡️",
+                                    fill: session.hud.ultimateReady ? GrowthColors.lightning : Theme.accent,
+                                    edge: session.hud.ultimateReady ? GrowthColors.lightningDark : GrowthColors.orangeDark,
+                                    action: session.unleash)
+                        .disabled(!session.hud.ultimateReady)
                 }
             }
             Text("\(session.hud.rest > 0 ? "本波预告" : "敌人预告")：\(session.battle.currentWave?.preview ?? "")")
@@ -194,6 +208,7 @@ struct AdventureScreen: View {
                 }
                 .padding(30).frame(maxWidth: 520)
                 .candyCard(radius: 26)
+                .overlay(RoundedRectangle(cornerRadius: 26).stroke(GrowthColors.gold.opacity(0.75), lineWidth: 3))
                 .padding(20)
             }
         }

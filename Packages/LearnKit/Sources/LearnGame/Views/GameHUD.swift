@@ -7,24 +7,28 @@ struct GameHUD: View {
 
     /// 顶部状态栏：暂停、生命、回合进度和得分；阳光在同一工具区的种植卡栏里。
     var body: some View {
-        HStack(spacing: 18) {
+        HStack(spacing: 16) {
             if session.phase == .preparing {
                 // 还没开局：直接回到上一页，不结算
                 Button(action: onExit) {
-                    Image(systemName: "chevron.backward.circle.fill").font(.system(size: 40))
+                    Image(systemName: "chevron.backward.circle.fill")
+                        .font(.system(size: 38, weight: .bold))
+                        .foregroundStyle(GrowthColors.orangeDark)
+                        .background(Circle().fill(GrowthColors.gold.opacity(0.25)).frame(width: 34, height: 34))
                 }
                 .buttonStyle(PressableStyle())
-                .foregroundStyle(Theme.muted)
                 .accessibilityLabel("返回")
                 Label("准备", systemImage: "leaf.fill")
-                    .font(.title3.weight(.bold))
+                    .font(.system(size: 19, weight: .heavy, design: .rounded))
                     .foregroundStyle(Theme.jade)
             } else {
                 Button(action: session.togglePause) {
-                    Image(systemName: "pause.circle.fill").font(.system(size: 40))
+                    Image(systemName: "pause.circle.fill")
+                        .font(.system(size: 38, weight: .bold))
+                        .foregroundStyle(GrowthColors.orangeDark)
+                        .background(Circle().fill(GrowthColors.gold.opacity(0.25)).frame(width: 34, height: 34))
                 }
                 .buttonStyle(PressableStyle())
-                .foregroundStyle(Theme.muted)
                 .accessibilityLabel("暂停")
             }
 
@@ -38,22 +42,29 @@ struct GameHUD: View {
                 .font(.title2)
             } else {
                 HStack(spacing: 4) {
-                    Text("不怕失败").font(.title3.weight(.semibold)).foregroundStyle(Theme.jade)
-                    PictureView(emoji: "💪", size: 30)
+                    Text("不怕失败")
+                        .font(.system(size: 18, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Theme.jade)
+                    PictureView(emoji: "💪", size: 28)
                 }
             }
 
             Label("第 \(session.round) 回合 · \(session.roundResolved)/\(session.totalEnemies)", systemImage: "flag.fill")
-                .font(.title3.weight(.semibold).monospacedDigit())
+                .font(.system(size: 19, weight: .heavy, design: .rounded).monospacedDigit())
                 .foregroundStyle(Theme.ink)
 
             Label("\(session.score)", systemImage: "star.fill")
-                .font(.title3.weight(.semibold).monospacedDigit())
+                .font(.system(size: 19, weight: .heavy, design: .rounded).monospacedDigit())
                 .foregroundStyle(Theme.accent)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 6)
-        .background(Color(red: 0.91, green: 0.80, blue: 0.53).opacity(0.92), in: Capsule())
+        .background(
+            Capsule()
+                .fill(GrowthColors.surface)
+                .shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 3)
+        )
+        .overlay(Capsule().stroke(GrowthColors.cardEdge, lineWidth: 2))
     }
 }
 
@@ -89,11 +100,16 @@ struct PreparationPanel: View {
                 Spacer()
 
                 Button(action: onStart ?? session.startBattle) {
-                    Text(!session.bankConfirmed ? "请先选择题库" : session.canStartBattle ? "准备好了" : "先种一株植物")
-                        .font(.title2.weight(.heavy))
-                        .frame(minWidth: 210, minHeight: 58)
-                        .background(Capsule().fill(session.canStartBattle ? Theme.jade : Theme.muted.opacity(0.25)))
-                        .foregroundStyle(session.canStartBattle ? .white : Theme.muted)
+                    CandyButtonLabel(
+                        title: !session.bankConfirmed ? "请先选择题库" : session.canStartBattle ? "准备好了" : "先种一株植物",
+                        icon: session.canStartBattle ? "▶" : nil,
+                        fill: session.canStartBattle ? Theme.jade : GrowthColors.disabledFill,
+                        edge: session.canStartBattle ? GrowthColors.jadeDark : GrowthColors.disabledEdge,
+                        foreground: session.canStartBattle ? .white : Theme.muted,
+                        font: .system(size: 22, weight: .heavy, design: .rounded),
+                        height: 56,
+                        minWidth: 210
+                    )
                 }
                 .buttonStyle(PressableStyle())
                 .disabled(!session.canStartBattle)

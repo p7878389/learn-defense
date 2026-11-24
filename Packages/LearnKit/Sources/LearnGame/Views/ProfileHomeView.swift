@@ -136,11 +136,8 @@ struct ProfileHomeView: View {
                     selection: .all,
                     difficulty: profile.difficulty)
             } label: {
-                Label("经典闯关", systemImage: "play.fill")
-                    .font(.title.weight(.heavy))
-                    .frame(width: 280, height: 80)
-                    .background(Capsule().fill(Theme.jade).shadow(color: GrowthColors.jadeDark, radius: 0, x: 0, y: 6))
-                    .foregroundStyle(.white)
+                CandyButtonLabel(title: "经典闯关", icon: "▶", fill: Theme.jade, edge: GrowthColors.jadeDark,
+                                 font: .system(size: 28, weight: .heavy, design: .rounded), height: 74, minWidth: 260)
             }
             .buttonStyle(PressableStyle())
 
@@ -152,12 +149,11 @@ struct ProfileHomeView: View {
                     selection: .review(model.progress(for: profile.id).reviewKeys),
                     difficulty: profile.difficulty)
             } label: {
-                Text("错题复习（\(reviewCount)）")
-                    .font(.title2.weight(.bold))
-                    .frame(width: 240, height: 80)
-                    .background(Capsule().fill(reviewCount > 0 ? Theme.accent : Theme.muted.opacity(0.3))
-                        .shadow(color: reviewCount > 0 ? GrowthColors.orangeDark : .clear, radius: 0, x: 0, y: 6))
-                    .foregroundStyle(.white)
+                CandyButtonLabel(title: "错题复习（\(reviewCount)）", icon: "🎯",
+                                 fill: reviewCount > 0 ? Theme.accent : GrowthColors.disabledFill,
+                                 edge: reviewCount > 0 ? GrowthColors.orangeDark : GrowthColors.disabledEdge,
+                                 foreground: reviewCount > 0 ? .white : Theme.muted,
+                                 font: .system(size: 24, weight: .heavy, design: .rounded), height: 74, minWidth: 230)
             }
             .buttonStyle(PressableStyle())
             .disabled(reviewCount == 0)
@@ -165,7 +161,7 @@ struct ProfileHomeView: View {
             // 设计稿 01b：白色糖果胶囊，浅金描边加厚底
             Button { showWrongBook = true } label: {
                 CandyButtonLabel(title: "错题本", icon: "📖", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
-                                 foreground: Theme.ink, font: .title2.weight(.bold), height: 68)
+                                 foreground: Theme.ink, font: .system(size: 24, weight: .heavy, design: .rounded), height: 74, minWidth: 168)
                     .overlay(Capsule().stroke(GrowthColors.cardEdge, lineWidth: 2))
             }
             .buttonStyle(PressableStyle())
@@ -205,9 +201,16 @@ struct Chip: View {
 }
 
 struct WrongBookView: View {
+    enum Filter: String, CaseIterable {
+        case all = "全部"
+        case review = "待复习"
+        case mastered = "已掌握"
+    }
+
     @Environment(\.dismiss) private var dismiss
     let profile: Profile
     let progress: ProgressStore
+    @State private var filter: Filter = .all
 
     private var entries: [(key: String, stats: ItemStats)] {
         progress.stats
@@ -219,35 +222,95 @@ struct WrongBookView: View {
             }
     }
 
+    private var filteredEntries: [(key: String, stats: ItemStats)] {
+        switch filter {
+        case .all: entries
+        case .review: entries.filter(\.stats.needsReview)
+        case .mastered: entries.filter { !$0.stats.needsReview }
+        }
+    }
+
+    private var reviewCount: Int { entries.filter(\.stats.needsReview).count }
+
     var body: some View {
-        NavigationStack {
-            List {
-                if entries.isEmpty {
-                    Text("还没有错题，真棒！").font(.title3)
+        VStack(spacing: 16) {
+            HStack(spacing: 14) {
+                PictureView(emoji: "📖", size: 36)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(profile.name)的错题本")
+                        .font(.system(size: 28, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Theme.ink)
+                    Text("连续答对即可转为已掌握 · 待复习 \(reviewCount) 题 / 共 \(entries.count) 题")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundStyle(Theme.muted)
                 }
-                ForEach(entries, id: \.key) { entry in
-                    HStack(spacing: 14) {
-                        Text(entry.stats.needsReview ? "待复习" : "已掌握")
-                            .font(.callout.weight(.bold))
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 4)
-                            .background(Capsule().fill(entry.stats.needsReview ? Theme.accent.opacity(0.25) : Theme.jade.opacity(0.25)))
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(entry.stats.summary ?? entry.key).font(.title3)
-                            Text("错 \(entry.stats.wrong) 次 · 连续答对 \(entry.stats.streak) 次")
-                                .font(.callout)
-                                .foregroundStyle(Theme.muted)
+                Spacer()
+                Button { dismiss() } label: {
+                    CandyButtonLabel(title: "完成", icon: "✓", fill: Theme.jade, edge: GrowthColors.jadeDark,
+                                     font: .system(size: 18, weight: .heavy, design: .rounded), height: 46, minWidth: 96)
+                }
+                .buttonStyle(PressableStyle())
+            }
+            .padding(.horizontal, 18)
+            .padding(.vertical, 14)
+            .candyCard()
+
+            if entries.isEmpty {
+                VStack(spacing: 12) {
+                    PictureView(emoji: "🌟", size: 64)
+                    Text("还没有错题，真棒！")
+                        .font(.system(size: 24, weight: .heavy, design: .rounded))
+                        .foregroundStyle(Theme.ink)
+                    Text("在闯关中答错的知识点会自动记在这里，方便随时温习。")
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .foregroundStyle(Theme.muted)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(24)
+                .candyCard()
+            } else {
+                HStack {
+                    GrowthSegmentedPicker(options: Filter.allCases, title: \.rawValue, selection: $filter)
+                    Spacer()
+                }
+                ScrollView {
+                    LazyVStack(spacing: 10) {
+                        ForEach(filteredEntries, id: \.key) { entry in
+                            HStack(spacing: 14) {
+                                Text(entry.stats.needsReview ? "🔥 待复习" : "✅ 已掌握")
+                                    .font(.system(size: 14, weight: .heavy, design: .rounded))
+                                    .foregroundStyle(entry.stats.needsReview ? GrowthColors.orangeDark : GrowthColors.jadeDark)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        Capsule().fill(entry.stats.needsReview ? GrowthColors.gold.opacity(0.32) : Theme.jade.opacity(0.18))
+                                    )
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(entry.stats.summary ?? entry.key)
+                                        .font(.system(size: 20, weight: .heavy, design: .rounded))
+                                        .foregroundStyle(Theme.ink)
+                                    Text("答错 \(entry.stats.wrong) 次 · 连续答对 \(entry.stats.streak) 次")
+                                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                                        .foregroundStyle(Theme.muted)
+                                }
+                                Spacer(minLength: 0)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 18)
+                                    .fill(GrowthColors.surface)
+                                    .shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 3)
+                            )
+                            .overlay(RoundedRectangle(cornerRadius: 18).stroke(GrowthColors.cardEdge, lineWidth: 1.5))
                         }
                     }
-                    .padding(.vertical, 4)
+                    .padding(4)
                 }
-            }
-            .navigationTitle("\(profile.name)的错题本")
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("完成") { dismiss() }
-                }
+                .scrollBounceBehavior(.basedOnSize)
             }
         }
+        .padding(20)
+        .background(GrowthPageBackground())
     }
 }

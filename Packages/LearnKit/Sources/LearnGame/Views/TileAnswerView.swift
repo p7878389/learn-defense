@@ -82,12 +82,19 @@ struct TileAnswerView: View {
         return Button { placed[i] = nil } label: {
             Text(text ?? (spec.style == .pinyin ? spec.groups[spec.blanks[i].group].title ?? "?" : " "))
                 .font(.system(size: text == nil && spec.style == .pinyin ? 16 : 30, weight: .bold, design: .rounded))
-                .foregroundStyle(text == nil ? Theme.muted.opacity(0.6) : Theme.ink)
+                .foregroundStyle(text == nil ? (isNext ? GrowthColors.orangeDark : Theme.muted.opacity(0.6)) : Theme.ink)
                 .frame(minWidth: slotWidth, minHeight: 58)
                 .padding(.horizontal, 4)
-                .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(isNext ? Theme.accent : Theme.muted.opacity(0.4),
-                                                                   style: StrokeStyle(lineWidth: isNext ? 3 : 2, dash: text == nil ? [6, 4] : [])))
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(text != nil ? GrowthColors.surface : (isNext ? Theme.accent.opacity(0.10) : Color.white))
+                        .shadow(color: text != nil ? GrowthColors.cardEdge : .clear, radius: 0, x: 0, y: 2)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(isNext ? Theme.accent : (text != nil ? Theme.jade : GrowthColors.cardEdge),
+                                style: StrokeStyle(lineWidth: isNext ? 3 : 2, dash: text == nil ? [6, 4] : []))
+                )
         }
         .buttonStyle(.plain)
         .disabled(text == nil)
@@ -124,9 +131,15 @@ struct TileAnswerView: View {
                 .foregroundStyle(used ? Theme.muted.opacity(0.4) : Theme.ink)
                 .frame(minWidth: 58, minHeight: 58)
                 .padding(.horizontal, spec.style == .words ? 10 : 2)
-                .background(RoundedRectangle(cornerRadius: 14).fill(used ? Color(white: 0.9) : Color(red: 1, green: 0.97, blue: 0.86))
-                    .shadow(color: .black.opacity(used ? 0 : 0.18), radius: 0, y: 4))
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.accent.opacity(0.5), lineWidth: 2))
+                .background(
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(used ? GrowthColors.disabledFill.opacity(0.65) : GrowthColors.tileFill)
+                        .shadow(color: used ? .clear : GrowthColors.cardEdge, radius: 0, x: 0, y: 4)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(used ? GrowthColors.cardEdge.opacity(0.5) : Theme.accent.opacity(0.6), lineWidth: 2)
+                )
         }
         .buttonStyle(PressableStyle())
         .disabled(used)
