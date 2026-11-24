@@ -306,8 +306,10 @@ struct UnitTests {
                 if !tuning.waves.bosses.isEmpty {
                     #expect(kinds.last.map(tuning.waves.isBoss) == true, "最后一只是首领候选里的一个")
                 }
-                if grade.isPreschool {
-                    #expect(kinds.allSatisfy { $0.hp == 1 }, "幼儿园不出要打好几下的怪")
+                if grade == .k2 || (grade == .k3 && difficulty == .easy) {
+                    #expect(kinds.allSatisfy { $0.hp == 1 }, "中班和大班入门只出 1 血怪")
+                } else if grade == .k3 {
+                    #expect(kinds.allSatisfy { (1...2).contains($0.hp) })
                 }
             }
         }

@@ -50,9 +50,9 @@ struct AnswerPanel: View {
             Text(q.instruction)
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(Theme.muted)
-            if q.promptSpeech == nil, Pictures.image(q.prompt) != nil {
+            if q.prompt != "🔊", Pictures.image(q.prompt) != nil {
                 PictureView(emoji: q.prompt, size: 72)
-            } else if q.promptSpeech == nil {
+            } else if q.prompt != "🔊" {
                 Text(q.prompt)
                     .font(.system(size: q.prompt.count > 10 ? 26 : 38, weight: .bold, design: .rounded))
                     .foregroundStyle(Theme.ink)

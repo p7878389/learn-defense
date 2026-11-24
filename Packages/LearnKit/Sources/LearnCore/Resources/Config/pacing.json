@@ -1,8 +1,8 @@
 {
   "version": 1,
   "questions": [
-    { "grades": ["k2"], "easy": 6, "normal": 7, "hard": 8 },
-    { "grades": ["k3"], "easy": 8, "normal": 9, "hard": 10 },
+    { "grades": ["k2"], "easy": 8, "normal": 10, "hard": 12 },
+    { "grades": ["k3"], "easy": 10, "normal": 12, "hard": 14 },
     { "grades": ["g1", "g2"], "easy": 10, "normal": 12, "hard": 14 },
     { "grades": ["g3", "g4"], "easy": 12, "normal": 14, "hard": 16 },
     { "grades": ["g5", "g6"], "easy": 14, "normal": 16, "hard": 18 }
