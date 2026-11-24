@@ -5,8 +5,16 @@ import SpriteKit
 /// 伤害多少由 AttackStyle.totalDamage 决定，结算在 GameScene 里
 @MainActor
 protocol AttackStrategy {
+    func totalDuration(from origin: CGPoint, to target: CGPoint) -> TimeInterval
     func perform(from origin: CGPoint, to target: CGPoint, projectile: ProjectileLook, in layer: SKNode,
-                 onImpact: @escaping (_ isFinal: Bool) -> Void)
+                 destination: (@MainActor () -> CGPoint)?, onImpact: @escaping (_ isFinal: Bool) -> Void)
+}
+
+extension AttackStrategy {
+    func perform(from origin: CGPoint, to target: CGPoint, projectile: ProjectileLook, in layer: SKNode,
+                 onImpact: @escaping (_ isFinal: Bool) -> Void) {
+        perform(from: origin, to: target, projectile: projectile, in: layer, destination: nil, onImpact: onImpact)
+    }
 }
 
 extension AttackStyle {
@@ -26,12 +34,21 @@ struct ShotAttack: AttackStrategy {
     var interval: TimeInterval = 0.12
     var skin: CharacterSkin? = nil
 
-    func perform(from origin: CGPoint, to target: CGPoint, projectile: ProjectileLook, in layer: SKNode,
-                 onImpact: @escaping (Bool) -> Void) {
-        let n = max(1, count)
+    func flightDuration(from origin: CGPoint, to target: CGPoint) -> TimeInterval {
         // 留出从答题区看向战场的时间，短距离也不能一闪而过。
         let distance = hypot(target.x - origin.x, target.y - origin.y)
-        let duration = TimeInterval(max(0.35, min(0.8, distance / 1200)))
+        return TimeInterval(max(0.35, min(0.8, distance / 1200)))
+    }
+
+    func totalDuration(from origin: CGPoint, to target: CGPoint) -> TimeInterval {
+        let n = max(1, count)
+        return flightDuration(from: origin, to: target) + interval * TimeInterval(n - 1)
+    }
+
+    func perform(from origin: CGPoint, to target: CGPoint, projectile: ProjectileLook, in layer: SKNode,
+                 destination: (@MainActor () -> CGPoint)? = nil, onImpact: @escaping (Bool) -> Void) {
+        let n = max(1, count)
+        let duration = flightDuration(from: origin, to: target)
         for i in 0..<n {
             // 独立装备的子弹外观优先；主题只替换原版豌豆，不改变冰冻等语义。
             let prefix = projectile == DefenderKind.inkling.projectile ? ThemeSkin.resourcePrefix(skin) : nil
@@ -41,7 +58,8 @@ struct ShotAttack: AttackStrategy {
             if isThemed { bullet.name = skin == .spellbook ? "spellbookProjectile" : "themeProjectile" }
             // 连发时上下错开一点，看得出是几颗
             let offset = (CGFloat(i) - CGFloat(n - 1) / 2) * 12
-            bullet.position = CGPoint(x: origin.x, y: origin.y + offset)
+            let start = CGPoint(x: origin.x, y: origin.y + offset)
+            bullet.position = start
             bullet.zPosition = 50
             // 第一颗首帧就可见，后续连发仍等到各自发射时才显示。
             bullet.alpha = i == 0 ? 1 : 0
@@ -50,31 +68,44 @@ struct ShotAttack: AttackStrategy {
             let trail = IceCombatEffects.supports(projectile) ? IceCombatEffects.trail(on: bullet, speed: flight) : nil
             let bulletID = DiagLog.id(bullet)
             DiagLog.log("shot+ bullet=\(bulletID) \(i + 1)/\(n) shape=\(projectile.shape) ice=\(trail != nil)")
+            let moveAction: SKAction
+            if let destination {
+                moveAction = .customAction(withDuration: duration) { node, elapsed in
+                    let progress = duration > 0 ? min(1, max(0, CGFloat(elapsed / duration))) : 1
+                    let current = destination()
+                    node.position = CGPoint(x: start.x + (current.x - start.x) * progress,
+                                            y: start.y + (current.y - start.y) * progress)
+                }
+            } else {
+                moveAction = .move(to: target, duration: duration)
+            }
             bullet.run(.sequence([
                 .wait(forDuration: interval * TimeInterval(i)),
                 .run { [weak bullet, weak layer] in
                     bullet?.alpha = 1
+                    let currentTarget = destination?() ?? target
                     if isThemed, let prefix, let bullet, let layer {
                         FXLibrary.playResource(prefix + "Muzzle", at: bullet.position, in: layer)
                     } else if let trail, let bullet, let layer {
                         trail.particleBirthRate = 45
                         IceCombatEffects.launch(at: bullet.position, in: layer)
                     } else if projectile.shape == .orb, let bullet, let layer {
-                        FXLibrary.launchOrb(on: bullet, towards: target, in: layer)
+                        FXLibrary.launchOrb(on: bullet, towards: currentTarget, in: layer)
                     }
                 },
-                .move(to: target, duration: duration),
+                moveAction,
                 // 冰晶尾迹挂在子弹上，这里一起移除
                 .removeFromParent(),
             ])) { [weak layer] in
                 DiagLog.log("shot- bullet=\(bulletID) layer=\(layer != nil)")
+                let impactPoint = destination?() ?? target
                 if let layer {
                     if isThemed, let prefix {
-                        FXLibrary.playResource(prefix + "Impact", at: target, in: layer)
+                        FXLibrary.playResource(prefix + "Impact", at: impactPoint, in: layer)
                     } else if trail != nil {
-                        IceCombatEffects.impact(at: target, in: layer)
+                        IceCombatEffects.impact(at: impactPoint, in: layer)
                     } else {
-                        Self.splat(projectile, at: target, in: layer)
+                        Self.splat(projectile, at: impactPoint, in: layer)
                     }
                 }
                 onImpact(i == n - 1)
@@ -107,8 +138,12 @@ struct BeamAttack: AttackStrategy {
     /// 打中的时间点，烟雾和笔锋一样在 0.08 秒时结算
     static let impactDelay: TimeInterval = 0.08
 
+    func totalDuration(from origin: CGPoint, to target: CGPoint) -> TimeInterval {
+        Self.impactDelay
+    }
+
     func perform(from origin: CGPoint, to target: CGPoint, projectile: ProjectileLook, in layer: SKNode,
-                 onImpact: @escaping (Bool) -> Void) {
+                 destination: (@MainActor () -> CGPoint)? = nil, onImpact: @escaping (Bool) -> Void) {
         DiagLog.log("beam fume=\(UnitSprites.beam(projectile) != nil)")
         if let fume = UnitSprites.beam(projectile) {
             puff(fume.frames, frameTime: fume.frameTime, from: origin, to: target, projectile: projectile,

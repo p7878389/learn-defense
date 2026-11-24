@@ -87,6 +87,58 @@ struct AdventureDoomSceneTests {
         #expect(enemy.rig?.current == "zombie-boom", "毁灭菇爆破在冒险中也应立即播放烧焦倒地")
     }
 
+    @Test func bulletsTrackMovingEnemyAndNeverDefeatBeforeFinalBulletImpacts() throws {
+        // 1. 远距离双发射手 + 近距离单发射手同路交火：
+        // 疾跑怪（简单难度 11 血）在 x=1155 出生，第 0 列双发（8 伤，第二颗 0.92s 到达）与第 5 列单发（4 伤，0.46s 到达）同帧开火击杀。
+        // 近处子弹在 0.46s 先到、甚至过 0.85s 旧兜底点时，远处第二颗子弹仍在空中，怪物绝不能提前倒地。
+        let level = AdventureLevel(id: 1, title: "弹道同步试炼", hint: "", waves: [
+            AdventureWave(enemies: [
+                .init(kind: .runner, lane: 0, delay: 0),
+                .init(kind: .armored, lane: 1, delay: 0),
+            ])
+        ])
+        var state = AdventureBattle(level: level, difficulty: .easy, deck: ["twin", "inkling", "frost", "wallnut"])
+        #expect(state.plant("twin", lane: 0, column: 0) == true)
+        #expect(state.plant("inkling", lane: 0, column: 5) == true)
+        #expect(state.plant("inkling", lane: 1, column: 0) == true)
+        #expect(state.start() == true)
+
+        let scene = AdventureScene(loadout: Loadout())
+        let clock = try ThemeClock(scene: scene)
+        let openEvents = state.advance(by: 0.05)
+        scene.render(state, events: openEvents)
+
+        let runner = try #require(scene.children.compactMap { $0 as? EnemyNode }.first { $0.lane == 0 })
+        let armored = try #require(scene.children.compactMap { $0 as? EnemyNode }.first { $0.lane == 1 })
+        let armoredSign = try #require(armored.sign.children.compactMap { $0 as? SKLabelNode }.first)
+        #expect(armoredSign.text == "34 / 34", "子弹刚出膛未命中前，牌子血量不应提前扣减")
+
+        // 推进 0.55 秒：第 5 列近处子弹已命中，但第 0 列双发的两颗子弹仍在飞行中；同时 1 路重甲怪向左移动。
+        for _ in 0..<11 {
+            let stepEvents = state.advance(by: 0.05)
+            scene.render(state, events: stepEvents)
+            try clock.advance(0.05)
+        }
+        #expect(runner.rig?.current != "zombie-dasher-die", "近处子弹先到时，远处致死连发仍在空中，怪物不能提前倒地")
+        #expect(runner.position.x < 1155, "致死子弹飞行期间怪物仍自然前行，不在开火瞬间原地僵直")
+        #expect(armoredSign.text == "34 / 34", "1 路子弹仍在途中时血量保持出膛前数值")
+
+        // 推进到 0.86 秒（跨过旧的 0.85s 兜底时间，也跨过双发第一颗 0.80s 命中，但第二颗 0.92s 尚未到达）。
+        for _ in 0..<6 {
+            let stepEvents = state.advance(by: 0.05)
+            scene.render(state, events: stepEvents)
+            try clock.advance(0.05)
+        }
+        #expect(runner.rig?.current != "zombie-dasher-die", "0.86 秒时双发第二颗子弹尚未抵达，不能被 0.85 秒定时器提前判死")
+        #expect(armoredSign.text == "30 / 34", "1 路单发子弹在 0.80 秒命中后，牌子血量才同步扣减")
+        let splat = try #require(scene.childNode(withName: "impactSplat"))
+        #expect(abs(splat.position.x - armored.position.x) < 6, "命中特效必须落在移动后怪物的当前位置，而不是出膛时的旧坐标")
+
+        // 推进到 0.96 秒：双发第二颗子弹（0.92s）到达，此时所有在途子弹全部命中，怪物立即倒地。
+        try clock.advance(0.10)
+        #expect(runner.rig?.current == "zombie-dasher-die", "最后一颗在途子弹命中瞬间才播放倒地动画")
+    }
+
     #if os(macOS)
     @Test func exportsActualBattleUIAndEffectStages() throws {
         guard let path = ProcessInfo.processInfo.environment["DOOM_PREVIEW"] else { return }
