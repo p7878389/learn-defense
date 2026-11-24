@@ -8,6 +8,15 @@ enum FXLibrary {
     private static var textures: [String: SKTexture] = [:]
     private static var actions: [String: SKAction] = [:]
 
+    static var cachedArchiveCount: Int { archives.count }
+    static var cachedTextureCount: Int { textures.count }
+
+    static func releaseCachedResources() {
+        archives.removeAll()
+        textures.removeAll()
+        actions.removeAll()
+    }
+
     static func effect(named name: String) -> SKNode? {
         guard let archive = archive(named: name) else { return nil }
         let source = archive is SKScene ? archive.childNode(withName: "effect") : archive

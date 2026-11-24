@@ -89,6 +89,24 @@ final class GamePreparation: ObservableObject {
         if session?.phase == .playing { confirmingStart = false }
     }
 
+    static func preferenceKeys(for profileID: UUID) -> [String] {
+        ["classic", "review"].map { "question-bank.\(profileID.uuidString).\($0)" }
+    }
+
+    static func clearPreferences(for profileID: UUID, in preferences: UserDefaults = .standard) {
+        for key in preferenceKeys(for: profileID) {
+            preferences.removeObject(forKey: key)
+        }
+    }
+
+    static func clearAllPreferences(profileIDs: [UUID] = [], in preferences: UserDefaults = .standard) {
+        for id in profileIDs { clearPreferences(for: id, in: preferences) }
+        for key in preferences.dictionaryRepresentation().keys where key.hasPrefix("question-bank.") {
+            preferences.removeObject(forKey: key)
+        }
+        preferences.removeObject(forKey: BattleMap.preferenceKey)
+    }
+
     private func makeSession(_ config: GameConfig, confirmed: Bool) -> GameSession {
         GameSession(config: config, library: model.library, progress: model.progress(for: config.profileID),
                     speech: model.speech, growth: model.growth(for: config.profileID), recorder: model.recorder(for: config),

@@ -81,6 +81,7 @@ final class SpriteRig {
     }
 
     /// 在同一坐标里另起一个精灵播一遍 name（比如掉下来的头），播完自己移除
+    @discardableResult
     func spawn(_ name: String) -> SKSpriteNode? {
         guard let clip = UnitSprites.clip(named: name),
               let rect = UnitSprites.placement(of: name, in: base, scale: scale),

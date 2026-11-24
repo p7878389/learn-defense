@@ -7,7 +7,7 @@ enum DiagLog {
     #if DEBUG
     private static let start = Date()
     /// 只在主线程写（场景 deinit 也在主线程）；static let 的初始化本身是线程安全的
-    nonisolated(unsafe) private static let handle: FileHandle? = {
+    private static let handle: FileHandle? = {
         let fm = FileManager.default
         guard let caches = fm.urls(for: .cachesDirectory, in: .userDomainMask).first else { return nil }
         let url = caches.appendingPathComponent("diag.log")

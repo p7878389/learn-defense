@@ -28,6 +28,9 @@ final class SpriteResourceCache {
     func removeAll() {
         frames.removeAll()
         portraits.removeAll()
+        FXLibrary.releaseCachedResources()
+        Pictures.releaseCachedResources()
+        ThemeSkin.releaseCachedResources()
     }
 
     static func estimatedCost(of textures: [SKTexture]) -> Int {

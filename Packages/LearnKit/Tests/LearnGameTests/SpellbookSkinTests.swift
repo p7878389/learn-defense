@@ -56,14 +56,14 @@ struct SpellbookSkinTests {
         var hits: [Bool] = []
         book.shoot()
         attack.perform(from: book.muzzle, to: CGPoint(x: 540, y: 160), projectile: look, in: clock.scene) { hits.append($0) }
-        weak var projectile = clock.scene.childNode(withName: "spellbookProjectile")
-        #expect((projectile != nil) == !override)
+        let projectile = WeakBox(clock.scene.childNode(withName: "spellbookProjectile"))
+        #expect((projectile.value != nil) == !override)
         if override { #expect(clock.scene.childNode(withName: "//iceTrail") != nil) }
         try clock.advance(0.1)
         #expect(hits.isEmpty)
         try clock.advance(1.2)
         #expect(hits == [true])
-        #expect(projectile == nil, "星珠移出后应释放，不得被动作闭包保留")
+        #expect(projectile.value == nil, "星珠移出后应释放，不得被动作闭包保留")
         #expect(clock.scene.children.count == 1)
     }
 
@@ -190,59 +190,7 @@ struct SpellbookSkinTests {
     }
 }
 
-@MainActor
-private final class BookClock {
-    let scene: SKScene
-    let texture: MTLTexture
-    private let renderer: SKRenderer
-    private let queue: MTLCommandQueue
-    private let pass = MTLRenderPassDescriptor()
-    private let start = CACurrentMediaTime()
-    private var frame = 0
-
-    init(scene supplied: SKScene? = nil) throws {
-        let scene = supplied ?? SKScene(size: CGSize(width: 640,height: 320))
-        self.scene = scene
-        let device = try #require(MTLCreateSystemDefaultDevice())
-        renderer = SKRenderer(device: device);renderer.scene = scene
-        queue = try #require(device.makeCommandQueue())
-        let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm,
-            width: Int(scene.size.width),height: Int(scene.size.height),mipmapped: false)
-        descriptor.usage = [.renderTarget,.shaderRead]
-        texture = try #require(device.makeTexture(descriptor: descriptor))
-        pass.colorAttachments[0].texture = texture
-        pass.colorAttachments[0].loadAction = .clear
-        pass.colorAttachments[0].storeAction = .store
-        try advance(0)
-    }
-
-    func advance(_ seconds: Double) throws {
-        for _ in 0..<max(1,Int((seconds*60).rounded())) {
-            renderer.update(atTime: start + Double(frame)/60)
-            let command = try #require(queue.makeCommandBuffer())
-            renderer.render(withViewport: CGRect(origin: .zero,size: scene.size),commandBuffer: command,renderPassDescriptor: pass)
-            command.commit();command.waitUntilCompleted();frame += 1
-        }
-    }
-
-    func pixels() -> [UInt8] {
-        var pixels = [UInt8](repeating: 0,count: texture.width * texture.height * 4)
-        pixels.withUnsafeMutableBytes { texture.getBytes($0.baseAddress!,bytesPerRow: texture.width * 4,
-            from: MTLRegionMake2D(0,0,texture.width,texture.height),mipmapLevel: 0) }
-        return pixels
-    }
-
-    func writePNG(to url: URL) throws {
-        let provider = try #require(CGDataProvider(data: Data(pixels()) as CFData))
-        let image = try #require(CGImage(width: texture.width,height: texture.height,bitsPerComponent: 8,bitsPerPixel: 32,
-            bytesPerRow: texture.width * 4,space: CGColorSpaceCreateDeviceRGB(),
-            bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedFirst.rawValue).union(.byteOrder32Little),
-            provider: provider,decode: nil,shouldInterpolate: false,intent: .defaultIntent))
-        let destination = try #require(CGImageDestinationCreateWithURL(url as CFURL,"public.png" as CFString,1,nil))
-        CGImageDestinationAddImage(destination,image,nil)
-        #expect(CGImageDestinationFinalize(destination))
-    }
-}
+private typealias BookClock = SceneClock
 
 @MainActor
 private final class BookDefeats: GameSceneDelegate {

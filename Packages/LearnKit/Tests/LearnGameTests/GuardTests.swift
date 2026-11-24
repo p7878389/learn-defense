@@ -115,7 +115,8 @@ struct GuardTests {
     }
 
     @Test func guardsNeverShoot() throws {
-        let scene = makeScene(FieldLog())
+        let log = FieldLog()
+        let scene = makeScene(log)
         #expect(scene.plant(try guardKind("wallnut"), in: DefenderCell(lane: 0, column: column)))
         _ = spawn(scene, id: 1, x: 1000)
         #expect(scene.plantedLaneCount == 0, "只种坚果墙不算布阵")

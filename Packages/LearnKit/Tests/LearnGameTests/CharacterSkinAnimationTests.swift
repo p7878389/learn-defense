@@ -36,7 +36,7 @@ struct CharacterSkinAnimationTests {
     @Test func renderRuntimeComparison() throws {
         let width = CGFloat(CharacterSkin.allCases.count + 1) * 350
         let clock = try SkinClock(size: CGSize(width: width, height: 570))
-        clock.scene.backgroundColor = SKColor(red: 0.97, green: 0.96, blue: 0.93, alpha: 1)
+        clock.setBackground(red: 0.97, green: 0.96, blue: 0.93)
         var shooters: [DefenderNode] = []
         var zombies: [EnemyNode] = []
         for (index, skin) in ([nil] + CharacterSkin.allCases.map { Optional($0) }).enumerated() {
@@ -106,54 +106,4 @@ private func close(_ a: CGPoint?, _ b: CGPoint?) -> Bool {
     return abs(a.x - b.x) < 0.001 && abs(a.y - b.y) < 0.001
 }
 
-/// 真正推进 SKAction 并等待 Metal 完成，不依赖窗口或模拟器。
-@MainActor
-private final class SkinClock {
-    let scene: SKScene
-    let texture: MTLTexture
-    private let renderer: SKRenderer
-    private let queue: MTLCommandQueue
-    private let pass = MTLRenderPassDescriptor()
-    private let start = CACurrentMediaTime()
-    private var frame = 0
-
-    init(size: CGSize = CGSize(width: 600, height: 360)) throws {
-        let device = try #require(MTLCreateSystemDefaultDevice())
-        scene = SKScene(size: size)
-        renderer = SKRenderer(device: device)
-        renderer.scene = scene
-        queue = try #require(device.makeCommandQueue())
-        let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm,
-            width: Int(size.width), height: Int(size.height), mipmapped: false)
-        descriptor.usage = [.renderTarget, .shaderRead]
-        descriptor.storageMode = .shared
-        texture = try #require(device.makeTexture(descriptor: descriptor))
-        pass.colorAttachments[0].texture = texture
-        pass.colorAttachments[0].loadAction = .clear
-        pass.colorAttachments[0].storeAction = .store
-        pass.colorAttachments[0].clearColor = MTLClearColor(red: 0.97, green: 0.96, blue: 0.93, alpha: 1)
-        try advance(seconds: 0)
-    }
-
-    func advance(seconds: Double) throws {
-        for _ in 0..<max(1, Int((seconds * 60).rounded())) {
-            renderer.update(atTime: start + Double(frame) / 60)
-            let command = try #require(queue.makeCommandBuffer())
-            renderer.render(withViewport: CGRect(origin: .zero, size: scene.size), commandBuffer: command, renderPassDescriptor: pass)
-            command.commit()
-            command.waitUntilCompleted()
-            frame += 1
-        }
-    }
-
-    func snapshot() throws -> CGImage {
-        let row = texture.width * 4
-        var bytes = [UInt8](repeating: 0, count: row * texture.height)
-        texture.getBytes(&bytes, bytesPerRow: row, from: MTLRegionMake2D(0, 0, texture.width, texture.height), mipmapLevel: 0)
-        let provider = try #require(CGDataProvider(data: Data(bytes) as CFData))
-        return try #require(CGImage(width: texture.width, height: texture.height, bitsPerComponent: 8,
-            bitsPerPixel: 32, bytesPerRow: row, space: CGColorSpaceCreateDeviceRGB(),
-            bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue),
-            provider: provider, decode: nil, shouldInterpolate: false, intent: .defaultIntent))
-    }
-}
+private typealias SkinClock = SceneClock

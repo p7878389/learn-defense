@@ -305,68 +305,7 @@ struct FXResourceTests {
     }
 }
 
-/// 用真实 Metal 渲染帧推进资源动作与粒子；不以手工改节点模拟运行结果。
-@MainActor
-private final class FXClock {
-    let scene: SKScene
-    let texture: MTLTexture
-    private let renderer: SKRenderer
-    private let queue: MTLCommandQueue
-    private let pass = MTLRenderPassDescriptor()
-    private let start = CACurrentMediaTime()
-    private var frame = 0
-
-    init(scene supplied: SKScene? = nil) throws {
-        let scene = supplied ?? SKScene(size: CGSize(width: 640, height: 320))
-        self.scene = scene
-        let device = try #require(MTLCreateSystemDefaultDevice())
-        renderer = SKRenderer(device: device)
-        renderer.scene = scene
-        queue = try #require(device.makeCommandQueue())
-        let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm,
-            width: Int(scene.size.width), height: Int(scene.size.height), mipmapped: false)
-        descriptor.usage = [.renderTarget, .shaderRead]
-        texture = try #require(device.makeTexture(descriptor: descriptor))
-        pass.colorAttachments[0].texture = texture
-        pass.colorAttachments[0].loadAction = .clear
-        pass.colorAttachments[0].storeAction = .store
-        try advance(0)
-    }
-
-    func advance(_ seconds: Double) throws {
-        for _ in 0..<max(1, Int((seconds * 60).rounded())) {
-            renderer.update(atTime: start + Double(frame) / 60)
-            let command = try #require(queue.makeCommandBuffer())
-            renderer.render(withViewport: CGRect(origin: .zero, size: scene.size), commandBuffer: command,
-                            renderPassDescriptor: pass)
-            command.commit()
-            command.waitUntilCompleted()
-            frame += 1
-        }
-    }
-
-    func pixels() -> [UInt8] {
-        var bytes = [UInt8](repeating: 0, count: texture.width * texture.height * 4)
-        bytes.withUnsafeMutableBytes {
-            texture.getBytes($0.baseAddress!, bytesPerRow: texture.width * 4,
-                             from: MTLRegionMake2D(0, 0, texture.width, texture.height), mipmapLevel: 0)
-        }
-        return bytes
-    }
-
-    #if os(macOS)
-    func writePNG(to url: URL) throws {
-        let data = Data(pixels())
-        let provider = try #require(CGDataProvider(data: data as CFData))
-        let image = try #require(CGImage(width: texture.width, height: texture.height, bitsPerComponent: 8,
-            bitsPerPixel: 32, bytesPerRow: texture.width * 4, space: CGColorSpaceCreateDeviceRGB(),
-            bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedFirst.rawValue)
-                .union(.byteOrder32Little), provider: provider, decode: nil, shouldInterpolate: false, intent: .defaultIntent))
-        let bitmap = NSBitmapImageRep(cgImage: image)
-        try #require(bitmap.representation(using: .png, properties: [:])).write(to: url)
-    }
-    #endif
-}
+private typealias FXClock = SceneClock
 
 @MainActor
 private final class FXDefeats: GameSceneDelegate {

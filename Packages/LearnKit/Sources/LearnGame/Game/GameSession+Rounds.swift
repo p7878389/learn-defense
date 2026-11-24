@@ -2,13 +2,25 @@ import Foundation
 import LearnCore
 
 extension GameSession {
+    func resumePlayTimer() {
+        if battleStartedAt == nil { battleStartedAt = clockNow() }
+    }
+
+    func pausePlayTimer() {
+        guard let started = battleStartedAt else { return }
+        accumulatedPlayTime += max(0, clockNow().timeIntervalSince(started))
+        battleStartedAt = nil
+    }
+
     func togglePause() {
         switch phase {
         case .playing:
+            pausePlayTimer()
             phase = .paused
             scene.setGamePaused(true)
         case .paused:
             phase = .playing
+            resumePlayTimer()
             if ultimate == nil { scene.setGamePaused(false) }
         default:
             break
@@ -18,7 +30,10 @@ extension GameSession {
     /// 切到后台只暂停，不结束或记录本局。
     func suspend() {
         guard phase != .abandoned else { return }
-        if phase == .playing { phase = .paused }
+        if phase == .playing {
+            pausePlayTimer()
+            phase = .paused
+        }
         if phase == .paused || phase == .resting { scene.setGamePaused(true) }
         speech.stop()
         progress.save()
@@ -27,6 +42,7 @@ extension GameSession {
     /// 离开界面时放弃未结算对局；已结束的对局保留原结果。
     func end() {
         guard phase != .abandoned else { return }
+        pausePlayTimer()
         scene.setGamePaused(true)
         speech.stop()
         progress.save()
@@ -41,12 +57,13 @@ extension GameSession {
     func checkFinished() {
         guard phase == .playing, totalEnemies > 0,
               spawned >= totalEnemies, resolved >= spawned else { return }
+        pausePlayTimer()
         completedRounds += 1
         roundScore = score - roundStartScore
         let answered = attempted - roundStartAttempted
         roundAccuracy = answered == 0 ? 0 : Double(firstTryCorrect - roundStartCorrect) / Double(answered)
         restRemaining = rules.restSeconds(afterRound: round)
-        restUntil = Date().addingTimeInterval(Double(restRemaining))
+        restUntil = clockNow().addingTimeInterval(Double(restRemaining))
         phase = .resting
         typing = false
         ultimate = nil
@@ -64,9 +81,10 @@ extension GameSession {
         finish(won: completedRounds > 0)
     }
 
-    func updateRest(now: Date = Date()) {
+    func updateRest(now: Date? = nil) {
+        let current = now ?? clockNow()
         guard phase == .resting, let restUntil else { return }
-        restRemaining = max(0, Int(ceil(restUntil.timeIntervalSince(now))))
+        restRemaining = max(0, Int(ceil(restUntil.timeIntervalSince(current))))
         if restRemaining == 0 { self.restUntil = nil }
     }
 
@@ -88,6 +106,7 @@ extension GameSession {
         roundStartCorrect = firstTryCorrect
         restUntil = nil
         phase = .playing
+        resumePlayTimer()
         scene.beginRound()
     }
 
@@ -100,12 +119,13 @@ extension GameSession {
 
     func finish(won: Bool) {
         guard phase == .playing || phase == .paused || phase == .resting else { return }
+        pausePlayTimer()
         phase = won ? .won : .lost
         typing = false
         ultimate = nil
         scene.setGamePaused(true)
         progress.save()
-        playSeconds = battleStartedAt.map { Int(Date().timeIntervalSince($0)) } ?? 0
+        playSeconds = Int(accumulatedPlayTime)
         speech.speak(won ? SpeechText.Line.won : SpeechText.Line.lost, interrupt: false)
         settlementReport = GameReport(
             won: won, difficulty: config.difficulty, questions: attempted,

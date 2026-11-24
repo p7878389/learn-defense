@@ -230,7 +230,7 @@ final class ThunderStrikeEffect: SKNode {
             strike.ghost.alpha = CGFloat(max(0, 1 - afterHit / 0.42))
             strike.ghost.setScale(1 + CGFloat(afterHit) * 0.25)
             let dissolve = SKAttributeValue(float: Float(min(1, afterHit / 0.5)))
-            for silhouette in strike.ghost.children {
+            for case let silhouette as SKSpriteNode in strike.ghost.children {
                 silhouette.setValue(dissolve, forAttribute: "a_dissolve")
             }
             for (i, spark) in strike.sparks.enumerated() {

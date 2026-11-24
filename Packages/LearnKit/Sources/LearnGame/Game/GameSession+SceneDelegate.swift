@@ -90,22 +90,25 @@ extension GameSession: GameSceneDelegate {
         guard phase == .playing, let kind = enemyKinds.removeValue(forKey: id) else { return }
         questions.remove(id)
         questionIDs = questions.ids
+        var textY = point.y + 34
+        if kind.bonus > 0 {
+            score += kind.bonus
+            scene.play(FloatingTextEffect(text: "+\(kind.bonus)"), at: CGPoint(x: point.x, y: textY))
+            textY += 36
+        }
+        sun += kind.sunReward
+        scene.play(
+            FloatingTextEffect(text: "☀️ +\(kind.sunReward)", color: Palette.bullet, fontSize: 32),
+            at: CGPoint(x: point.x, y: textY))
+        textY += 38
         if tuning.waves.isBoss(kind) {
             bossesDefeated += 1
             feedback.play(.bossDefeated, volume: speech.effectsVolume)
             scene.play(ScreenFlashEffect(color: Palette.bullet, alpha: 0.5, duration: 0.6))
             scene.play(FloatingTextEffect(text: "🏆 打败首领！", color: Palette.target, fontSize: 40),
-                       at: CGPoint(x: point.x, y: point.y + 100))
+                       at: CGPoint(x: point.x, y: textY + 6))
             speech.speak(SpeechText.Line.bossDefeated, interrupt: false)
         }
-        if kind.bonus > 0 {
-            score += kind.bonus
-            scene.play(FloatingTextEffect(text: "+\(kind.bonus)"), at: CGPoint(x: point.x, y: point.y + 30))
-        }
-        sun += kind.sunReward
-        scene.play(
-            FloatingTextEffect(text: "☀️ +\(kind.sunReward)", color: Palette.bullet, fontSize: 32),
-            at: CGPoint(x: point.x, y: point.y + 62))
         rollDrop(from: kind, at: point)
         defeated += 1
         resolved += 1

@@ -1,3 +1,4 @@
+import ImageIO
 import LearnCore
 import Metal
 import SpriteKit
@@ -6,6 +7,11 @@ import Testing
 import AppKit
 #endif
 @testable import LearnGame
+
+final class WeakBox<T: AnyObject> {
+    weak var value: T?
+    init(_ value: T?) { self.value = value }
+}
 
 /// 用 SKRenderer 真正推进 SpriteKit 动作，按 60 帧/秒走时间
 @MainActor
@@ -35,6 +41,10 @@ final class SceneClock {
         try advance(seconds: 0)
     }
 
+    func advance(_ seconds: Double) throws {
+        try advance(seconds: seconds)
+    }
+
     func advance(seconds: Double) throws {
         let frames = max(1, Int((seconds * 60).rounded()))
         for _ in 0..<frames {
@@ -57,5 +67,30 @@ final class SceneClock {
     func advanceWithFrameGap(seconds: Double) throws {
         frame += max(0, Int((seconds * 60).rounded()) - 1)
         try advance(seconds: 0)
+    }
+
+    func pixels() -> [UInt8] {
+        var bytes = [UInt8](repeating: 0, count: texture.width * texture.height * 4)
+        bytes.withUnsafeMutableBytes {
+            texture.getBytes($0.baseAddress!, bytesPerRow: texture.width * 4,
+                             from: MTLRegionMake2D(0, 0, texture.width, texture.height), mipmapLevel: 0)
+        }
+        return bytes
+    }
+
+    func snapshot() throws -> CGImage {
+        let row = texture.width * 4
+        let provider = try #require(CGDataProvider(data: Data(pixels()) as CFData))
+        return try #require(CGImage(width: texture.width, height: texture.height, bitsPerComponent: 8,
+            bitsPerPixel: 32, bytesPerRow: row, space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedFirst.rawValue).union(.byteOrder32Little),
+            provider: provider, decode: nil, shouldInterpolate: false, intent: .defaultIntent))
+    }
+
+    func writePNG(to url: URL) throws {
+        let image = try snapshot()
+        let destination = try #require(CGImageDestinationCreateWithURL(url as CFURL, "public.png" as CFString, 1, nil))
+        CGImageDestinationAddImage(destination, image, nil)
+        #expect(CGImageDestinationFinalize(destination))
     }
 }

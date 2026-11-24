@@ -11,7 +11,9 @@ struct UnitSpriteTests {
         #expect(first.count == 13)
         #expect(first.first?.size() == CGSize(width: 70, height: 71))
         let second = UnitSprites.frames(named: "plant-inkling")
-        #expect(try #require(first.first) === #require(second.first))
+        let firstFrame = try #require(first.first)
+        let secondFrame = try #require(second.first)
+        #expect(firstFrame === secondFrame)
         #expect(UnitSprites.node(named: "missing-resource", fitting: CGSize(width: 80, height: 80)) == nil)
     }
 

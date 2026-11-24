@@ -45,6 +45,8 @@ __pycache__/
 .gitnexus/
 # `gitnexus analyze` 生成的项目级技能，用户目录里已有同名技能；AGENTS.md / CLAUDE.md 保留
 .claude/skills/gitnexus-*/
+.agents/skills/gitnexus-*/
+.agents/
 # Claude Code 的 worktree 和本机设置
 .claude/worktrees/
 .claude/settings.local.json

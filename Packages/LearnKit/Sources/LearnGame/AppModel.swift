@@ -101,6 +101,7 @@ public final class AppModel: ObservableObject {
         profiles = profileStore.profiles
         progressStores[profile.id] = nil
         growthStores[profile.id] = nil
+        GamePreparation.clearPreferences(for: profile.id)
         do {
             try database?.deletePersonalData(profileID: profile.id)
         } catch {
@@ -228,13 +229,16 @@ public final class AppModel: ObservableObject {
 
     func restoreBackup(_ archive: SettingsBackup) throws {
         guard let database else { throw SettingsError.invalid("数据库不可用") }
+        let previousIDs = profiles.map(\.id)
         try SettingsFiles.restore(archive, database: database, packsDirectory: AppPaths.userPacksDirectory)
+        GamePreparation.clearAllPreferences(profileIDs: previousIDs + archive.children.map(\.profile.id))
         allowsLegacyMigration = false
         try reloadPersonalState()
     }
 
     func resetAll(keepingPacks: Bool) throws {
         guard let database else { throw SettingsError.invalid("数据库不可用") }
+        let previousIDs = profiles.map(\.id)
         let archive = SettingsBackup(children: [], games: [], settings: [:], importedPacks: [])
         if keepingPacks {
             try database.restore(archive)
@@ -242,6 +246,7 @@ public final class AppModel: ObservableObject {
             try SettingsFiles.restore(archive, database: database, packsDirectory: AppPaths.userPacksDirectory)
         }
         try database.saveSetting(true, named: "legacy-disabled")
+        GamePreparation.clearAllPreferences(profileIDs: previousIDs)
         allowsLegacyMigration = false
         speechLibrary.clear()
         let legacyFiles = [

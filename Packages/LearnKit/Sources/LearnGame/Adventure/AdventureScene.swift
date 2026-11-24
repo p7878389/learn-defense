@@ -55,6 +55,9 @@ final class AdventureScene: SKScene {
         for tower in battle.towers where towerNodes[tower.id] == nil {
             guard let kind = AdventureCatalog.defender(tower.kindID) else { continue }
             let node = DefenderNode(kind: kind, radius: 32, skin: loadout.defenderSkins[kind.id])
+            if kind.canShoot {
+                IceCombatEffects.decorate(node, projectile: loadout.projectile(for: kind), radius: 32)
+            }
             node.lane = tower.lane
             node.position = CGPoint(x: tower.x, y: lawn.laneY(tower.lane))
             node.zPosition = 5
@@ -63,34 +66,61 @@ final class AdventureScene: SKScene {
         }
         for enemy in battle.enemies { addEnemy(enemy) }
 
+        enum DamageCause {
+            case shot(lane: Int, targetID: Int, isBeam: Bool)
+            case blast
+        }
+        var lastCause: DamageCause?
+
         for event in events {
             switch event {
             case .shot(let tower, let target):
+                lastCause = .shot(lane: tower.lane, targetID: target.id, isBeam: tower.kindID == "stroke")
                 guard let node = towerNodes[tower.id], let enemy = enemyNodes[target.id], let attack = node.attack else { continue }
                 node.shoot()
                 let point = CGPoint(x: target.x, y: node.muzzle.y)
+                let effect = loadout.defeat(for: enemy.kind)
                 attack.perform(from: node.muzzle, to: point, projectile: loadout.projectile(for: node.kind), in: self) {
-                    [weak enemy] _ in enemy?.flash()
+                    [weak enemy] isFinal in
+                    guard let enemy, enemy.parent != nil else { return }
+                    enemy.flash()
+                    if isFinal, enemy.doomed, enemy.action(forKey: "adventureDefeat") != nil {
+                        enemy.removeAction(forKey: "adventureDefeat")
+                        enemy.defeat(with: effect, burnt: false)
+                    }
                 }
             case .defeated(let enemy):
                 guard let node = enemyNodes.removeValue(forKey: enemy.id) else { continue }
                 displayedHealth[enemy.id] = nil
                 node.doomed = true
                 let effect = loadout.defeat(for: node.kind)
-                node.run(.sequence([.wait(forDuration: 0.45), .run { [weak node] in
-                    guard let node else { return }
-                    node.defeat(with: effect, burnt: false)
-                }]))
+                if case .blast = lastCause {
+                    node.defeat(with: effect, burnt: true)
+                } else {
+                    let isSplashBeam: Bool
+                    if case .shot(_, let targetID, let isBeam) = lastCause {
+                        isSplashBeam = isBeam && enemy.id != targetID
+                    } else {
+                        isSplashBeam = false
+                    }
+                    let wait = isSplashBeam ? BeamAttack.impactDelay : 0.85
+                    node.run(.sequence([.wait(forDuration: wait), .run { [weak node] in
+                        guard let node else { return }
+                        node.defeat(with: effect, burnt: false)
+                    }]), withKey: "adventureDefeat")
+                }
             case .leaked(let enemy):
                 displayedHealth[enemy.id] = nil
                 enemyNodes.removeValue(forKey: enemy.id)?.breakThrough()
             case .towerBroken(let tower):
                 towerNodes.removeValue(forKey: tower.id)?.crumble()
             case .ultimate:
+                lastCause = .blast
                 for node in enemyNodes.values {
                     FXLibrary.playResource("AstralImpact", at: node.position, in: self)?.setScale(2)
                 }
             case .doomExploded(let site):
+                lastCause = .blast
                 doomArtwork.explode(site, in: self)
             case .spawned, .wave:
                 break

@@ -69,6 +69,24 @@ struct AdventureDoomSceneTests {
         #expect(effect.parent == nil)
     }
 
+    @Test func frostDecorationAndImpactSynchronizedDefeatInAdventureScene() throws {
+        let level = AdventureLevel(id: 1, title: "同步试炼", hint: "", waves: [
+            AdventureWave(enemies: [.init(kind: .runner, lane: 0, delay: 0)])
+        ])
+        var state = AdventureBattle(level: level, deck: ["frost", "inkling", "wallnut", "doomShroom"])
+        #expect(state.plant("frost", lane: 1, column: 0) == true)
+        #expect(state.plant("doomShroom", lane: 0, column: 8) == true)
+        let scene = AdventureScene(loadout: Loadout())
+        scene.render(state, events: [])
+        let frost = try #require(scene.children.compactMap { $0 as? DefenderNode }.first)
+        #expect(frost.childNode(withName: "iceAura") != nil)
+        #expect(state.start() == true)
+        let events = state.advance(by: 1)
+        scene.render(state, events: events)
+        let enemy = try #require(scene.children.compactMap { $0 as? EnemyNode }.first)
+        #expect(enemy.rig?.current == "zombie-boom", "毁灭菇爆破在冒险中也应立即播放烧焦倒地")
+    }
+
     #if os(macOS)
     @Test func exportsActualBattleUIAndEffectStages() throws {
         guard let path = ProcessInfo.processInfo.environment["DOOM_PREVIEW"] else { return }

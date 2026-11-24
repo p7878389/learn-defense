@@ -222,4 +222,26 @@ struct QuestionBankPreparationTests {
         #expect(session.phase == .preparing && session.plantedLaneCount == 1)
         session.end()
     }
+
+    @Test func deletingProfileOrResettingClearsSavedPreferences() throws {
+        let db = try LearnDatabase(url: nil)
+        let child = Profile(name: "清理测试", grade: .g3, avatar: "🐯")
+        try db.saveProfiles([child])
+        let model = AppModel(database: db, library: library(), speechLibrary: SpeechLibrary(database: db, settings: nil, premadeDirectories: []))
+        let keys = GamePreparation.preferenceKeys(for: child.id)
+        defer { GamePreparation.clearAllPreferences(profileIDs: [child.id]) }
+        for key in keys { UserDefaults.standard.set(Data("saved".utf8), forKey: key) }
+        UserDefaults.standard.set(BattleMap.courtyard.rawValue, forKey: BattleMap.preferenceKey)
+        model.delete(child)
+        for key in keys { #expect(UserDefaults.standard.data(forKey: key) == nil) }
+
+        let other = Profile(name: "重置测试", grade: .g3, avatar: "🐼")
+        model.save(other)
+        let otherKeys = GamePreparation.preferenceKeys(for: other.id)
+        defer { GamePreparation.clearAllPreferences(profileIDs: [other.id]) }
+        for key in otherKeys { UserDefaults.standard.set(Data("saved".utf8), forKey: key) }
+        try model.resetAll(keepingPacks: true)
+        for key in otherKeys { #expect(UserDefaults.standard.data(forKey: key) == nil) }
+        #expect(UserDefaults.standard.string(forKey: BattleMap.preferenceKey) == nil)
+    }
 }

@@ -170,4 +170,35 @@ struct EndlessRoundTests {
         #expect(s.growthResult == result)
     }
 
+    @Test func playSecondsExcludesPausedSuspendedAndRestingDuration() throws {
+        let library = ContentLibrary.load(userDirectory: nil)
+        let pack = try #require(library.packs.first { $0.grade == .g3 })
+        var now = Date(timeIntervalSince1970: 1_000_000)
+        let s = GameSession(config: GameConfig(profileID: UUID(), grade: .g3, packIDs: [pack.id],
+                                               selection: .all, difficulty: .normal),
+                            library: library, progress: ProgressStore(), speech: Speech(),
+                            growth: GrowthStore(catalog: .bundled))
+        s.clockNow = { now }
+        #expect(s.scene.plant(.inkling, in: DefenderCell(lane: 0, column: 0)))
+        s.startBattle()
+        now.addTimeInterval(12)
+        s.togglePause()
+        now.addTimeInterval(300) // 暂停 300 秒不应计入
+        s.togglePause()
+        now.addTimeInterval(8)
+        s.suspend()
+        now.addTimeInterval(600) // 后台挂起 600 秒不应计入
+        s.togglePause()
+        now.addTimeInterval(5)
+        while let enemy = s.nextEnemy() { s.enemyDefeated(enemy.id, at: .zero) }
+        #expect(s.phase == .resting)
+        now.addTimeInterval(120) // 回合休息 120 秒不应计入
+        s.updateRest(now: now)
+        s.continueRound()
+        now.addTimeInterval(15)
+        s.finishGame()
+        #expect(s.playSeconds == 40)
+        #expect(s.settlementReport?.seconds == 40)
+    }
+
 }

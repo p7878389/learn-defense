@@ -44,6 +44,11 @@ final class ThemeSkin {
     }
 
     private static var portraits: [String: CGImage] = [:]
+    static var cachedPortraitCount: Int { portraits.count }
+
+    static func releaseCachedResources() {
+        portraits.removeAll()
+    }
 
     static func portrait(for skin: CharacterSkin?) -> CGImage? {
         guard skin != .spellbook, let prefix = resourcePrefix(skin) else { return nil }

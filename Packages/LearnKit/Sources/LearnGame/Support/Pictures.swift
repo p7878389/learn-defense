@@ -16,6 +16,15 @@ enum Pictures {
     private static var textures: [String: SKTexture] = [:]
     private static var missing: Set<String> = []
 
+    static var cachedImageCount: Int { images.count }
+    static var cachedTextureCount: Int { textures.count }
+
+    static func releaseCachedResources() {
+        images.removeAll()
+        textures.removeAll()
+        missing.removeAll()
+    }
+
     /// 去掉变体选择符后的码点，和 scripts/fetch-pictures.py 的命名一致，如 🍎 → 1f34e
     static func key(_ emoji: String) -> String {
         emoji.unicodeScalars

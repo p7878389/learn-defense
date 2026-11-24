@@ -69,7 +69,9 @@ final class GameSession: ObservableObject {
     var itemsUsed = 0
     var ultimatesCast = 0
     var battleStartedAt: Date?
-    /// 从开始闯关到结束的秒数，结算页显示
+    var accumulatedPlayTime: TimeInterval = 0
+    var clockNow: () -> Date = Date.init
+    /// 从开始闯关到结束的活跃战斗秒数（不含暂停、后台与回合休息），结算页显示
     var playSeconds = 0
 
     var generator: QuestionGenerator
@@ -221,7 +223,7 @@ final class GameSession: ObservableObject {
             return
         }
         phase = .playing
-        battleStartedAt = Date()
+        resumePlayTimer()
         scene.setPreparing(false)
         speech.speak(SpeechText.Line.battleStart, interrupt: true)
     }

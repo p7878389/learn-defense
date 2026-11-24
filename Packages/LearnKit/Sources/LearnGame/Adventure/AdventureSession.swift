@@ -57,6 +57,8 @@ final class AdventureSession: ObservableObject {
         hud = AdventureHUD(state)
         loadout = growth.loadout
         scene = AdventureScene(loadout: loadout)
+        let enemies = Array(Set(state.level.waves.flatMap { $0.enemies.map(\.kind.artwork) }))
+        UnitSprites.preloadCombat(defenders: plantable, enemies: enemies, loadout: loadout)
         scene.onAdvance = { [weak self] dt in self?.advance(by: dt) }
         scene.render(state, events: [])
         if state.isFinished { persist() }
