@@ -83,14 +83,17 @@ struct BattleScreen: View {
                 .foregroundStyle(Theme.accent)
                 .frame(maxWidth: .infinity, minHeight: 120)
         } else {
+            let shownQuestion = session.current
             AnswerPanel(
-                question: session.current,
+                question: shownQuestion,
                 wrongPicks: session.wrongPicks,
-                onAnswer: session.answer,
+                onAnswer: { session.answer($0, questionID: shownQuestion?.id) },
                 onReplay: session.replayPrompt,
-                onStartInput: { session.setTyping(true) },
-                onSubmitInput: session.answerInput,
-                compact: !isPortrait)
+                onStartInput: {
+                    if session.current?.id == shownQuestion?.id { session.setTyping(true) }
+                },
+                onSubmitInput: { session.answerInput($0, questionID: shownQuestion?.id) },
+                compact: !isPortrait, retrying: session.retrying)
             .disabled(!canAnswer)
         }
     }
@@ -204,9 +207,10 @@ struct BattleScreen: View {
                     title: "\(session.tuning.ultimate.icon) \(session.tuning.ultimate.name)：\(session.tuning.ultimate.summary)",
                     question: question,
                     wrongPicks: session.ultimateWrongPicks,
-                    onAnswer: session.answerUltimate,
+                    onAnswer: { session.answerUltimate($0, questionID: question.id) },
                     onReplay: session.replayPrompt,
-                    onCancel: session.cancelUltimate)
+                    onCancel: session.cancelUltimate,
+                    retrying: session.ultimateRetrying)
             }
 
             if session.phase == .paused {

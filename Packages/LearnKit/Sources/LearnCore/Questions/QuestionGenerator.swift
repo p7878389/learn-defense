@@ -5,18 +5,21 @@ public struct GeneratorSettings: Sendable {
     public var strategy: DistractorStrategy
     /// 显示拼音等提示
     public var showHint: Bool
-    /// 幼儿园：听音题，不出需要识字的题
+    /// 幼儿园：以听音、语境和拼读逐步练习
     public var preschool: Bool
     /// 选择、单空、多空各占多少
     public var answerMix: AnswerMix
+    /// 按掌握度选择的题阶区间；nil 保持原有出题方式。
+    public var ladder: ClosedRange<Int>?
 
     public init(optionCount: Int, strategy: DistractorStrategy, showHint: Bool, preschool: Bool,
-                answerMix: AnswerMix = .choiceOnly) {
+                answerMix: AnswerMix = .choiceOnly, ladder: ClosedRange<Int>? = nil) {
         self.optionCount = optionCount
         self.strategy = strategy
         self.showHint = showHint
         self.preschool = preschool
         self.answerMix = answerMix
+        self.ladder = ladder
     }
 }
 
@@ -98,7 +101,7 @@ public struct QuestionGenerator: Sendable {
         switch item {
         case .character(let c):
             let speech = charSpeech(c)
-            return [speech, "找一找，\(speech)", c.char] + charWords(c)
+            return [speech, "找一找，\(speech)", c.char] + charWords(c) + [shapeRiddleText(c)].compactMap { $0 }
         case .word(let w):
             return [w.text]
         case .idiom(let i):
@@ -301,7 +304,7 @@ public struct QuestionGenerator: Sendable {
         return !senses(a).isDisjoint(with: senses(b))
     }
 
-    private func charCard(_ c: CharacterItem) -> WordCard {
+    func charCard(_ c: CharacterItem) -> WordCard {
         let words = (c.words ?? []).filter { $0.contains(c.char) && $0.count > 1 }
         return WordCard(text: c.char, pinyin: Pinyin.normalize(c.pinyin),
                         detail: words.isEmpty ? nil : words.prefix(3).joined(separator: "  "))
@@ -328,7 +331,7 @@ public struct QuestionGenerator: Sendable {
             .map(\.element.char)
     }
 
-    private func build<R: RandomNumberGenerator>(
+    func build<R: RandomNumberGenerator>(
         kind: QuestionKind,
         key: String,
         instruction: String,

@@ -12,6 +12,7 @@ struct AnswerPanel: View {
     var onSubmitInput: ([String]) -> Void = { _ in }
     /// 横屏时答题区要矮，行距收紧，战场才能铺满宽度
     var compact = false
+    var retrying = false
 
     private var revealed: Bool { !wrongPicks.isEmpty }
 
@@ -40,6 +41,11 @@ struct AnswerPanel: View {
                     .foregroundStyle(Theme.muted)
                     .frame(maxWidth: .infinity, minHeight: 120)
             }
+            if retrying {
+                Text("刚才答错了，题目已刷新，请重新作答")
+                    .font(.title3.weight(.medium))
+                    .foregroundStyle(Theme.muted)
+            }
         }
         .id(question?.id)
         .animation(.easeOut(duration: 0.2), value: wrongPicks)
@@ -50,9 +56,9 @@ struct AnswerPanel: View {
             Text(q.instruction)
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(Theme.muted)
-            if q.promptSpeech == nil, Pictures.image(q.prompt) != nil {
+            if q.prompt != "🔊", Pictures.image(q.prompt) != nil {
                 PictureView(emoji: q.prompt, size: 72)
-            } else if q.promptSpeech == nil {
+            } else if q.prompt != "🔊" {
                 Text(q.prompt)
                     .font(.system(size: q.prompt.count > 10 ? 26 : 38, weight: .bold, design: .rounded))
                     .foregroundStyle(Theme.ink)

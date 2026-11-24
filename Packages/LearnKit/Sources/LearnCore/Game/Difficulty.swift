@@ -78,6 +78,7 @@ public struct GameTuning: Sendable {
         let questions = pacing.questionBudget(grade: grade, difficulty: difficulty)
         if grade.isPreschool {
             let i = Difficulty.allCases.firstIndex(of: difficulty)!
+            let senior = grade == .k3
             return GameTuning(
                 lanes: 3,
                 questions: questions,
@@ -88,19 +89,23 @@ public struct GameTuning: Sendable {
                 ultimateEnergy: 4,
                 ultimate: .rainbow,
                 generator: GeneratorSettings(
-                    optionCount: [2, 3, 3][i], strategy: .easy, showHint: true, preschool: true,
-                    answerMix: .make(for: difficulty)),
+                    optionCount: (senior ? [3, 4, 4] : [3, 3, 4])[i],
+                    strategy: senior ? [.normal, .normal, .hard][i] : [.easy, .normal, .normal][i],
+                    showHint: !(senior && difficulty == .hard), preschool: true,
+                    answerMix: .make(for: difficulty),
+                    ladder: difficulty == .easy ? 0...1 : (difficulty == .normal ? (senior ? 1...2 : 0...2) : 1...3)),
                 lineup: [.starling, .inkling, .frost],
                 // 幼儿园不会失败，只给坚果墙和土豆雷，也不让僵尸跳墙
                 guards: GuardNumbers(wall: 20, tallWall: 40, mineArmAfter: 1, gate: 12).guards(tall: false),
                 barricade: nil,
                 wallsCanBeVaulted: false,
-                // 幼儿园的怪物都只要答对一次
+                // 中班和大班入门只出 1 血怪；大班标准、挑战加入 2 血铁桶。
                 waves: WavePlan(mix: [
                     WavePlan.Entry(.blob, weight: 3),
                     WavePlan.Entry(.drowsy, weight: 2),
                     WavePlan.Entry(.hopper, weight: difficulty == .easy ? 0 : 1),
                     WavePlan.Entry(.goblin, weight: difficulty == .easy ? 0 : 1),
+                    WavePlan.Entry(.armored, weight: senior ? Double(i) : 0),
                 ]))
         }
         let lineup: [DefenderKind] = [.frost, .twin, .inkling, .stroke, .starling]

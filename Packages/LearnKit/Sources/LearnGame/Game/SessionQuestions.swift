@@ -9,6 +9,7 @@ struct SessionQuestions {
         let content: QuestionEntry
         var wrongPicks: Set<Int> = []
         var shownAt: Date?
+        var isRetry = false
     }
 
     private var entries: [Int: Entry] = [:]
@@ -17,9 +18,11 @@ struct SessionQuestions {
     var ids: [Int] { entries.keys.sorted() }
     subscript(id: Int) -> QuestionEntry? { entries[id]?.content }
 
-    mutating func insert(_ content: QuestionEntry, for id: Int) {
-        entries[id] = Entry(content: content)
+    mutating func insert(_ content: QuestionEntry, for id: Int, isRetry: Bool = false) {
+        entries[id] = Entry(content: content, isRetry: isRetry)
     }
+
+    func isRetry(for id: Int) -> Bool { entries[id]?.isRetry ?? false }
 
     mutating func remove(_ id: Int) {
         entries[id] = nil

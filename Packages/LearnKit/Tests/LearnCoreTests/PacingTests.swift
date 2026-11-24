@@ -79,12 +79,19 @@ struct PacingTests {
             #expect(seen == Set(tuning.waves.bosses.map(\.id)))
             #expect(minions.isSuperset(of: ["goblin", "acolyte"]))
         }
-        // 入门和幼儿园不出首领；幼儿园只加 1 滴血的小怪
+        // 入门和幼儿园不出首领；大班标准、挑战可加入 2 血铁桶。
         #expect(GameTuning.make(grade: .g3, difficulty: .easy).waves.bosses.isEmpty)
         for grade in Grade.allCases where grade.isPreschool {
             for difficulty in Difficulty.allCases {
                 let waves = GameTuning.make(grade: grade, difficulty: difficulty).waves
-                #expect(waves.bosses.isEmpty && waves.mix.allSatisfy { $0.kind.hp == 1 })
+                #expect(waves.bosses.isEmpty)
+                let active = waves.mix.filter { $0.weight > 0 }
+                if grade == .k2 || difficulty == .easy {
+                    #expect(active.allSatisfy { $0.kind.hp == 1 })
+                } else {
+                    #expect(active.contains { $0.kind == .armored })
+                    #expect(active.allSatisfy { (1...2).contains($0.kind.hp) })
+                }
             }
         }
         // 只有一个候选时和以前一样，不多消耗随机数

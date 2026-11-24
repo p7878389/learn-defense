@@ -2,7 +2,7 @@ import LearnCore
 import SwiftUI
 
 /// 字块题的作答区：上面一排空格，下面一排大字块。点字块放进下一个空位，点空格把字块退回；
-/// 拼满自动交卷，答错清空重来。答错两次显示提示，三次把正确的字块按顺序高亮，照着点就能出击
+/// 拼满自动交卷，答错后由对局刷新题目，不累计提示或高亮正确字块。
 struct TileAnswerView: View {
     let spec: InputSpec
     /// 这道题已经答错几次
@@ -118,7 +118,6 @@ struct TileAnswerView: View {
 
     private func tile(_ ref: TileRef) -> some View {
         let used = placed.contains(ref)
-        let glow = revealNext == ref
         return Button { place(ref) } label: {
             Text(tileText(ref))
                 .font(.system(size: spec.style == .words ? 24 : 30, weight: .bold, design: .rounded))
@@ -127,8 +126,7 @@ struct TileAnswerView: View {
                 .padding(.horizontal, spec.style == .words ? 10 : 2)
                 .background(RoundedRectangle(cornerRadius: 14).fill(used ? Color(white: 0.9) : Color(red: 1, green: 0.97, blue: 0.86))
                     .shadow(color: .black.opacity(used ? 0 : 0.18), radius: 0, y: 4))
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(glow ? Theme.wrong : Theme.accent.opacity(0.5), lineWidth: glow ? 4 : 2))
-                .scaleEffect(glow ? 1.08 : 1)
+                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.accent.opacity(0.5), lineWidth: 2))
         }
         .buttonStyle(PressableStyle())
         .disabled(used)
@@ -138,13 +136,7 @@ struct TileAnswerView: View {
 
     @ViewBuilder
     private var feedback: some View {
-        if wrongCount >= 3 {
-            Text("答案是「\(spec.answerText)」，照着亮起来的字块点一遍！")
-                .font(.system(size: 18, weight: .heavy, design: .rounded)).foregroundStyle(Theme.wrong)
-        } else if wrongCount == 2 {
-            Text("💡 提示：\(spec.hint)")
-                .font(.system(size: 18, weight: .heavy, design: .rounded)).foregroundStyle(Theme.accent)
-        } else if wrongCount == 1 {
+        if wrongCount > 0 {
             Text("不对哦，再拼一次")
                 .font(.system(size: 18, weight: .bold, design: .rounded)).foregroundStyle(Theme.wrong)
         }
@@ -156,15 +148,6 @@ struct TileAnswerView: View {
     private var filled: Bool { !placed.contains(nil) }
 
     private func tileText(_ ref: TileRef) -> String { spec.groups[ref.group].tiles[ref.index] }
-
-    /// 揭晓答案后，下一块该点哪一块
-    private var revealNext: TileRef? {
-        guard wrongCount >= 3, let k = placed.firstIndex(where: { $0 == nil }) else { return nil }
-        let blank = spec.blanks[k]
-        return spec.groups[blank.group].tiles.indices
-            .map { TileRef(group: blank.group, index: $0) }
-            .first { tileText($0) == blank.answer && !placed.contains($0) }
-    }
 
     private func place(_ ref: TileRef) {
         // 放进这一组的下一个空位；这组只有一个空（拼音）时直接替换

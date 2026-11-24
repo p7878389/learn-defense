@@ -83,8 +83,8 @@ public struct PacingConfig: Sendable, Equatable {
 
     public static let defaults = PacingConfig(
         questions: [
-            QuestionBand(grades: [.k2], count: ByDifficulty(easy: 6, normal: 7, hard: 8)),
-            QuestionBand(grades: [.k3], count: ByDifficulty(easy: 8, normal: 9, hard: 10)),
+            QuestionBand(grades: [.k2], count: ByDifficulty(easy: 8, normal: 10, hard: 12)),
+            QuestionBand(grades: [.k3], count: ByDifficulty(easy: 10, normal: 12, hard: 14)),
             QuestionBand(grades: [.g1, .g2], count: ByDifficulty(easy: 10, normal: 12, hard: 14)),
             QuestionBand(grades: [.g3, .g4], count: ByDifficulty(easy: 12, normal: 14, hard: 16)),
             QuestionBand(grades: [.g5, .g6], count: ByDifficulty(easy: 14, normal: 16, hard: 18)),

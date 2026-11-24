@@ -140,7 +140,7 @@ extension QuestionGenerator {
     }
 
     /// 幼儿园听音：单空选声母，多空选声母 + 韵母（不考声调）
-    private func listenPinyin<R: RandomNumberGenerator>(_ base: Question, _ c: CharacterItem, whole: Bool, _ rng: inout R) -> Question? {
+    func listenPinyin<R: RandomNumberGenerator>(_ base: Question, _ c: CharacterItem, whole: Bool, _ rng: inout R) -> Question? {
         let (initial, final) = Pinyin.split(Pinyin.parse(c.pinyin).base)
         guard !initial.isEmpty else { return nil }
         var blanks = [InputBlank(answer: initial, group: 0)]
@@ -155,7 +155,7 @@ extension QuestionGenerator {
     }
 
     /// 幼儿园听音选图：选出拼音的第一个字母
-    private func firstLetter<R: RandomNumberGenerator>(_ base: Question, _ p: PictureItem, _ rng: inout R) -> Question? {
+    func firstLetter<R: RandomNumberGenerator>(_ base: Question, _ p: PictureItem, _ rng: inout R) -> Question? {
         guard let pinyin = p.pinyin, let first = Pinyin.parse(pinyin).base.first, first.isLetter else { return nil }
         let answer = String(first)
         let others = "bpmfdtnlgkhjqxzcsryw".map(String.init).filter { $0 != answer }.shuffled(using: &rng).prefix(groupOptions - 1)

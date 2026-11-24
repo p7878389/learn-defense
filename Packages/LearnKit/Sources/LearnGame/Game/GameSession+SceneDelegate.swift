@@ -14,7 +14,7 @@ extension GameSession: GameSceneDelegate {
     /// 按战场时钟计时，暂停时不走
     private var inNewItemGrace: Bool {
         guard newItemGrace > 0, let id = targetID, let entry = questions[id],
-              progress.stats[entry.item.key] == nil else { return false }
+              !questions.isRetry(for: id), progress.stats[entry.item.key] == nil else { return false }
         return questions.isInGrace(id, at: scene.clock, seconds: newItemGrace)
     }
 
@@ -44,7 +44,13 @@ extension GameSession: GameSceneDelegate {
         // 个别知识点可能凑不齐干扰项，换一个再试
         for _ in 0..<8 {
             guard let item = scheduler.next(from: generator.pool.items, stats: progress.stats, using: &rng, reviewEvery: rules.reviewEvery) else { break }
-            if let question = generator.makeQuestion(for: item, using: &rng) {
+            let question: Question?
+            if case .review = config.selection {
+                question = generator.makeQuestion(for: item, using: &rng)
+            } else {
+                question = generator.makeQuestion(for: item, stats: progress.stats[item.key], using: &rng)
+            }
+            if let question {
                 return (item, question)
             }
         }

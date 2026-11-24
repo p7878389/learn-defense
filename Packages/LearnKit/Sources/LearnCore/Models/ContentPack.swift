@@ -153,11 +153,19 @@ public struct CharacterItem: Codable, Hashable, Sendable {
     public var char: String
     public var pinyin: String
     public var words: [String]?
+    /// 字形联想，可用于幼儿园字谜和同部首干扰项。
+    public var imageHint: String?
 
-    public init(char: String, pinyin: String, words: [String]? = nil) {
+    public init(char: String, pinyin: String, words: [String]? = nil, imageHint: String? = nil) {
         self.char = char
         self.pinyin = pinyin
         self.words = words
+        self.imageHint = imageHint
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case char, pinyin, words
+        case imageHint = "image_association"
     }
 }
 
