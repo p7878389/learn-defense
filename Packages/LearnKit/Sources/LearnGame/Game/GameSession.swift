@@ -41,10 +41,15 @@ final class GameSession: ObservableObject {
     /// 当前题目已经点错的选项
     /// 选择题是答错的选项；输入题是第几次答错（1、2、3…），个数就是答错次数
     @Published var wrongPicks: Set<Int> = []
+    var retrying: Bool {
+        guard current != nil, let id = targetID else { return false }
+        return questions.isRetry(for: id)
+    }
     /// 正在拼字块题：战场放慢，瞄准的怪物停下
     @Published var typing = false
     @Published var ultimate: Question?
     @Published var ultimateWrongPicks: Set<Int> = []
+    @Published var ultimateRetrying = false
     @Published private(set) var inventory = Inventory(capacity: 3)
     /// 场上已经有一道铁栅门；碎了才能再放
     @Published var barricadeDown = false

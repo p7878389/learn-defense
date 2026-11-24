@@ -74,14 +74,14 @@ public struct InputBlank: Hashable, Sendable {
 }
 
 /// 字块题：不用键盘，从给出的字块里依次点出答案。拼满自动判题；
-/// 答错两次给提示，三次把正确的字块高亮出来
+/// 答错由对局换题重试，作答区不自动显示提示或高亮正确字块。
 public struct InputSpec: Sendable {
     public var style: TileStyle
     public var blanks: [InputBlank]
     public var groups: [TileGroup]
     /// 题面模板，□ 依次对应每个空；nil 表示空格单独排在题面下方
     public var template: String?
-    /// 答错两次后显示的提示
+    /// 素材附带的提示，作答区不因累计答错而自动揭晓。
     public var hint: String
     /// 多空题（挑战难度）。拼音虽然有三个空，只算单空
     public var isMulti: Bool

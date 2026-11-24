@@ -9,6 +9,7 @@ struct UltimateOverlay: View {
     let onReplay: () -> Void
     /// 点空白处或「先不放了」：取消这次大招
     let onCancel: () -> Void
+    var retrying = false
 
     var body: some View {
         ZStack {
@@ -21,14 +22,14 @@ struct UltimateOverlay: View {
                 Text(title)
                     .font(.system(size: 34, weight: .heavy, design: .rounded))
                     .foregroundStyle(Theme.accent)
-                AnswerPanel(question: question, wrongPicks: wrongPicks, onAnswer: onAnswer, onReplay: onReplay)
+                AnswerPanel(question: question, wrongPicks: wrongPicks, onAnswer: onAnswer, onReplay: onReplay, retrying: retrying)
                 Button(action: onCancel) {
                     Label("先不放了", systemImage: "xmark.circle.fill")
                         .font(.system(size: 20, weight: .bold, design: .rounded))
                         .foregroundStyle(Theme.muted)
                 }
                 .buttonStyle(.plain)
-                Text(wrongPicks.isEmpty ? "点空白处也能取消，能量会留着" : "已经答错过，取消后这次能量就用掉了")
+                Text(!retrying ? "点空白处也能取消，能量会留着" : "已经答错过，答对或取消都会用掉这次能量")
                     .font(.system(size: 15, weight: .medium, design: .rounded))
                     .foregroundStyle(Theme.muted)
             }

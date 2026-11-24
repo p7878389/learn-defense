@@ -12,6 +12,7 @@ struct AnswerPanel: View {
     var onSubmitInput: ([String]) -> Void = { _ in }
     /// 横屏时答题区要矮，行距收紧，战场才能铺满宽度
     var compact = false
+    var retrying = false
 
     private var revealed: Bool { !wrongPicks.isEmpty }
 
@@ -39,6 +40,11 @@ struct AnswerPanel: View {
                     .font(.title2)
                     .foregroundStyle(Theme.muted)
                     .frame(maxWidth: .infinity, minHeight: 120)
+            }
+            if retrying {
+                Text("刚才答错了，题目已刷新，请重新作答")
+                    .font(.title3.weight(.medium))
+                    .foregroundStyle(Theme.muted)
             }
         }
         .id(question?.id)

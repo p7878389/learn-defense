@@ -14,7 +14,7 @@ extension GameSession: GameSceneDelegate {
     /// 按战场时钟计时，暂停时不走
     private var inNewItemGrace: Bool {
         guard newItemGrace > 0, let id = targetID, let entry = questions[id],
-              progress.stats[entry.item.key] == nil else { return false }
+              !questions.isRetry(for: id), progress.stats[entry.item.key] == nil else { return false }
         return questions.isInGrace(id, at: scene.clock, seconds: newItemGrace)
     }
 

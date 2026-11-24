@@ -127,3 +127,13 @@ enum Radical { static func of(_ hint: String?) -> String? }
 - 本机 CommandLineTools 缺少 SwiftData 宏，验证命令使用 `env DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer /usr/bin/xcrun swift test`。
 - `xcodebuild -project LearnDefense.xcodeproj -scheme LearnDefense -configuration Debug -destination 'generic/platform=iOS Simulator' -derivedDataPath /tmp/learn-defense-preschool-build CODE_SIGNING_ALLOWED=NO build`（同样指定 Xcode 的 `DEVELOPER_DIR`）成功。未做真机交互或视觉验收。
 - GitNexus 独立索引 `learn-defense@wt-feature-preschool-challenge-953b6466e3c1` 已刷新；`detect_changes(scope: all)` 覆盖 18 个变更文件、165 个符号、48 条受影响流程。共享生成器和配置涉及多条调用链，风险评级为 critical；结合源码差异、全量测试和构建核查，不以图中缺失的调用关系作为安全证明。
+
+## 10. 续改：答错换题防排除
+
+- 普通闯关、复习局和大招答错后，优先从当前允许范围生成知识点、答案均不同的题；题库不足时重生成原知识点，并保证完整选项或字块顺序变化。
+- 不保留已排除的错误选项，不再在多次答错后提示或高亮正确字块。重新朗读新题、重置输入与展示计时，怪物血量和当前目标保持不变；重试不给新的停怪宽限时间。
+- 每张新题的实际作答独立记录到学习进度、错题及对局明细；同一次攻击换题后答对仍只得 2 分且不充能。大招一旦答错，之后答对或取消都清空能量且不释放大招。
+- UI 回调携带展示题目的 ID，旧题连点、延迟输入不得答到新题。
+- 验证：优先换题、小题库换序、复习范围、选择/字块/大招旧回调、错误与正确记录对应、重试奖励限制及暂停/切目标回归；最后运行全量测试和 iOS 构建。
+- 验证结果：新增防排除测试先失败再通过；全量 469 项测试通过（LearnCore 218 项、LearnGame 251 项）。最后简化重试状态为由当前题目派生后，复跑相关 15 项测试通过，iOS Simulator 构建成功。
+- 最终 `detect_changes(scope: all)` 覆盖 16 个变更文件、102 个符号、38 条流程，未报告 partial/truncated；共享判题调用链评级 critical，已通过记录、计分、大招、输入、切目标、暂停及全量回归核对。未做真机交互验收。

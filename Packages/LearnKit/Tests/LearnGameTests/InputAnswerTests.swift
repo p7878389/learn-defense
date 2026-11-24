@@ -42,16 +42,22 @@ struct InputAnswerTests {
         let (s, question, spec) = try typedQuestion()
         s.setTyping(true)
         s.answerInput(spec.blanks.map { _ in "zzz" })
-        #expect(s.wrongPicks.count == 1)
+        #expect(s.wrongPicks.isEmpty)
         #expect(s.attempted == 1)
         #expect(s.mistakes.count == 1)
-        #expect(s.typing, "答错继续写")
-        s.answerInput(spec.blanks.map { _ in "zzz" })
-        #expect(s.wrongPicks.count == 2)
-        #expect(s.attempted == 1, "同一题只记第一次")
+        #expect(!s.typing && s.retrying, "答错换新题，输入状态清空")
+        let retry = try #require(s.current)
+        #expect(retry.id != question.id)
+        if let input = retry.input { s.answerInput(input.blanks.map { _ in "zzz" }, questionID: retry.id) }
+        else { s.answer((retry.answerIndex + 1) % retry.options.count, questionID: retry.id) }
+        #expect(s.wrongPicks.isEmpty)
+        #expect(s.attempted == 2, "两张题的实际作答分别记录")
         let score = s.score
-        s.answerInput(spec.blanks.map(\.answer))
+        let next = try #require(s.current)
+        if let input = next.input { s.answerInput(input.blanks.map(\.answer), questionID: next.id) }
+        else { s.answer(next.answerIndex, questionID: next.id) }
         #expect(s.score == score + 2)
+        #expect(s.energy == 0 && s.firstTryCorrect == 1 && s.attempted == 3)
         #expect(!s.typing)
         #expect(s.current?.id != question.id)
     }
