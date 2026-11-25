@@ -64,15 +64,32 @@ struct AdventureLobbyView: View {
             AdventureView(levelID: launch.levelID, model: model, profileID: profileID,
                           difficulty: launch.difficulty, deck: launch.deck, onClose: { self.launch = nil })
         }
-        .confirmationDialog("放弃这场冒险？已消耗的 15 积分不会返还。", isPresented: $confirmAbandon, titleVisibility: .visible) {
-            Button("放弃对局", role: .destructive) {
-                do { try growth.abandonAdventure(); model.objectWillChange.send() }
-                catch { self.error = error.localizedDescription }
+        .overlay {
+            if confirmAbandon {
+                CandyConfirmModal(
+                    title: "放弃这场冒险？",
+                    icon: "⚠️",
+                    message: "放弃后将清除当前进度，已消耗的 15 积分不会返还。",
+                    buttons: [
+                        CandyConfirmButton(title: "确认放弃", icon: "🚪", role: .destructive) {
+                            confirmAbandon = false
+                            do { try growth.abandonAdventure(); model.objectWillChange.send() }
+                            catch { self.error = error.localizedDescription }
+                        },
+                        CandyConfirmButton(title: "再想想", role: .cancel) { confirmAbandon = false }
+                    ],
+                    onDismiss: { confirmAbandon = false }
+                )
+            } else if let message = error {
+                CandyConfirmModal(
+                    title: "操作未完成",
+                    icon: "⚠️",
+                    message: message,
+                    buttons: [CandyConfirmButton(title: "知道了", role: .primary) { error = nil }],
+                    onDismiss: { error = nil }
+                )
             }
         }
-        .alert("操作未完成", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
-            Button("知道了") { error = nil }
-        } message: { Text(error ?? "") }
         .interactiveDismissDisabled()
     }
 
@@ -186,7 +203,10 @@ struct AdventureLobbyView: View {
             AdventureAction(title: "继续冒险", icon: "▶") {
                 launch = AdventureLaunch(levelID: battle.level.id, difficulty: battle.difficulty, deck: battle.deck)
             }
-            Button("放弃", role: .destructive) { confirmAbandon = true }.font(.headline).frame(minHeight: 44)
+            AdventureAction(title: "放弃", icon: "✕", fill: Theme.wrong.opacity(0.14),
+                            edge: Theme.wrong.opacity(0.45), foreground: Theme.wrong) {
+                confirmAbandon = true
+            }
         }
         .padding(12)
         .candyCard(fill: GrowthColors.gold.opacity(0.16), radius: 18)

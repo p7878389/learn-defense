@@ -23,11 +23,8 @@ struct DoomShroomUnlockView: View {
             let wide = wideLayout ?? (geometry.size.width >= 900 && geometry.size.height >= 650)
             VStack(spacing: 18) {
                 if !embedded {
-                    HStack {
-                        Label("道具解锁", systemImage: "sparkles").font(.title2.bold())
-                        Spacer()
-                        CoinPill(coins: growth.state.coins, size: 16)
-                        Button("关闭", action: onClose).buttonStyle(.bordered)
+                    GrowthPageHeader(icon: "💥", title: "道具解锁", subtitle: "永久道具", onClose: onClose) {
+                        CoinPill(coins: growth.state.coins, size: 22)
                     }
                 }
                 if wide {
@@ -51,13 +48,60 @@ struct DoomShroomUnlockView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .background(GrowthPageBackground())
-        .confirmationDialog("花 300 积分为这个孩子永久解锁毁灭菇？", isPresented: $confirming, titleVisibility: .visible) {
-            Button("永久解锁 · 300 积分", action: purchase)
-            Button("取消", role: .cancel) {}
+        .overlay {
+            if confirming { confirmOverlay }
+            else if let message = error {
+                CandyConfirmModal(
+                    title: "解锁未完成",
+                    icon: "⚠️",
+                    message: message,
+                    buttons: [CandyConfirmButton(title: "知道了", role: .primary) { error = nil }],
+                    onDismiss: { error = nil }
+                )
+            }
         }
-        .alert("解锁未完成", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
-            Button("知道了") { error = nil }
-        } message: { Text(error ?? "") }
+    }
+
+    private var confirmOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.45).ignoresSafeArea().onTapGesture { confirming = false }
+            CandyModalCard(
+                bannerTitle: "要买下来吗？",
+                bannerIcon: "🛒",
+                bannerColors: [GrowthColors.gold, Theme.accent],
+                bannerEdge: GrowthColors.orangeDark,
+                maxWidth: 500
+            ) {
+                portrait(height: 110)
+                    .frame(width: 140, height: 140)
+                    .background(Circle().fill(GrowthColors.rarity(.legendary).opacity(0.15)))
+                Text("毁灭菇").font(.system(size: 34, weight: .heavy, design: .rounded)).foregroundStyle(Theme.ink)
+                Text("永久解锁 · 经典与冒险模式通用").font(.system(size: 17, weight: .bold, design: .rounded)).foregroundStyle(Theme.muted)
+                HStack(spacing: 14) {
+                    Text("要用").foregroundStyle(Theme.muted)
+                    CoinIcon(size: 24)
+                    Text("\(AdventureDoom.unlockPrice)").foregroundStyle(GrowthColors.orangeDark)
+                    Text("→").foregroundStyle(Theme.muted.opacity(0.5))
+                    Text("还剩").foregroundStyle(Theme.muted)
+                    CoinIcon(size: 24)
+                    Text("\(growth.state.coins - AdventureDoom.unlockPrice)").foregroundStyle(GrowthColors.jadeDark)
+                }
+                .font(.system(size: 22, weight: .heavy, design: .rounded))
+                .padding(.horizontal, 20).padding(.vertical, 10)
+                .background(RoundedRectangle(cornerRadius: 18).fill(GrowthColors.surface))
+                HStack(spacing: 16) {
+                    Button { confirming = false } label: {
+                        CandyButtonLabel(title: "再想想", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
+                                         foreground: Theme.ink, expands: true)
+                    }
+                    Button { confirming = false; purchase() } label: {
+                        CandyButtonLabel(title: "买！", fill: Theme.accent, edge: GrowthColors.orangeDark, expands: true)
+                    }
+                }
+                .buttonStyle(PressableStyle())
+            }
+            .padding(24)
+        }
     }
 
     private var sidebar: some View {
@@ -195,11 +239,11 @@ struct DoomShroomUnlockView: View {
             Text("🔒 Lv.3 解锁 · 还差 \(AdventureDoom.unlockLevel - growth.level.level) 级")
                 .font(.system(size: 14, weight: .heavy, design: .rounded)).foregroundStyle(Theme.muted)
             MiniBar(value: Double(growth.level.level), total: Double(AdventureDoom.unlockLevel), tint: Theme.accent)
-            CandyButtonLabel(title: "还没解锁", fill: Color(white: 0.9), edge: Color(white: 0.78),
+            CandyButtonLabel(title: "还没解锁", fill: GrowthColors.disabledFill, edge: GrowthColors.disabledEdge,
                              foreground: Theme.muted, font: font, height: 46, minWidth: 0, expands: true)
         } else if growth.state.coins < AdventureDoom.unlockPrice {
             Text("还差 \(AdventureDoom.unlockPrice - growth.state.coins) 积分").font(.headline).foregroundStyle(Theme.wrong)
-            CandyButtonLabel(title: "300 积分", coin: true, fill: Color(white: 0.88), edge: Color(white: 0.75),
+            CandyButtonLabel(title: "300 积分", coin: true, fill: GrowthColors.disabledFill, edge: GrowthColors.disabledEdge,
                              foreground: Theme.muted, font: font, height: 50, minWidth: 0, expands: true)
         } else {
             Button { confirming = true } label: {

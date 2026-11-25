@@ -23,45 +23,54 @@ private struct PlusBubble: View {
 /// 轮播最后一张：添加小朋友
 struct HomeAddCard: View {
     let focused: Bool
+    var focus: Double? = nil
     let height: CGFloat
     let onAdd: () -> Void
 
+    private var f: Double { focus ?? (focused ? 1.0 : 0.0) }
+
     var body: some View {
         VStack(spacing: 0) {
-            PlusBubble().padding(.top, 48)
+            PlusBubble()
+                .scaleEffect(0.90 + 0.16 * f)
+                .offset(y: 3 - 6 * f)
+                .padding(.top, 46)
             Text("添加小朋友")
                 .font(.system(size: 36, weight: .black, design: .rounded))
                 .foregroundStyle(Theme.ink)
-                .padding(.top, 24)
+                .scaleEffect(0.94 + 0.06 * f)
+                .padding(.top, 22)
             Text("给新来的小守卫建一张卡")
-                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .font(.system(size: 19, weight: .bold, design: .rounded))
                 .foregroundStyle(Theme.muted)
                 .padding(.top, 6)
             Spacer(minLength: 12)
-            if focused {
-                Button(action: onAdd) {
-                    CandyButtonLabel(title: "添加", icon: "＋", fill: Theme.accent, edge: GrowthColors.orangeDeep,
-                                     font: .system(size: 30, weight: .black, design: .rounded), height: 72, minWidth: 340)
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(PressableStyle())
-                .accessibilityLabel("添加小朋友")
-            } else {
-                Color.clear.frame(height: 72)
+            Button(action: onAdd) {
+                CandyButtonLabel(title: "添加", icon: "＋", fill: Theme.accent, edge: GrowthColors.orangeDeep,
+                                 font: .system(size: 30, weight: .black, design: .rounded), height: 70, minWidth: 340)
+                    .frame(maxWidth: .infinity)
             }
+            .buttonStyle(PressableStyle())
+            .accessibilityLabel("添加小朋友")
+            .scaleEffect(0.84 + 0.16 * f)
+            .opacity(f)
+            .allowsHitTesting(focused)
+            .frame(height: 72)
             Text("请爸爸妈妈帮忙填写")
-                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                .font(.system(size: 15, weight: .semibold, design: .rounded))
                 .foregroundStyle(Theme.muted.opacity(0.85))
-                .padding(.top, 12)
+                .padding(.top, 10)
         }
-        .padding(.horizontal, 26)
+        .padding(.horizontal, 24)
         .padding(.bottom, 22)
         .frame(height: height)
         .frame(maxWidth: .infinity)
-        .modifier(HomeCardFrame(focused: false, dashed: true))
+        .modifier(HomeCardFrame(focused: focused, focus: f, tint: GrowthColors.gold, dashed: true))
         .overlay(alignment: .topTrailing) {
             HomeRibbon(text: "✨ 欢迎新队员", fill: GrowthColors.gold, edge: GrowthColors.goldDark)
-                .offset(x: 14, y: -18)
+                .scaleEffect(0.88 + 0.12 * f)
+                .rotationEffect(.degrees(2.0 * f))
+                .offset(x: 14, y: -13 - 6 * f)
         }
     }
 }
@@ -122,25 +131,6 @@ struct HomeEmptyCard: View {
     }
 }
 
-/// 轮播两侧的「‹ ›」按钮，给还不会滑动的小朋友点
-struct CarouselArrow: View {
-    let left: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: left ? "chevron.left" : "chevron.right")
-                .font(.system(size: 26, weight: .black))
-                .foregroundStyle(GrowthColors.orangeDark)
-                .frame(width: 64, height: 64)
-                .background(Circle().fill(.white.opacity(0.95)).shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 5))
-                .overlay(Circle().stroke(GrowthColors.cardEdge, lineWidth: 2))
-        }
-        .buttonStyle(PressableStyle())
-        .accessibilityLabel(left ? "上一个小朋友" : "下一个小朋友")
-    }
-}
-
 /// 分页点：一个孩子一个点，最后一个是「＋」；当前那个拉长成橙色胶囊。点圆点也能跳过去
 struct CarouselPager: View {
     let cards: [HomeCardID]
@@ -155,16 +145,29 @@ struct CarouselPager: View {
                     Group {
                         if card == .add {
                             Image(systemName: "plus")
-                                .font(.system(size: 10, weight: .black))
-                                .foregroundStyle(selected ? .white : Theme.muted)
-                                .frame(width: selected ? 30 : 18, height: 18)
-                                .background(Capsule().fill(selected ? Theme.accent : .clear))
-                                .overlay(Capsule().stroke(selected ? .clear : Theme.muted.opacity(0.6),
-                                                          style: StrokeStyle(lineWidth: 1.5, dash: [3, 2])))
+                                .font(.system(size: 11, weight: .black))
+                                .foregroundStyle(selected ? .white : GrowthColors.orangeDark)
+                                .frame(width: selected ? 34 : 20, height: 20)
+                                .background(
+                                    Capsule()
+                                        .fill(selected ? Theme.accent : GrowthColors.gold.opacity(0.18))
+                                        .shadow(color: selected ? GrowthColors.orangeDeep.opacity(0.45) : .clear, radius: 4, y: 2)
+                                )
+                                .overlay(
+                                    Capsule().stroke(
+                                        selected ? .white.opacity(0.8) : GrowthColors.gold.opacity(0.8),
+                                        style: StrokeStyle(lineWidth: 1.5, dash: selected ? [] : [3, 2])
+                                    )
+                                )
                         } else {
                             Capsule()
-                                .fill(selected ? Theme.accent : Theme.muted.opacity(0.35))
-                                .frame(width: selected ? 30 : 11, height: 11)
+                                .fill(
+                                    selected
+                                        ? LinearGradient(colors: [GrowthColors.gold, Theme.accent], startPoint: .leading, endPoint: .trailing)
+                                        : LinearGradient(colors: [GrowthColors.cardEdge, GrowthColors.cardEdge], startPoint: .leading, endPoint: .trailing)
+                                )
+                                .frame(width: selected ? 34 : 11, height: 11)
+                                .shadow(color: selected ? Theme.accent.opacity(0.45) : .clear, radius: 4, y: 2)
                         }
                     }
                     .frame(minWidth: 24, minHeight: 32)
@@ -174,8 +177,14 @@ struct CarouselPager: View {
                 .accessibilityHidden(true)
             }
         }
-        .padding(.horizontal, 14)
-        .background(Capsule().fill(.white.opacity(0.7)))
-        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: current)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 2)
+        .background(
+            Capsule()
+                .fill(.white.opacity(0.82))
+                .shadow(color: GrowthColors.cardEdge.opacity(0.7), radius: 0, x: 0, y: 2)
+        )
+        .overlay(Capsule().stroke(GrowthColors.cardEdge.opacity(0.8), lineWidth: 1.5))
+        .animation(.spring(response: 0.36, dampingFraction: 0.78), value: current)
     }
 }

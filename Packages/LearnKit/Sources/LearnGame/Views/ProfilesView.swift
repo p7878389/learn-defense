@@ -28,8 +28,13 @@ struct ProfilesView: View {
     @State private var current: HomeCardID?
     /// 下次刷新后要停在哪张卡（刚建好或刚改完的孩子）；为 nil 时回到第一张
     @State private var focusAfterRefresh: HomeCardID?
+    /// 手指实时拖动偏移，让卡片位置、倾角与内部焦点细节 1:1 实时跟手
+    @State private var dragOffset: CGFloat = 0
+    @State private var stageGlow = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private static let cardWidth: CGFloat = 400
+    private static let dragStep: CGFloat = 340
 
     private var ordered: [Profile] { PlayActivity.homeOrder(model.profiles, activity: activity) }
 
@@ -46,13 +51,10 @@ struct ProfilesView: View {
             } else {
                 carousel
                 CarouselPager(cards: cards, current: current) { card in
-                    withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) { current = card }
+                    select(card)
                 }
                 .padding(.top, 6)
-                Text("← 左右滑动换人 →")
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                    .foregroundStyle(Theme.muted.opacity(0.8))
-                    .padding(.top, 4)
+                .padding(.bottom, 6)
             }
             HomeLawn()
         }
@@ -98,64 +100,160 @@ struct ProfilesView: View {
         .padding(.top, 8)
     }
 
+    private var spotlightColor: Color {
+        if case let .profile(id) = current,
+           let profile = model.profiles.first(where: { $0.id == id }) {
+            return AvatarTint.color(for: profile.avatar)
+        }
+        return GrowthColors.gold
+    }
+
     private var homeBackground: some View {
         ZStack {
             GrowthPageBackground()
-            // 中间的聚光灯
-            RadialGradient(colors: [GrowthColors.gold.opacity(0.3), .clear], center: .center, startRadius: 40, endRadius: 460)
-                .ignoresSafeArea()
+            // 顶部柔和天空微蓝渐变
+            LinearGradient(
+                colors: [GrowthColors.sky.opacity(0.65), GrowthColors.sky.opacity(0.2), .clear],
+                startPoint: .top,
+                endPoint: .center
+            )
+            .ignoresSafeArea()
+            // 舞台中央聚光灯随当前聚焦孩子平滑切换主题色并轻微呼吸
+            RadialGradient(
+                colors: [spotlightColor.opacity(stageGlow ? 0.46 : 0.34), GrowthColors.gold.opacity(0.14), .clear],
+                center: UnitPoint(x: 0.5, y: 0.42),
+                startRadius: 30,
+                endRadius: 500
+            )
+            .scaleEffect(stageGlow ? 1.04 : 0.98)
+            .ignoresSafeArea()
+            .animation(.easeInOut(duration: 0.45), value: current)
+        }
+        .onAppear {
+            guard !reduceMotion else { return }
+            withAnimation(.easeInOut(duration: 3.2).repeatForever(autoreverses: true)) {
+                stageGlow = true
+            }
         }
     }
 
-    // MARK: - 轮播
+    // MARK: - 轮播舞台
 
     private var carousel: some View {
         GeometryReader { geo in
             let cardHeight = min(500, geo.size.height - 48)
-            let sideMargin = max(0, (geo.size.width - Self.cardWidth) / 2)
             let index = current.flatMap { cards.firstIndex(of: $0) } ?? 0
+            let progress = Double(dragOffset / Self.dragStep)
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: 28) {
+            ZStack {
+                // C 位卡片正下方的椭圆发光舞台底座
+                Ellipse()
+                    .fill(
+                        RadialGradient(
+                            colors: [spotlightColor.opacity(0.42), GrowthColors.gold.opacity(0.18), .clear],
+                            center: .center,
+                            startRadius: 12,
+                            endRadius: 260
+                        )
+                    )
+                    .frame(width: 520, height: 42)
+                    .offset(y: cardHeight / 2 + 12)
+                    .animation(.easeInOut(duration: 0.4), value: current)
+                    .allowsHitTesting(false)
+
+                if geo.size.width > 900 {
+                    stageDecorations
+                }
+
+                // 卡片扇面舞台：每张卡由连续 phase 实时驱动位置、缩放、微倾角与内部聚焦度
+                ZStack {
                     ForEach(Array(ordered.enumerated()), id: \.element.id) { offset, profile in
                         let id = HomeCardID.profile(profile.id)
-                        HomeProfileCard(summary: summary(profile, isFirst: offset == 0),
-                                        focused: id == current, height: cardHeight) {
-                            editing = EditingProfile(profile: profile, isNew: false)
+                        let phase = Double(offset - index) + progress
+                        if abs(phase) <= 2.2 {
+                            let g = CarouselGeometry(phase: phase)
+                            HomeProfileCard(
+                                summary: summary(profile, isFirst: offset == 0),
+                                focused: id == current,
+                                focus: g.focus,
+                                height: cardHeight
+                            ) {
+                                editing = EditingProfile(profile: profile, isNew: false)
+                            }
+                            .frame(width: Self.cardWidth)
+                            .contentShape(RoundedRectangle(cornerRadius: 36))
+                            .onTapGesture {
+                                if id != current { select(id) }
+                            }
+                            .modifier(CarouselTransform(phase: phase))
+                            .zIndex(g.zIndex)
                         }
-                        .frame(width: Self.cardWidth)
-                        .contentShape(Rectangle())
-                        .onTapGesture { select(id) }
-                        .modifier(CarouselTransition())
-                        .id(id)
                     }
-                    HomeAddCard(focused: current == .add, height: cardHeight, onAdd: addProfile)
+
+                    let addPhase = Double(ordered.count - index) + progress
+                    if abs(addPhase) <= 2.2 {
+                        let g = CarouselGeometry(phase: addPhase)
+                        HomeAddCard(
+                            focused: current == .add,
+                            focus: g.focus,
+                            height: cardHeight,
+                            onAdd: addProfile
+                        )
                         .frame(width: Self.cardWidth)
-                        .contentShape(Rectangle())
-                        .onTapGesture { select(.add) }
-                        .modifier(CarouselTransition())
-                        .id(HomeCardID.add)
+                        .contentShape(RoundedRectangle(cornerRadius: 36))
+                        .onTapGesture {
+                            if current != .add { select(.add) }
+                        }
+                        .modifier(CarouselTransform(phase: addPhase))
+                        .zIndex(g.zIndex)
+                    }
                 }
-                .scrollTargetLayout()
-                // 角标在卡片上沿外面，留出位置不被裁掉
                 .padding(.vertical, 24)
             }
-            .contentMargins(.horizontal, sideMargin, for: .scrollContent)
-            .scrollTargetBehavior(.viewAligned)
-            .scrollPosition(id: $current)
-            .overlay {
-                HStack {
-                    if index > 0 {
-                        CarouselArrow(left: true) { select(cards[index - 1]) }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 10)
+                    .onChanged { value in
+                        let dx = value.translation.width
+                        let atStart = index == 0 && dx > 0
+                        let atEnd = index == cards.count - 1 && dx < 0
+                        dragOffset = (atStart || atEnd) ? dx * 0.32 : dx
                     }
-                    Spacer()
-                    if index < cards.count - 1 {
-                        CarouselArrow(left: false) { select(cards[index + 1]) }
+                    .onEnded { value in
+                        let actual = value.translation.width
+                        let predicted = value.predictedEndTranslation.width
+                        var target = index
+                        if (actual < -52 || predicted < -135), index < cards.count - 1 {
+                            target = index + 1
+                        } else if (actual > 52 || predicted > 135), index > 0 {
+                            target = index - 1
+                        }
+                        withAnimation(.spring(response: 0.44, dampingFraction: 0.84)) {
+                            current = cards[target]
+                            dragOffset = 0
+                        }
                     }
-                }
-                .frame(width: Self.cardWidth + 150)
-            }
+            )
         }
+    }
+
+    private var stageDecorations: some View {
+        ZStack {
+            PictureView(emoji: "🦋", size: 28)
+                .offset(x: -440, y: -150 + (stageGlow ? -6 : 6))
+                .rotationEffect(.degrees(stageGlow ? -8 : 4))
+            PictureView(emoji: "✨", size: 22)
+                .offset(x: -380, y: 110)
+                .opacity(stageGlow ? 0.85 : 0.4)
+            PictureView(emoji: "🦋", size: 28)
+                .offset(x: 440, y: -130 + (stageGlow ? 6 : -6))
+                .rotationEffect(.degrees(stageGlow ? 8 : -4))
+            PictureView(emoji: "⭐", size: 22)
+                .offset(x: 390, y: 120)
+                .opacity(stageGlow ? 0.85 : 0.4)
+        }
+        .allowsHitTesting(false)
     }
 
     private func summary(_ profile: Profile, isFirst: Bool) -> HomeProfileSummary {
@@ -171,7 +269,10 @@ struct ProfilesView: View {
 
     private func select(_ card: HomeCardID) {
         guard card != current else { return }
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) { current = card }
+        withAnimation(.spring(response: 0.44, dampingFraction: 0.84)) {
+            current = card
+            dragOffset = 0
+        }
     }
 
     // MARK: - 数据
@@ -212,45 +313,40 @@ struct ProfilesView: View {
     }
 }
 
-/// 3D 旋转木马：卡片像排在一个圆筒外侧，离中间越远转得越多、越小越淡。
-/// phase 是卡片离中间几张卡的距离（左边为负），拖动时连续变化
+/// 扇面圆弧舞台几何：中心主角卡端正高浮，两侧候补卡沿圆弧自然下沉、微倾并柔和缩放，保持 2D 矢量锐利度。
+/// phase 是卡片相对舞台中心的连续步数（左边为负），手指拖动与弹簧回弹时全程连续插值。
 struct CarouselGeometry {
     let phase: Double
 
-    private var clamped: Double { min(max(phase, -1.6), 1.6) }
-    /// 绕竖轴转的角度：左边的卡外缘往后退，朝向中间
-    var angle: Angle { .degrees(clamped * 42) }
-    var scale: Double { 1 - abs(clamped) * 0.14 }
-    var opacity: Double { 1 - abs(clamped) * 0.38 }
-    /// 转过去以后看起来变窄了，往中间收一点，让几张卡连成一圈
-    var offsetX: Double { -clamped * 46 }
-    static let perspective: CGFloat = 0.55
-}
-
-private struct CarouselTransition: ViewModifier {
-    func body(content: Content) -> some View {
-        content.scrollTransition(.interactive, axis: .horizontal) { view, phase in
-            let g = CarouselGeometry(phase: phase.value)
-            return view
-                .rotation3DEffect(g.angle, axis: (x: 0, y: 1, z: 0), perspective: CarouselGeometry.perspective)
-                .scaleEffect(g.scale)
-                .opacity(g.opacity)
-                .offset(x: g.offsetX)
-        }
+    private var clamped: Double { min(max(phase, -2.0), 2.0) }
+    var distance: Double { abs(clamped) }
+    /// Smoothstep 连续聚焦度（0 ~ 1）：中心点与邻卡点导数均为 0，过渡温润无折角
+    var focus: Double {
+        let t = max(0, min(1, 1 - distance))
+        return t * t * (3 - 2 * t)
     }
+    var angle: Angle { .degrees(clamped * -8) }
+    var tilt: Angle { .degrees(clamped * 3.2) }
+    var scale: Double { 0.85 + 0.15 * focus }
+    var opacity: Double { max(0, 1 - distance * 0.34) }
+    var offsetX: Double { clamped * 336 }
+    var offsetY: Double { min(distance * distance * 20, 32) - focus * 4 }
+    var zIndex: Double { 100 - distance * 20 }
+    static let perspective: CGFloat = 0.25
 }
 
-/// 和 CarouselTransition 相同的变换，用于不在 ScrollView 里的场合（如渲染截图）
+/// 舞台卡片连续空间变换
 struct CarouselTransform: ViewModifier {
     let phase: Double
 
     func body(content: Content) -> some View {
         let g = CarouselGeometry(phase: phase)
         content
-            .rotation3DEffect(g.angle, axis: (x: 0, y: 1, z: 0), perspective: CarouselGeometry.perspective)
             .scaleEffect(g.scale)
+            .rotationEffect(g.tilt)
+            .rotation3DEffect(g.angle, axis: (x: 0, y: 1, z: 0), perspective: CarouselGeometry.perspective)
             .opacity(g.opacity)
-            .offset(x: g.offsetX)
+            .offset(x: g.offsetX, y: g.offsetY)
     }
 }
 

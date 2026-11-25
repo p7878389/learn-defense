@@ -89,9 +89,26 @@ struct QuestionBankPickerView: View {
                 HStack {
                     Text("单元 \(draft.units.count)/\(pack.units.count)").font(.headline)
                     Spacer()
-                    Button("全选") { draft.selectAllUnits() }.disabled(draft.units == draft.allUnitKeys).frame(minHeight: 32)
-                    Button("清空") { draft.clearUnits() }.disabled(draft.units.isEmpty).frame(minHeight: 32)
-                }.buttonStyle(PressableStyle()).tint(Theme.jade)
+                    let allSelected = draft.units == draft.allUnitKeys
+                    Button { draft.selectAllUnits() } label: {
+                        CandyButtonLabel(title: "全选",
+                                         fill: allSelected ? GrowthColors.disabledFill : GrowthColors.surface,
+                                         edge: allSelected ? GrowthColors.disabledEdge : GrowthColors.cardEdge,
+                                         foreground: allSelected ? Theme.muted : GrowthColors.jadeDark,
+                                         font: .system(size: 14, weight: .heavy, design: .rounded),
+                                         height: 32, minWidth: 64)
+                    }
+                    .disabled(allSelected)
+                    Button { draft.clearUnits() } label: {
+                        CandyButtonLabel(title: "清空",
+                                         fill: draft.units.isEmpty ? GrowthColors.disabledFill : GrowthColors.surface,
+                                         edge: draft.units.isEmpty ? GrowthColors.disabledEdge : GrowthColors.cardEdge,
+                                         foreground: draft.units.isEmpty ? Theme.muted : Theme.ink,
+                                         font: .system(size: 14, weight: .heavy, design: .rounded),
+                                         height: 32, minWidth: 64)
+                    }
+                    .disabled(draft.units.isEmpty)
+                }.buttonStyle(PressableStyle())
                 ScrollView {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: compact ? 180 : 220), alignment: .top)], spacing: compact ? 8 : 12) {
                         ForEach(pack.units) { unit in
@@ -122,7 +139,11 @@ struct QuestionBankPickerView: View {
                 }
                 Spacer()
                 Button { if let config = draft.confirmedConfig() { onConfirm(config) } } label: {
-                    CandyButtonLabel(title: "确认题库", icon: "✓", fill: draft.confirmedConfig() == nil ? Theme.muted : Theme.jade,
+                    let ready = draft.confirmedConfig() != nil
+                    CandyButtonLabel(title: "确认题库", icon: "✓",
+                                     fill: ready ? Theme.jade : GrowthColors.disabledFill,
+                                     edge: ready ? GrowthColors.jadeDark : GrowthColors.disabledEdge,
+                                     foreground: ready ? .white : Theme.muted,
                                      font: .headline, height: 48)
                 }
                 .buttonStyle(PressableStyle()).disabled(draft.confirmedConfig() == nil)

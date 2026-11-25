@@ -49,7 +49,8 @@ struct SettingsCard<Content: View>: View {
         }
         .padding(24)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .candyCard(fill: .white)
+        .candyCard(fill: GrowthColors.surface)
+        .overlay(RoundedRectangle(cornerRadius: 24).stroke(GrowthColors.cardEdge, lineWidth: 2))
     }
 }
 
@@ -63,18 +64,14 @@ private struct ParentGateView: View {
     let onCancel: () -> Void
 
     var body: some View {
-        VStack(spacing: 24) {
-            HStack {
-                Spacer()
-                Button("关闭", action: onCancel).buttonStyle(.bordered)
-            }
-            Text("🔒").font(.system(size: 64))
-            Text("家长验证").font(.largeTitle.bold())
+        CandyModalCard(bannerTitle: "家长验证", bannerIcon: "🔒", maxWidth: 640) {
             Text("请家长完成下面的计算，进入家长专区").foregroundStyle(Theme.muted)
-            Text("\(gate.left) × \(gate.right) = ?").font(.system(size: 48, weight: .heavy, design: .rounded))
+            Text("\(gate.left) × \(gate.right) = ?")
+                .font(.system(size: 48, weight: .heavy, design: .rounded))
+                .foregroundStyle(Theme.ink)
             HStack(spacing: 16) {
                 ForEach(gate.options, id: \.self) { option in
-                    Button("\(option)") {
+                    Button {
                         let success = gate.submit(option)
                         do {
                             guard let database = model.database else { throw SettingsError.invalid("数据库不可用") }
@@ -85,18 +82,26 @@ private struct ParentGateView: View {
                             persistenceFailed = true
                             message = "无法保存验证状态，请重新打开应用"
                         }
+                    } label: {
+                        Text("\(option)")
+                            .font(.system(size: 28, weight: .heavy, design: .rounded))
+                            .frame(minWidth: 100, minHeight: 72)
+                            .foregroundStyle(Theme.ink)
+                            .background(CandyTileBackground(radius: 18))
                     }
-                    .font(.title.bold())
-                    .frame(minWidth: 100, minHeight: 72)
-                    .foregroundStyle(Theme.ink)
-                    .background(Theme.paper, in: RoundedRectangle(cornerRadius: 18))
-                    .overlay(RoundedRectangle(cornerRadius: 18).stroke(GrowthColors.cardEdge, lineWidth: 2))
+                    .buttonStyle(PressableStyle())
                     .disabled(!gate.canAnswer(now: now) || persistenceFailed)
                 }
             }
-            Text(message.isEmpty ? "连续答错 3 次后，需要稍后再试" : message).foregroundStyle(Theme.muted)
+            Text(message.isEmpty ? "连续答错 3 次后，需要稍后再试" : message)
+                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .foregroundStyle(Theme.muted)
+            Button(action: onCancel) {
+                CandyButtonLabel(title: "返回主页", icon: "←", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
+                                 foreground: Theme.ink, font: .headline, height: 44, minWidth: 140)
+            }
+            .buttonStyle(PressableStyle())
         }
-        .padding(30).frame(maxWidth: 680).candyCard(fill: .white)
         .padding(30)
         .onAppear {
             do {
@@ -129,16 +134,13 @@ struct ParentSettingsContent: View {
         ZStack {
             GrowthPageBackground()
                 VStack(spacing: 20) {
-                    HStack {
-                        Button(action: onClose) { Label("返回主页", systemImage: "arrow.left.circle.fill") }
-                        Spacer()
-                        Text("⚙️ 设置").font(.largeTitle.bold())
-                        Text("🔒 家长专区").font(.headline).padding(10).background(.white, in: Capsule())
-                        Spacer()
-                        Button("退出家长模式", action: onClose).buttonStyle(.bordered)
+                    GrowthPageHeader(icon: "⚙️", title: "家长设置", subtitle: "🔒 家长专区", onClose: onClose) {
+                        Button(action: onClose) {
+                            CandyButtonLabel(title: "退出家长模式", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
+                                             foreground: Theme.ink, font: .system(size: 16, weight: .heavy, design: .rounded), height: 44)
+                        }
+                        .buttonStyle(PressableStyle())
                     }
-                    .foregroundStyle(Theme.ink)
-                    .font(.title3.bold())
                     HStack(alignment: .top, spacing: 24) {
                         VStack(alignment: .leading, spacing: 10) {
                             ForEach(ParentSection.allCases) { item in
@@ -153,16 +155,17 @@ struct ParentSettingsContent: View {
                                     .foregroundStyle(item == section ? .white : Theme.ink)
                                     .padding(18)
                                     .frame(maxWidth: .infinity, minHeight: 68, alignment: .leading)
-                                    .background(item == section ? Theme.accent : .clear, in: RoundedRectangle(cornerRadius: 18))
+                                    .background(CandyTileBackground(selected: item == section, radius: 18))
                                 }
-                                .buttonStyle(.plain)
+                                .buttonStyle(PressableStyle())
                             }
                             Spacer()
                             Text("档案和学习记录只保存在这台 iPad 上")
                                 .font(.footnote).foregroundStyle(Theme.muted)
                                 .padding(14).background(Theme.paper, in: RoundedRectangle(cornerRadius: 16))
                         }
-                        .padding(18).frame(width: 250).candyCard(fill: .white)
+                        .padding(18).frame(width: 250).candyCard(fill: GrowthColors.surface)
+                        .overlay(RoundedRectangle(cornerRadius: 24).stroke(GrowthColors.cardEdge, lineWidth: 2))
                         ScrollView {
                             Group {
                                 switch section {

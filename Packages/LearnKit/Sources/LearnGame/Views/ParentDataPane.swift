@@ -37,10 +37,17 @@ struct ParentDataPane: View {
                 }
                 Text("备份包含孩子档案、学习与成长记录、对局作答、设置和导入课本（含自带音频）。语音账号和缓存不包含在内。")
                     .foregroundStyle(Theme.muted)
-                HStack(spacing: 18) {
-                    Button("⬆️ 导出备份") { export() }.buttonStyle(.borderedProminent)
-                    Button("⬇️ 恢复备份") { choosingBackup = true }.buttonStyle(.bordered)
+                HStack(spacing: 16) {
+                    Button { export() } label: {
+                        CandyButtonLabel(title: "导出备份", icon: "⬆️", fill: Theme.jade, edge: GrowthColors.jadeDark,
+                                         font: .system(size: 16, weight: .heavy, design: .rounded), height: 44)
+                    }
+                    Button { choosingBackup = true } label: {
+                        CandyButtonLabel(title: "恢复备份", icon: "⬇️", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
+                                         foreground: Theme.ink, font: .system(size: 16, weight: .heavy, design: .rounded), height: 44)
+                    }
                 }
+                .buttonStyle(PressableStyle())
                 .disabled(model.database == nil)
                 if let message { Text(message).font(.footnote).foregroundStyle(Theme.muted) }
             }
@@ -50,14 +57,24 @@ struct ParentDataPane: View {
                     HStack {
                         Text("\(profile.avatar) \(profile.name)").font(.title3.bold())
                         Spacer()
-                        Button("重置学习记录", role: .destructive) { resetProfile = profile }.buttonStyle(.bordered)
+                        Button { resetProfile = profile } label: {
+                            CandyButtonLabel(title: "重置学习记录", fill: Theme.wrong.opacity(0.14),
+                                             edge: Theme.wrong.opacity(0.45), foreground: Theme.wrong,
+                                             font: .system(size: 15, weight: .heavy, design: .rounded), height: 40)
+                        }
+                        .buttonStyle(PressableStyle())
                     }
                 }
             }
             SettingsCard(title: "⚠️ 危险区") {
                 Text("重置所有数据会删除全部孩子和学习成长记录、语音账号及设置。请先导出备份。")
                     .foregroundStyle(Theme.muted)
-                Button("重置所有数据", role: .destructive) { showingReset = true }.buttonStyle(.bordered)
+                Button { showingReset = true } label: {
+                    CandyButtonLabel(title: "重置所有数据", icon: "⚠️", fill: Theme.wrong.opacity(0.14),
+                                     edge: Theme.wrong.opacity(0.45), foreground: Theme.wrong,
+                                     font: .system(size: 16, weight: .heavy, design: .rounded), height: 44)
+                }
+                .buttonStyle(PressableStyle())
             }
         }
         .onAppear { measure() }
@@ -74,32 +91,58 @@ struct ParentDataPane: View {
             } catch { message = error.localizedDescription }
         }
         .sheet(item: $restoreDraft) { draft in
-            NavigationStack {
-                VStack(alignment: .leading, spacing: 24) {
-                    Text("💾 恢复备份").font(.largeTitle.bold())
+            VStack(spacing: 18) {
+                GrowthPageHeader(icon: "💾", title: "恢复备份", onClose: { restoreDraft = nil }) {}
+                VStack(alignment: .leading, spacing: 20) {
                     Text("备份时间：\(draft.archive.createdAt.formatted(date: .abbreviated, time: .shortened))")
                     Text("\(draft.archive.children.count) 个孩子 · \(draft.archive.games.count) 局记录 · \(draft.archive.importedPacks.count) 份导入课本")
-                    Text("恢复会替换当前全部孩子、学习成长记录、游戏设置和导入课本。当前语音账号不变。请确认已经备份当前数据。").foregroundStyle(.red)
-                    Button("确认替换并恢复", role: .destructive) {
-                        do {
-                            try model.restoreBackup(draft.archive)
-                            restoreDraft = nil
-                            message = "备份已恢复"
-                            measure()
-                        } catch { message = error.localizedDescription }
-                    }.buttonStyle(.borderedProminent)
+                    Text("恢复会替换当前全部孩子、学习成长记录、游戏设置和导入课本。当前语音账号不变。请确认已经备份当前数据。")
+                        .foregroundStyle(Theme.wrong)
+                    HStack(spacing: 14) {
+                        Button { restoreDraft = nil } label: {
+                            CandyButtonLabel(title: "取消", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
+                                             foreground: Theme.ink, font: .headline, height: 50, expands: true)
+                        }
+                        Button {
+                            do {
+                                try model.restoreBackup(draft.archive)
+                                restoreDraft = nil
+                                message = "备份已恢复"
+                                measure()
+                            } catch { message = error.localizedDescription }
+                        } label: {
+                            CandyButtonLabel(title: "确认替换并恢复", fill: Theme.wrong, edge: GrowthColors.wrongDark,
+                                             font: .headline, height: 50, expands: true)
+                        }
+                    }
+                    .buttonStyle(PressableStyle())
                     if let message { Text(message).foregroundStyle(Theme.muted) }
-                    Spacer()
-                }.padding(30).frame(maxWidth: .infinity, alignment: .leading).background(Theme.paper)
-                .toolbar { ToolbarItem(placement: .cancellationAction) { Button("取消") { restoreDraft = nil } } }
+                }
+                .padding(24)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .candyCard()
+                Spacer()
             }
+            .padding(20)
+            .background(GrowthPageBackground())
         }
         .sheet(isPresented: $showingReset) { ResetAllPanel(onComplete: onReset) }
-        .confirmationDialog("重置「\(resetProfile?.name ?? "")」的学习记录？此操作无法撤销。",
-                            isPresented: Binding(get: { resetProfile != nil }, set: { if !$0 { resetProfile = nil } }), titleVisibility: .visible) {
-            Button("重置学习记录", role: .destructive) {
-                do { if let resetProfile { try model.resetLearning(resetProfile) }; message = "学习记录已重置"; self.resetProfile = nil }
-                catch { message = error.localizedDescription }
+        .overlay {
+            if let resetProfile {
+                CandyConfirmModal(
+                    title: "重置学习记录？",
+                    icon: "⚠️",
+                    message: "重置「\(resetProfile.name)」的学习统计、错题和对局记录后无法撤销。",
+                    buttons: [
+                        CandyConfirmButton(title: "重置学习记录", role: .destructive) {
+                            do { try model.resetLearning(resetProfile); message = "学习记录已重置" }
+                            catch { message = error.localizedDescription }
+                            self.resetProfile = nil
+                        },
+                        CandyConfirmButton(title: "取消", role: .cancel) { self.resetProfile = nil }
+                    ],
+                    onDismiss: { self.resetProfile = nil }
+                )
             }
         }
     }
@@ -137,24 +180,27 @@ private struct ResetAllPanel: View {
     private var canReset: Bool { confirmation == "重置" && !working }
 
     var body: some View {
-        NavigationStack {
-            VStack(alignment: .leading, spacing: 22) {
-                Text("⚠️ 确认重置所有数据").font(.largeTitle.bold()).foregroundStyle(.red)
+        VStack(spacing: 18) {
+            GrowthPageHeader(icon: "⚠️", title: "重置所有数据", onClose: { if !working { dismiss() } }) {}
+            VStack(alignment: .leading, spacing: 20) {
                 Text("将删除所有孩子档案、学习/错题记录、对局明细、等级积分、徽章外观及语音账号和设置。")
                 Text("建议先返回导出备份。重置后无法撤销。").foregroundStyle(Theme.muted)
                 Toggle("保留我导入的课本", isOn: $keepingPacks)
-                TextField("输入“重置”两个字", text: $confirmation).textFieldStyle(.roundedBorder).font(.title2)
+                TextField("输入“重置”两个字", text: $confirmation)
+                    .font(.title2).padding(.horizontal, 16).frame(height: 52)
+                    .background(GrowthColors.surface, in: RoundedRectangle(cornerRadius: 16))
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(GrowthColors.cardEdge, lineWidth: 2))
                 Text("输入后持续按住下面的按钮 3 秒；松开会取消。").foregroundStyle(Theme.muted)
                 ZStack {
-                    RoundedRectangle(cornerRadius: 20).fill(.red.opacity(0.15))
+                    RoundedRectangle(cornerRadius: 20).fill(Theme.wrong.opacity(0.15))
                     GeometryReader { geo in
-                        RoundedRectangle(cornerRadius: 20).fill(.red.opacity(0.5))
+                        RoundedRectangle(cornerRadius: 20).fill(Theme.wrong.opacity(0.5))
                             .frame(width: holding ? geo.size.width : 0)
                             .animation(holding ? .linear(duration: 3) : .default, value: holding)
                     }
-                    Text(working ? "正在重置…" : "按住 3 秒，重置全部数据").font(.title3.bold()).foregroundStyle(.red)
+                    Text(working ? "正在重置…" : "按住 3 秒，重置全部数据").font(.title3.bold()).foregroundStyle(Theme.wrong)
                 }
-                .frame(height: 68).contentShape(Rectangle())
+                .frame(height: 64).contentShape(Rectangle())
                 .opacity(canReset ? 1 : 0.4)
                 .onLongPressGesture(minimumDuration: 3, maximumDistance: 30, pressing: { isPressing in
                     holding = canReset && isPressing
@@ -167,11 +213,14 @@ private struct ResetAllPanel: View {
                     } catch { self.error = error.localizedDescription; working = false }
                 })
                 .allowsHitTesting(canReset)
-                if let error { Text(error).foregroundStyle(.red) }
-                Spacer()
-            }.padding(30).background(Theme.paper)
-            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("再想想") { dismiss() }.disabled(working) } }
+                if let error { Text(error).foregroundStyle(Theme.wrong) }
+            }
+            .padding(24)
+            .candyCard()
+            Spacer()
         }
+        .padding(20)
+        .background(GrowthPageBackground())
         .interactiveDismissDisabled(working)
         .onChange(of: confirmation) { _, _ in holding = false }
     }

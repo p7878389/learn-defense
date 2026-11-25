@@ -39,7 +39,6 @@ struct AdventureScreen: View {
                         Color.clear.onChange(of: proxy.frame(in: .named("adventure")), initial: true) { _, value in frame = value }
                     })
                     .overlay {
-                        LawnGuide(selected: selected != nil || shoveling)
                         AdventurePlacementPreview(battle: session.battle, kindID: selected, cell: placementCell)
                     }
                     .contentShape(Rectangle())
@@ -54,17 +53,10 @@ struct AdventureScreen: View {
         .coordinateSpace(name: "adventure")
         .background(Theme.paper)
         .overlay { stateOverlay }
+        .overlay { exitConfirmOverlay }
         .interactiveDismissDisabled()
         .onChange(of: scenePhase) { _, phase in if phase != .active { session.suspend() } }
         .onDisappear { session.suspend() }
-        .confirmationDialog("离开冒险", isPresented: $showExit, titleVisibility: .visible) {
-            if session.battle.phase == .preparing || session.battle.isFinished {
-                Button("返回地图") { if session.abandon() { onClose() } }
-            } else {
-                Button("保存并返回地图") { session.suspend(); if session.error == nil { onClose() } }
-                Button("放弃对局（不返还积分）", role: .destructive) { if session.abandon() { onClose() } }
-            }
-        }
     }
 
     private var topBar: some View {
@@ -172,44 +164,111 @@ struct AdventureScreen: View {
 
     @ViewBuilder private var placementCancel: some View {
         if placementPrompt != nil {
-            Button("取消") { selected = nil; placementCell = nil; placementMessage = nil }
-                .font(.headline).frame(minHeight: 44)
+            AdventureAction(title: "取消", icon: "✕", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
+                            foreground: Theme.ink, height: 38) {
+                selected = nil; placementCell = nil; placementMessage = nil
+            }
         }
     }
 
     @ViewBuilder private var stateOverlay: some View {
         if session.hud.phase == .paused || session.battle.isFinished {
             ZStack {
-                Color.black.opacity(0.35).ignoresSafeArea()
-                VStack(spacing: 18) {
-                    if session.battle.isFinished {
-                        Text(session.hud.phase == .won ? "守住了！" : "这次差一点").font(.largeTitle.bold())
-                        Text(session.battle.phase == .won ? String(repeating: "⭐️", count: session.battle.stars) : "🌱").font(.system(size: 48))
-                        Text(session.battle.advice).multilineTextAlignment(.center)
+                Color.black.opacity(0.45).ignoresSafeArea()
+                if session.battle.isFinished {
+                    let won = session.hud.phase == .won
+                    CandyModalCard(
+                        bannerTitle: won ? "守住了！" : "这次差一点",
+                        bannerIcon: won ? "🎉" : "🌱",
+                        bannerColors: won ? [GrowthColors.gold, Theme.accent] : [GrowthColors.calm.opacity(0.8), GrowthColors.calm],
+                        bannerEdge: won ? GrowthColors.orangeDark : Color(red: 0.18, green: 0.31, blue: 0.54),
+                        maxWidth: 500
+                    ) {
+                        Text(won ? String(repeating: "⭐️", count: session.battle.stars) : "🌱")
+                            .font(.system(size: 48))
+                        Text(session.battle.advice)
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                            .foregroundStyle(Theme.ink)
+                            .multilineTextAlignment(.center)
                         Text("冒险只记录关卡和星级，不发放积分与学习奖励。")
-                            .font(.callout).foregroundStyle(Theme.muted)
+                            .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            .foregroundStyle(Theme.muted)
                         if session.error == nil {
-                            AdventureAction(title: "返回地图", icon: "🗺️") { if session.abandon() { onClose() } }
+                            AdventureAction(title: "返回地图", icon: "🗺️", height: 54, expands: true) {
+                                if session.abandon() { onClose() }
+                            }
                         }
-                    } else {
-                        Text("冒险已暂停").font(.largeTitle.bold())
+                        if let error = session.error {
+                            Text(error).foregroundStyle(Theme.wrong)
+                            AdventureAction(title: "重试保存", height: 50, expands: true, action: session.retrySave)
+                        }
+                    }
+                    .padding(24)
+                } else {
+                    CandyModalCard(
+                        bannerTitle: "冒险已暂停",
+                        bannerIcon: "⏸️",
+                        bannerColors: [GrowthColors.gold, Theme.accent],
+                        bannerEdge: GrowthColors.orangeDark,
+                        maxWidth: 460
+                    ) {
                         Text("阳光、怪物和战斗时间都已暂停，继续不会再次扣积分。")
-                            .foregroundStyle(Theme.muted).multilineTextAlignment(.center)
-                        AdventureAction(title: "继续战斗", icon: "▶", action: session.resume)
-                        AdventureAction(title: "保存并返回地图", fill: GrowthColors.surface, edge: GrowthColors.cardEdge, foreground: Theme.ink) {
-                            session.suspend(); if session.error == nil { onClose() }
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
+                            .foregroundStyle(Theme.muted)
+                            .multilineTextAlignment(.center)
+                        VStack(spacing: 12) {
+                            AdventureAction(title: "继续战斗", icon: "▶", height: 56, expands: true, action: session.resume)
+                            AdventureAction(title: "保存并返回地图", icon: "🗺️", fill: GrowthColors.surface,
+                                            edge: GrowthColors.cardEdge, foreground: Theme.ink, height: 50, expands: true) {
+                                session.suspend(); if session.error == nil { onClose() }
+                            }
+                            AdventureAction(title: "放弃对局", icon: "🚪", fill: Theme.wrong.opacity(0.14),
+                                            edge: Theme.wrong.opacity(0.45), foreground: Theme.wrong, height: 48, expands: true) {
+                                showExit = true
+                            }
                         }
-                        Button("放弃对局", role: .destructive) { showExit = true }
+                        if let error = session.error {
+                            Text(error).foregroundStyle(Theme.wrong)
+                            AdventureAction(title: "重试保存", height: 48, expands: true, action: session.retrySave)
+                        }
                     }
-                    if let error = session.error {
-                        Text(error).foregroundStyle(Theme.wrong)
-                        AdventureAction(title: "重试保存", action: session.retrySave)
-                    }
+                    .padding(24)
                 }
-                .padding(30).frame(maxWidth: 520)
-                .candyCard(radius: 26)
-                .overlay(RoundedRectangle(cornerRadius: 26).stroke(GrowthColors.gold.opacity(0.75), lineWidth: 3))
-                .padding(20)
+            }
+        }
+    }
+
+    @ViewBuilder private var exitConfirmOverlay: some View {
+        if showExit {
+            if session.battle.phase == .preparing || session.battle.isFinished {
+                CandyConfirmModal(
+                    title: "离开冒险",
+                    icon: "🗺️",
+                    message: "当前尚未开始正式战斗，可以直接返回冒险地图。",
+                    buttons: [
+                        CandyConfirmButton(title: "返回地图", icon: "←", role: .primary) {
+                            showExit = false; if session.abandon() { onClose() }
+                        },
+                        CandyConfirmButton(title: "留在这里", role: .cancel) { showExit = false }
+                    ],
+                    onDismiss: { showExit = false }
+                )
+            } else {
+                CandyConfirmModal(
+                    title: "离开冒险",
+                    icon: "⚠️",
+                    message: "你可以保存当前波次以便下次继续，或直接放弃本局（15 积分不返还）。",
+                    buttons: [
+                        CandyConfirmButton(title: "保存并返回地图", icon: "💾", role: .primary) {
+                            showExit = false; session.suspend(); if session.error == nil { onClose() }
+                        },
+                        CandyConfirmButton(title: "放弃对局（不返还积分）", icon: "🚪", role: .destructive) {
+                            showExit = false; if session.abandon() { onClose() }
+                        },
+                        CandyConfirmButton(title: "继续冒险", role: .cancel) { showExit = false }
+                    ],
+                    onDismiss: { showExit = false }
+                )
             }
         }
     }
@@ -234,33 +293,6 @@ struct AdventureScreen: View {
     }
 }
 
-/// 草坪格属于交互界面；特效仍全部使用现有 .sks 资源。
-private struct LawnGuide: View {
-    let selected: Bool
-    var body: some View {
-        GeometryReader { proxy in
-            if selected {
-                let sx = proxy.size.width / 1200
-                let sy = proxy.size.height / 600
-                Path { path in
-                    for column in 0...9 {
-                        let x = (144 + 750 * CGFloat(column) / 9) * sx
-                        path.move(to: CGPoint(x: x, y: 80 * sy))
-                        path.addLine(to: CGPoint(x: x, y: 580 * sy))
-                    }
-                    for row in 0...5 {
-                        let y = (80 + CGFloat(row) * 100) * sy
-                        path.move(to: CGPoint(x: 144 * sx, y: y))
-                        path.addLine(to: CGPoint(x: 894 * sx, y: y))
-                    }
-                }
-                .stroke(.white.opacity(0.6), lineWidth: 1)
-            }
-        }
-        .allowsHitTesting(false)
-    }
-}
-
 /// 冒险各页面沿用成长系统的糖果胶囊与按压反馈。
 struct AdventureAction: View {
     @Environment(\.isEnabled) private var isEnabled
@@ -270,12 +302,14 @@ struct AdventureAction: View {
     var edge: Color = GrowthColors.jadeDark
     var foreground: Color = .white
     var height: CGFloat = 44
+    var expands: Bool = false
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             CandyButtonLabel(title: title, icon: icon, fill: fill, edge: edge, foreground: foreground,
-                             font: .system(size: 17, weight: .heavy, design: .rounded), height: height, minWidth: 0)
+                             font: .system(size: 17, weight: .heavy, design: .rounded),
+                             height: height, minWidth: 0, expands: expands)
                 .opacity(isEnabled ? 1 : 0.45)
         }
         .buttonStyle(PressableStyle())

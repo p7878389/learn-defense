@@ -28,8 +28,16 @@ struct ParentPacksPane: View {
             SettingsCard(title: "📚 导入课本") {
                 Text("添加自制或分享的 JSON 题库。导入前会先检查内容。").foregroundStyle(Theme.muted)
                 HStack(spacing: 16) {
-                    Button("＋ 从文件 App 选择") { choosing = true }.buttonStyle(.borderedProminent)
-                    Button("怎么做题库？") { help = true }.buttonStyle(.bordered)
+                    Button { choosing = true } label: {
+                        CandyButtonLabel(title: "从文件 App 选择", icon: "＋", fill: Theme.jade, edge: GrowthColors.jadeDark,
+                                         font: .system(size: 16, weight: .heavy, design: .rounded), height: 44)
+                    }
+                    .buttonStyle(PressableStyle())
+                    Button { help = true } label: {
+                        CandyButtonLabel(title: "怎么做题库？", icon: "💡", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
+                                         foreground: Theme.ink, font: .system(size: 16, weight: .heavy, design: .rounded), height: 44)
+                    }
+                    .buttonStyle(PressableStyle())
                 }
             }
             SettingsCard(title: "📖 已安装课本（\(model.library.packs.count)）") {
@@ -47,7 +55,12 @@ struct ParentPacksPane: View {
                         }
                         Spacer()
                         if importedIDs.contains(pack.id) {
-                            Button("删除", role: .destructive) { deleting = pack.id }.buttonStyle(.bordered)
+                            Button { deleting = pack.id } label: {
+                                CandyButtonLabel(title: "删除", icon: "🗑", fill: Theme.wrong.opacity(0.14),
+                                                 edge: Theme.wrong.opacity(0.45), foreground: Theme.wrong,
+                                                 font: .system(size: 15, weight: .heavy, design: .rounded), height: 40, minWidth: 86)
+                            }
+                            .buttonStyle(PressableStyle())
                         }
                     }
                     .padding(16).background(Theme.paper, in: RoundedRectangle(cornerRadius: 18))
@@ -61,11 +74,12 @@ struct ParentPacksPane: View {
             } catch { self.error = error.localizedDescription }
         }
         .sheet(item: $pending) { draft in
-            NavigationStack {
+            VStack(spacing: 18) {
+                GrowthPageHeader(icon: "📗", title: "确认导入课本", onClose: { pending = nil }) {}
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 22) {
-                        Text("📗 \(draft.pack.title)").font(.largeTitle.bold())
-                        Text("\(draft.pack.grade.displayName) · \(draft.pack.edition ?? "通用版")")
+                    VStack(alignment: .leading, spacing: 18) {
+                        Text(draft.pack.title).font(.largeTitle.bold())
+                        Text("\(draft.pack.grade.displayName) · \(draft.pack.edition ?? "通用版")").foregroundStyle(Theme.muted)
                         HStack(spacing: 24) {
                             Label("\(draft.pack.units.count) 个单元", systemImage: "books.vertical")
                             Label("\(draft.itemCount) 个知识点", systemImage: "checkmark.circle")
@@ -76,25 +90,35 @@ struct ParentPacksPane: View {
                         }
                         Text("✓ 文件格式检查通过").foregroundStyle(Theme.jade)
                         Text("导入后立即可选，无需重启。").foregroundStyle(Theme.muted)
-                        Button(model.library.pack(id: draft.pack.id) == nil ? "确认导入" : "导入并替换") {
-                            do {
-                                try manager.install(draft)
-                                model.reloadLibrary()
-                                revision += 1
-                                pending = nil
-                            } catch { self.error = error.localizedDescription }
+                        HStack(spacing: 14) {
+                            Button { pending = nil } label: {
+                                CandyButtonLabel(title: "再想想", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
+                                                 foreground: Theme.ink, font: .headline, height: 50, expands: true)
+                            }
+                            Button {
+                                do {
+                                    try manager.install(draft)
+                                    model.reloadLibrary()
+                                    revision += 1
+                                    pending = nil
+                                } catch { self.error = error.localizedDescription }
+                            } label: {
+                                CandyButtonLabel(title: model.library.pack(id: draft.pack.id) == nil ? "确认导入" : "导入并替换",
+                                                 icon: "✓", font: .headline, height: 50, expands: true)
+                            }
                         }
-                        .buttonStyle(.borderedProminent).font(.title2.bold())
-                    }.padding(30)
-                }.background(Theme.paper)
-                .navigationTitle("确认导入课本")
-                .toolbar { ToolbarItem(placement: .cancellationAction) { Button("再想想") { pending = nil } } }
+                        .buttonStyle(PressableStyle())
+                    }.padding(24).candyCard()
+                }
             }
+            .padding(20)
+            .background(GrowthPageBackground())
         }
         .sheet(isPresented: $help) {
-            NavigationStack {
+            VStack(spacing: 18) {
+                GrowthPageHeader(icon: "💡", title: "怎么做题库", onClose: { help = false }) {}
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
+                    VStack(alignment: .leading, spacing: 18) {
                         Text("准备一份 UTF-8 编码的 JSON 文件，包含课本 id、书名、学科、年级、单元及课文内容。").font(.title3)
                         Text("支持生字、词语、古诗、成语、图片、英语词句和自定义选择题；每个知识点要提供对应的读音或答案。")
                         Text("同 id 的课本会覆盖导入版本；删除导入版本后，内置课本会重新出现。")
@@ -119,23 +143,39 @@ struct ParentPacksPane: View {
                           }]
                         }
                         """).font(.system(.body, design: .monospaced)).textSelection(.enabled)
-                    }.padding(28)
-                }.navigationTitle("怎么做题库")
-                .toolbar { ToolbarItem(placement: .cancellationAction) { Button("关闭") { help = false } } }
+                    }.padding(24).candyCard()
+                }
+            }
+            .padding(20)
+            .background(GrowthPageBackground())
+        }
+        .overlay {
+            if let deleting {
+                CandyConfirmModal(
+                    title: "删除导入的课本？",
+                    icon: "⚠️",
+                    message: "若覆盖了内置课本，将恢复内置版本，已有学习记录保留。",
+                    buttons: [
+                        CandyConfirmButton(title: "确认删除", icon: "🗑", role: .destructive) {
+                            do {
+                                try manager.remove(id: deleting)
+                                model.reloadLibrary(); revision += 1; self.deleting = nil
+                            } catch { self.error = error.localizedDescription; self.deleting = nil }
+                        },
+                        CandyConfirmButton(title: "取消", role: .cancel) { self.deleting = nil }
+                    ],
+                    onDismiss: { self.deleting = nil }
+                )
+            } else if let message = error {
+                CandyConfirmModal(
+                    title: "操作未完成",
+                    icon: "⚠️",
+                    message: message,
+                    buttons: [CandyConfirmButton(title: "知道了", role: .primary) { error = nil }],
+                    onDismiss: { error = nil }
+                )
             }
         }
-        .confirmationDialog("删除导入的课本？若覆盖了内置课本，将恢复内置版本。学习记录保留。",
-                            isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }), titleVisibility: .visible) {
-            Button("删除", role: .destructive) {
-                do {
-                    if let deleting { try manager.remove(id: deleting) }
-                    model.reloadLibrary(); revision += 1; deleting = nil
-                } catch { self.error = error.localizedDescription }
-            }
-        }
-        .alert("操作未完成", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
-            Button("知道了") { error = nil }
-        } message: { Text(error ?? "") }
     }
 }
 
@@ -154,17 +194,42 @@ struct ParentProfilesPane: View {
                         Text(profile.grade.displayName).foregroundStyle(Theme.muted)
                     }
                     Spacer()
-                    Button("编辑") { editing = EditingProfile(profile: profile, isNew: false) }.buttonStyle(.bordered)
-                    Button("删除", role: .destructive) { deleting = profile }.buttonStyle(.bordered)
-                }.padding(14).background(Theme.paper, in: RoundedRectangle(cornerRadius: 18))
+                    Button { editing = EditingProfile(profile: profile, isNew: false) } label: {
+                        CandyButtonLabel(title: "编辑", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
+                                         foreground: Theme.ink, font: .system(size: 15, weight: .heavy, design: .rounded),
+                                         height: 40, minWidth: 80)
+                    }
+                    Button { deleting = profile } label: {
+                        CandyButtonLabel(title: "删除", fill: Theme.wrong.opacity(0.14), edge: Theme.wrong.opacity(0.45),
+                                         foreground: Theme.wrong, font: .system(size: 15, weight: .heavy, design: .rounded),
+                                         height: 40, minWidth: 80)
+                    }
+                }.buttonStyle(PressableStyle()).padding(14).background(Theme.paper, in: RoundedRectangle(cornerRadius: 18))
             }
-            Button("＋ 添加孩子") {
+            Button {
                 editing = EditingProfile(profile: Profile(name: "", grade: .g3, avatar: "🐯"), isNew: true)
-            }.buttonStyle(.borderedProminent)
+            } label: {
+                CandyButtonLabel(title: "添加孩子", icon: "＋", fill: Theme.jade, edge: GrowthColors.jadeDark,
+                                 font: .system(size: 16, weight: .heavy, design: .rounded), height: 44)
+            }
+            .buttonStyle(PressableStyle())
         }
-        .sheet(item: $editing) { item in ProfileEditor(profile: item.profile, isNew: item.isNew) { model.save($0) } }
-        .confirmationDialog("删除这个孩子及其全部学习、成长和对局记录？", isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }), titleVisibility: .visible) {
-            Button("删除", role: .destructive) { if let deleting { model.delete(deleting) }; deleting = nil }
+        .profileEditorCover(item: $editing) { model.save($0) }
+        .overlay {
+            if let deleting {
+                CandyConfirmModal(
+                    title: "删除孩子档案？",
+                    icon: "⚠️",
+                    message: "删除「\(deleting.name)」及其全部学习、成长和对局记录后无法恢复。",
+                    buttons: [
+                        CandyConfirmButton(title: "确认删除", icon: "🗑", role: .destructive) {
+                            model.delete(deleting); self.deleting = nil
+                        },
+                        CandyConfirmButton(title: "取消", role: .cancel) { self.deleting = nil }
+                    ],
+                    onDismiss: { self.deleting = nil }
+                )
+            }
         }
     }
 }

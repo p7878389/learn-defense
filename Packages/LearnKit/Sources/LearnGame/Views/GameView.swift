@@ -26,11 +26,28 @@ struct GameView: View {
                    bankSummary: QuestionBankChoice.summary(config: preparation.config, library: preparation.model.library))
                 .id(session.config.id)
             } else {
-                VStack(spacing: 20) {
-                    Text("先选好本局题库，再准备布阵").font(.title2.bold())
-                    Button("选择题库") { preparation.chooseBank() }.buttonStyle(.borderedProminent).tint(Theme.jade)
-                    Button("返回主页", action: exitGame)
-                }.frame(maxWidth: .infinity, maxHeight: .infinity).background(GrowthPageBackground())
+                ZStack {
+                    GrowthPageBackground()
+                    CandyModalCard(bannerTitle: "准备开战", bannerIcon: "📚", maxWidth: 440) {
+                        Text("先选好本局题库，再进入草坪准备布阵。")
+                            .font(.system(size: 17, weight: .bold, design: .rounded))
+                            .foregroundStyle(Theme.muted)
+                            .multilineTextAlignment(.center)
+                        VStack(spacing: 12) {
+                            Button { preparation.chooseBank() } label: {
+                                CandyButtonLabel(title: "选择题库", icon: "📚", font: .system(size: 20, weight: .heavy, design: .rounded),
+                                                 height: 54, minWidth: 0, expands: true)
+                            }
+                            Button(action: exitGame) {
+                                CandyButtonLabel(title: "返回主页", icon: "←", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
+                                                 foreground: Theme.ink, font: .system(size: 18, weight: .heavy, design: .rounded),
+                                                 height: 48, minWidth: 0, expands: true)
+                            }
+                        }
+                        .buttonStyle(PressableStyle())
+                    }
+                    .padding(24)
+                }
             }
         }
         .sheet(isPresented: $preparation.choosingBank) {

@@ -74,14 +74,19 @@ struct CollectionView: View {
             // 优先准备少量购买反馈，避免排在整套题库语音之后。
             for line in SpeechText.purchaseLines { model.speechLibrary.requestSoon(line) }
         }
-        .accessibilityHidden(confirming != nil || equippedNotice != nil)
+        .accessibilityHidden(confirming != nil || equippedNotice != nil || storageError != nil)
         .overlay {
-            if let item = equippedNotice { equipmentSuccessDialog(item) }
+            if let message = storageError {
+                CandyConfirmModal(
+                    title: "操作未完成",
+                    icon: "⚠️",
+                    message: message,
+                    buttons: [CandyConfirmButton(title: "知道了", role: .primary) { storageError = nil }],
+                    onDismiss: { storageError = nil }
+                )
+            } else if let item = equippedNotice { equipmentSuccessDialog(item) }
             else if let item = confirming { confirmDialog(item) }
         }
-        .alert("操作未完成", isPresented: Binding(get: { storageError != nil }, set: { if !$0 { storageError = nil } })) {
-            Button("知道了") { storageError = nil }
-        } message: { Text(storageError ?? "") }
     }
 
     private var sidebar: some View {

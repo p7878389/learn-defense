@@ -24,10 +24,6 @@ struct AdventurePlacementPreview: View {
                                    height: AdventureDoom.radius * 2 * AdventureDoom.rowHeight * sy)
                             .position(center)
                     }
-                    Rectangle().fill(color.opacity(0.25))
-                        .overlay(Rectangle().stroke(color, lineWidth: 2))
-                        .frame(width: AdventureDoom.columnWidth * sx, height: AdventureDoom.rowHeight * sy)
-                        .position(center)
                     if valid, let kind = AdventureCatalog.defender(kindID), let image = UnitSprites.portrait(of: kind, skin: nil) {
                         Image(decorative: image, scale: 1).resizable().scaledToFit()
                             .frame(width: 75 * sx, height: 80 * sy).opacity(0.65).position(center)

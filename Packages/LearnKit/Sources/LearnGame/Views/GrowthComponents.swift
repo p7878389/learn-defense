@@ -231,7 +231,107 @@ struct CandyButtonLabel: View {
         .frame(height: height)
         .frame(minWidth: minWidth)
         .frame(maxWidth: expands ? .infinity : nil)
-        .background(Capsule().fill(fill).shadow(color: edge, radius: 0, x: 0, y: 5))
+        .background(
+            Capsule()
+                .fill(fill)
+                .shadow(color: edge, radius: 0, x: 0, y: height < 50 ? 3 : 5)
+        )
+        .overlay(
+            Capsule()
+                .stroke(edge, lineWidth: height < 50 ? 1.5 : 2)
+        )
+    }
+}
+
+/// 糖果风格通用弹窗按钮配置与模态确认框，替代系统 Alert / ConfirmationDialog。
+struct CandyConfirmButton: Identifiable {
+    enum Role { case primary, secondary, destructive, cancel }
+
+    let id = UUID()
+    let title: String
+    var icon: String? = nil
+    var role: Role = .secondary
+    let action: () -> Void
+
+    var fill: Color {
+        switch role {
+        case .primary: Theme.jade
+        case .secondary, .cancel: GrowthColors.surface
+        case .destructive: Theme.wrong.opacity(0.14)
+        }
+    }
+
+    var edge: Color {
+        switch role {
+        case .primary: GrowthColors.jadeDark
+        case .secondary, .cancel: GrowthColors.cardEdge
+        case .destructive: Theme.wrong.opacity(0.45)
+        }
+    }
+
+    var foreground: Color {
+        switch role {
+        case .primary: .white
+        case .secondary: Theme.ink
+        case .cancel: Theme.muted
+        case .destructive: Theme.wrong
+        }
+    }
+}
+
+struct CandyConfirmModal: View {
+    let title: String
+    var icon: String? = nil
+    let message: String
+    var bannerColors: [Color] = [GrowthColors.gold, Theme.accent]
+    var bannerEdge: Color = GrowthColors.orangeDark
+    var borderColor: Color = GrowthColors.gold.opacity(0.75)
+    var maxWidth: CGFloat = 460
+    let buttons: [CandyConfirmButton]
+    var onDismiss: (() -> Void)? = nil
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.45)
+                .ignoresSafeArea()
+                .contentShape(Rectangle())
+                .onTapGesture { onDismiss?() }
+            CandyModalCard(
+                bannerTitle: title,
+                bannerIcon: icon,
+                bannerColors: bannerColors,
+                bannerEdge: bannerEdge,
+                borderColor: borderColor,
+                maxWidth: maxWidth
+            ) {
+                if !message.isEmpty {
+                    Text(message)
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .foregroundStyle(Theme.muted)
+                        .multilineTextAlignment(.center)
+                }
+                VStack(spacing: 12) {
+                    ForEach(buttons) { item in
+                        Button(action: item.action) {
+                            CandyButtonLabel(
+                                title: item.title,
+                                icon: item.icon,
+                                fill: item.fill,
+                                edge: item.edge,
+                                foreground: item.foreground,
+                                font: .system(size: 19, weight: .heavy, design: .rounded),
+                                height: 50,
+                                minWidth: 0,
+                                expands: true
+                            )
+                        }
+                        .buttonStyle(PressableStyle())
+                    }
+                }
+            }
+            .padding(24)
+        }
+        .transition(.opacity)
     }
 }
 

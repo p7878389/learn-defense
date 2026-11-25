@@ -9,8 +9,6 @@ final class AdventureScene: SKScene {
     private let lawn = Lawn(lanes: 5)
     private var towerNodes: [Int: DefenderNode] = [:]
     private var enemyNodes: [Int: EnemyNode] = [:]
-    private var displayedHealth: [Int: Int] = [:]
-    private var latestHealth: [Int: (health: Int, maxHealth: Int, segments: Int)] = [:]
     private var pendingFlight: [Int: TimeInterval] = [:]
     private var previousTime: TimeInterval?
     private var pausedGameplay = true
@@ -68,7 +66,6 @@ final class AdventureScene: SKScene {
         }
         for enemy in battle.enemies {
             addEnemy(enemy)
-            latestHealth[enemy.id] = (enemy.health, enemy.maxHealth, max(1, enemy.kind.artwork.hp))
         }
 
         enum DamageCause {
@@ -76,7 +73,6 @@ final class AdventureScene: SKScene {
             case blast
         }
         var lastCause: DamageCause?
-        var hadBlast = false
 
         for event in events {
             switch event {
@@ -91,10 +87,6 @@ final class AdventureScene: SKScene {
                 let effect = loadout.defeat(for: enemy.kind)
                 let flight = attack.totalDuration(from: node.muzzle, to: point)
                 pendingFlight[target.id] = max(pendingFlight[target.id] ?? 0, flight)
-                let bulletCount = (attack as? ShotAttack).map { max(1, $0.count) } ?? 1
-                let hitDamage = max(1, Self.towerDamage(tower.kindID) / bulletCount)
-                let maxHealth = target.maxHealth
-                let segments = max(1, target.kind.artwork.hp)
                 attack.perform(
                     from: node.muzzle,
                     to: point,
@@ -113,17 +105,8 @@ final class AdventureScene: SKScene {
                         if !enemy.isHeld { self.pendingFlight[target.id] = nil }
                     }
                     if enemy.doomed, !enemy.isHeld, enemy.action(forKey: "adventureDefeat") != nil {
-                        self.displayedHealth[target.id] = nil
-                        self.latestHealth[target.id] = nil
                         enemy.removeAction(forKey: "adventureDefeat")
                         enemy.defeat(with: effect, burnt: false)
-                    } else if let current = self.displayedHealth[target.id] {
-                        let floorHealth = enemy.doomed ? 1 : (self.latestHealth[target.id]?.health ?? 1)
-                        let nextHealth = (!enemy.doomed && isFinal && !enemy.isHeld)
-                            ? floorHealth
-                            : max(floorHealth, current - hitDamage)
-                        self.applyDisplayedHealth(nextHealth, maxHealth: maxHealth, segments: segments,
-                                                  to: enemy, id: target.id)
                     }
                 }
             case .defeated(let enemy):
@@ -133,8 +116,6 @@ final class AdventureScene: SKScene {
                 node.setChewing(false)
                 let effect = loadout.defeat(for: node.kind)
                 if case .blast = lastCause {
-                    displayedHealth[enemy.id] = nil
-                    latestHealth[enemy.id] = nil
                     pendingFlight[enemy.id] = nil
                     node.defeat(with: effect, burnt: true)
                 } else {
@@ -163,28 +144,22 @@ final class AdventureScene: SKScene {
                     }
                     node.run(.sequence([.wait(forDuration: wait), .run { [weak self, weak node] in
                         guard let node else { return }
-                        self?.displayedHealth[enemy.id] = nil
-                        self?.latestHealth[enemy.id] = nil
                         self?.pendingFlight[enemy.id] = nil
                         node.defeat(with: effect, burnt: false)
                     }]), withKey: "adventureDefeat")
                 }
             case .leaked(let enemy):
-                displayedHealth[enemy.id] = nil
-                latestHealth[enemy.id] = nil
                 pendingFlight[enemy.id] = nil
                 enemyNodes.removeValue(forKey: enemy.id)?.breakThrough()
             case .towerBroken(let tower):
                 towerNodes.removeValue(forKey: tower.id)?.crumble()
             case .ultimate:
                 lastCause = .blast
-                hadBlast = true
                 for node in enemyNodes.values {
                     FXLibrary.playResource("AstralImpact", at: node.position, in: self)?.setScale(2)
                 }
             case .doomExploded(let site):
                 lastCause = .blast
-                hadBlast = true
                 doomArtwork.explode(site, in: self)
             case .spawned, .wave:
                 break
@@ -199,10 +174,6 @@ final class AdventureScene: SKScene {
         for enemy in battle.enemies {
             guard let node = enemyNodes[enemy.id] else { continue }
             node.position.x = enemy.x
-            if (hadBlast || !node.isHeld), displayedHealth[enemy.id] != enemy.health {
-                applyDisplayedHealth(enemy.health, maxHealth: enemy.maxHealth,
-                                     segments: max(1, enemy.kind.artwork.hp), to: node, id: enemy.id)
-            }
             let chewing = battle.towers.contains { $0.lane == enemy.lane && abs($0.x + 36 - enemy.x) < 2 }
             node.setChewing(chewing)
         }
@@ -211,10 +182,6 @@ final class AdventureScene: SKScene {
         pausedGameplay = battle.phase != .playing
         // 准备和结算阶段保留角色待机、子弹及退场动画。
         if battle.phase != .paused { speed = 1 }
-    }
-
-    private static func towerDamage(_ kindID: String) -> Int {
-        kindID == "twin" ? 8 : kindID == "stroke" ? 10 : 4
     }
 
     private static func enemySpeed(_ kind: AdventureEnemyKind) -> Double {
@@ -226,30 +193,22 @@ final class AdventureScene: SKScene {
         }
     }
 
-    private func applyDisplayedHealth(_ health: Int, maxHealth: Int, segments: Int, to node: EnemyNode, id: Int) {
-        guard displayedHealth[id] != health else { return }
-        displayedHealth[id] = health
-        node.health = Health(max: segments)
-        node.health.take(segments - max(1, Int(ceil(Double(health) / Double(maxHealth) * Double(segments)))))
-        node.setSign("\(health) / \(maxHealth)")
-        node.showHealth()
-    }
-
     private func addEnemy(_ enemy: AdventureEnemy) {
         guard enemyNodes[enemy.id] == nil else { return }
         let appearance: String?
         if enemy.kind == .boss { appearance = nil }
         else if loadout.enemyAppearances.isEmpty { appearance = loadout.enemyAppearance }
         else { appearance = loadout.enemyAppearances[enemy.id % loadout.enemyAppearances.count] }
-        let node = EnemyNode(id: enemy.id, kind: enemy.kind.artwork, sign: "\(enemy.health) / \(enemy.maxHealth)",
+        let node = EnemyNode(id: enemy.id, kind: enemy.kind.artwork, sign: "",
                              lane: enemy.lane, scale: 0.9, skin: loadout.enemySkin, boss: enemy.kind == .boss,
                              appearance: appearance, defaultAppearance: appearance == nil)
+        node.sign.isHidden = true
+        node.pips.isHidden = true
+        node.healthBar?.isHidden = true
         node.position = CGPoint(x: enemy.x, y: lawn.laneY(enemy.lane))
         node.zPosition = CGFloat(15 - enemy.lane)
         addChild(node)
         enemyNodes[enemy.id] = node
-        applyDisplayedHealth(enemy.health, maxHealth: enemy.maxHealth,
-                             segments: max(1, enemy.kind.artwork.hp), to: node, id: enemy.id)
         node.appear()
     }
 }

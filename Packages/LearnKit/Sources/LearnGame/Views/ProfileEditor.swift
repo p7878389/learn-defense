@@ -59,16 +59,23 @@ struct ProfileEditor: View {
                 .scrollBounceBehavior(.basedOnSize)
             }
         }
-        .confirmationDialog(
-            "删除「\(profile.name)」的档案？学习记录也会一起删除。",
-            isPresented: $confirmingDelete,
-            titleVisibility: .visible
-        ) {
-            Button("删除", role: .destructive) {
-                onDelete?(profile)
-                dismiss()
+        .overlay {
+            if confirmingDelete {
+                CandyConfirmModal(
+                    title: "删除档案？",
+                    icon: "⚠️",
+                    message: "删除「\(profile.name)」的档案后，所有学习、成长和对局记录都会一起删除。",
+                    buttons: [
+                        CandyConfirmButton(title: "确认删除", icon: "🗑", role: .destructive) {
+                            confirmingDelete = false
+                            onDelete?(profile)
+                            dismiss()
+                        },
+                        CandyConfirmButton(title: "取消", role: .cancel) { confirmingDelete = false }
+                    ],
+                    onDismiss: { confirmingDelete = false }
+                )
             }
-            Button("取消", role: .cancel) {}
         }
     }
 
@@ -85,12 +92,9 @@ struct ProfileEditor: View {
                 }
                 Spacer()
                 Button { dismiss() } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 22, weight: .black))
-                        .foregroundStyle(Theme.muted)
-                        .frame(width: 56, height: 56)
-                        .background(Circle().fill(Color(red: 0.96, green: 0.95, blue: 0.93))
-                            .shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 4))
+                    CandyButtonLabel(title: "关闭", icon: "✕", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
+                                     foreground: Theme.ink, font: .system(size: 18, weight: .heavy, design: .rounded),
+                                     height: 46, minWidth: 96)
                 }
                 .buttonStyle(PressableStyle())
                 .accessibilityLabel("关闭")
@@ -113,10 +117,12 @@ struct ProfileEditor: View {
 
             HStack(spacing: 16) {
                 if !isNew, onDelete != nil {
-                    Button("删除这个档案") { confirmingDelete = true }
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
-                        .foregroundStyle(Theme.wrong.opacity(0.85))
-                        .frame(minHeight: 44)
+                    Button { confirmingDelete = true } label: {
+                        CandyButtonLabel(title: "删除档案", icon: "🗑", fill: Theme.wrong.opacity(0.14),
+                                         edge: Theme.wrong.opacity(0.45), foreground: Theme.wrong,
+                                         font: .system(size: 17, weight: .heavy, design: .rounded), height: 48, minWidth: 120)
+                    }
+                    .buttonStyle(PressableStyle())
                 } else {
                     Text("💡 以后点卡片右上角的 ✏️ 可以修改")
                         .font(.system(size: 17, weight: .bold, design: .rounded))
@@ -124,7 +130,7 @@ struct ProfileEditor: View {
                 }
                 Spacer()
                 Button { dismiss() } label: {
-                    CandyButtonLabel(title: "再想想", fill: Color(red: 0.95, green: 0.94, blue: 0.92), edge: GrowthColors.cardEdge,
+                    CandyButtonLabel(title: "再想想", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
                                      foreground: Theme.ink, font: .system(size: 20, weight: .heavy, design: .rounded), height: 60)
                 }
                 .buttonStyle(PressableStyle())
@@ -143,9 +149,13 @@ struct ProfileEditor: View {
             .padding(.top, 16)
         }
         .padding(28)
-        .background(RoundedRectangle(cornerRadius: 36).fill(.white)
-            .shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 10)
-            .shadow(color: .black.opacity(0.25), radius: 30, y: 16))
+        .background(
+            RoundedRectangle(cornerRadius: 34)
+                .fill(Theme.paper)
+                .shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 8)
+                .shadow(color: .black.opacity(0.22), radius: 26, y: 14)
+        )
+        .overlay(RoundedRectangle(cornerRadius: 34).stroke(GrowthColors.gold.opacity(0.75), lineWidth: 3))
     }
 
     // MARK: - 左栏：实时预览
@@ -190,7 +200,7 @@ struct ProfileEditor: View {
         }
         .padding(18)
         .frame(width: 290)
-        .background(RoundedRectangle(cornerRadius: 30).fill(Theme.paper))
+        .background(RoundedRectangle(cornerRadius: 30).fill(GrowthColors.surface))
         .overlay(RoundedRectangle(cornerRadius: 30).stroke(GrowthColors.cardEdge, lineWidth: 2))
     }
 

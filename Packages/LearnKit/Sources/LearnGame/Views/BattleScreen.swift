@@ -112,11 +112,29 @@ struct BattleScreen: View {
             Theme.paper.ignoresSafeArea()
 
             if session.isEmpty {
-                VStack(spacing: 20) {
-                    Text(session.bankConfirmed ? "这里还没有可以出的题" : "首次游戏，请先选择题库").font(.title)
-                    Button("选择题库与难度", action: onChooseBank).buttonStyle(.borderedProminent).tint(Theme.jade)
-                    Button("返回", action: onExit).font(.title2)
+                CandyModalCard(
+                    bannerTitle: session.bankConfirmed ? "暂无可用题目" : "请先选择题库",
+                    bannerIcon: "📚",
+                    maxWidth: 440
+                ) {
+                    Text(session.bankConfirmed ? "当前范围还没有可以出的题，换一个题库或单元试试吧。" : "首次游戏需要先选择适合的课本和难度。")
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .foregroundStyle(Theme.muted)
+                        .multilineTextAlignment(.center)
+                    VStack(spacing: 12) {
+                        Button(action: onChooseBank) {
+                            CandyButtonLabel(title: "选择题库与难度", icon: "📚", font: .system(size: 20, weight: .heavy, design: .rounded),
+                                             height: 54, minWidth: 0, expands: true)
+                        }
+                        Button(action: onExit) {
+                            CandyButtonLabel(title: "返回主页", icon: "←", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
+                                             foreground: Theme.ink, font: .system(size: 18, weight: .heavy, design: .rounded),
+                                             height: 48, minWidth: 0, expands: true)
+                        }
+                    }
+                    .buttonStyle(PressableStyle())
                 }
+                .padding(24)
             } else {
                 // 工具栏与操作栏独立排布，种植区保持完整；战场使用剩余可用空间
                 VStack(spacing: 6) {

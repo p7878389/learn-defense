@@ -79,11 +79,15 @@ struct ProfileHomeView: View {
                 if let issue = growth.loadError {
                     VStack(alignment: .leading, spacing: 8) {
                         Text(issue).foregroundStyle(Theme.wrong)
-                        Button("重试读取成长档案") {
+                        Button {
                             do { try model.reloadGrowth(for: profile.id) }
                             catch { /* 读取错误继续显示，原存档保持受保护。 */ }
+                        } label: {
+                            CandyButtonLabel(title: "重试读取成长档案", icon: "↻", fill: GrowthColors.surface,
+                                             edge: GrowthColors.cardEdge, foreground: Theme.ink,
+                                             font: .system(size: 16, weight: .heavy, design: .rounded), height: 42)
                         }
-                        .buttonStyle(.bordered)
+                        .buttonStyle(PressableStyle())
                     }
                 }
                 GrowthCard(profile: profile, growth: growth) {

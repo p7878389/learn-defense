@@ -40,7 +40,11 @@ struct ResultView: View {
                 .frame(maxHeight: bounded ? .infinity : nil, alignment: .top)
                 if let error = session.settlementError {
                     Text(error).font(.callout).foregroundStyle(Theme.wrong)
-                    Button("重试保存本局", action: session.retrySettlement).buttonStyle(.borderedProminent)
+                    Button(action: session.retrySettlement) {
+                        CandyButtonLabel(title: "重试保存本局", icon: "↻", fill: Theme.accent, edge: GrowthColors.orangeDark,
+                                         font: .system(size: 18, weight: .heavy, design: .rounded), height: 46, minWidth: 180)
+                    }
+                    .buttonStyle(PressableStyle())
                 }
                 buttons
                     .disabled(session.settlementError != nil)
@@ -53,7 +57,7 @@ struct ResultView: View {
                 RoundedRectangle(cornerRadius: 32)
                     .fill(Theme.paper)
                     .shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 6)
-                    .overlay(RoundedRectangle(cornerRadius: 32).stroke(GrowthColors.surface, lineWidth: 4))
+                    .overlay(RoundedRectangle(cornerRadius: 32).stroke(GrowthColors.gold.opacity(0.75), lineWidth: 3))
                     .padding(.top, 22))
     }
 
@@ -74,6 +78,7 @@ struct ResultView: View {
                 .fill(LinearGradient(colors: won ? [GrowthColors.gold, Theme.accent] : [GrowthColors.calm.opacity(0.8), GrowthColors.calm],
                                      startPoint: .top, endPoint: .bottom))
                 .shadow(color: won ? GrowthColors.orangeDark : Color(red: 0.18, green: 0.31, blue: 0.54), radius: 0, x: 0, y: 6))
+        .overlay(Capsule().stroke(.white.opacity(0.85), lineWidth: 2))
         // 横幅一半压在弹窗上沿
         .padding(.top, -48)
     }

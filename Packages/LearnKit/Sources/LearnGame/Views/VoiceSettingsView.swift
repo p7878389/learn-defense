@@ -71,40 +71,44 @@ struct VoiceSettingsView: View {
                 ? menuItems(selection: $draft.speaker, voices: TTSSettings.chineseVoices)
                 : menuItems(selection: $draft.englishSpeaker, voices: TTSSettings.englishVoices)
         }
-        .confirmationDialog(
-            library.canDownload
-                ? "清除语音合成账号和已生成的语音？之后用云端语音朗读，没有时用系统语音。"
-                : "清除语音合成账号和已生成的语音？之后只用系统语音朗读。",
-            isPresented: $confirmingClear,
-            titleVisibility: .visible
-        ) {
-            Button("清除", role: .destructive) {
-                library.clear()
-                draft = TTSSettings()
-                message = "已清除"
+        .overlay {
+            if confirmingClear {
+                CandyConfirmModal(
+                    title: "清除语音配置？",
+                    icon: "⚠️",
+                    message: library.canDownload
+                        ? "清除语音合成账号和已生成的语音？之后用云端语音朗读，没有时用系统语音。"
+                        : "清除语音合成账号和已生成的语音？之后只用系统语音朗读。",
+                    buttons: [
+                        CandyConfirmButton(title: "确认清除", icon: "🗑", role: .destructive) {
+                            library.clear(); draft = TTSSettings(); message = "已清除"; confirmingClear = false
+                        },
+                        CandyConfirmButton(title: "取消", role: .cancel) { confirmingClear = false }
+                    ],
+                    onDismiss: { confirmingClear = false }
+                )
             }
-            Button("取消", role: .cancel) {}
         }
     }
 
     // MARK: - 顶栏：和设置页一样的返回、标题、家长专区标识
 
     private var header: some View {
-        HStack(spacing: 16) {
-            Button { dismiss() } label: { Label("返回", systemImage: "arrow.left.circle.fill") }
-            Spacer()
-            Text("☁️ 豆包语音设置").font(.largeTitle.bold())
-            Text("🔒 家长专区").font(.headline).padding(10).background(.white, in: Capsule())
-            Spacer()
+        GrowthPageHeader(icon: "☁️", title: "豆包语音设置", subtitle: "🔒 家长专区", onClose: { dismiss() }) {
             if hasChanges {
                 Label("有修改未保存", systemImage: "pencil").font(.headline).foregroundStyle(GrowthColors.orangeDark)
             }
-            Button { save() } label: { Label("保存", systemImage: "checkmark.circle.fill") }
-                .buttonStyle(.borderedProminent).tint(Theme.jade)
-                .disabled(!draft.isUsable || !hasChanges)
+            let canSave = draft.isUsable && hasChanges
+            Button { save() } label: {
+                CandyButtonLabel(title: "保存", icon: "✓",
+                                 fill: canSave ? Theme.jade : GrowthColors.disabledFill,
+                                 edge: canSave ? GrowthColors.jadeDark : GrowthColors.disabledEdge,
+                                 foreground: canSave ? .white : Theme.muted,
+                                 font: .system(size: 18, weight: .heavy, design: .rounded), height: 48, minWidth: 104)
+            }
+            .buttonStyle(PressableStyle())
+            .disabled(!canSave)
         }
-        .foregroundStyle(Theme.ink)
-        .font(.title3.bold())
     }
 
     // MARK: - 左栏
@@ -157,10 +161,12 @@ struct VoiceSettingsView: View {
                 Label(message, systemImage: "info.circle.fill").font(.callout).foregroundStyle(Theme.muted)
             }
             if library.settings != nil {
-                Button(role: .destructive) { confirmingClear = true } label: {
-                    Label("清除账号和已生成的语音", systemImage: "trash").frame(maxWidth: .infinity)
+                Button { confirmingClear = true } label: {
+                    CandyButtonLabel(title: "清除账号和已生成的语音", icon: "🗑", fill: Theme.wrong.opacity(0.14),
+                                     edge: Theme.wrong.opacity(0.45), foreground: Theme.wrong,
+                                     font: .system(size: 15, weight: .heavy, design: .rounded), height: 44, minWidth: 0, expands: true)
                 }
-                .buttonStyle(.bordered).tint(Theme.wrong)
+                .buttonStyle(PressableStyle())
             }
         }
     }
@@ -247,19 +253,25 @@ struct VoiceSettingsView: View {
     }
 
     private var previewButtons: some View {
-        HStack(spacing: 12) {
+        let ready = draft.isUsable && !previewing
+        return HStack(spacing: 12) {
             Button { preview(SpeechText.Line.sample) } label: {
-                HStack(spacing: 6) {
-                    if previewing { ProgressView() } else { Image(systemName: "play.circle.fill") }
-                    Text("试听中文")
-                }
+                CandyButtonLabel(title: previewing ? "合成中…" : "试听中文", icon: "▶",
+                                 fill: ready ? Theme.accent : GrowthColors.disabledFill,
+                                 edge: ready ? GrowthColors.orangeDark : GrowthColors.disabledEdge,
+                                 foreground: ready ? .white : Theme.muted,
+                                 font: .system(size: 15, weight: .heavy, design: .rounded), height: 42, minWidth: 112)
             }
-            .buttonStyle(.borderedProminent)
-            Button { preview(SpeechText.Line.englishSample) } label: { Label("试听英文", systemImage: "play.circle") }
-                .buttonStyle(.bordered)
+            Button { preview(SpeechText.Line.englishSample) } label: {
+                CandyButtonLabel(title: "试听英文", icon: "▶",
+                                 fill: ready ? GrowthColors.surface : GrowthColors.disabledFill,
+                                 edge: ready ? GrowthColors.cardEdge : GrowthColors.disabledEdge,
+                                 foreground: ready ? Theme.ink : Theme.muted,
+                                 font: .system(size: 15, weight: .heavy, design: .rounded), height: 42, minWidth: 112)
+            }
         }
-        .font(.headline)
-        .disabled(!draft.isUsable || previewing)
+        .buttonStyle(PressableStyle())
+        .disabled(!ready)
     }
 
     // MARK: - 小部件

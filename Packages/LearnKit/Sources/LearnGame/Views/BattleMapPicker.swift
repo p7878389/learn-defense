@@ -28,8 +28,10 @@ struct BattleMapPicker: View {
                         .frame(height: 18)
                     }
                     .padding(6)
-                    .background(Theme.paper, in: RoundedRectangle(cornerRadius: 12))
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(selection == map ? Theme.accent : Theme.muted.opacity(0.3), lineWidth: selection == map ? 3 : 1))
+                    .background(CandyTileBackground(selected: selection == map,
+                                                    selectedFill: GrowthColors.gold.opacity(0.18),
+                                                    selectedEdge: Theme.accent,
+                                                    radius: 12))
                     .foregroundStyle(Theme.ink)
                 }
                 .buttonStyle(PressableStyle())

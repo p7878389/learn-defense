@@ -128,7 +128,7 @@ extension CollectionView {
                 .font(.system(size: 14, weight: .bold, design: .rounded)).foregroundStyle(Theme.muted)
                 .multilineTextAlignment(.center)
             Spacer(minLength: 0)
-            CandyButtonLabel(title: "即将推出", fill: Color(white: 0.9), edge: Color(white: 0.78), foreground: Theme.muted,
+            CandyButtonLabel(title: "即将推出", fill: GrowthColors.disabledFill, edge: GrowthColors.disabledEdge, foreground: Theme.muted,
                              font: .system(size: 18, weight: .heavy, design: .rounded), height: 46, minWidth: 0)
                 .frame(maxWidth: .infinity)
         }
@@ -194,7 +194,7 @@ extension CollectionView {
                     Text("再玩 \(max(1, Int((Double(short) / 40).rounded(.up)))) 局左右就够啦")
                         .font(hintFont).foregroundStyle(Theme.wrong)
                         .lineLimit(1).minimumScaleFactor(0.7)
-                    CandyButtonLabel(title: "\(price) 还差 \(short)", coin: true, fill: Color(white: 0.88), edge: Color(white: 0.75),
+                    CandyButtonLabel(title: "\(price) 还差 \(short)", coin: true, fill: GrowthColors.disabledFill, edge: GrowthColors.disabledEdge,
                                      foreground: Theme.muted, font: actionFont, height: 50, minWidth: 0, expands: true)
                         .frame(maxWidth: .infinity)
                 }
@@ -203,7 +203,7 @@ extension CollectionView {
             VStack(spacing: 6) {
                 Text(item.price > 0 ? "解锁后 \(item.price) 积分购买" : "解锁后免费获得")
                     .font(hintFont).foregroundStyle(Theme.muted)
-                CandyButtonLabel(title: "尚未达成条件", fill: Color(white: 0.9), edge: Color(white: 0.78),
+                CandyButtonLabel(title: "尚未达成条件", fill: GrowthColors.disabledFill, edge: GrowthColors.disabledEdge,
                                  foreground: Theme.muted, font: actionFont, height: 46, minWidth: 0, expands: true)
                     .frame(maxWidth: .infinity)
             }
@@ -213,7 +213,7 @@ extension CollectionView {
                 Text("还差 \(unlock - level) 级就能拿到！").font(hintFont).foregroundStyle(Theme.accent)
                     .lineLimit(1).minimumScaleFactor(0.7)
                 MiniBar(value: Double(level), total: Double(unlock), tint: Theme.accent)
-                CandyButtonLabel(title: "还没解锁", fill: Color(white: 0.9), edge: Color(white: 0.78), foreground: Theme.muted,
+                CandyButtonLabel(title: "还没解锁", fill: GrowthColors.disabledFill, edge: GrowthColors.disabledEdge, foreground: Theme.muted,
                                  font: actionFont, height: 46, minWidth: 0, expands: true)
                     .frame(maxWidth: .infinity)
             }
@@ -256,12 +256,16 @@ extension CollectionView {
 
     func equipmentSuccessDialog(_ item: CosmeticKind) -> some View {
         ZStack {
-            Color.black.opacity(0.4).ignoresSafeArea()
+            Color.black.opacity(0.45).ignoresSafeArea()
                 .onTapGesture { equippedNotice = nil }
-            VStack(spacing: 16) {
-                Label("装备成功", systemImage: "checkmark.seal.fill")
-                    .font(.system(size: 28, weight: .heavy, design: .rounded))
-                    .foregroundStyle(GrowthColors.jadeDark)
+            CandyModalCard(
+                bannerTitle: "装备成功",
+                bannerIcon: "✨",
+                bannerColors: [Theme.jade, GrowthColors.jadeDark],
+                bannerEdge: GrowthColors.jadeDark,
+                borderColor: Theme.jade.opacity(0.65),
+                maxWidth: 420
+            ) {
                 if let image = portrait(of: item) {
                     Image(decorative: image, scale: 1).resizable().scaledToFit()
                         .frame(width: 100, height: 100)
@@ -280,10 +284,6 @@ extension CollectionView {
                 .buttonStyle(PressableStyle())
             }
             .padding(24)
-            .frame(maxWidth: 420)
-            .background(RoundedRectangle(cornerRadius: 30).fill(Theme.paper))
-            .overlay(RoundedRectangle(cornerRadius: 30).stroke(GrowthColors.gold, lineWidth: 3))
-            .padding(24)
         }
     }
 
@@ -293,11 +293,13 @@ extension CollectionView {
         let coins = growth.state.coins
         return ZStack {
             Color.black.opacity(0.45).ignoresSafeArea().onTapGesture { confirming = nil }
-            VStack(spacing: 16) {
-                Text("要买下来吗？").font(.system(size: 30, weight: .heavy, design: .rounded)).foregroundStyle(.white)
-                    .padding(.horizontal, 32).frame(height: 60)
-                    .background(Capsule().fill(Theme.accent).shadow(color: GrowthColors.orangeDark, radius: 0, x: 0, y: 5))
-                    .padding(.top, -56)
+            CandyModalCard(
+                bannerTitle: "要买下来吗？",
+                bannerIcon: "🛒",
+                bannerColors: [GrowthColors.gold, Theme.accent],
+                bannerEdge: GrowthColors.orangeDark,
+                maxWidth: 520
+            ) {
                 Group {
                     if let image = portrait(of: item) {
                         Image(decorative: image, scale: 1).resizable().scaledToFit().padding(16)
@@ -305,9 +307,9 @@ extension CollectionView {
                         PictureView(emoji: item.icon, size: 100)
                     }
                 }
-                    .frame(width: 150, height: 150)
-                    .background(Circle().fill(GrowthColors.rarity(item.rarity).opacity(0.15)))
-                Text(item.name).font(.system(size: 40, weight: .heavy, design: .rounded)).foregroundStyle(Theme.ink)
+                .frame(width: 150, height: 150)
+                .background(Circle().fill(GrowthColors.rarity(item.rarity).opacity(0.15)))
+                Text(item.name).font(.system(size: 36, weight: .heavy, design: .rounded)).foregroundStyle(Theme.ink)
                 Text("\(item.summary) · \(item.rarity.displayName)").font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundStyle(Theme.muted)
                 HStack(spacing: 14) {
@@ -324,8 +326,8 @@ extension CollectionView {
                 .background(RoundedRectangle(cornerRadius: 18).fill(GrowthColors.surface))
                 HStack(spacing: 16) {
                     Button { confirming = nil } label: {
-                        CandyButtonLabel(title: "再想想", fill: GrowthColors.surface, edge: GrowthColors.cardEdge, foreground: Theme.ink)
-                            .frame(maxWidth: .infinity)
+                        CandyButtonLabel(title: "再想想", fill: GrowthColors.surface, edge: GrowthColors.cardEdge, foreground: Theme.ink,
+                                         expands: true)
                     }
                     Button {
                         // 怪物购买即进入外观池；射手沿用原有买后装备逻辑。
@@ -337,17 +339,14 @@ extension CollectionView {
                         } catch { storageError = error.localizedDescription }
                         confirming = nil
                     } label: {
-                        CandyButtonLabel(title: "买！", fill: Theme.accent, edge: GrowthColors.orangeDark)
-                            .frame(maxWidth: .infinity)
+                        CandyButtonLabel(title: "买！", fill: Theme.accent, edge: GrowthColors.orangeDark, expands: true)
                     }
                 }
                 .buttonStyle(PressableStyle())
-                Text(item.slot == .enemySkin ? "购买后自动加入怪物队伍，无需装备" : "买了以后可以随时换回原版").font(.system(size: 15, weight: .bold, design: .rounded)).foregroundStyle(Theme.muted)
+                Text(item.slot == .enemySkin ? "购买后自动加入怪物队伍，无需装备" : "买了以后可以随时换回原版")
+                    .font(.system(size: 15, weight: .bold, design: .rounded)).foregroundStyle(Theme.muted)
             }
-            .padding(32)
-            .frame(width: 520)
-            .background(RoundedRectangle(cornerRadius: 36).fill(Theme.paper))
-            .overlay(RoundedRectangle(cornerRadius: 36).stroke(GrowthColors.gold, lineWidth: 4))
+            .padding(24)
         }
     }
 }

@@ -17,7 +17,11 @@ struct ParentVoicePane: View {
                 HStack {
                     Text("高级设置可配置豆包账号与中英文音色。").foregroundStyle(Theme.muted)
                     Spacer()
-                    Button("高级设置（账号 · 音色） ›") { advanced = true }.buttonStyle(.borderedProminent)
+                    Button { advanced = true } label: {
+                        CandyButtonLabel(title: "高级设置（账号 · 音色） ›", fill: Theme.accent, edge: GrowthColors.orangeDark,
+                                         font: .system(size: 16, weight: .heavy, design: .rounded), height: 42)
+                    }
+                    .buttonStyle(PressableStyle())
                 }
             }
             SettingsCard(title: "🎛️ 朗读参数") {
@@ -27,11 +31,19 @@ struct ParentVoicePane: View {
                 Toggle("自动朗读题目", isOn: $draft.readQuestions)
                 Toggle("朗读游戏提示语", isOn: $draft.readGuidance)
                 Toggle("静音模式下也朗读", isOn: $draft.readsWhenSilent)
-                HStack {
-                    Button("保存设置") { save() }.buttonStyle(.borderedProminent)
-                    Button("🔊 试读") {
+                HStack(spacing: 12) {
+                    Button { save() } label: {
+                        CandyButtonLabel(title: "保存设置", icon: "✓", fill: Theme.jade, edge: GrowthColors.jadeDark,
+                                         font: .system(size: 16, weight: .heavy, design: .rounded), height: 44)
+                    }
+                    .buttonStyle(PressableStyle())
+                    Button {
                         if save() { model.speech.speak("春眠不觉晓，处处闻啼鸟。Hello, welcome!", interrupt: true, channel: .preview) }
-                    }.buttonStyle(.bordered)
+                    } label: {
+                        CandyButtonLabel(title: "试读", icon: "🔊", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
+                                         foreground: Theme.ink, font: .system(size: 16, weight: .heavy, design: .rounded), height: 44)
+                    }
+                    .buttonStyle(PressableStyle())
                     if let message { Text(message).font(.footnote).foregroundStyle(Theme.muted) }
                 }
             }
@@ -101,14 +113,18 @@ struct ParentGamePane: View {
                                            set: { rules.coinLimits[source.rawValue] = $0 }), in: 0...10000, step: 10)
                 }
                 Text("上限设为 0 可关闭该来源。调高上限不会重置今天已领取的积分。").font(.footnote).foregroundStyle(Theme.muted)
-                Button("保存游戏设置") {
+                Button {
                     do {
                         try model.updateRules(rules)
                         var reader = model.readerPreferences; reader.effectsVolume = effects
                         try model.updateReader(reader)
                         message = "已保存"
                     } catch { message = error.localizedDescription }
-                }.buttonStyle(.borderedProminent)
+                } label: {
+                    CandyButtonLabel(title: "保存游戏设置", icon: "✓", fill: Theme.jade, edge: GrowthColors.jadeDark,
+                                     font: .system(size: 16, weight: .heavy, design: .rounded), height: 44)
+                }
+                .buttonStyle(PressableStyle())
                 if let message { Text(message).foregroundStyle(Theme.muted) }
             }
         }

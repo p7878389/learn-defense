@@ -64,7 +64,7 @@ struct GameLogo: View {
     }
 }
 
-/// 卡片顶部的角标，如「👑 上次是你」「🌱 新伙伴」
+/// 卡片顶部的立体渐变角标，如「👑 上次是你」「🌱 新伙伴」
 struct HomeRibbon: View {
     let text: String
     var fill: Color = Theme.accent
@@ -72,136 +72,274 @@ struct HomeRibbon: View {
 
     var body: some View {
         Text(text)
-            .font(.system(size: 18, weight: .heavy, design: .rounded))
+            .font(.system(size: 17, weight: .black, design: .rounded))
             .foregroundStyle(.white)
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 22)
             .frame(height: 36)
-            .background(Capsule().fill(fill).shadow(color: edge, radius: 0, x: 0, y: 3))
+            .background(
+                Capsule()
+                    .fill(LinearGradient(colors: [fill.opacity(0.9), fill, edge], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .shadow(color: edge, radius: 0, x: 0, y: 3)
+                    .shadow(color: edge.opacity(0.35), radius: 6, y: 4)
+            )
             .overlay(Capsule().stroke(.white, lineWidth: 3))
     }
 }
 
-/// 一行状态小药丸
+/// 一行状态糖果小药丸
 private struct StatPill: View {
     let text: String
     var tint: Color = GrowthColors.orangeDark
+    var fill: Color = Color(red: 1.0, green: 0.97, blue: 0.90)
+    var border: Color = Color(red: 0.98, green: 0.85, blue: 0.58)
 
     var body: some View {
         Text(text)
-            .font(.system(size: 18, weight: .heavy, design: .rounded))
+            .font(.system(size: 17, weight: .black, design: .rounded))
             .foregroundStyle(tint)
             .lineLimit(1)
             .minimumScaleFactor(0.7)
-            .frame(maxWidth: .infinity, minHeight: 40)
-            .background(RoundedRectangle(cornerRadius: 14).fill(Color(red: 1.0, green: 0.97, blue: 0.9)))
-            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color(red: 0.98, green: 0.86, blue: 0.62), lineWidth: 1.5))
+            .frame(maxWidth: .infinity, minHeight: 42)
+            .background(RoundedRectangle(cornerRadius: 15).fill(fill).shadow(color: border.opacity(0.75), radius: 0, x: 0, y: 2))
+            .overlay(RoundedRectangle(cornerRadius: 15).stroke(border, lineWidth: 1.5))
     }
 }
 
-/// 白底大卡片外框：focused 时金色粗描边 + 橙色厚底，侧卡用浅色描边
+/// 角色卡片立体糖果外框：顶部主题色柔和穹顶渐变 + 晶莹内高光 + 连续 focus 驱动的金色描边与厚底
 struct HomeCardFrame: ViewModifier {
     var focused: Bool
+    var focus: Double? = nil
+    var tint: Color = GrowthColors.gold
     var dashed = false
+
+    private var f: Double { focus ?? (focused ? 1.0 : 0.0) }
 
     func body(content: Content) -> some View {
         let shape = RoundedRectangle(cornerRadius: 36)
         content
             .background(
-                shape.fill(dashed ? Color(red: 1.0, green: 0.98, blue: 0.94) : .white)
-                    .shadow(color: focused ? GrowthColors.orangeDark : GrowthColors.cardEdge, radius: 0, x: 0, y: focused ? 10 : 6)
-                    .shadow(color: .black.opacity(0.08), radius: 16, y: 10))
-            .overlay(
-                shape.stroke(
-                    focused ? GrowthColors.gold : GrowthColors.cardEdge,
-                    style: StrokeStyle(lineWidth: focused ? 5 : 3, dash: dashed ? [12, 8] : [])))
+                ZStack(alignment: .top) {
+                    shape.fill(dashed ? Color(red: 1.0, green: 0.985, blue: 0.95) : .white)
+                        .shadow(color: f > 0.5 ? GrowthColors.orangeDark : GrowthColors.cardEdge, radius: 0, x: 0, y: 6 + 6 * f)
+                        .shadow(color: GrowthColors.orangeDark.opacity(0.08 + 0.22 * f), radius: 14 + 14 * f, y: 10 + 10 * f)
+                    // 卡片顶部柔和角色主题色穹顶内渐变（还原设计稿 05）
+                    LinearGradient(colors: [tint.opacity(0.14 + 0.24 * f), tint.opacity(0.05 * f), .clear], startPoint: .top, endPoint: .bottom)
+                        .frame(height: 165)
+                        .clipShape(RoundedRectangle(cornerRadius: 33))
+                        .padding(3)
+                }
+            )
+            .overlay(RoundedRectangle(cornerRadius: 33).inset(by: 3).stroke(.white.opacity(0.9), lineWidth: 1.5))
+            .overlay(shape.stroke(f > 0.45 ? GrowthColors.gold : GrowthColors.cardEdge,
+                                  style: StrokeStyle(lineWidth: 3 + 2 * f, dash: dashed ? [12, 8] : [])))
     }
 }
 
-/// 轮播里的孩子卡。focused 为 false 时是两侧露出来的侧卡：不放「开始守护」，点整张卡换到中间
+/// 轮播里的孩子卡：所有视觉层次由连续 focus（0~1）实时插值驱动，聚焦时头像轻柔呼吸浮动
 struct HomeProfileCard: View {
     let summary: HomeProfileSummary
     let focused: Bool
+    var focus: Double? = nil
     let height: CGFloat
     let onEdit: () -> Void
 
+    @State private var floating = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     private var profile: Profile { summary.profile }
+    private var f: Double { focus ?? (focused ? 1.0 : 0.0) }
+    private var tint: Color { AvatarTint.color(for: profile.avatar) }
 
     var body: some View {
         VStack(spacing: 0) {
-            ZStack(alignment: .bottomTrailing) {
-                Circle()
-                    .fill(AvatarTint.color(for: profile.avatar))
-                    .overlay(Circle().stroke(.white, lineWidth: 5))
-                    .shadow(color: .black.opacity(0.1), radius: 6, y: 3)
-                    .frame(width: 124, height: 124)
-                    .overlay(PictureView(emoji: profile.avatar, size: 88))
-                LevelBadge(level: summary.level, size: 18)
-                    .offset(x: 10, y: 2)
-            }
-            .padding(.top, 40)
+            avatarStage
+                .padding(.top, 28)
 
             Text(profile.name)
                 .font(.system(size: 40, weight: .black, design: .rounded))
                 .foregroundStyle(Theme.ink)
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
-                .padding(.top, 10)
+                .scaleEffect(0.94 + 0.06 * f)
+                .padding(.top, 4)
 
             Text(profile.grade.displayName)
-                .font(.system(size: 18, weight: .heavy, design: .rounded))
+                .font(.system(size: 16, weight: .black, design: .rounded))
                 .foregroundStyle(GrowthColors.orangeDark)
-                .padding(.horizontal, 16)
-                .frame(height: 32)
-                .background(Capsule().fill(Color(red: 1.0, green: 0.93, blue: 0.78)))
+                .padding(.horizontal, 18)
+                .frame(height: 30)
+                .background(
+                    Capsule()
+                        .fill(Color(red: 1.0, green: 0.94, blue: 0.80))
+                        .shadow(color: GrowthColors.gold.opacity(0.45), radius: 0, x: 0, y: 2)
+                )
+                .overlay(Capsule().stroke(GrowthColors.gold.opacity(0.85), lineWidth: 1.5))
+                .scaleEffect(0.94 + 0.06 * f)
+                .padding(.top, 2)
+
+            Spacer(minLength: 10)
+
+            HStack(spacing: 10) {
+                StatPill(
+                    text: streakText,
+                    tint: summary.activity.streakDays > 0 ? Color(red: 0.82, green: 0.32, blue: 0.08) : Theme.muted,
+                    fill: Color(red: 1.0, green: 0.96, blue: 0.91),
+                    border: Color(red: 0.98, green: 0.83, blue: 0.65)
+                )
+                StatPill(
+                    text: "⭐ 闯关 \(summary.gamesPlayed) 次",
+                    tint: Color(red: 0.58, green: 0.34, blue: 0.04),
+                    fill: Color(red: 1.0, green: 0.97, blue: 0.88),
+                    border: Color(red: 0.96, green: 0.84, blue: 0.52)
+                )
+            }
 
             Spacer(minLength: 12)
 
-            HStack(spacing: 10) {
-                StatPill(text: streakText, tint: summary.activity.streakDays > 0 ? Color(red: 0.85, green: 0.35, blue: 0.1) : Theme.muted)
-                StatPill(text: "⭐ 闯关 \(summary.gamesPlayed) 次")
-            }
-
-            Spacer(minLength: 14)
-
-            if focused {
-                NavigationLink(value: profile.id) {
-                    CandyButtonLabel(title: "开始守护！", icon: "▶",
-                                     font: .system(size: 30, weight: .black, design: .rounded), height: 72, minWidth: 340)
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(PressableStyle())
-                .accessibilityLabel("\(profile.name)开始守护")
-            } else {
-                Text("点我换成\(profile.name)")
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .foregroundStyle(Theme.muted)
-                    .frame(height: 72)
-            }
+            actionArea
         }
-        .padding(.horizontal, 26)
-        .padding(.bottom, 26)
+        .padding(.horizontal, 24)
+        .padding(.bottom, 24)
         .frame(height: height)
         .frame(maxWidth: .infinity)
-        .modifier(HomeCardFrame(focused: focused))
+        .modifier(HomeCardFrame(focused: focused, focus: f, tint: tint))
         .overlay(alignment: .top) {
             if summary.isLastPlayed {
-                HomeRibbon(text: "👑 上次是你").offset(y: -18)
+                HomeRibbon(text: "👑 上次是你")
+                    .scaleEffect(0.88 + 0.12 * f)
+                    .rotationEffect(.degrees(-2.0 * f))
+                    .offset(y: -13 - 6 * f)
             } else if summary.isNew {
-                HomeRibbon(text: "🌱 新伙伴", fill: Theme.jade, edge: GrowthColors.jadeDark).offset(y: -18)
+                HomeRibbon(text: "🌱 新伙伴", fill: Theme.jade, edge: GrowthColors.jadeDark)
+                    .scaleEffect(0.88 + 0.12 * f)
+                    .rotationEffect(.degrees(-2.0 * f))
+                    .offset(y: -13 - 6 * f)
             }
         }
         .overlay(alignment: .topTrailing) {
-            if focused {
-                Button(action: onEdit) {
-                    PictureView(emoji: "✏️", size: 24)
-                        .frame(width: 48, height: 48)
-                        .background(Circle().fill(Color(red: 0.96, green: 0.95, blue: 0.93)))
-                        .overlay(Circle().stroke(GrowthColors.cardEdge, lineWidth: 1.5))
-                }
-                .buttonStyle(PressableStyle())
-                .padding(16)
-                .accessibilityLabel("修改\(profile.name)的名字、年级和头像")
+            Button(action: onEdit) {
+                PictureView(emoji: "✏️", size: 22)
+                    .frame(width: 46, height: 46)
+                    .background(
+                        Circle()
+                            .fill(Color.white.opacity(0.92))
+                            .shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 3)
+                    )
+                    .overlay(Circle().stroke(GrowthColors.cardEdge, lineWidth: 1.5))
             }
+            .buttonStyle(PressableStyle())
+            .padding(16)
+            .scaleEffect(0.5 + 0.5 * f)
+            .opacity(f)
+            .allowsHitTesting(focused)
+            .accessibilityLabel("修改\(profile.name)的名字、年级和头像")
+        }
+        .onAppear { updateFloat() }
+        .onChange(of: focused) { _, _ in updateFloat() }
+    }
+
+    private var avatarStage: some View {
+        ZStack(alignment: .bottomTrailing) {
+            // 柔和主题色外发光晕
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [tint.opacity(0.55 * f), tint.opacity(0.15 * f), .clear],
+                        center: .center,
+                        startRadius: 32,
+                        endRadius: 80
+                    )
+                )
+                .frame(width: 152, height: 152)
+                .scaleEffect(0.85 + 0.22 * f)
+
+            // 立体渐变头像圆盘
+            Circle()
+                .fill(
+                    LinearGradient(
+                        colors: [.white.opacity(0.55), tint, tint],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .background(Circle().fill(tint))
+                .overlay(Circle().stroke(.white, lineWidth: 5))
+                .shadow(color: tint.opacity(0.55), radius: 10, y: 5)
+                .shadow(color: .black.opacity(0.10), radius: 5, y: 3)
+                .frame(width: 126, height: 126)
+                .overlay(
+                    PictureView(emoji: profile.avatar, size: 90)
+                        .scaleEffect(0.95 + 0.08 * f)
+                )
+                .frame(width: 152, height: 152)
+
+            // 主角两侧闪烁的小星光
+            if f > 0.2 {
+                Text("✨")
+                    .font(.system(size: 18))
+                    .offset(x: -116, y: -96)
+                    .scaleEffect(floating ? 1.15 : 0.85)
+                    .opacity(f * 0.9)
+                Text("✨")
+                    .font(.system(size: 15))
+                    .offset(x: -6, y: -112)
+                    .scaleEffect(floating ? 0.85 : 1.15)
+                    .opacity(f * 0.85)
+            }
+
+            LevelBadge(level: summary.level, size: 18)
+                .scaleEffect(0.88 + 0.18 * f)
+                .offset(x: 0, y: -4)
+        }
+        .scaleEffect(0.90 + 0.14 * f)
+        .offset(y: (focused && floating ? -5 : 0) - 3 * f)
+    }
+
+    private var actionArea: some View {
+        NavigationLink(value: profile.id) {
+            HStack(spacing: 10) {
+                Text("▶").font(.system(size: 24, weight: .black, design: .rounded))
+                Text("开始守护！").font(.system(size: 30, weight: .black, design: .rounded))
+            }
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity)
+            .frame(height: 70)
+            .background(
+                RoundedRectangle(cornerRadius: 26)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.24, green: 0.84, blue: 0.62),
+                                Theme.jade,
+                                Color(red: 0.09, green: 0.58, blue: 0.43)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .shadow(color: GrowthColors.jadeDark, radius: 0, x: 0, y: 7)
+                    .shadow(color: Theme.jade.opacity(0.38), radius: 14, y: 8)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 26)
+                    .stroke(Color(red: 0.55, green: 0.95, blue: 0.78).opacity(0.85), lineWidth: 2.5)
+            )
+        }
+        .buttonStyle(PressableStyle())
+        .accessibilityLabel("\(profile.name)开始守护")
+        .scaleEffect(0.84 + 0.16 * f)
+        .opacity(f)
+        .allowsHitTesting(focused)
+        .frame(height: 72)
+    }
+
+    private func updateFloat() {
+        guard focused, !reduceMotion else {
+            withAnimation(.easeOut(duration: 0.25)) { floating = false }
+            return
+        }
+        withAnimation(.easeInOut(duration: 2.1).repeatForever(autoreverses: true)) {
+            floating = true
         }
     }
 
