@@ -244,6 +244,7 @@ struct AppModalScaffold<Trailing: View, Content: View, Footer: View>: View {
     var iconTint: Color = AppColor.jade
     let title: String
     var subtitle: String? = nil
+    var scrollable: Bool = true
     @ViewBuilder var trailing: () -> Trailing
     @ViewBuilder var content: () -> Content
     @ViewBuilder var footer: () -> Footer
@@ -269,19 +270,27 @@ struct AppModalScaffold<Trailing: View, Content: View, Footer: View>: View {
             .padding(.top, AppSpacing.lg)
             .padding(.bottom, AppSpacing.md)
 
-            ScrollView {
+            if scrollable {
+                ScrollView {
+                    content()
+                        .padding(.horizontal, AppSpacing.lg)
+                        .padding(.vertical, AppSpacing.xs)
+                }
+                .scrollBounceBehavior(.basedOnSize)
+            } else {
                 content()
                     .padding(.horizontal, AppSpacing.lg)
                     .padding(.vertical, AppSpacing.xs)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .scrollBounceBehavior(.basedOnSize)
 
             VStack(spacing: 0) {
                 Rectangle()
                     .fill(AppColor.cardStroke.opacity(0.45))
                     .frame(height: 1)
                 footer()
-                    .padding(AppSpacing.md)
+                    .padding(.horizontal, AppSpacing.lg)
+                    .padding(.vertical, AppSpacing.md)
             }
         }
         .background(GrowthPageBackground())
@@ -294,6 +303,7 @@ extension AppModalScaffold where Trailing == EmptyView {
         iconTint: Color = AppColor.jade,
         title: String,
         subtitle: String? = nil,
+        scrollable: Bool = true,
         @ViewBuilder content: @escaping () -> Content,
         @ViewBuilder footer: @escaping () -> Footer
     ) {
@@ -302,6 +312,7 @@ extension AppModalScaffold where Trailing == EmptyView {
             iconTint: iconTint,
             title: title,
             subtitle: subtitle,
+            scrollable: scrollable,
             trailing: { EmptyView() },
             content: content,
             footer: footer

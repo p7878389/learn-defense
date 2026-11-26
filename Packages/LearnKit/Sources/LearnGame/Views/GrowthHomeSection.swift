@@ -278,6 +278,7 @@ struct HomeMeadowStrip: View {
                             .background(RoundedRectangle(cornerRadius: 6).fill(AppColor.tileFill))
                             .overlay(RoundedRectangle(cornerRadius: 6).stroke(AppColor.woodEdge, lineWidth: 2))
                             .rotationEffect(.degrees(-6))
+                            .offset(y: isTall ? 8 : 3)
                         sprite("zombie-drowsy", size: isTall ? 102 : 62)
                     }
                 }
