@@ -37,30 +37,30 @@ struct VoiceSettingsView: View {
     var body: some View {
         ZStack {
             GrowthPageBackground()
-            VStack(spacing: 18) {
+            VStack(spacing: AppSpacing.md) {
                 header
-                HStack(alignment: .top, spacing: 20) {
+                HStack(alignment: .top, spacing: AppSpacing.md) {
                     ScrollView {
-                        VStack(spacing: 20) {
+                        VStack(spacing: AppSpacing.md) {
                             systemVoiceCard
                             statusCard
                         }
-                        .padding(.bottom, 12)
+                        .padding(.bottom, AppSpacing.sm)
                     }
                     .scrollBounceBehavior(.basedOnSize)
                     .frame(width: 340)
                     ScrollView {
-                        VStack(spacing: 20) {
+                        VStack(spacing: AppSpacing.md) {
                             accountCard
                             voiceCard
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.bottom, 12)
+                        .padding(.bottom, AppSpacing.sm)
                     }
                     .scrollBounceBehavior(.basedOnSize)
                 }
             }
-            .padding(22)
+            .padding(AppSpacing.lg)
         }
         .tint(AppColor.parentAccent)
         .candyDropdownLayer(openID: $openMenu) { id in
@@ -103,7 +103,7 @@ struct VoiceSettingsView: View {
             if hasChanges {
                 Label("有修改未保存", systemImage: "pencil")
                     .font(AppFont.label)
-                    .foregroundStyle(GrowthColors.orangeDark)
+                    .foregroundStyle(AppColor.accentEdge)
             }
             let canSave = draft.isUsable && hasChanges
             AppButton(title: "保存", systemImage: "checkmark", role: .primary, size: .medium, minWidth: 100) {
@@ -115,11 +115,11 @@ struct VoiceSettingsView: View {
 
     private var systemVoiceCard: some View {
         SettingsCard(title: "iPad 系统语音", systemImage: "ipad", tint: AppColor.muted) {
-            Text("没有高质量语音时使用，不参与豆包语音生成。").font(AppFont.caption).foregroundStyle(Theme.muted)
+            Text("没有高质量语音时使用，不参与豆包语音生成。").font(AppFont.caption).foregroundStyle(AppColor.muted)
             Text(model.speech.systemVoiceDescription)
-                .font(AppFont.bodyStrong).foregroundStyle(Theme.ink)
-                .padding(14).frame(maxWidth: .infinity, alignment: .leading)
-                .background(Theme.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
+                .font(AppFont.bodyStrong).foregroundStyle(AppColor.ink)
+                .padding(AppSpacing.sm).frame(maxWidth: .infinity, alignment: .leading)
+                .background(AppColor.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
             if model.speech.systemVoiceIsCompact {
                 tip("有精简版语音，听起来比较生硬。可以在 iPad「设置 → 辅助功能 → 朗读内容 → 声音」里下载「增强」或「高品质」语音，重新打开 App 后生效。")
             }
@@ -132,25 +132,25 @@ struct VoiceSettingsView: View {
                 ProgressView("正在下载并准备语音包，完成后可离线播放…").font(AppFont.caption)
             }
             if library.canGenerate || library.canDownload {
-                HStack(spacing: 10) {
+                HStack(spacing: AppSpacing.xs) {
                     if library.canDownload {
-                        statTile(value: library.remoteDownloaded, title: "云端已下载", tint: Theme.jade, fill: Theme.jade.opacity(0.1))
+                        statTile(value: library.remoteDownloaded, title: "云端已下载", tint: AppColor.jade, fill: AppColor.jade.opacity(0.1))
                     }
                     if library.canGenerate {
-                        statTile(value: library.cachedCount(), title: "已生成", tint: GrowthColors.orangeDark, fill: Theme.accent.opacity(0.1))
+                        statTile(value: library.cachedCount(), title: "已生成", tint: AppColor.accentEdge, fill: AppColor.accent.opacity(0.1))
                     }
-                    statTile(value: library.pendingCount, title: "排队中", tint: GrowthColors.calm, fill: GrowthColors.sky.opacity(0.55))
+                    statTile(value: library.pendingCount, title: "排队中", tint: AppColor.calm, fill: AppColor.sky.opacity(0.55))
                 }
                 if library.canDownload, library.remoteTotal > 0 {
                     Text("云端共 \(library.remoteTotal) 句，下载后离线也能播放。配置了自己的账号和音色时，优先用自己的音色生成。")
-                        .font(AppFont.caption).foregroundStyle(Theme.muted)
+                        .font(AppFont.caption).foregroundStyle(AppColor.muted)
                 }
             } else {
                 Text("未配置，全部使用系统语音（题库自带的语音仍会播放）")
-                    .font(AppFont.body).foregroundStyle(Theme.muted)
+                    .font(AppFont.body).foregroundStyle(AppColor.muted)
             }
             if let error = library.lastError {
-                Label(error, systemImage: "exclamationmark.triangle.fill").font(AppFont.label).foregroundStyle(Theme.wrong)
+                Label(error, systemImage: "exclamationmark.triangle.fill").font(AppFont.label).foregroundStyle(AppColor.dangerText)
                 if library.canDownload {
                     AppButton(title: "重试下载语音包", systemImage: "arrow.clockwise", role: .secondary, size: .small) {
                         library.retryRemote()
@@ -159,7 +159,7 @@ struct VoiceSettingsView: View {
                 }
             }
             if let message {
-                Label(message, systemImage: "info.circle.fill").font(AppFont.label).foregroundStyle(Theme.muted)
+                Label(message, systemImage: "info.circle.fill").font(AppFont.label).foregroundStyle(AppColor.muted)
             }
             if library.settings != nil {
                 AppButton(title: "清除账号和已生成的语音", systemImage: "trash.fill", role: .destructive, size: .medium, expands: true) {
@@ -170,11 +170,11 @@ struct VoiceSettingsView: View {
     }
 
     private func statTile(value: Int, title: String, tint: Color, fill: Color) -> some View {
-        VStack(spacing: 4) {
+        VStack(spacing: AppSpacing.xxs) {
             Text("\(value)").font(AppFont.digits(28, weight: .heavy)).foregroundStyle(tint)
-            Text("\(title)（条）").font(AppFont.caption).foregroundStyle(Theme.muted)
+            Text("\(title)（条）").font(AppFont.caption).foregroundStyle(AppColor.muted)
         }
-        .frame(maxWidth: .infinity).padding(.vertical, 12)
+        .frame(maxWidth: .infinity).padding(.vertical, AppSpacing.sm)
         .background(fill, in: RoundedRectangle(cornerRadius: AppRadius.sm))
         .overlay(RoundedRectangle(cornerRadius: AppRadius.sm).strokeBorder(AppColor.parentStroke, lineWidth: 1.2))
     }
@@ -182,7 +182,7 @@ struct VoiceSettingsView: View {
     private var accountCard: some View {
         SettingsCard(title: "账号密钥", systemImage: "key.fill", tint: AppColor.accent) {
             Text("在火山引擎控制台开通「豆包语音合成」后获取，只保存在这台 iPad 的钥匙串里。")
-                .font(AppFont.caption).foregroundStyle(Theme.muted)
+                .font(AppFont.caption).foregroundStyle(AppColor.muted)
             field("API Key", text: $draft.apiKey)
             Button {
                 withAnimation(.spring(response: 0.25, dampingFraction: 0.85)) { showsLegacy.toggle() }
@@ -192,11 +192,11 @@ struct VoiceSettingsView: View {
                     Spacer()
                     Image(systemName: "chevron.down").font(AppFont.label).rotationEffect(.degrees(showsLegacy ? 180 : 0))
                 }
-                .foregroundStyle(Theme.ink).contentShape(Rectangle())
+                .foregroundStyle(AppColor.ink).contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             if showsLegacy {
-                HStack(spacing: 14) {
+                HStack(spacing: AppSpacing.sm) {
                     field("APP ID", text: $draft.appID)
                     field("Access Token", text: $draft.accessToken)
                 }
@@ -207,19 +207,19 @@ struct VoiceSettingsView: View {
 
     private var voiceCard: some View {
         SettingsCard(title: "音色与试听", systemImage: "mic.fill", tint: AppColor.violet) {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: AppSpacing.xs) {
                 fieldLabel("模型")
                 GrowthSegmentedPicker(options: Self.resources.map(\.id),
                                       title: { id in Self.resources.first { $0.id == id }?.title ?? id },
                                       selection: $draft.resourceID)
             }
-            HStack(alignment: .top, spacing: 14) {
+            HStack(alignment: .top, spacing: AppSpacing.sm) {
                 voiceColumn(id: VoiceMenu.chinese, caption: "中文 / 中英混合", idTitle: "中文音色 ID",
                             selection: $draft.speaker, voices: TTSSettings.chineseVoices)
                 voiceColumn(id: VoiceMenu.english, caption: "纯英文", idTitle: "英文音色 ID",
                             selection: $draft.englishSpeaker, voices: TTSSettings.englishVoices)
             }
-            HStack(spacing: 14) {
+            HStack(spacing: AppSpacing.sm) {
                 rateRow
                 previewButtons
             }
@@ -245,8 +245,8 @@ struct VoiceSettingsView: View {
                 .foregroundStyle(AppColor.parentAccent)
             Stepper("语速", value: $draft.speechRate, in: -50...50, step: 5).labelsHidden()
         }
-        .padding(14).frame(maxWidth: .infinity)
-        .background(Theme.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
+        .padding(AppSpacing.sm).frame(maxWidth: .infinity)
+        .background(AppColor.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
     }
 
     private var previewButtons: some View {
@@ -279,7 +279,7 @@ struct VoiceSettingsView: View {
     }
 
     private func fieldLabel(_ title: String) -> some View {
-        Text(title).font(AppFont.label).foregroundStyle(Theme.muted)
+        Text(title).font(AppFont.label).foregroundStyle(AppColor.muted)
     }
 
     private func field(_ title: String, text: Binding<String>) -> some View {
@@ -289,8 +289,8 @@ struct VoiceSettingsView: View {
                 .textFieldStyle(.plain)
                 .credentialInput()
                 .font(.system(.body, design: .monospaced))
-                .foregroundStyle(Theme.ink)
-                .padding(.horizontal, 14).frame(minHeight: 46)
+                .foregroundStyle(AppColor.ink)
+                .padding(.horizontal, AppSpacing.sm).frame(minHeight: 46)
                 .background(AppColor.surface, in: RoundedRectangle(cornerRadius: AppRadius.sm))
                 .overlay(RoundedRectangle(cornerRadius: AppRadius.sm).strokeBorder(AppColor.parentStroke, lineWidth: 1.5))
         }
@@ -298,8 +298,8 @@ struct VoiceSettingsView: View {
     }
 
     private func tip(_ text: String) -> some View {
-        Label { Text(text) } icon: { Image(systemName: "lightbulb.fill").foregroundStyle(GrowthColors.gold) }
-            .font(AppFont.caption).foregroundStyle(Theme.muted)
+        Label { Text(text) } icon: { Image(systemName: "lightbulb.fill").foregroundStyle(AppColor.gold) }
+            .font(AppFont.caption).foregroundStyle(AppColor.muted)
     }
 
     private func save() {

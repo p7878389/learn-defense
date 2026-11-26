@@ -34,26 +34,26 @@ struct CandyDropdownButton: View {
         Button {
             withAnimation(.spring(response: 0.25, dampingFraction: 0.85)) { openID = open ? nil : id }
         } label: {
-            HStack(spacing: 8) {
+            HStack(spacing: AppSpacing.xs) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(caption)
                         .font(AppFont.caption)
-                        .foregroundStyle(open ? .white.opacity(0.88) : Theme.muted)
+                        .foregroundStyle(open ? .white.opacity(0.88) : AppColor.muted)
                     Text(value)
                         .font(AppFont.rounded(18, weight: .heavy))
-                        .foregroundStyle(open ? .white : (enabled ? Theme.ink : Theme.muted))
+                        .foregroundStyle(open ? .white : (enabled ? AppColor.ink : AppColor.muted))
                         .lineLimit(2)
                         .minimumScaleFactor(0.75)
                         .multilineTextAlignment(.leading)
                 }
-                Spacer(minLength: 4)
+                Spacer(minLength: AppSpacing.xxs)
                 Image(systemName: "chevron.down")
-                    .font(.system(size: 15, weight: .heavy))
-                    .foregroundStyle(open ? .white : Theme.accent)
+                    .font(AppFont.rounded(15, weight: .heavy))
+                    .foregroundStyle(open ? .white : AppColor.accent)
                     .rotationEffect(.degrees(open ? 180 : 0))
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
+            .padding(.horizontal, AppSpacing.sm)
+            .padding(.vertical, AppSpacing.xs)
             .frame(maxWidth: .infinity, minHeight: 58)
             .background(CandyTileBackground(selected: open, radius: AppRadius.md))
             .contentShape(RoundedRectangle(cornerRadius: AppRadius.md))
@@ -95,9 +95,9 @@ struct CandyMenuList: View {
             .padding(Self.padding)
         }
         .scrollBounceBehavior(.basedOnSize)
-        .candyCard(radius: AppRadius.md)
+        .appPanel(radius: AppRadius.md)
         .clipShape(RoundedRectangle(cornerRadius: AppRadius.md))
-        .shadow(color: .black.opacity(0.14), radius: 14, x: 0, y: 8)
+        .appShadow(.floating)
     }
 
     private func row(_ item: CandyMenuItem) -> some View {
@@ -108,24 +108,24 @@ struct CandyMenuList: View {
             HStack(spacing: 10) {
                 if item.style != .header {
                     Image(systemName: item.selected ? "checkmark.circle.fill" : "circle")
-                        .font(.system(size: 19, weight: .bold))
-                        .foregroundStyle(item.selected ? Theme.jade : Theme.muted.opacity(0.4))
+                        .font(AppFont.rounded(19, weight: .bold))
+                        .foregroundStyle(item.selected ? AppColor.jade : AppColor.muted.opacity(0.4))
                 }
                 Text(item.title)
                     .font(item.style == .header ? AppFont.body : AppFont.bodyStrong)
-                    .foregroundStyle(item.style == .header ? GrowthColors.orangeDark : (item.enabled ? Theme.ink : Theme.muted))
+                    .foregroundStyle(item.style == .header ? AppColor.accentEdge : (item.enabled ? AppColor.ink : AppColor.muted))
                     .lineLimit(1)
                     .minimumScaleFactor(0.75)
-                Spacer(minLength: 8)
+                Spacer(minLength: AppSpacing.xs)
                 if let detail = item.detail {
                     Text(detail)
                         .font(AppFont.label)
-                        .foregroundStyle(Theme.muted)
+                        .foregroundStyle(AppColor.muted)
                         .lineLimit(1)
                 }
             }
-            .padding(.leading, item.style == .child ? 34 : 14)
-            .padding(.trailing, 14)
+            .padding(.leading, item.style == .child ? 34 : AppSpacing.sm)
+            .padding(.trailing, AppSpacing.sm)
             .frame(maxWidth: .infinity, minHeight: item.rowHeight, maxHeight: item.rowHeight)
             .background(
                 RoundedRectangle(cornerRadius: AppRadius.sm)

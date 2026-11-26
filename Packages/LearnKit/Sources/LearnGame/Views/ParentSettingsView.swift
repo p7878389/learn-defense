@@ -59,16 +59,16 @@ struct SettingsCard<Content: View>: View {
     @ViewBuilder var content: Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: AppSpacing.md) {
             HStack(spacing: 10) {
                 if let systemImage {
                     AppIconBadge(systemImage: systemImage, tint: tint, size: 32)
                 }
-                Text(title).font(AppFont.heading).foregroundStyle(Theme.ink)
+                Text(title).font(AppFont.heading).foregroundStyle(AppColor.ink)
             }
             content
         }
-        .padding(22)
+        .padding(AppSpacing.lg)
         .frame(maxWidth: .infinity, alignment: .leading)
         .parentSurfaceCard(radius: AppRadius.md)
     }
@@ -87,11 +87,11 @@ private struct ParentGateView: View {
         CandyModalCard(bannerTitle: "家长验证", bannerIcon: "🔒", maxWidth: 620) {
             Text("请家长完成下面的计算，进入家长专区")
                 .font(AppFont.body)
-                .foregroundStyle(Theme.muted)
+                .foregroundStyle(AppColor.muted)
             Text("\(gate.left) × \(gate.right) = ?")
                 .font(AppFont.digits(46, weight: .black))
-                .foregroundStyle(Theme.ink)
-            HStack(spacing: 14) {
+                .foregroundStyle(AppColor.ink)
+            HStack(spacing: AppSpacing.sm) {
                 ForEach(gate.options, id: \.self) { option in
                     Button {
                         let success = gate.submit(option)
@@ -108,7 +108,7 @@ private struct ParentGateView: View {
                         Text("\(option)")
                             .font(AppFont.digits(28, weight: .heavy))
                             .frame(minWidth: 100, minHeight: 70)
-                            .foregroundStyle(Theme.ink)
+                            .foregroundStyle(AppColor.ink)
                             .background(CandyTileBackground(radius: AppRadius.md))
                     }
                     .buttonStyle(PressableStyle())
@@ -117,10 +117,10 @@ private struct ParentGateView: View {
             }
             Text(message.isEmpty ? "连续答错 3 次后，需要稍后再试" : message)
                 .font(AppFont.label)
-                .foregroundStyle(Theme.muted)
+                .foregroundStyle(AppColor.muted)
             AppButton(title: "返回主页", systemImage: "chevron.left", role: .secondary, size: .medium, minWidth: 140, action: onCancel)
         }
-        .padding(30)
+        .padding(AppSpacing.lg)
         .onAppear {
             do {
                 guard let db = model.database else { throw SettingsError.invalid("数据库不可用") }
@@ -135,13 +135,13 @@ private struct ParentGateView: View {
 private struct ParentAboutPane: View {
     var body: some View {
         SettingsCard(title: "关于字灵守卫", systemImage: "info.circle.fill", tint: AppColor.muted) {
-            Text("通过答题守护书本，在游戏中练习语文和英语。").font(AppFont.bodyStrong).foregroundStyle(Theme.ink)
+            Text("通过答题守护书本，在游戏中练习语文和英语。").font(AppFont.bodyStrong).foregroundStyle(AppColor.ink)
             Text("版本 \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")")
-                .font(AppFont.body).foregroundStyle(Theme.ink)
+                .font(AppFont.body).foregroundStyle(AppColor.ink)
             Text("学习记录存储在本机。导出备份后，请妥善保存文件。")
-                .font(AppFont.body).foregroundStyle(Theme.muted)
+                .font(AppFont.body).foregroundStyle(AppColor.muted)
             Text("图片：Microsoft Fluent Emoji（MIT）\n植物与僵尸素材说明见项目 Resources/Sprites。\n项目使用 GPL-3.0 许可。")
-                .font(AppFont.caption).foregroundStyle(Theme.muted)
+                .font(AppFont.caption).foregroundStyle(AppColor.muted)
         }
     }
 }
@@ -154,7 +154,7 @@ struct ParentSettingsContent: View {
     var body: some View {
         ZStack {
             GrowthPageBackground()
-            VStack(spacing: 18) {
+            VStack(spacing: AppSpacing.md) {
                 GrowthPageHeader(
                     icon: "⚙️",
                     systemIcon: "gearshape.fill",
@@ -168,14 +168,14 @@ struct ParentSettingsContent: View {
                 ) {
                     EmptyView()
                 }
-                HStack(alignment: .top, spacing: 20) {
-                    VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .top, spacing: AppSpacing.md) {
+                    VStack(alignment: .leading, spacing: AppSpacing.xs) {
                         ForEach(ParentSection.allCases) { item in
                             let selected = item == section
                             Button { section = item } label: {
-                                HStack(spacing: 12) {
+                                HStack(spacing: AppSpacing.sm) {
                                     Image(systemName: item.systemImage)
-                                        .font(.system(size: 16, weight: .bold))
+                                        .font(AppFont.rounded(16, weight: .bold))
                                         .foregroundStyle(selected ? .white : item.tint)
                                         .frame(width: 32, height: 32)
                                         .background(
@@ -187,12 +187,12 @@ struct ParentSettingsContent: View {
                                     Spacer(minLength: 0)
                                     if selected {
                                         Image(systemName: "chevron.right")
-                                            .font(.system(size: 13, weight: .heavy))
+                                            .font(AppFont.rounded(13, weight: .heavy))
                                             .foregroundStyle(.white.opacity(0.8))
                                     }
                                 }
-                                .foregroundStyle(selected ? .white : Theme.ink)
-                                .padding(.horizontal, 12)
+                                .foregroundStyle(selected ? .white : AppColor.ink)
+                                .padding(.horizontal, AppSpacing.sm)
                                 .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
                                 .background(
                                     RoundedRectangle(cornerRadius: AppRadius.sm)
@@ -213,12 +213,12 @@ struct ParentSettingsContent: View {
                         Spacer()
                         Label("档案和学习记录仅保存在本台 iPad 上", systemImage: "lock.shield.fill")
                             .font(AppFont.caption)
-                            .foregroundStyle(Theme.muted)
-                            .padding(12)
+                            .foregroundStyle(AppColor.muted)
+                            .padding(AppSpacing.sm)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Theme.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
+                            .background(AppColor.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
                     }
-                    .padding(14)
+                    .padding(AppSpacing.sm)
                     .frame(width: 248)
                     .parentSurfaceCard(radius: AppRadius.md)
 
@@ -234,12 +234,12 @@ struct ParentSettingsContent: View {
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.bottom, 12)
+                        .padding(.bottom, AppSpacing.sm)
                     }
                     .scrollBounceBehavior(.basedOnSize)
                 }
             }
-            .padding(22)
+            .padding(AppSpacing.lg)
         }
     }
 }

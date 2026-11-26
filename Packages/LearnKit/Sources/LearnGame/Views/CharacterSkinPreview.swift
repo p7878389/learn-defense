@@ -17,7 +17,7 @@ struct CharacterSkinPreview: View {
     }
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: AppSpacing.xs) {
             // SpriteView 只展示创建时拿到的场景，之后换参数不会重新展示；
             // 所以按皮肤给舞台独立身份，切换时连同场景一起重建。
             CharacterSkinStage(kind: kind, skin: skin, enemy: enemy, paused: reduceMotion, enemyAppearance: enemyAppearance)
@@ -25,13 +25,13 @@ struct CharacterSkinPreview: View {
                 .frame(maxWidth: .infinity).frame(height: compact ? 110 : 130)
                 .accessibilityLabel("\(enemy ? (enemyAppearance.flatMap { UnitCatalog.enemy(id: $0)?.name } ?? "默认怪物") : kind.name)\(skin == nil && enemyAppearance == nil ? "原版" : "外观")试穿")
             if !compact {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: AppSpacing.xs) {
                     Text(enemy ? "\(enemyAppearance.flatMap { UnitCatalog.enemy(id: $0)?.name } ?? "默认怪物") · 行走 / 攻击" : "\(kind.name) · 待机 / 发射")
-                        .font(.system(size: 14, weight: .heavy, design: .rounded))
+                        .font(AppFont.rounded(14, weight: .heavy))
                     Text(enemy ? "已解锁并购买的怪物下局自动随机展示" : "点选试看，装备后下局生效")
-                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .font(AppFont.rounded(12, weight: .medium))
                 }
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(AppColor.ink)
             }
         }
     }

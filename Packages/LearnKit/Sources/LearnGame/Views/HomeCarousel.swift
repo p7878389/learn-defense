@@ -22,21 +22,35 @@ struct HomeProfileSummary {
     var isNew: Bool { activity.lastPlayedAt == nil && gamesPlayed == 0 }
 }
 
+/// 轮播舞台与头像圆盘的专属绘本装饰色（`AppColor` 主语义之外的美术色）
+private enum LocalArt {
+    static let tiger = Color(red: 1.0, green: 0.86, blue: 0.55)
+    static let panda = Color(red: 0.78, green: 0.93, blue: 0.85)
+    static let fox = Color(red: 1.0, green: 0.82, blue: 0.66)
+    static let rabbit = Color(red: 0.99, green: 0.84, blue: 0.9)
+    static let koala = Color(red: 0.84, green: 0.87, blue: 0.93)
+    static let lion = Color(red: 1.0, green: 0.9, blue: 0.6)
+    static let frog = Color(red: 0.8, green: 0.93, blue: 0.7)
+    static let penguin = Color(red: 0.8, green: 0.9, blue: 1.0)
+    static let unicorn = Color(red: 0.9, green: 0.84, blue: 1.0)
+    static let whale = Color(red: 0.76, green: 0.88, blue: 1.0)
+}
+
 /// 头像底座的颜色，按头像区分，让每个孩子的卡一眼能认出来
 enum AvatarTint {
     static func color(for avatar: String) -> Color {
         switch avatar {
-        case "🐯": Color(red: 1.0, green: 0.86, blue: 0.55)
-        case "🐼": Color(red: 0.78, green: 0.93, blue: 0.85)
-        case "🦊": Color(red: 1.0, green: 0.82, blue: 0.66)
-        case "🐰": Color(red: 0.99, green: 0.84, blue: 0.9)
-        case "🐨": Color(red: 0.84, green: 0.87, blue: 0.93)
-        case "🦁": Color(red: 1.0, green: 0.9, blue: 0.6)
-        case "🐸": Color(red: 0.8, green: 0.93, blue: 0.7)
-        case "🐧": Color(red: 0.8, green: 0.9, blue: 1.0)
-        case "🦄": Color(red: 0.9, green: 0.84, blue: 1.0)
-        case "🐳": Color(red: 0.76, green: 0.88, blue: 1.0)
-        default: GrowthColors.surface
+        case "🐯": LocalArt.tiger
+        case "🐼": LocalArt.panda
+        case "🦊": LocalArt.fox
+        case "🐰": LocalArt.rabbit
+        case "🐨": LocalArt.koala
+        case "🦁": LocalArt.lion
+        case "🐸": LocalArt.frog
+        case "🐧": LocalArt.penguin
+        case "🦄": LocalArt.unicorn
+        case "🐳": LocalArt.whale
+        default: AppColor.surface
         }
     }
 }
@@ -46,7 +60,7 @@ struct GameLogo: View {
     var size: CGFloat = 52
 
     var body: some View {
-        let text = Text("字灵守卫").font(.system(size: size, weight: .black, design: .rounded))
+        let text = Text("字灵守卫").font(AppFont.rounded(size, weight: .black))
         let outline = size * 0.06
         ZStack {
             // 白色描边：在八个方向各垫一层
@@ -55,9 +69,9 @@ struct GameLogo: View {
                 text.foregroundStyle(.white)
                     .offset(x: cos(angle) * outline, y: sin(angle) * outline)
             }
-            text.foregroundStyle(Theme.accent)
+            text.foregroundStyle(AppColor.accent)
         }
-        .shadow(color: GrowthColors.orangeDeep, radius: 0, x: 0, y: size * 0.1)
+        .shadow(color: AppColor.accentEdge, radius: 0, x: 0, y: size * 0.1)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("字灵守卫")
         .accessibilityAddTraits(.isHeader)
@@ -67,12 +81,12 @@ struct GameLogo: View {
 /// 卡片顶部的立体渐变角标，如「👑 上次是你」「🌱 新伙伴」
 struct HomeRibbon: View {
     let text: String
-    var fill: Color = Theme.accent
-    var edge: Color = GrowthColors.orangeDeep
+    var fill: Color = AppColor.accent
+    var edge: Color = AppColor.accentEdge
 
     var body: some View {
         Text(text)
-            .font(.system(size: 17, weight: .black, design: .rounded))
+            .font(AppFont.rounded(17, weight: .black))
             .foregroundStyle(.white)
             .padding(.horizontal, 22)
             .frame(height: 36)
@@ -86,22 +100,22 @@ struct HomeRibbon: View {
     }
 }
 
-/// 一行状态糖果小药丸
+/// 一行状态信息小药丸（静态展示，用浅色内嵌描边，无按压厚底）
 private struct StatPill: View {
     let text: String
-    var tint: Color = GrowthColors.orangeDark
-    var fill: Color = Color(red: 1.0, green: 0.97, blue: 0.90)
-    var border: Color = Color(red: 0.98, green: 0.85, blue: 0.58)
+    var tint: Color = AppColor.accentEdge
+    var fill: Color = AppColor.surface
+    var border: Color = AppColor.accentSoftEdge
 
     var body: some View {
         Text(text)
-            .font(.system(size: 17, weight: .black, design: .rounded))
+            .font(AppFont.rounded(17, weight: .black))
             .foregroundStyle(tint)
             .lineLimit(1)
             .minimumScaleFactor(0.7)
             .frame(maxWidth: .infinity, minHeight: 42)
-            .background(RoundedRectangle(cornerRadius: 15).fill(fill).shadow(color: border.opacity(0.75), radius: 0, x: 0, y: 2))
-            .overlay(RoundedRectangle(cornerRadius: 15).stroke(border, lineWidth: 1.5))
+            .background(RoundedRectangle(cornerRadius: AppRadius.sm).fill(fill))
+            .overlay(RoundedRectangle(cornerRadius: AppRadius.sm).strokeBorder(border, lineWidth: 1.5))
     }
 }
 
@@ -109,7 +123,7 @@ private struct StatPill: View {
 struct HomeCardFrame: ViewModifier {
     var focused: Bool
     var focus: Double? = nil
-    var tint: Color = GrowthColors.gold
+    var tint: Color = AppColor.gold
     var dashed = false
 
     private var f: Double { focus ?? (focused ? 1.0 : 0.0) }
@@ -119,9 +133,9 @@ struct HomeCardFrame: ViewModifier {
         content
             .background(
                 ZStack(alignment: .top) {
-                    shape.fill(dashed ? Color(red: 1.0, green: 0.985, blue: 0.95) : .white)
-                        .shadow(color: f > 0.5 ? GrowthColors.orangeDark : GrowthColors.cardEdge, radius: 0, x: 0, y: 6 + 6 * f)
-                        .shadow(color: GrowthColors.orangeDark.opacity(0.08 + 0.22 * f), radius: 14 + 14 * f, y: 10 + 10 * f)
+                    shape.fill(dashed ? AppColor.surface : .white)
+                        .shadow(color: f > 0.5 ? AppColor.accentEdge : AppColor.cardEdge, radius: 0, x: 0, y: 6 + 6 * f)
+                        .shadow(color: AppColor.accentEdge.opacity(0.08 + 0.22 * f), radius: 14 + 14 * f, y: 10 + 10 * f)
                     // 卡片顶部柔和角色主题色穹顶内渐变（还原设计稿 05）
                     LinearGradient(colors: [tint.opacity(0.14 + 0.24 * f), tint.opacity(0.05 * f), .clear], startPoint: .top, endPoint: .bottom)
                         .frame(height: 165)
@@ -130,7 +144,7 @@ struct HomeCardFrame: ViewModifier {
                 }
             )
             .overlay(RoundedRectangle(cornerRadius: 33).inset(by: 3).stroke(.white.opacity(0.9), lineWidth: 1.5))
-            .overlay(shape.stroke(f > 0.45 ? GrowthColors.gold : GrowthColors.cardEdge,
+            .overlay(shape.stroke(f > 0.45 ? AppColor.gold : AppColor.cardEdge,
                                   style: StrokeStyle(lineWidth: 3 + 2 * f, dash: dashed ? [12, 8] : [])))
     }
 }
@@ -156,24 +170,24 @@ struct HomeProfileCard: View {
                 .padding(.top, 28)
 
             Text(profile.name)
-                .font(.system(size: 40, weight: .black, design: .rounded))
-                .foregroundStyle(Theme.ink)
+                .font(AppFont.rounded(40, weight: .black))
+                .foregroundStyle(AppColor.ink)
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
                 .scaleEffect(0.94 + 0.06 * f)
-                .padding(.top, 4)
+                .padding(.top, AppSpacing.xxs)
 
             Text(profile.grade.displayName)
-                .font(.system(size: 16, weight: .black, design: .rounded))
-                .foregroundStyle(GrowthColors.orangeDark)
-                .padding(.horizontal, 18)
+                .font(AppFont.rounded(16, weight: .black))
+                .foregroundStyle(AppColor.accentEdge)
+                .padding(.horizontal, AppSpacing.md)
                 .frame(height: 30)
                 .background(
                     Capsule()
-                        .fill(Color(red: 1.0, green: 0.94, blue: 0.80))
-                        .shadow(color: GrowthColors.gold.opacity(0.45), radius: 0, x: 0, y: 2)
+                        .fill(AppColor.answerTray)
+                        .shadow(color: AppColor.gold.opacity(0.45), radius: 0, x: 0, y: 2)
                 )
-                .overlay(Capsule().stroke(GrowthColors.gold.opacity(0.85), lineWidth: 1.5))
+                .overlay(Capsule().stroke(AppColor.gold.opacity(0.85), lineWidth: 1.5))
                 .scaleEffect(0.94 + 0.06 * f)
                 .padding(.top, 2)
 
@@ -182,24 +196,24 @@ struct HomeProfileCard: View {
             HStack(spacing: 10) {
                 StatPill(
                     text: streakText,
-                    tint: summary.activity.streakDays > 0 ? Color(red: 0.82, green: 0.32, blue: 0.08) : Theme.muted,
-                    fill: Color(red: 1.0, green: 0.96, blue: 0.91),
-                    border: Color(red: 0.98, green: 0.83, blue: 0.65)
+                    tint: summary.activity.streakDays > 0 ? AppColor.accentEdge : AppColor.muted,
+                    fill: AppColor.surface,
+                    border: AppColor.accentSoftEdge
                 )
                 StatPill(
                     text: "⭐ 闯关 \(summary.gamesPlayed) 次",
-                    tint: Color(red: 0.58, green: 0.34, blue: 0.04),
-                    fill: Color(red: 1.0, green: 0.97, blue: 0.88),
-                    border: Color(red: 0.96, green: 0.84, blue: 0.52)
+                    tint: AppColor.goldEdge,
+                    fill: AppColor.answerTray,
+                    border: AppColor.gold.opacity(0.75)
                 )
             }
 
-            Spacer(minLength: 12)
+            Spacer(minLength: AppSpacing.sm)
 
             actionArea
         }
-        .padding(.horizontal, 24)
-        .padding(.bottom, 24)
+        .padding(.horizontal, AppSpacing.lg)
+        .padding(.bottom, AppSpacing.lg)
         .frame(height: height)
         .frame(maxWidth: .infinity)
         .modifier(HomeCardFrame(focused: focused, focus: f, tint: tint))
@@ -210,7 +224,7 @@ struct HomeProfileCard: View {
                     .rotationEffect(.degrees(-2.0 * f))
                     .offset(y: -13 - 6 * f)
             } else if summary.isNew {
-                HomeRibbon(text: "🌱 新伙伴", fill: Theme.jade, edge: GrowthColors.jadeDark)
+                HomeRibbon(text: "🌱 新伙伴", fill: AppColor.jade, edge: AppColor.jadeEdge)
                     .scaleEffect(0.88 + 0.12 * f)
                     .rotationEffect(.degrees(-2.0 * f))
                     .offset(y: -13 - 6 * f)
@@ -223,12 +237,12 @@ struct HomeProfileCard: View {
                     .background(
                         Circle()
                             .fill(Color.white.opacity(0.92))
-                            .shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 3)
+                            .shadow(color: AppColor.cardEdge, radius: 0, x: 0, y: 3)
                     )
-                    .overlay(Circle().stroke(GrowthColors.cardEdge, lineWidth: 1.5))
+                    .overlay(Circle().stroke(AppColor.cardEdge, lineWidth: 1.5))
             }
             .buttonStyle(PressableStyle())
-            .padding(16)
+            .padding(AppSpacing.md)
             .scaleEffect(0.5 + 0.5 * f)
             .opacity(f)
             .allowsHitTesting(focused)
@@ -276,12 +290,12 @@ struct HomeProfileCard: View {
             // 主角两侧闪烁的小星光
             if f > 0.2 {
                 Text("✨")
-                    .font(.system(size: 18))
+                    .font(AppFont.rounded(18))
                     .offset(x: -116, y: -96)
                     .scaleEffect(floating ? 1.15 : 0.85)
                     .opacity(f * 0.9)
                 Text("✨")
-                    .font(.system(size: 15))
+                    .font(AppFont.rounded(15))
                     .offset(x: -6, y: -112)
                     .scaleEffect(floating ? 0.85 : 1.15)
                     .opacity(f * 0.85)
@@ -298,8 +312,8 @@ struct HomeProfileCard: View {
     private var actionArea: some View {
         NavigationLink(value: profile.id) {
             HStack(spacing: 10) {
-                Text("▶").font(.system(size: 24, weight: .black, design: .rounded))
-                Text("开始守护！").font(.system(size: 30, weight: .black, design: .rounded))
+                Text("▶").font(AppFont.rounded(24, weight: .black))
+                Text("开始守护！").font(AppFont.rounded(30, weight: .black))
             }
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
@@ -309,20 +323,20 @@ struct HomeProfileCard: View {
                     .fill(
                         LinearGradient(
                             colors: [
-                                Color(red: 0.24, green: 0.84, blue: 0.62),
-                                Theme.jade,
-                                Color(red: 0.09, green: 0.58, blue: 0.43)
+                                AppColor.jadeTop,
+                                AppColor.jade,
+                                AppColor.jadeBottom
                             ],
                             startPoint: .top,
                             endPoint: .bottom
                         )
                     )
-                    .shadow(color: GrowthColors.jadeDark, radius: 0, x: 0, y: 7)
-                    .shadow(color: Theme.jade.opacity(0.38), radius: 14, y: 8)
+                    .shadow(color: AppColor.jadeEdge, radius: 0, x: 0, y: 7)
+                    .shadow(color: AppColor.jade.opacity(0.38), radius: 14, y: 8)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 26)
-                    .stroke(Color(red: 0.55, green: 0.95, blue: 0.78).opacity(0.85), lineWidth: 2.5)
+                    .stroke(AppColor.jadeLight.opacity(0.85), lineWidth: 2.5)
             )
         }
         .buttonStyle(PressableStyle())
