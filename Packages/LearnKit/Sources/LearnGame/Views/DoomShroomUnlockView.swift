@@ -89,16 +89,10 @@ struct DoomShroomUnlockView: View {
                 .font(.system(size: 22, weight: .heavy, design: .rounded))
                 .padding(.horizontal, 20).padding(.vertical, 10)
                 .background(RoundedRectangle(cornerRadius: 18).fill(GrowthColors.surface))
-                HStack(spacing: 16) {
-                    Button { confirming = false } label: {
-                        CandyButtonLabel(title: "再想想", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
-                                         foreground: Theme.ink, expands: true)
-                    }
-                    Button { confirming = false; purchase() } label: {
-                        CandyButtonLabel(title: "买！", fill: Theme.accent, edge: GrowthColors.orangeDark, expands: true)
-                    }
+                HStack(spacing: 14) {
+                    AppButton(title: "再想想", role: .secondary, size: .large, expands: true) { confirming = false }
+                    AppButton(title: "买！", role: .accent, size: .large, expands: true) { confirming = false; purchase() }
                 }
-                .buttonStyle(PressableStyle())
             }
             .padding(24)
         }

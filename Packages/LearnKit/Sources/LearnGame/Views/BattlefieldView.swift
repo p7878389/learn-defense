@@ -85,13 +85,13 @@ private struct PlantDragGhost: View {
                     .resizable().scaledToFit().frame(width: 54, height: 50)
             }
             Text(HeraldicArtwork.defenderName(kind: kind, skin: skin))
-                .font(.title3.weight(.bold))
+                .font(AppFont.bodyStrong)
                 .foregroundStyle(Theme.ink)
         }
         .padding(10)
-        .background(Color(red: 0.94, green: 0.88, blue: 0.62), in: RoundedRectangle(cornerRadius: 10))
-        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.accent, lineWidth: 3))
-        .shadow(color: .black.opacity(0.25), radius: 10, y: 5)
+        .background(AppColor.goldLight.opacity(0.92), in: RoundedRectangle(cornerRadius: AppRadius.sm))
+        .overlay(RoundedRectangle(cornerRadius: AppRadius.sm).strokeBorder(AppColor.accent, lineWidth: 2.5))
+        .shadow(color: AppColor.warmShadow.opacity(0.28), radius: 10, y: 5)
     }
 }
 

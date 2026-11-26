@@ -3,7 +3,6 @@ import LearnCore
 import SwiftUI
 
 /// 语音设置（家长用）：火山引擎账号、音色、语速，试听，缓存状态。
-/// 和家长专区其他页面一样用纸张底色 + 糖果卡片，左栏放系统语音和生成状态，右栏放账号与音色
 struct VoiceSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var model: AppModel
@@ -33,17 +32,16 @@ struct VoiceSettingsView: View {
         static let english = "english"
     }
 
-    /// 没配置过时和默认值比，避免一打开就提示「有修改未保存」
     private var hasChanges: Bool { draft != (library.settings ?? TTSSettings()) }
 
     var body: some View {
         ZStack {
             GrowthPageBackground()
-            VStack(spacing: 20) {
+            VStack(spacing: 18) {
                 header
-                HStack(alignment: .top, spacing: 24) {
+                HStack(alignment: .top, spacing: 20) {
                     ScrollView {
-                        VStack(spacing: 24) {
+                        VStack(spacing: 20) {
                             systemVoiceCard
                             statusCard
                         }
@@ -52,7 +50,7 @@ struct VoiceSettingsView: View {
                     .scrollBounceBehavior(.basedOnSize)
                     .frame(width: 340)
                     ScrollView {
-                        VStack(spacing: 24) {
+                        VStack(spacing: 20) {
                             accountCard
                             voiceCard
                         }
@@ -62,10 +60,9 @@ struct VoiceSettingsView: View {
                     .scrollBounceBehavior(.basedOnSize)
                 }
             }
-            .padding(24)
+            .padding(22)
         }
-        .tint(Theme.accent)
-        // 下拉菜单画在滚动区域外面，不会被裁掉
+        .tint(AppColor.parentAccent)
         .candyDropdownLayer(openID: $openMenu) { id in
             id == VoiceMenu.chinese
                 ? menuItems(selection: $draft.speaker, voices: TTSSettings.chineseVoices)
@@ -80,7 +77,7 @@ struct VoiceSettingsView: View {
                         ? "清除语音合成账号和已生成的语音？之后用云端语音朗读，没有时用系统语音。"
                         : "清除语音合成账号和已生成的语音？之后只用系统语音朗读。",
                     buttons: [
-                        CandyConfirmButton(title: "确认清除", icon: "🗑", role: .destructive) {
+                        CandyConfirmButton(title: "确认清除", systemImage: "trash.fill", role: .destructive) {
                             library.clear(); draft = TTSSettings(); message = "已清除"; confirmingClear = false
                         },
                         CandyConfirmButton(title: "取消", role: .cancel) { confirmingClear = false }
@@ -91,117 +88,115 @@ struct VoiceSettingsView: View {
         }
     }
 
-    // MARK: - 顶栏：和设置页一样的返回、标题、家长专区标识
-
     private var header: some View {
-        GrowthPageHeader(icon: "☁️", title: "豆包语音设置", subtitle: "🔒 家长专区", onClose: { dismiss() }) {
+        GrowthPageHeader(
+            icon: "☁️",
+            systemIcon: "cloud.fill",
+            iconTint: AppColor.parentAccent,
+            title: "豆包语音设置",
+            subtitle: "家长专区",
+            backTitle: "返回",
+            backSystemImage: "chevron.left",
+            parentStyle: true,
+            onClose: { dismiss() }
+        ) {
             if hasChanges {
-                Label("有修改未保存", systemImage: "pencil").font(.headline).foregroundStyle(GrowthColors.orangeDark)
+                Label("有修改未保存", systemImage: "pencil")
+                    .font(AppFont.label)
+                    .foregroundStyle(GrowthColors.orangeDark)
             }
             let canSave = draft.isUsable && hasChanges
-            Button { save() } label: {
-                CandyButtonLabel(title: "保存", icon: "✓",
-                                 fill: canSave ? Theme.jade : GrowthColors.disabledFill,
-                                 edge: canSave ? GrowthColors.jadeDark : GrowthColors.disabledEdge,
-                                 foreground: canSave ? .white : Theme.muted,
-                                 font: .system(size: 18, weight: .heavy, design: .rounded), height: 48, minWidth: 104)
+            AppButton(title: "保存", systemImage: "checkmark", role: .primary, size: .medium, minWidth: 100) {
+                save()
             }
-            .buttonStyle(PressableStyle())
             .disabled(!canSave)
         }
     }
 
-    // MARK: - 左栏
-
     private var systemVoiceCard: some View {
-        SettingsCard(title: "🤖 iPad 系统语音") {
-            Text("没有高质量语音时使用，不参与豆包语音生成。").font(.footnote).foregroundStyle(Theme.muted)
+        SettingsCard(title: "iPad 系统语音", systemImage: "ipad", tint: AppColor.muted) {
+            Text("没有高质量语音时使用，不参与豆包语音生成。").font(AppFont.caption).foregroundStyle(Theme.muted)
             Text(model.speech.systemVoiceDescription)
-                .font(.headline).foregroundStyle(Theme.ink)
+                .font(AppFont.bodyStrong).foregroundStyle(Theme.ink)
                 .padding(14).frame(maxWidth: .infinity, alignment: .leading)
-                .background(Theme.paper, in: RoundedRectangle(cornerRadius: 16))
+                .background(Theme.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
             if model.speech.systemVoiceIsCompact {
-                tip("有精简版语音，听起来比较生硬。可以在 iPad「设置 → 辅助功能 → 朗读内容 → 声音」的「中文」和「英语（英国）」里下载「增强」或「高品质」语音，重新打开 App 后生效。")
+                tip("有精简版语音，听起来比较生硬。可以在 iPad「设置 → 辅助功能 → 朗读内容 → 声音」里下载「增强」或「高品质」语音，重新打开 App 后生效。")
             }
         }
     }
 
     private var statusCard: some View {
-        SettingsCard(title: "📊 语音准备状态") {
+        SettingsCard(title: "语音准备状态", systemImage: "chart.bar.fill", tint: AppColor.jade) {
             if library.preparingRemote {
-                ProgressView("正在下载并准备语音包，完成后可离线播放…")
-                    .font(.footnote)
+                ProgressView("正在下载并准备语音包，完成后可离线播放…").font(AppFont.caption)
             }
             if library.canGenerate || library.canDownload {
-                HStack(spacing: 12) {
+                HStack(spacing: 10) {
                     if library.canDownload {
                         statTile(value: library.remoteDownloaded, title: "云端已下载", tint: Theme.jade, fill: Theme.jade.opacity(0.1))
                     }
                     if library.canGenerate {
                         statTile(value: library.cachedCount(), title: "已生成", tint: GrowthColors.orangeDark, fill: Theme.accent.opacity(0.1))
                     }
-                    statTile(value: library.pendingCount, title: "排队中", tint: GrowthColors.calm, fill: GrowthColors.sky.opacity(0.6))
+                    statTile(value: library.pendingCount, title: "排队中", tint: GrowthColors.calm, fill: GrowthColors.sky.opacity(0.55))
                 }
                 if library.canDownload, library.remoteTotal > 0 {
                     Text("云端共 \(library.remoteTotal) 句，下载后离线也能播放。配置了自己的账号和音色时，优先用自己的音色生成。")
-                        .font(.footnote).foregroundStyle(Theme.muted)
+                        .font(AppFont.caption).foregroundStyle(Theme.muted)
                 }
             } else {
                 Text("未配置，全部使用系统语音（题库自带的语音仍会播放）")
-                    .font(.callout).foregroundStyle(Theme.muted)
+                    .font(AppFont.body).foregroundStyle(Theme.muted)
             }
             if let error = library.lastError {
-                Label(error, systemImage: "exclamationmark.triangle.fill").font(.callout).foregroundStyle(Theme.wrong)
+                Label(error, systemImage: "exclamationmark.triangle.fill").font(AppFont.label).foregroundStyle(Theme.wrong)
                 if library.canDownload {
-                    Button("重试下载语音包") { library.retryRemote() }
-                        .disabled(library.preparingRemote)
+                    AppButton(title: "重试下载语音包", systemImage: "arrow.clockwise", role: .secondary, size: .small) {
+                        library.retryRemote()
+                    }
+                    .disabled(library.preparingRemote)
                 }
             }
             if let message {
-                Label(message, systemImage: "info.circle.fill").font(.callout).foregroundStyle(Theme.muted)
+                Label(message, systemImage: "info.circle.fill").font(AppFont.label).foregroundStyle(Theme.muted)
             }
             if library.settings != nil {
-                Button { confirmingClear = true } label: {
-                    CandyButtonLabel(title: "清除账号和已生成的语音", icon: "🗑", fill: Theme.wrong.opacity(0.14),
-                                     edge: Theme.wrong.opacity(0.45), foreground: Theme.wrong,
-                                     font: .system(size: 15, weight: .heavy, design: .rounded), height: 44, minWidth: 0, expands: true)
+                AppButton(title: "清除账号和已生成的语音", systemImage: "trash.fill", role: .destructive, size: .medium, expands: true) {
+                    confirmingClear = true
                 }
-                .buttonStyle(PressableStyle())
             }
         }
     }
 
     private func statTile(value: Int, title: String, tint: Color, fill: Color) -> some View {
         VStack(spacing: 4) {
-            Text("\(value)").font(.system(size: 30, weight: .heavy, design: .rounded)).monospacedDigit().foregroundStyle(tint)
-            Text("\(title)（条）").font(.footnote.bold()).foregroundStyle(Theme.muted)
+            Text("\(value)").font(AppFont.digits(28, weight: .heavy)).foregroundStyle(tint)
+            Text("\(title)（条）").font(AppFont.caption).foregroundStyle(Theme.muted)
         }
-        .frame(maxWidth: .infinity).padding(.vertical, 14)
-        .background(fill, in: RoundedRectangle(cornerRadius: 16))
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(GrowthColors.cardEdge, lineWidth: 1.5))
+        .frame(maxWidth: .infinity).padding(.vertical, 12)
+        .background(fill, in: RoundedRectangle(cornerRadius: AppRadius.sm))
+        .overlay(RoundedRectangle(cornerRadius: AppRadius.sm).strokeBorder(AppColor.parentStroke, lineWidth: 1.2))
     }
 
-    // MARK: - 右栏
-
     private var accountCard: some View {
-        // 不用 SecureField：iOS 会把「APP ID + 密码框」当成登录表单，弹「存储密码」时键盘卡住出不来
-        SettingsCard(title: "🔑 账号密钥") {
+        SettingsCard(title: "账号密钥", systemImage: "key.fill", tint: AppColor.accent) {
             Text("在火山引擎控制台开通「豆包语音合成」后获取，只保存在这台 iPad 的钥匙串里。")
-                .font(.footnote).foregroundStyle(Theme.muted)
+                .font(AppFont.caption).foregroundStyle(Theme.muted)
             field("API Key", text: $draft.apiKey)
             Button {
                 withAnimation(.spring(response: 0.25, dampingFraction: 0.85)) { showsLegacy.toggle() }
             } label: {
                 HStack {
-                    Text("旧版控制台（APP ID + Access Token）").font(.headline)
+                    Text("旧版控制台（APP ID + Access Token）").font(AppFont.bodyStrong)
                     Spacer()
-                    Image(systemName: "chevron.down").font(.headline).rotationEffect(.degrees(showsLegacy ? 180 : 0))
+                    Image(systemName: "chevron.down").font(AppFont.label).rotationEffect(.degrees(showsLegacy ? 180 : 0))
                 }
                 .foregroundStyle(Theme.ink).contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             if showsLegacy {
-                HStack(spacing: 16) {
+                HStack(spacing: 14) {
                     field("APP ID", text: $draft.appID)
                     field("Access Token", text: $draft.accessToken)
                 }
@@ -211,30 +206,30 @@ struct VoiceSettingsView: View {
     }
 
     private var voiceCard: some View {
-        SettingsCard(title: "🎙️ 音色") {
+        SettingsCard(title: "音色与试听", systemImage: "mic.fill", tint: AppColor.violet) {
             VStack(alignment: .leading, spacing: 8) {
                 fieldLabel("模型")
                 GrowthSegmentedPicker(options: Self.resources.map(\.id),
                                       title: { id in Self.resources.first { $0.id == id }?.title ?? id },
                                       selection: $draft.resourceID)
             }
-            HStack(alignment: .top, spacing: 16) {
+            HStack(alignment: .top, spacing: 14) {
                 voiceColumn(id: VoiceMenu.chinese, caption: "中文 / 中英混合", idTitle: "中文音色 ID",
                             selection: $draft.speaker, voices: TTSSettings.chineseVoices)
                 voiceColumn(id: VoiceMenu.english, caption: "纯英文", idTitle: "英文音色 ID",
                             selection: $draft.englishSpeaker, voices: TTSSettings.englishVoices)
             }
-            HStack(spacing: 16) {
+            HStack(spacing: 14) {
                 rateRow
                 previewButtons
             }
-            tip("纯英文的句子（英语题库的单词、句子）用英文音色，其余用中文音色。也可以在 ID 栏手动填写火山引擎「音色列表」里的其他音色，2.0 模型只能用 2.0 音色。换音色或语速后，已生成的语音会重新生成。")
+            tip("纯英文的句子用英文音色，其余用中文音色。2.0 模型只能用 2.0 音色。换音色或语速后，已生成的语音会重新生成。")
         }
     }
 
     private func voiceColumn(id: String, caption: String, idTitle: String,
                              selection: Binding<String>, voices: [TTSSettings.Voice]) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             CandyDropdownButton(id: id, caption: caption, value: voiceName(selection.wrappedValue, voices: voices), openID: $openMenu)
             field(idTitle, text: selection)
         }
@@ -243,40 +238,31 @@ struct VoiceSettingsView: View {
 
     private var rateRow: some View {
         HStack {
-            Text("语速").bold()
+            Text("语速").font(AppFont.bodyStrong)
             Spacer()
-            Text(String(format: "%.2f 倍", 1 + Double(draft.speechRate) / 100)).monospacedDigit().foregroundStyle(Theme.accent).bold()
+            Text(String(format: "%.2f 倍", 1 + Double(draft.speechRate) / 100))
+                .font(AppFont.digits(16, weight: .heavy))
+                .foregroundStyle(AppColor.parentAccent)
             Stepper("语速", value: $draft.speechRate, in: -50...50, step: 5).labelsHidden()
         }
         .padding(14).frame(maxWidth: .infinity)
-        .background(Theme.paper, in: RoundedRectangle(cornerRadius: 16))
+        .background(Theme.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
     }
 
     private var previewButtons: some View {
         let ready = draft.isUsable && !previewing
-        return HStack(spacing: 12) {
-            Button { preview(SpeechText.Line.sample) } label: {
-                CandyButtonLabel(title: previewing ? "合成中…" : "试听中文", icon: "▶",
-                                 fill: ready ? Theme.accent : GrowthColors.disabledFill,
-                                 edge: ready ? GrowthColors.orangeDark : GrowthColors.disabledEdge,
-                                 foreground: ready ? .white : Theme.muted,
-                                 font: .system(size: 15, weight: .heavy, design: .rounded), height: 42, minWidth: 112)
+        return HStack(spacing: 10) {
+            AppButton(title: previewing ? "合成中…" : "试听中文", systemImage: "play.fill", role: .accent, size: .medium, minWidth: 112) {
+                preview(SpeechText.Line.sample)
             }
-            Button { preview(SpeechText.Line.englishSample) } label: {
-                CandyButtonLabel(title: "试听英文", icon: "▶",
-                                 fill: ready ? GrowthColors.surface : GrowthColors.disabledFill,
-                                 edge: ready ? GrowthColors.cardEdge : GrowthColors.disabledEdge,
-                                 foreground: ready ? Theme.ink : Theme.muted,
-                                 font: .system(size: 15, weight: .heavy, design: .rounded), height: 42, minWidth: 112)
+            .disabled(!ready)
+            AppButton(title: "试听英文", systemImage: "play.fill", role: .secondary, size: .medium, minWidth: 112) {
+                preview(SpeechText.Line.englishSample)
             }
+            .disabled(!ready)
         }
-        .buttonStyle(PressableStyle())
-        .disabled(!ready)
     }
 
-    // MARK: - 小部件
-
-    /// 官方推荐音色；手动填了列表外的 ID 时也显示出来
     private func menuItems(selection: Binding<String>, voices: [TTSSettings.Voice]) -> [CandyMenuItem] {
         let current = selection.wrappedValue
         var items = voices.map { voice in
@@ -293,27 +279,27 @@ struct VoiceSettingsView: View {
     }
 
     private func fieldLabel(_ title: String) -> some View {
-        Text(title).font(.subheadline.bold()).foregroundStyle(Theme.muted)
+        Text(title).font(AppFont.label).foregroundStyle(Theme.muted)
     }
 
     private func field(_ title: String, text: Binding<String>) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             fieldLabel(title)
             TextField(title, text: text)
                 .textFieldStyle(.plain)
                 .credentialInput()
                 .font(.system(.body, design: .monospaced))
                 .foregroundStyle(Theme.ink)
-                .padding(.horizontal, 14).frame(minHeight: 50)
-                .background(GrowthColors.surface, in: RoundedRectangle(cornerRadius: 16))
-                .overlay(RoundedRectangle(cornerRadius: 16).stroke(GrowthColors.cardEdge, lineWidth: 2))
+                .padding(.horizontal, 14).frame(minHeight: 46)
+                .background(AppColor.surface, in: RoundedRectangle(cornerRadius: AppRadius.sm))
+                .overlay(RoundedRectangle(cornerRadius: AppRadius.sm).strokeBorder(AppColor.parentStroke, lineWidth: 1.5))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func tip(_ text: String) -> some View {
         Label { Text(text) } icon: { Image(systemName: "lightbulb.fill").foregroundStyle(GrowthColors.gold) }
-            .font(.footnote).foregroundStyle(Theme.muted)
+            .font(AppFont.caption).foregroundStyle(Theme.muted)
     }
 
     private func save() {
@@ -344,7 +330,6 @@ struct VoiceSettingsView: View {
 }
 
 private extension View {
-    /// 账号、音色这类英文标识：不自动大写、不纠错、不参与密码自动填充，截屏和多任务预览里打码
     func credentialInput() -> some View {
         #if os(iOS)
         self

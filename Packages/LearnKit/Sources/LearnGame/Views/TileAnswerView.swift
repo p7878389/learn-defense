@@ -1,18 +1,14 @@
 import LearnCore
 import SwiftUI
 
-/// 字块题的作答区：上面一排空格，下面一排大字块。点字块放进下一个空位，点空格把字块退回；
-/// 拼满自动交卷，答错后由对局刷新题目，不累计提示或高亮正确字块。
+/// 字块题的作答区：象牙拼字麻将块手感 + 内凹暖木填空槽。
 struct TileAnswerView: View {
     let spec: InputSpec
-    /// 这道题已经答错几次
     let wrongCount: Int
-    /// 横屏时行距收紧
     let compact: Bool
     let onStart: () -> Void
     let onSubmit: ([String]) -> Void
 
-    /// 每个空放的是哪一块（组号、块号）
     @State private var placed: [TileRef?]
     @State private var shakes = 0
 
@@ -42,7 +38,6 @@ struct TileAnswerView: View {
         .onChange(of: wrongCount) { _, _ in
             shakes += 1
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { shakes += 1 }
-            // 答错：清空重来
             placed = Array(repeating: nil, count: spec.blanks.count)
         }
     }
@@ -55,21 +50,20 @@ struct TileAnswerView: View {
                 let parts = template.components(separatedBy: "□")
                 ForEach(parts.indices, id: \.self) { i in
                     if !parts[i].isEmpty {
-                        Text(parts[i]).font(.system(size: 32, weight: .bold, design: .rounded)).foregroundStyle(Theme.ink)
+                        Text(parts[i]).font(AppFont.rounded(32, weight: .heavy)).foregroundStyle(Theme.ink)
                     }
                     if i < parts.count - 1, i < spec.blanks.count { slot(i) }
                 }
             } else {
                 ForEach(spec.blanks.indices, id: \.self) { i in
-                    // 拼音的声母、韵母、声调之间加个「+」，孩子知道是拼起来的
                     if spec.style == .pinyin, i > 0 {
-                        Text("+").font(.system(size: 26, weight: .bold, design: .rounded)).foregroundStyle(Theme.muted)
+                        Text("+").font(AppFont.rounded(26, weight: .heavy)).foregroundStyle(Theme.muted)
                     }
                     slot(i)
                 }
                 if spec.style == .pinyin, filled {
                     Text("= \(spec.compose(texts))")
-                        .font(.system(size: 32, weight: .heavy, design: .rounded)).foregroundStyle(Theme.jade)
+                        .font(AppFont.rounded(32, weight: .black)).foregroundStyle(Theme.jade)
                 }
             }
         }
@@ -79,22 +73,32 @@ struct TileAnswerView: View {
     private func slot(_ i: Int) -> some View {
         let text = placed[i].map(tileText)
         let isNext = placed.firstIndex(where: { $0 == nil }) == i
+        let shape = RoundedRectangle(cornerRadius: AppRadius.sm)
         return Button { placed[i] = nil } label: {
             Text(text ?? (spec.style == .pinyin ? spec.groups[spec.blanks[i].group].title ?? "?" : " "))
-                .font(.system(size: text == nil && spec.style == .pinyin ? 16 : 30, weight: .bold, design: .rounded))
-                .foregroundStyle(text == nil ? (isNext ? GrowthColors.orangeDark : Theme.muted.opacity(0.6)) : Theme.ink)
-                .frame(minWidth: slotWidth, minHeight: 58)
+                .font(AppFont.rounded(text == nil && spec.style == .pinyin ? 16 : 30, weight: .heavy))
+                .foregroundStyle(text == nil ? (isNext ? AppColor.accentEdge : Theme.muted.opacity(0.6)) : Theme.ink)
+                .frame(minWidth: slotWidth, minHeight: 56)
                 .padding(.horizontal, 4)
-                .background(
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(text != nil ? GrowthColors.surface : (isNext ? Theme.accent.opacity(0.10) : Color.white))
-                        .shadow(color: text != nil ? GrowthColors.cardEdge : .clear, radius: 0, x: 0, y: 2)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14)
-                        .stroke(isNext ? Theme.accent : (text != nil ? Theme.jade : GrowthColors.cardEdge),
-                                style: StrokeStyle(lineWidth: isNext ? 3 : 2, dash: text == nil ? [6, 4] : []))
-                )
+                .padding(.bottom, text != nil ? 3 : 0)
+                .background {
+                    if text != nil {
+                        ZStack {
+                            shape.fill(AppColor.jadeEdge)
+                            shape.fill(LinearGradient(colors: [AppColor.surface, AppColor.surfaceBottom], startPoint: .top, endPoint: .bottom))
+                                .overlay(shape.strokeBorder(AppColor.jade, lineWidth: 2))
+                                .padding(.bottom, 3)
+                        }
+                    } else {
+                        shape.fill(isNext ? AppColor.gold.opacity(0.18) : Color.white.opacity(0.65))
+                            .overlay(
+                                shape.strokeBorder(
+                                    isNext ? AppColor.accent : AppColor.cardStroke,
+                                    style: StrokeStyle(lineWidth: isNext ? 2.5 : 1.8, dash: [6, 4])
+                                )
+                            )
+                    }
+                }
         }
         .buttonStyle(.plain)
         .disabled(text == nil)
@@ -109,12 +113,14 @@ struct TileAnswerView: View {
         }
     }
 
-    // MARK: 字块
+    // MARK: 象牙麻将字块
 
     private var tiles: some View {
         HStack(spacing: 10) {
             ForEach(spec.groups.indices, id: \.self) { g in
-                if g > 0 { Rectangle().fill(Theme.muted.opacity(0.35)).frame(width: 2, height: 46) }
+                if g > 0 {
+                    RoundedRectangle(cornerRadius: 1).fill(AppColor.cardEdge).frame(width: 2, height: 44)
+                }
                 ForEach(spec.groups[g].tiles.indices, id: \.self) { i in
                     tile(TileRef(group: g, index: i))
                 }
@@ -125,21 +131,31 @@ struct TileAnswerView: View {
 
     private func tile(_ ref: TileRef) -> some View {
         let used = placed.contains(ref)
+        let shape = RoundedRectangle(cornerRadius: AppRadius.sm)
         return Button { place(ref) } label: {
             Text(tileText(ref))
-                .font(.system(size: spec.style == .words ? 24 : 30, weight: .bold, design: .rounded))
-                .foregroundStyle(used ? Theme.muted.opacity(0.4) : Theme.ink)
-                .frame(minWidth: 58, minHeight: 58)
+                .font(AppFont.rounded(spec.style == .words ? 24 : 30, weight: .heavy))
+                .foregroundStyle(used ? AppColor.disabledText.opacity(0.6) : Theme.ink)
+                .frame(minWidth: 58, minHeight: used ? 58 : 54)
                 .padding(.horizontal, spec.style == .words ? 10 : 2)
-                .background(
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(used ? GrowthColors.disabledFill.opacity(0.65) : GrowthColors.tileFill)
-                        .shadow(color: used ? .clear : GrowthColors.cardEdge, radius: 0, x: 0, y: 4)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14)
-                        .stroke(used ? GrowthColors.cardEdge.opacity(0.5) : Theme.accent.opacity(0.6), lineWidth: 2)
-                )
+                .padding(.bottom, used ? 0 : 4)
+                .background {
+                    ZStack {
+                        if !used {
+                            shape.fill(AppColor.accent.opacity(0.75))
+                                .shadow(color: AppColor.warmShadow.opacity(0.12), radius: 5, y: 3)
+                        }
+                        shape
+                            .fill(
+                                used
+                                    ? LinearGradient(colors: [AppColor.disabledFill, AppColor.disabledFill], startPoint: .top, endPoint: .bottom)
+                                    : LinearGradient(colors: [.white, GrowthColors.tileFill], startPoint: .top, endPoint: .bottom)
+                            )
+                            .overlay(shape.strokeBorder(.white.opacity(used ? 0.2 : 0.85), lineWidth: 1.4))
+                            .overlay(shape.strokeBorder(used ? AppColor.disabledEdge : AppColor.accent.opacity(0.68), lineWidth: 1.8))
+                            .padding(.bottom, used ? 0 : 4)
+                    }
+                }
         }
         .buttonStyle(PressableStyle())
         .disabled(used)
@@ -151,7 +167,7 @@ struct TileAnswerView: View {
     private var feedback: some View {
         if wrongCount > 0 {
             Text("不对哦，再拼一次")
-                .font(.system(size: 18, weight: .bold, design: .rounded)).foregroundStyle(Theme.wrong)
+                .font(AppFont.bodyStrong).foregroundStyle(Theme.wrong)
         }
     }
 
@@ -163,7 +179,6 @@ struct TileAnswerView: View {
     private func tileText(_ ref: TileRef) -> String { spec.groups[ref.group].tiles[ref.index] }
 
     private func place(_ ref: TileRef) {
-        // 放进这一组的下一个空位；这组只有一个空（拼音）时直接替换
         let slotsOfGroup = spec.blanks.indices.filter { spec.blanks[$0].group == ref.group }
         guard let k = slotsOfGroup.first(where: { placed[$0] == nil }) ?? (slotsOfGroup.count == 1 ? slotsOfGroup.first : nil) else { return }
         if placed.allSatisfy({ $0 == nil }) { onStart() }

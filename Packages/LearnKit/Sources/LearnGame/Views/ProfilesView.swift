@@ -84,17 +84,10 @@ struct ProfilesView: View {
             }
             .frame(maxWidth: .infinity)
 
-            // 家长专区入口，灰白色，不抢孩子的注意力；进入前要家长验证
-            Button { showingVoiceSettings = true } label: {
-                Label("家长专区", systemImage: "lock.fill")
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                    .foregroundStyle(Theme.muted)
-                    .padding(.horizontal, 16)
-                    .frame(height: 44)
-                    .background(Capsule().fill(.white.opacity(0.75)))
-                    .overlay(Capsule().stroke(Theme.muted.opacity(0.25), lineWidth: 1))
+            // 家长专区入口，使用统一的 .subtle 轻柔按钮，不抢孩子的注意力；进入前要家长验证
+            AppButton(title: "家长专区", systemImage: "lock.fill", role: .subtle, size: .medium) {
+                showingVoiceSettings = true
             }
-            .buttonStyle(PressableStyle())
         }
         .padding(.horizontal, 32)
         .padding(.top, 8)

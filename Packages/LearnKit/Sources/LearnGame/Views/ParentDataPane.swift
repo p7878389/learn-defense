@@ -28,53 +28,46 @@ struct ParentDataPane: View {
     @State private var storageBytes: Int64 = 0
 
     var body: some View {
-        VStack(spacing: 24) {
-            SettingsCard(title: "💾 数据与备份") {
+        VStack(spacing: 20) {
+            SettingsCard(title: "数据与备份", systemImage: "externaldrive.fill", tint: AppColor.adventure) {
                 HStack {
-                    Text("本地数据与导入课本").font(.title3)
+                    Text("本地数据与导入课本").font(AppFont.bodyStrong).foregroundStyle(Theme.ink)
                     Spacer()
-                    Text(ByteCountFormatter.string(fromByteCount: storageBytes, countStyle: .file)).font(.title2.bold())
+                    Text(ByteCountFormatter.string(fromByteCount: storageBytes, countStyle: .file))
+                        .font(AppFont.digits(20, weight: .heavy))
+                        .foregroundStyle(AppColor.parentAccent)
                 }
+                .padding(14)
+                .background(Theme.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
                 Text("备份包含孩子档案、学习与成长记录、对局作答、设置和导入课本（含自带音频）。语音账号和缓存不包含在内。")
-                    .foregroundStyle(Theme.muted)
-                HStack(spacing: 16) {
-                    Button { export() } label: {
-                        CandyButtonLabel(title: "导出备份", icon: "⬆️", fill: Theme.jade, edge: GrowthColors.jadeDark,
-                                         font: .system(size: 16, weight: .heavy, design: .rounded), height: 44)
-                    }
-                    Button { choosingBackup = true } label: {
-                        CandyButtonLabel(title: "恢复备份", icon: "⬇️", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
-                                         foreground: Theme.ink, font: .system(size: 16, weight: .heavy, design: .rounded), height: 44)
-                    }
+                    .font(AppFont.label).foregroundStyle(Theme.muted)
+                HStack(spacing: 14) {
+                    AppButton(title: "导出备份", systemImage: "square.and.arrow.up", role: .primary, size: .medium) { export() }
+                    AppButton(title: "恢复备份", systemImage: "square.and.arrow.down", role: .secondary, size: .medium) { choosingBackup = true }
                 }
-                .buttonStyle(PressableStyle())
                 .disabled(model.database == nil)
-                if let message { Text(message).font(.footnote).foregroundStyle(Theme.muted) }
+                if let message { Text(message).font(AppFont.label).foregroundStyle(AppColor.jadeEdge) }
             }
-            SettingsCard(title: "👧 重置单个孩子的学习记录") {
-                Text("清除学习统计、错题和对局记录；保留孩子档案、等级、积分、徽章和外观。").foregroundStyle(Theme.muted)
+            SettingsCard(title: "重置单个孩子的学习记录", systemImage: "arrow.counterclockwise", tint: AppColor.accent) {
+                Text("清除学习统计、错题和对局记录；保留孩子档案、等级、积分、徽章和外观。")
+                    .font(AppFont.label).foregroundStyle(Theme.muted)
                 ForEach(model.profiles) { profile in
-                    HStack {
-                        Text("\(profile.avatar) \(profile.name)").font(.title3.bold())
+                    HStack(spacing: 12) {
+                        PictureView(emoji: profile.avatar, size: 32)
+                        Text(profile.name).font(AppFont.bodyStrong).foregroundStyle(Theme.ink)
                         Spacer()
-                        Button { resetProfile = profile } label: {
-                            CandyButtonLabel(title: "重置学习记录", fill: Theme.wrong.opacity(0.14),
-                                             edge: Theme.wrong.opacity(0.45), foreground: Theme.wrong,
-                                             font: .system(size: 15, weight: .heavy, design: .rounded), height: 40)
-                        }
-                        .buttonStyle(PressableStyle())
+                        AppButton(title: "重置学习记录", role: .destructive, size: .small) { resetProfile = profile }
                     }
+                    .padding(12)
+                    .background(Theme.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
                 }
             }
-            SettingsCard(title: "⚠️ 危险区") {
+            SettingsCard(title: "危险区", systemImage: "exclamationmark.triangle.fill", tint: Theme.wrong) {
                 Text("重置所有数据会删除全部孩子和学习成长记录、语音账号及设置。请先导出备份。")
-                    .foregroundStyle(Theme.muted)
-                Button { showingReset = true } label: {
-                    CandyButtonLabel(title: "重置所有数据", icon: "⚠️", fill: Theme.wrong.opacity(0.14),
-                                     edge: Theme.wrong.opacity(0.45), foreground: Theme.wrong,
-                                     font: .system(size: 16, weight: .heavy, design: .rounded), height: 44)
+                    .font(AppFont.label).foregroundStyle(Theme.muted)
+                AppButton(title: "重置所有数据", systemImage: "exclamationmark.triangle.fill", role: .destructive, size: .medium) {
+                    showingReset = true
                 }
-                .buttonStyle(PressableStyle())
             }
         }
         .onAppear { measure() }
@@ -92,35 +85,34 @@ struct ParentDataPane: View {
         }
         .sheet(item: $restoreDraft) { draft in
             VStack(spacing: 18) {
-                GrowthPageHeader(icon: "💾", title: "恢复备份", onClose: { restoreDraft = nil }) {}
-                VStack(alignment: .leading, spacing: 20) {
+                GrowthPageHeader(
+                    icon: "💾", systemIcon: "externaldrive.badge.timemachine", iconTint: AppColor.adventure,
+                    title: "恢复备份", backTitle: "关闭", backSystemImage: "xmark", parentStyle: true,
+                    onClose: { restoreDraft = nil }
+                ) {}
+                VStack(alignment: .leading, spacing: 18) {
                     Text("备份时间：\(draft.archive.createdAt.formatted(date: .abbreviated, time: .shortened))")
+                        .font(AppFont.bodyStrong).foregroundStyle(Theme.ink)
                     Text("\(draft.archive.children.count) 个孩子 · \(draft.archive.games.count) 局记录 · \(draft.archive.importedPacks.count) 份导入课本")
+                        .font(AppFont.body).foregroundStyle(Theme.ink)
                     Text("恢复会替换当前全部孩子、学习成长记录、游戏设置和导入课本。当前语音账号不变。请确认已经备份当前数据。")
-                        .foregroundStyle(Theme.wrong)
+                        .font(AppFont.body).foregroundStyle(Theme.wrong)
                     HStack(spacing: 14) {
-                        Button { restoreDraft = nil } label: {
-                            CandyButtonLabel(title: "取消", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
-                                             foreground: Theme.ink, font: .headline, height: 50, expands: true)
-                        }
-                        Button {
+                        AppButton(title: "取消", role: .secondary, size: .large, expands: true) { restoreDraft = nil }
+                        AppButton(title: "确认替换并恢复", systemImage: "checkmark", role: .destructiveSolid, size: .large, expands: true) {
                             do {
                                 try model.restoreBackup(draft.archive)
                                 restoreDraft = nil
                                 message = "备份已恢复"
                                 measure()
                             } catch { message = error.localizedDescription }
-                        } label: {
-                            CandyButtonLabel(title: "确认替换并恢复", fill: Theme.wrong, edge: GrowthColors.wrongDark,
-                                             font: .headline, height: 50, expands: true)
                         }
                     }
-                    .buttonStyle(PressableStyle())
-                    if let message { Text(message).foregroundStyle(Theme.muted) }
+                    if let message { Text(message).font(AppFont.label).foregroundStyle(Theme.muted) }
                 }
                 .padding(24)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .candyCard()
+                .parentSurfaceCard(radius: AppRadius.md)
                 Spacer()
             }
             .padding(20)
@@ -134,7 +126,7 @@ struct ParentDataPane: View {
                     icon: "⚠️",
                     message: "重置「\(resetProfile.name)」的学习统计、错题和对局记录后无法撤销。",
                     buttons: [
-                        CandyConfirmButton(title: "重置学习记录", role: .destructive) {
+                        CandyConfirmButton(title: "重置学习记录", systemImage: "arrow.counterclockwise", role: .destructive) {
                             do { try model.resetLearning(resetProfile); message = "学习记录已重置" }
                             catch { message = error.localizedDescription }
                             self.resetProfile = nil
@@ -181,27 +173,33 @@ private struct ResetAllPanel: View {
 
     var body: some View {
         VStack(spacing: 18) {
-            GrowthPageHeader(icon: "⚠️", title: "重置所有数据", onClose: { if !working { dismiss() } }) {}
-            VStack(alignment: .leading, spacing: 20) {
+            GrowthPageHeader(
+                icon: "⚠️", systemIcon: "exclamationmark.triangle.fill", iconTint: Theme.wrong,
+                title: "重置所有数据", backTitle: "关闭", backSystemImage: "xmark", parentStyle: true,
+                onClose: { if !working { dismiss() } }
+            ) {}
+            VStack(alignment: .leading, spacing: 18) {
                 Text("将删除所有孩子档案、学习/错题记录、对局明细、等级积分、徽章外观及语音账号和设置。")
-                Text("建议先返回导出备份。重置后无法撤销。").foregroundStyle(Theme.muted)
-                Toggle("保留我导入的课本", isOn: $keepingPacks)
+                    .font(AppFont.bodyStrong).foregroundStyle(Theme.ink)
+                Text("建议先返回导出备份。重置后无法撤销。").font(AppFont.body).foregroundStyle(Theme.muted)
+                Toggle("保留我导入的课本", isOn: $keepingPacks).font(AppFont.body).tint(AppColor.parentAccent)
                 TextField("输入“重置”两个字", text: $confirmation)
-                    .font(.title2).padding(.horizontal, 16).frame(height: 52)
-                    .background(GrowthColors.surface, in: RoundedRectangle(cornerRadius: 16))
-                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(GrowthColors.cardEdge, lineWidth: 2))
-                Text("输入后持续按住下面的按钮 3 秒；松开会取消。").foregroundStyle(Theme.muted)
+                    .font(AppFont.heading).padding(.horizontal, 16).frame(height: 52)
+                    .background(AppColor.surface, in: RoundedRectangle(cornerRadius: AppRadius.sm))
+                    .overlay(RoundedRectangle(cornerRadius: AppRadius.sm).strokeBorder(AppColor.parentStroke, lineWidth: 1.5))
+                Text("输入后持续按住下面的按钮 3 秒；松开会取消。").font(AppFont.label).foregroundStyle(Theme.muted)
                 ZStack {
-                    RoundedRectangle(cornerRadius: 20).fill(Theme.wrong.opacity(0.15))
+                    RoundedRectangle(cornerRadius: AppRadius.md).fill(Theme.wrong.opacity(0.14))
                     GeometryReader { geo in
-                        RoundedRectangle(cornerRadius: 20).fill(Theme.wrong.opacity(0.5))
+                        RoundedRectangle(cornerRadius: AppRadius.md).fill(Theme.wrong.opacity(0.45))
                             .frame(width: holding ? geo.size.width : 0)
                             .animation(holding ? .linear(duration: 3) : .default, value: holding)
                     }
-                    Text(working ? "正在重置…" : "按住 3 秒，重置全部数据").font(.title3.bold()).foregroundStyle(Theme.wrong)
+                    Text(working ? "正在重置…" : "按住 3 秒，重置全部数据")
+                        .font(AppFont.bodyStrong).foregroundStyle(Theme.wrong)
                 }
-                .frame(height: 64).contentShape(Rectangle())
-                .opacity(canReset ? 1 : 0.4)
+                .frame(height: 58).contentShape(Rectangle())
+                .opacity(canReset ? 1 : 0.45)
                 .onLongPressGesture(minimumDuration: 3, maximumDistance: 30, pressing: { isPressing in
                     holding = canReset && isPressing
                 }, perform: {
@@ -213,10 +211,10 @@ private struct ResetAllPanel: View {
                     } catch { self.error = error.localizedDescription; working = false }
                 })
                 .allowsHitTesting(canReset)
-                if let error { Text(error).foregroundStyle(Theme.wrong) }
+                if let error { Text(error).font(AppFont.label).foregroundStyle(Theme.wrong) }
             }
             .padding(24)
-            .candyCard()
+            .parentSurfaceCard(radius: AppRadius.md)
             Spacer()
         }
         .padding(20)

@@ -1,58 +1,64 @@
 import LearnCore
 import SwiftUI
 
-/// 成长系统界面共用的颜色和小部件（等级牌、经验条、积分牌、奖章）。设计稿见 docs/ui-growth
+/// 成长系统界面共用的颜色和小部件（等级牌、经验条、积分牌、奖章）。
 enum GrowthColors {
-    static let gold = Color(red: 1.0, green: 0.79, blue: 0.24)
-    static let goldDark = Color(red: 0.88, green: 0.63, blue: 0.0)
+    static let gold = AppColor.gold
+    static let goldDark = AppColor.goldEdge
     static let sky = Color(red: 0.87, green: 0.95, blue: 1.0)
     static let meadow = Color(red: 0.90, green: 0.96, blue: 0.84)
-    static let surface = Color(red: 1.0, green: 0.975, blue: 0.93)
-    static let cardEdge = Color(red: 0.92, green: 0.84, blue: 0.71)
-    static let orangeDeep = Color(red: 0.79, green: 0.41, blue: 0.06)
-    static let purple = Color(red: 0.55, green: 0.36, blue: 0.95)
-    static let purpleDark = Color(red: 0.36, green: 0.2, blue: 0.7)
+    static let surface = AppColor.surface
+    static let cardEdge = AppColor.cardEdge
+    static let orangeDeep = AppColor.accentEdge
+    static let purple = AppColor.violet
+    static let purpleDark = AppColor.violetEdge
     static let jadeLight = Color(red: 0.48, green: 0.89, blue: 0.74)
-    static let jadeDark = Color(red: 0.14, green: 0.45, blue: 0.36)
-    static let orangeDark = Color(red: 0.78, green: 0.4, blue: 0.04)
+    static let jadeDark = AppColor.jadeEdge
+    static let orangeDark = AppColor.accentEdge
     static let calm = Color(red: 0.36, green: 0.55, blue: 0.85)
-    static let answerTray = Color(red: 0.98, green: 0.94, blue: 0.80)
-    static let tileFill = Color(red: 1.0, green: 0.97, blue: 0.86)
-    static let wrongDark = Color(red: 0.68, green: 0.20, blue: 0.18)
+    static let answerTray = Color(red: 0.985, green: 0.95, blue: 0.84)
+    static let tileFill = Color(red: 1.0, green: 0.98, blue: 0.91)
+    static let wrongDark = AppColor.dangerSolidEdge
     static let lightning = Color(red: 0.12, green: 0.72, blue: 0.95)
     static let lightningDark = Color(red: 0.04, green: 0.48, blue: 0.68)
-    static let disabledFill = Color(white: 0.88)
-    static let disabledEdge = Color(white: 0.75)
+    static let disabledFill = AppColor.disabledFill
+    static let disabledEdge = AppColor.disabledEdge
 
     static func rarity(_ rarity: CosmeticRarity) -> Color {
         switch rarity {
-        case .common: Color(red: 0.49, green: 0.78, blue: 0.95)
-        case .rare: Color(red: 0.65, green: 0.48, blue: 0.95)
+        case .common: Color(red: 0.45, green: 0.74, blue: 0.94)
+        case .rare: Color(red: 0.62, green: 0.44, blue: 0.96)
         case .legendary: gold
         }
     }
 }
 
-/// 成长系统页面共用的纸张底色：暖米色上叠一层很淡的天空蓝和浅草绿。
+/// 成长系统页面共用的暖羊皮绘本纸底色：顶部柔和天光、底部极淡浅草气韵。
 struct GrowthPageBackground: View {
     var body: some View {
         ZStack {
             Theme.paper
             LinearGradient(
                 colors: [
-                    GrowthColors.sky.opacity(0.4),
+                    GrowthColors.sky.opacity(0.36),
                     Theme.paper,
-                    GrowthColors.meadow.opacity(0.5)
+                    GrowthColors.meadow.opacity(0.42)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
+            )
+            RadialGradient(
+                colors: [Color.white.opacity(0.45), .clear],
+                center: UnitPoint(x: 0.5, y: 0.12),
+                startRadius: 20,
+                endRadius: 520
             )
         }
         .ignoresSafeArea()
     }
 }
 
-/// 设计稿里的玩具胶囊分栏：白色底槽，当前项用活力橙并带厚底。
+/// 玩具胶囊分段器：柔和内槽 + 顶部高光活力橙选中滑块。
 struct GrowthSegmentedPicker<Selection: Hashable>: View {
     let options: [Selection]
     let title: (Selection) -> String
@@ -66,44 +72,80 @@ struct GrowthSegmentedPicker<Selection: Hashable>: View {
                     selection = option
                 } label: {
                     Text(title(option))
-                        .font(.system(size: 20, weight: .heavy, design: .rounded))
+                        .font(AppFont.bodyStrong)
                         .foregroundStyle(selected ? .white : Theme.muted)
-                        .frame(minWidth: 94, minHeight: 44)
-                        .padding(.horizontal, 12)
-                        .background(
-                            Capsule()
-                                .fill(selected ? Theme.accent : .clear)
-                                .shadow(color: selected ? GrowthColors.orangeDeep : .clear,
-                                        radius: 0, x: 0, y: 3))
+                        .frame(minWidth: 92, minHeight: selected ? 41 : 44)
+                        .padding(.horizontal, 14)
+                        .padding(.bottom, selected ? 3 : 0)
+                        .background {
+                            if selected {
+                                ZStack(alignment: .top) {
+                                    Capsule().fill(AppColor.accentEdge)
+                                    Capsule()
+                                        .fill(LinearGradient(colors: [AppColor.accentTop, AppColor.accentBottom],
+                                                             startPoint: .top, endPoint: .bottom))
+                                        .overlay(Capsule().strokeBorder(.white.opacity(0.45), lineWidth: 1.2))
+                                        .padding(.bottom, 3)
+                                }
+                            }
+                        }
                 }
                 .buttonStyle(PressableStyle())
                 .accessibilityAddTraits(selected ? .isSelected : [])
             }
         }
-        .padding(6)
-        .background(Capsule().fill(GrowthColors.surface).shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 4))
-        .overlay(Capsule().stroke(GrowthColors.cardEdge, lineWidth: 2))
+        .padding(5)
+        .background(
+            ZStack(alignment: .top) {
+                Capsule().fill(AppColor.cardEdge)
+                Capsule()
+                    .fill(LinearGradient(colors: [AppColor.surface, AppColor.surfaceBottom], startPoint: .top, endPoint: .bottom))
+                    .padding(.bottom, 3)
+                    .overlay(Capsule().strokeBorder(AppColor.cardStroke, lineWidth: 1.5).padding(.bottom, 3))
+            }
+        )
         .animation(.spring(response: 0.24, dampingFraction: 0.75), value: selection)
     }
 }
 
-/// 白底大圆角卡片 + 底部厚边，像能按下去的糖果
+/// 绘本瓷釉卡片：双层实体底边（方向恒定不翻转）+ 顶部高光 + 暖褐环境柔影
 struct CandyCard: ViewModifier {
     var fill: Color = GrowthColors.surface
     var edge: Color = GrowthColors.cardEdge
-    var radius: CGFloat = 24
+    var radius: CGFloat = AppRadius.lg
 
     func body(content: Content) -> some View {
+        let shape = RoundedRectangle(cornerRadius: radius)
         content
+            .padding(.bottom, 4)
             .background(
-                RoundedRectangle(cornerRadius: radius)
-                    .fill(fill)
-                    .shadow(color: edge, radius: 0, x: 0, y: 5))
+                ZStack {
+                    shape
+                        .fill(edge)
+                        .shadow(color: AppColor.warmShadow.opacity(0.09), radius: 12, x: 0, y: 6)
+                    shape
+                        .fill(
+                            LinearGradient(
+                                colors: [fill, fill == GrowthColors.surface ? AppColor.surfaceBottom : fill],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        .overlay(
+                            shape.strokeBorder(
+                                LinearGradient(colors: [.white.opacity(0.85), .clear], startPoint: .top, endPoint: .center),
+                                lineWidth: 1.5
+                            )
+                        )
+                        .overlay(shape.strokeBorder(edge.opacity(0.85), lineWidth: 1.5))
+                        .padding(.bottom, 4)
+                }
+            )
     }
 }
 
 extension View {
-    func candyCard(fill: Color = GrowthColors.surface, edge: Color = GrowthColors.cardEdge, radius: CGFloat = 24) -> some View {
+    func candyCard(fill: Color = GrowthColors.surface, edge: Color = GrowthColors.cardEdge, radius: CGFloat = AppRadius.lg) -> some View {
         modifier(CandyCard(fill: fill, edge: edge, radius: radius))
     }
 
@@ -118,73 +160,110 @@ extension View {
     }
 }
 
-/// 收藏馆、徽章墙的顶栏：回主页、标题、右侧等级和积分。和主页成长卡一样放在糖果卡片上
+/// 二级页与弹窗共用的顶栏：支持按上下文指定返回文案与风格（不再在弹窗中误写“回主页”）。
 struct GrowthPageHeader<Trailing: View>: View {
     let icon: String
+    var systemIcon: String? = nil
+    var iconTint: Color = AppColor.accent
     let title: String
     var subtitle: String?
+    var backTitle: String = "返回主页"
+    var backSystemImage: String = "chevron.left"
+    var parentStyle = false
     let onClose: () -> Void
     @ViewBuilder var trailing: () -> Trailing
 
     var body: some View {
-        HStack(spacing: 16) {
-            Button(action: onClose) {
-                CandyButtonLabel(title: "回主页", icon: "←", fill: GrowthColors.surface, edge: GrowthColors.cardEdge, foreground: Theme.ink,
-                                 font: .system(size: 22, weight: .heavy, design: .rounded), height: 52)
-                    .overlay(Capsule().stroke(GrowthColors.cardEdge, lineWidth: 2))
-            }
-            .buttonStyle(PressableStyle())
+        HStack(spacing: 14) {
+            AppButton(title: backTitle, systemImage: backSystemImage, role: .secondary, size: .medium, action: onClose)
             Spacer(minLength: 8)
-            PictureView(emoji: icon, size: 40)
-            Text(title).font(.system(size: 36, weight: .heavy, design: .rounded)).foregroundStyle(Theme.ink)
+            if let systemIcon {
+                AppIconBadge(systemImage: systemIcon, tint: iconTint, size: 38)
+            } else {
+                PictureView(emoji: icon, size: 38)
+            }
+            Text(title)
+                .font(parentStyle ? AppFont.title : AppFont.rounded(32, weight: .heavy))
+                .foregroundStyle(Theme.ink)
             if let subtitle {
                 Text(subtitle)
-                    .font(.system(size: 17, weight: .bold, design: .rounded))
-                    .foregroundStyle(GrowthColors.orangeDark)
-                    .padding(.horizontal, 12).padding(.vertical, 4)
-                    .background(Capsule().fill(GrowthColors.gold.opacity(0.25)))
+                    .font(AppFont.label)
+                    .foregroundStyle(parentStyle ? AppColor.parentAccent : GrowthColors.orangeDark)
+                    .padding(.horizontal, 12).padding(.vertical, 5)
+                    .background(Capsule().fill((parentStyle ? AppColor.parentAccent : GrowthColors.gold).opacity(parentStyle ? 0.14 : 0.26)))
             }
             Spacer(minLength: 8)
             trailing()
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 12)
-        .candyCard()
+        .modifier(HeaderCardSurface(parentStyle: parentStyle))
     }
 }
 
-/// 分类标签、单元按钮一类的糖果块：米白底、浅金描边、厚底；选中时换成主色
+private struct HeaderCardSurface: ViewModifier {
+    let parentStyle: Bool
+    func body(content: Content) -> some View {
+        if parentStyle {
+            content.parentSurfaceCard(radius: AppRadius.lg)
+        } else {
+            content.candyCard(radius: AppRadius.lg)
+        }
+    }
+}
+
+/// 分类标签、单元按钮、选择砖共用的实体立体底块：双层厚底 + strokeBorder 内高光
 struct CandyTileBackground: View {
     var selected = false
     var selectedFill: Color = Theme.accent
     var selectedEdge: Color = GrowthColors.orangeDeep
-    var radius: CGFloat = 22
+    var radius: CGFloat = AppRadius.md
 
     var body: some View {
-        RoundedRectangle(cornerRadius: radius)
-            .fill(selected ? selectedFill : GrowthColors.surface)
-            .shadow(color: selected ? selectedEdge : GrowthColors.cardEdge, radius: 0, x: 0, y: selected ? 5 : 4)
-            .overlay(RoundedRectangle(cornerRadius: radius).stroke(selected ? selectedEdge : GrowthColors.cardEdge, lineWidth: 2))
+        let shape = RoundedRectangle(cornerRadius: radius)
+        let edge = selected ? selectedEdge : GrowthColors.cardEdge
+        let lip: CGFloat = selected ? 4 : 3
+        ZStack {
+            shape.fill(edge)
+            shape
+                .fill(
+                    LinearGradient(
+                        colors: selected
+                            ? [selectedFill, selectedFill.opacity(0.92)]
+                            : [AppColor.surface, AppColor.surfaceBottom],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .overlay(
+                    shape.strokeBorder(
+                        LinearGradient(colors: [.white.opacity(selected ? 0.45 : 0.8), .clear], startPoint: .top, endPoint: .center),
+                        lineWidth: 1.2
+                    )
+                )
+                .overlay(shape.strokeBorder(edge.opacity(0.9), lineWidth: 1.5))
+                .padding(.bottom, lip)
+        }
     }
 }
 
-/// 金色积分硬币。系统的 🪙 是银色的，这里自己画，保证积分到处都是金色
+/// 金色积分硬币。
 struct CoinIcon: View {
     var size: CGFloat = 28
 
     var body: some View {
         Circle()
-            .fill(RadialGradient(colors: [Color(red: 1, green: 0.92, blue: 0.55), GrowthColors.gold, GrowthColors.goldDark],
+            .fill(RadialGradient(colors: [AppColor.goldLight, GrowthColors.gold, GrowthColors.goldDark],
                                  center: .topLeading, startRadius: 1, endRadius: size))
-            .overlay(Circle().inset(by: size * 0.14).stroke(Color(red: 0.8, green: 0.55, blue: 0.0).opacity(0.7), lineWidth: size * 0.06))
+            .overlay(Circle().inset(by: size * 0.14).stroke(Color(red: 0.78, green: 0.52, blue: 0.0).opacity(0.75), lineWidth: size * 0.06))
             .overlay(Image(systemName: "star.fill").font(.system(size: size * 0.42, weight: .black))
-                .foregroundStyle(Color(red: 0.85, green: 0.58, blue: 0.0)))
+                .foregroundStyle(Color(red: 0.82, green: 0.54, blue: 0.0)))
             .frame(width: size, height: size)
             .accessibilityLabel("积分")
     }
 }
 
-/// 自己画的进度条（系统 ProgressView 在不同平台上样式不一）
+/// 统一圆角进度条（带顶部微高光）
 struct MiniBar: View {
     let value: Double
     let total: Double
@@ -194,8 +273,12 @@ struct MiniBar: View {
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
-                Capsule().fill(Theme.muted.opacity(0.18))
-                Capsule().fill(tint)
+                Capsule().fill(AppColor.cardEdge.opacity(0.45))
+                Capsule()
+                    .fill(LinearGradient(colors: [tint.opacity(0.85), tint], startPoint: .top, endPoint: .bottom))
+                    .overlay(alignment: .top) {
+                        Capsule().fill(.white.opacity(0.38)).frame(height: max(2, height * 0.3)).padding(.horizontal, 3).padding(.top, 1.5)
+                    }
                     .frame(width: total <= 0 ? 0 : geo.size.width * min(1, max(0, value / total)))
             }
         }
@@ -203,185 +286,56 @@ struct MiniBar: View {
     }
 }
 
-/// 粗体大按钮，带厚底
+/// 兼容旧签名的糖果瓷釉胶囊标签：双层实体厚底 + strokeBorder 内高光，彻底消除左右裁切与双重描边
 struct CandyButtonLabel: View {
     let title: String
     var icon: String?
-    /// 在文字前面放一枚金币（价格按钮）
     var coin = false
     var fill: Color = Theme.jade
     var edge: Color = GrowthColors.jadeDark
     var foreground: Color = .white
-    var font: Font = .system(size: 24, weight: .heavy, design: .rounded)
-    var height: CGFloat = 64
-    /// 收藏馆一排卡片较多时传 0，让按钮跟着卡片变窄
-    var minWidth: CGFloat = 120
-    /// 收藏馆操作区铺满宽度；其他页面沿用内容宽度。
+    var font: Font = AppFont.heading
+    var height: CGFloat = 54
+    var minWidth: CGFloat = 110
     var expands = false
+
+    private var lip: CGFloat {
+        if fill == GrowthColors.disabledFill { return 0 }
+        return height < 46 ? 3 : height < 62 ? 4 : 5
+    }
 
     var body: some View {
         HStack(spacing: 6) {
             if let icon { Text(icon) }
-            if coin { CoinIcon(size: height * 0.45) }
-            Text(title).lineLimit(1).minimumScaleFactor(0.6)
+            if coin { CoinIcon(size: height * 0.44) }
+            Text(title).lineLimit(1).minimumScaleFactor(0.65)
         }
         .font(font)
         .foregroundStyle(foreground)
-        .padding(.horizontal, height < 56 ? 12 : 26)
-        .frame(height: height)
+        .padding(.horizontal, height < 48 ? 14 : 24)
+        .frame(height: height - lip)
         .frame(minWidth: minWidth)
         .frame(maxWidth: expands ? .infinity : nil)
-        .background(
-            Capsule()
-                .fill(fill)
-                .shadow(color: edge, radius: 0, x: 0, y: height < 50 ? 3 : 5)
-        )
-        .overlay(
-            Capsule()
-                .stroke(edge, lineWidth: height < 50 ? 1.5 : 2)
-        )
-    }
-}
-
-/// 糖果风格通用弹窗按钮配置与模态确认框，替代系统 Alert / ConfirmationDialog。
-struct CandyConfirmButton: Identifiable {
-    enum Role { case primary, secondary, destructive, cancel }
-
-    let id = UUID()
-    let title: String
-    var icon: String? = nil
-    var role: Role = .secondary
-    let action: () -> Void
-
-    var fill: Color {
-        switch role {
-        case .primary: Theme.jade
-        case .secondary, .cancel: GrowthColors.surface
-        case .destructive: Theme.wrong.opacity(0.14)
-        }
-    }
-
-    var edge: Color {
-        switch role {
-        case .primary: GrowthColors.jadeDark
-        case .secondary, .cancel: GrowthColors.cardEdge
-        case .destructive: Theme.wrong.opacity(0.45)
-        }
-    }
-
-    var foreground: Color {
-        switch role {
-        case .primary: .white
-        case .secondary: Theme.ink
-        case .cancel: Theme.muted
-        case .destructive: Theme.wrong
-        }
-    }
-}
-
-struct CandyConfirmModal: View {
-    let title: String
-    var icon: String? = nil
-    let message: String
-    var bannerColors: [Color] = [GrowthColors.gold, Theme.accent]
-    var bannerEdge: Color = GrowthColors.orangeDark
-    var borderColor: Color = GrowthColors.gold.opacity(0.75)
-    var maxWidth: CGFloat = 460
-    let buttons: [CandyConfirmButton]
-    var onDismiss: (() -> Void)? = nil
-
-    var body: some View {
-        ZStack {
-            Color.black.opacity(0.45)
-                .ignoresSafeArea()
-                .contentShape(Rectangle())
-                .onTapGesture { onDismiss?() }
-            CandyModalCard(
-                bannerTitle: title,
-                bannerIcon: icon,
-                bannerColors: bannerColors,
-                bannerEdge: bannerEdge,
-                borderColor: borderColor,
-                maxWidth: maxWidth
-            ) {
-                if !message.isEmpty {
-                    Text(message)
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
-                        .foregroundStyle(Theme.muted)
-                        .multilineTextAlignment(.center)
-                }
-                VStack(spacing: 12) {
-                    ForEach(buttons) { item in
-                        Button(action: item.action) {
-                            CandyButtonLabel(
-                                title: item.title,
-                                icon: item.icon,
-                                fill: item.fill,
-                                edge: item.edge,
-                                foreground: item.foreground,
-                                font: .system(size: 19, weight: .heavy, design: .rounded),
-                                height: 50,
-                                minWidth: 0,
-                                expands: true
-                            )
-                        }
-                        .buttonStyle(PressableStyle())
-                    }
-                }
-            }
-            .padding(24)
-        }
-        .transition(.opacity)
-    }
-}
-
-/// 战斗与成长弹窗共用的糖果弹窗框体：可选顶部悬浮横幅 + 暖纸底 + 描边与厚底
-struct CandyModalCard<Content: View>: View {
-    var bannerTitle: String? = nil
-    var bannerIcon: String? = nil
-    var bannerColors: [Color] = [GrowthColors.gold, Theme.accent]
-    var bannerEdge: Color = GrowthColors.orangeDark
-    var borderColor: Color = GrowthColors.gold.opacity(0.75)
-    var maxWidth: CGFloat = 560
-    var radius: CGFloat = 30
-    @ViewBuilder var content: () -> Content
-
-    var body: some View {
-        VStack(spacing: 18) {
-            if let bannerTitle {
-                HStack(spacing: 10) {
-                    if let bannerIcon { Text(bannerIcon).font(.system(size: 26)) }
-                    Text(bannerTitle)
-                        .font(.system(size: 28, weight: .heavy, design: .rounded))
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.75)
-                }
-                .foregroundStyle(.white)
-                .padding(.horizontal, 28)
-                .frame(height: 54)
-                .background(
+        .padding(.bottom, lip)
+        .background {
+            ZStack(alignment: .top) {
+                if lip > 0 {
                     Capsule()
-                        .fill(LinearGradient(colors: bannerColors, startPoint: .top, endPoint: .bottom))
-                        .shadow(color: bannerEdge, radius: 0, x: 0, y: 5)
-                )
-                .overlay(Capsule().stroke(.white.opacity(0.85), lineWidth: 2))
-                .padding(.top, -46)
+                        .fill(edge)
+                        .shadow(color: edge.opacity(0.22), radius: height < 48 ? 4 : 7, x: 0, y: 4)
+                }
+                Capsule()
+                    .fill(LinearGradient(colors: [fill.opacity(0.95), fill], startPoint: .top, endPoint: .bottom))
+                    .overlay(
+                        Capsule()
+                            .strokeBorder(
+                                LinearGradient(colors: [.white.opacity(lip > 0 ? 0.52 : 0.2), .clear], startPoint: .top, endPoint: .center),
+                                lineWidth: 1.5
+                            )
+                    )
+                    .overlay(Capsule().strokeBorder(edge.opacity(0.88), lineWidth: 1.5))
+                    .padding(.bottom, lip)
             }
-            content()
         }
-        .padding(.horizontal, 28)
-        .padding(.top, bannerTitle == nil ? 28 : 24)
-        .padding(.bottom, 26)
-        .frame(maxWidth: maxWidth)
-        .background(
-            RoundedRectangle(cornerRadius: radius)
-                .fill(Theme.paper)
-                .shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 6)
-                .shadow(color: .black.opacity(0.18), radius: 20, y: 10)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: radius)
-                .stroke(borderColor, lineWidth: 3)
-        )
     }
 }

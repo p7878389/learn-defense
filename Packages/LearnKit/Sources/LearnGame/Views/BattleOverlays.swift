@@ -7,7 +7,6 @@ struct UltimateOverlay: View {
     let wrongPicks: Set<Int>
     let onAnswer: (Int) -> Void
     let onReplay: () -> Void
-    /// 点空白处或「先不放了」：取消这次大招
     let onCancel: () -> Void
     var retrying = false
 
@@ -27,14 +26,9 @@ struct UltimateOverlay: View {
                 maxWidth: 900
             ) {
                 AnswerPanel(question: question, wrongPicks: wrongPicks, onAnswer: onAnswer, onReplay: onReplay, retrying: retrying)
-                Button(action: onCancel) {
-                    CandyButtonLabel(title: "先不放了", icon: "✕", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
-                                     foreground: Theme.muted, font: .system(size: 18, weight: .heavy, design: .rounded),
-                                     height: 46, minWidth: 140)
-                }
-                .buttonStyle(PressableStyle())
+                AppButton(title: "先不放了", systemImage: "xmark", role: .secondary, size: .medium, minWidth: 140, action: onCancel)
                 Text(!retrying ? "点空白处也能取消，能量会留着" : "已经答错过，答对或取消都会用掉这次能量")
-                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .font(AppFont.label)
                     .foregroundStyle(Theme.muted)
             }
             .padding(40)
@@ -45,9 +39,7 @@ struct UltimateOverlay: View {
 
 struct PauseOverlay: View {
     let onResume: () -> Void
-    /// 结束本局并看结算页
     let onFinish: () -> Void
-    /// 直接退出并放弃未结算对局，回到上一页。
     let onQuit: () -> Void
 
     var body: some View {
@@ -56,27 +48,14 @@ struct PauseOverlay: View {
             CandyModalCard(
                 bannerTitle: "休息一下",
                 bannerIcon: "⏸️",
-                bannerColors: [GrowthColors.gold, Theme.accent],
-                bannerEdge: GrowthColors.orangeDark,
+                bannerColors: [AppColor.gold, AppColor.accent],
+                bannerEdge: AppColor.accentEdge,
                 maxWidth: 440
             ) {
-                VStack(spacing: 14) {
-                    Button(action: onResume) {
-                        CandyButtonLabel(title: "继续闯关", icon: "▶", fill: Theme.jade, edge: GrowthColors.jadeDark,
-                                         font: .system(size: 24, weight: .heavy, design: .rounded), height: 60, minWidth: 0, expands: true)
-                    }
-                    .buttonStyle(PressableStyle())
-                    Button(action: onFinish) {
-                        CandyButtonLabel(title: "结束并结算", icon: "🏁", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
-                                         foreground: Theme.ink, font: .system(size: 20, weight: .heavy, design: .rounded), height: 52, minWidth: 0, expands: true)
-                    }
-                    .buttonStyle(PressableStyle())
-                    Button(action: onQuit) {
-                        CandyButtonLabel(title: "退出游戏", icon: "🚪", fill: Theme.wrong.opacity(0.14),
-                                         edge: Theme.wrong.opacity(0.45), foreground: Theme.wrong,
-                                         font: .system(size: 19, weight: .heavy, design: .rounded), height: 48, minWidth: 0, expands: true)
-                    }
-                    .buttonStyle(PressableStyle())
+                VStack(spacing: 12) {
+                    AppButton(title: "继续闯关", systemImage: "play.fill", role: .primary, size: .large, expands: true, action: onResume)
+                    AppButton(title: "结束并结算", systemImage: "flag.checkered", role: .secondary, size: .large, expands: true, action: onFinish)
+                    AppButton(title: "退出游戏", systemImage: "rectangle.portrait.and.arrow.right", role: .destructive, size: .large, expands: true, action: onQuit)
                 }
             }
             .padding(24)
@@ -99,13 +78,13 @@ struct RoundRestOverlay: View {
                     CandyModalCard(
                         bannerTitle: "第 \(session.round) 回合完成",
                         bannerIcon: "🎉",
-                        bannerColors: [Theme.jade, GrowthColors.jadeDark],
-                        bannerEdge: GrowthColors.jadeDark,
-                        borderColor: Theme.jade.opacity(0.65),
+                        bannerColors: [AppColor.jadeTop, AppColor.jadeBottom],
+                        bannerEdge: AppColor.jadeEdge,
+                        borderColor: AppColor.jade.opacity(0.65),
                         maxWidth: 560
                     ) {
                         Text("本回合 \(session.roundQuestions) 题 · 评分 \(session.roundScore) · 首答正确率 \(Int((session.roundAccuracy * 100).rounded()))%")
-                            .font(.system(size: 17, weight: .bold, design: .rounded))
+                            .font(AppFont.bodyStrong)
                             .foregroundStyle(Theme.ink)
 
                         ZStack {
@@ -116,13 +95,11 @@ struct RoundRestOverlay: View {
                                 .rotationEffect(.degrees(-90))
                             VStack(spacing: 2) {
                                 if isReady {
-                                    Image(systemName: "checkmark").font(.system(size: 44, weight: .bold))
-                                    Text("准备好了").font(.subheadline.bold())
+                                    Image(systemName: "checkmark").font(.system(size: 42, weight: .black))
+                                    Text("准备好了").font(AppFont.label)
                                 } else {
-                                    Text("\(session.restRemaining)")
-                                        .font(.system(size: 44, weight: .bold, design: .rounded))
-                                        .monospacedDigit()
-                                    Text("秒后可继续").font(.subheadline)
+                                    Text("\(session.restRemaining)").font(AppFont.digits(42, weight: .black))
+                                    Text("秒后可继续").font(AppFont.caption)
                                 }
                             }
                             .foregroundStyle(Theme.jade)
@@ -133,42 +110,26 @@ struct RoundRestOverlay: View {
 
                         VStack(spacing: 6) {
                             Text(isReady ? "休息好了，按自己的节奏继续" : "放下屏幕，看看远处，伸个懒腰吧")
-                                .font(.system(size: 20, weight: .heavy, design: .rounded))
+                                .font(AppFont.heading)
                             Text("下一回合：第 \(session.round + 1) 回合 · \(session.roundQuestions + session.rules.questionIncrement[session.config.difficulty]) 题")
-                                .font(.system(size: 15, weight: .bold, design: .rounded))
+                                .font(AppFont.label)
                                 .foregroundStyle(Theme.muted)
                         }
-                        Button(action: session.continueRound) {
-                            CandyButtonLabel(
-                                title: isReady ? "开始下一回合" : "休息中 · \(session.restRemaining) 秒",
-                                icon: isReady ? "▶" : "⏳",
-                                fill: isReady ? Theme.jade : GrowthColors.disabledFill,
-                                edge: isReady ? GrowthColors.jadeDark : GrowthColors.disabledEdge,
-                                foreground: isReady ? .white : Theme.muted,
-                                font: .system(size: 22, weight: .heavy, design: .rounded),
-                                height: 56,
-                                minWidth: 0,
-                                expands: true
-                            )
-                        }
-                        .buttonStyle(PressableStyle())
+
+                        AppButton(
+                            title: isReady ? "开始下一回合" : "休息中 · \(session.restRemaining) 秒",
+                            systemImage: isReady ? "play.fill" : "hourglass",
+                            role: .primary,
+                            size: .large,
+                            expands: true,
+                            action: session.continueRound
+                        )
                         .disabled(!isReady)
+
                         VStack(spacing: 8) {
-                            Button(action: session.finishGame) {
-                                CandyButtonLabel(
-                                    title: "结束并结算",
-                                    icon: "🏁",
-                                    fill: GrowthColors.surface,
-                                    edge: GrowthColors.cardEdge,
-                                    foreground: Theme.ink,
-                                    font: .system(size: 18, weight: .heavy, design: .rounded),
-                                    height: 46,
-                                    minWidth: 180
-                                )
-                            }
-                            .buttonStyle(PressableStyle())
+                            AppButton(title: "结束并结算", systemImage: "flag.checkered", role: .secondary, size: .medium, minWidth: 180, action: session.finishGame)
                             Text("随时可以结束，积分将在整局结束后统一结算")
-                                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                                .font(AppFont.caption)
                                 .foregroundStyle(Theme.muted)
                         }
                     }
@@ -185,7 +146,6 @@ struct RoundRestOverlay: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { session.updateRest() }
         }
-        // 面板离开后自动取消订阅，战斗阶段无需唤醒休息计时器。
         .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { session.updateRest(now: $0) }
     }
 }

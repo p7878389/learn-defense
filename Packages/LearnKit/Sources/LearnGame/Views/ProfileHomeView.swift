@@ -1,7 +1,7 @@
 import LearnCore
 import SwiftUI
 
-/// 孩子的主页：成长与模式入口；题库在进入经典游戏后通过弹窗确认。
+/// 孩子的主页（守护者营地）：顶部荣誉卡 + 三大模式成长入口 + 经典答题主作战卡片 + 底部绘本草坪地景。
 struct ProfileHomeView: View {
     @EnvironmentObject private var model: AppModel
     let profileID: UUID
@@ -26,7 +26,7 @@ struct ProfileHomeView: View {
             if let profile {
                 content(profile)
             } else {
-                Text("档案不存在").font(.title)
+                Text("档案不存在").font(AppFont.title).foregroundStyle(Theme.ink)
             }
         }
         .background(GrowthPageBackground())
@@ -70,108 +70,129 @@ struct ProfileHomeView: View {
         let progress = model.progress(for: profile.id)
         let reviewCount = ItemPool(packs: model.library.packs.filter { $0.grade == profile.grade },
                                    selection: .review(progress.reviewKeys)).items.count
+        let growth = model.growth(for: profile.id)
 
-        ScrollView {
-            // 题库配置已移入游戏弹窗，主页只保留一屏内的成长、模式与难度操作。
+        VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 16) {
-                // 三个模式/成长入口共用一行，不再纵向叠加题库配置。
-                let growth = model.growth(for: profile.id)
                 if let issue = growth.loadError {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(issue).foregroundStyle(Theme.wrong)
-                        Button {
+                    HStack(spacing: 12) {
+                        Text(issue).font(AppFont.label).foregroundStyle(Theme.wrong)
+                        Spacer()
+                        AppButton(title: "重试读取", systemImage: "arrow.clockwise", role: .secondary, size: .small) {
                             do { try model.reloadGrowth(for: profile.id) }
                             catch { /* 读取错误继续显示，原存档保持受保护。 */ }
-                        } label: {
-                            CandyButtonLabel(title: "重试读取成长档案", icon: "↻", fill: GrowthColors.surface,
-                                             edge: GrowthColors.cardEdge, foreground: Theme.ink,
-                                             font: .system(size: 16, weight: .heavy, design: .rounded), height: 42)
                         }
-                        .buttonStyle(PressableStyle())
                     }
+                    .padding(12)
+                    .candyCard(radius: AppRadius.md)
                 }
+
                 GrowthCard(profile: profile, growth: growth) {
                     editing = EditingProfile(profile: profile, isNew: false)
                 }
-                GrowthEntryCards(growth: growth, onCollection: { showCollection = true }, onBadges: { showBadges = true },
-                                 onAdventure: { showAdventure = true })
 
-                Text("经典答题 · 边学边闯关").font(.title3.bold()).foregroundStyle(Theme.ink)
-                difficultySection(profile)
-                actions(profile: profile, reviewCount: reviewCount)
-                Text("游戏默认沿用上次题库；准备界面可改题库与难度，准备好后核对配置再开战。")
-                    .font(.callout).foregroundStyle(Theme.muted)
+                GrowthEntryCards(
+                    growth: growth,
+                    onCollection: { showCollection = true },
+                    onBadges: { showBadges = true },
+                    onAdventure: { showAdventure = true }
+                )
+
+                classicBattlePanel(profile: profile, reviewCount: reviewCount)
 
                 if !model.issues.isEmpty {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("题库问题").font(.headline).foregroundStyle(Theme.wrong)
-                        ForEach(model.issues, id: \.self) { Text($0).font(.callout) }
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("题库问题").font(AppFont.bodyStrong).foregroundStyle(Theme.wrong)
+                        ForEach(model.issues.prefix(2), id: \.self) {
+                            Text($0).font(AppFont.caption).foregroundStyle(Theme.muted).lineLimit(1)
+                        }
                     }
+                    .padding(12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .candyCard(radius: AppRadius.md)
                 }
             }
-            .padding(.horizontal, 40)
-            .padding(.vertical, 20)
-            .frame(maxWidth: 1000, alignment: .leading)
+            .padding(.horizontal, 36)
+            .padding(.top, 18)
+            .padding(.bottom, 12)
+            .frame(maxWidth: 1020, alignment: .leading)
             .frame(maxWidth: .infinity)
             .id(refresh)
+
+            Spacer(minLength: 0)
+            HomeMeadowStrip()
         }
-        // 主页只显示模式与成长入口，主要操作在 iPad 横竖屏内完整排下。
-        .scrollDisabled(true)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
-    private func difficultySection(_ profile: Profile) -> some View {
-        HStack(spacing: 20) {
-            Text("难度").font(.title2.weight(.bold))
-            GrowthSegmentedPicker(options: Difficulty.allCases, title: \.displayName, selection: Binding(
-                get: { profile.difficulty },
-                set: { var p = profile; p.difficulty = $0; model.save(p) }
-            ))
+    private func classicBattlePanel(profile: Profile, reviewCount: Int) -> some View {
+        let packCount = model.library.packs.filter { $0.grade == profile.grade }.count
+        return VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 12) {
+                AppIconBadge(systemImage: "books.vertical.fill", tint: AppColor.jade, size: 36)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("经典答题 · 边学边闯关")
+                        .font(AppFont.heading)
+                        .foregroundStyle(Theme.ink)
+                    Text("默认沿用上次题库；开战前可在准备界面修改题库、单元与布阵")
+                        .font(AppFont.label)
+                        .foregroundStyle(Theme.muted)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                }
+                Spacer(minLength: 8)
+                Label("\(profile.grade.displayName) · \(packCount) 本题库", systemImage: "checkmark.seal.fill")
+                    .font(AppFont.label)
+                    .foregroundStyle(AppColor.jadeEdge)
+                    .padding(.horizontal, 12).padding(.vertical, 6)
+                    .background(Capsule().fill(AppColor.jade.opacity(0.14)))
+            }
+
+            HStack(spacing: 16) {
+                Text("难度")
+                    .font(AppFont.bodyStrong)
+                    .foregroundStyle(Theme.ink)
+                GrowthSegmentedPicker(options: Difficulty.allCases, title: \.displayName, selection: Binding(
+                    get: { profile.difficulty },
+                    set: { var p = profile; p.difficulty = $0; model.save(p) }
+                ))
+                Spacer(minLength: 0)
+            }
+
+            HStack(spacing: 16) {
+                AppButton(title: "经典闯关", systemImage: "play.fill", role: .primary, size: .hero, minWidth: 240, expands: true) {
+                    activeGame = GameConfig(
+                        profileID: profile.id,
+                        grade: profile.grade,
+                        packIDs: [],
+                        selection: .all,
+                        difficulty: profile.difficulty)
+                }
+
+                AppButton(
+                    title: "错题复习（\(reviewCount)）",
+                    systemImage: "target",
+                    role: .accent,
+                    size: .hero,
+                    minWidth: 200
+                ) {
+                    activeGame = GameConfig(
+                        profileID: profile.id,
+                        grade: profile.grade,
+                        packIDs: model.library.packs.filter { $0.grade == profile.grade }.map(\.id),
+                        selection: .review(model.progress(for: profile.id).reviewKeys),
+                        difficulty: profile.difficulty)
+                }
+                .disabled(reviewCount == 0)
+
+                AppButton(title: "错题本", systemImage: "book.closed.fill", role: .secondary, size: .hero, minWidth: 156) {
+                    showWrongBook = true
+                }
+            }
         }
+        .padding(20)
+        .candyCard(radius: AppRadius.lg)
     }
-
-    private func actions(profile: Profile, reviewCount: Int) -> some View {
-        HStack(spacing: 20) {
-            // 开始闯关直接进入经典模式
-            Button {
-                activeGame = GameConfig(
-                    profileID: profile.id,
-                    grade: profile.grade,
-                    packIDs: [],
-                    selection: .all,
-                    difficulty: profile.difficulty)
-            } label: {
-                CandyButtonLabel(title: "经典闯关", icon: "▶", fill: Theme.jade, edge: GrowthColors.jadeDark,
-                                 font: .system(size: 28, weight: .heavy, design: .rounded), height: 74, minWidth: 260)
-            }
-            .buttonStyle(PressableStyle())
-
-            Button {
-                activeGame = GameConfig(
-                    profileID: profile.id,
-                    grade: profile.grade,
-                    packIDs: model.library.packs.filter { $0.grade == profile.grade }.map(\.id),
-                    selection: .review(model.progress(for: profile.id).reviewKeys),
-                    difficulty: profile.difficulty)
-            } label: {
-                CandyButtonLabel(title: "错题复习（\(reviewCount)）", icon: "🎯",
-                                 fill: reviewCount > 0 ? Theme.accent : GrowthColors.disabledFill,
-                                 edge: reviewCount > 0 ? GrowthColors.orangeDark : GrowthColors.disabledEdge,
-                                 foreground: reviewCount > 0 ? .white : Theme.muted,
-                                 font: .system(size: 24, weight: .heavy, design: .rounded), height: 74, minWidth: 230)
-            }
-            .buttonStyle(PressableStyle())
-            .disabled(reviewCount == 0)
-
-            // 设计稿 01b：白色糖果胶囊，浅金描边加厚底
-            Button { showWrongBook = true } label: {
-                CandyButtonLabel(title: "错题本", icon: "📖", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
-                                 foreground: Theme.ink, font: .system(size: 24, weight: .heavy, design: .rounded), height: 74, minWidth: 168)
-                    .overlay(Capsule().stroke(GrowthColors.cardEdge, lineWidth: 2))
-            }
-            .buttonStyle(PressableStyle())
-        }
-    }
-
 }
 
 struct Chip: View {
@@ -182,22 +203,15 @@ struct Chip: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 8) {
-                if selected { Text("✓") }
+                if selected { Image(systemName: "checkmark").font(AppFont.label) }
                 Text(title)
             }
-            .font(.title3.weight(.semibold))
+            .font(AppFont.bodyStrong)
             .lineLimit(1)
             .minimumScaleFactor(0.7)
             .padding(.horizontal, 16)
-            .frame(maxWidth: .infinity, minHeight: 56)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(selected ? Theme.jade : GrowthColors.surface)
-                    .shadow(color: selected ? GrowthColors.jadeDark : GrowthColors.cardEdge,
-                            radius: 0, x: 0, y: 4))
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(selected ? GrowthColors.jadeDark : GrowthColors.cardEdge, lineWidth: 2))
+            .frame(maxWidth: .infinity, minHeight: 52)
+            .background(CandyTileBackground(selected: selected, selectedFill: Theme.jade, selectedEdge: GrowthColors.jadeDark, radius: AppRadius.md))
             .foregroundStyle(selected ? .white : Theme.ink)
         }
         .buttonStyle(PressableStyle())
@@ -242,18 +256,16 @@ struct WrongBookView: View {
                 PictureView(emoji: "📖", size: 36)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(profile.name)的错题本")
-                        .font(.system(size: 28, weight: .heavy, design: .rounded))
+                        .font(AppFont.title)
                         .foregroundStyle(Theme.ink)
                     Text("连续答对即可转为已掌握 · 待复习 \(reviewCount) 题 / 共 \(entries.count) 题")
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .font(AppFont.label)
                         .foregroundStyle(Theme.muted)
                 }
                 Spacer()
-                Button { dismiss() } label: {
-                    CandyButtonLabel(title: "完成", icon: "✓", fill: Theme.jade, edge: GrowthColors.jadeDark,
-                                     font: .system(size: 18, weight: .heavy, design: .rounded), height: 46, minWidth: 96)
+                AppButton(title: "完成", systemImage: "checkmark", role: .primary, size: .medium, minWidth: 96) {
+                    dismiss()
                 }
-                .buttonStyle(PressableStyle())
             }
             .padding(.horizontal, 18)
             .padding(.vertical, 14)
@@ -263,10 +275,10 @@ struct WrongBookView: View {
                 VStack(spacing: 12) {
                     PictureView(emoji: "🌟", size: 64)
                     Text("还没有错题，真棒！")
-                        .font(.system(size: 24, weight: .heavy, design: .rounded))
+                        .font(AppFont.heading)
                         .foregroundStyle(Theme.ink)
                     Text("在闯关中答错的知识点会自动记在这里，方便随时温习。")
-                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .font(AppFont.body)
                         .foregroundStyle(Theme.muted)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -281,32 +293,28 @@ struct WrongBookView: View {
                     LazyVStack(spacing: 10) {
                         ForEach(filteredEntries, id: \.key) { entry in
                             HStack(spacing: 14) {
-                                Text(entry.stats.needsReview ? "🔥 待复习" : "✅ 已掌握")
-                                    .font(.system(size: 14, weight: .heavy, design: .rounded))
+                                Label(entry.stats.needsReview ? "待复习" : "已掌握",
+                                      systemImage: entry.stats.needsReview ? "flame.fill" : "checkmark.circle.fill")
+                                    .font(AppFont.label)
                                     .foregroundStyle(entry.stats.needsReview ? GrowthColors.orangeDark : GrowthColors.jadeDark)
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 6)
                                     .background(
-                                        Capsule().fill(entry.stats.needsReview ? GrowthColors.gold.opacity(0.32) : Theme.jade.opacity(0.18))
+                                        Capsule().fill(entry.stats.needsReview ? GrowthColors.gold.opacity(0.32) : Theme.jade.opacity(0.16))
                                     )
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(entry.stats.summary ?? entry.key)
-                                        .font(.system(size: 20, weight: .heavy, design: .rounded))
+                                        .font(AppFont.bodyStrong)
                                         .foregroundStyle(Theme.ink)
                                     Text("答错 \(entry.stats.wrong) 次 · 连续答对 \(entry.stats.streak) 次")
-                                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                                        .font(AppFont.label)
                                         .foregroundStyle(Theme.muted)
                                 }
                                 Spacer(minLength: 0)
                             }
                             .padding(.horizontal, 16)
                             .padding(.vertical, 12)
-                            .background(
-                                RoundedRectangle(cornerRadius: 18)
-                                    .fill(GrowthColors.surface)
-                                    .shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 3)
-                            )
-                            .overlay(RoundedRectangle(cornerRadius: 18).stroke(GrowthColors.cardEdge, lineWidth: 1.5))
+                            .candyCard(radius: AppRadius.md)
                         }
                     }
                     .padding(4)

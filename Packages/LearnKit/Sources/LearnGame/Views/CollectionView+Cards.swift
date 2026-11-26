@@ -173,7 +173,6 @@ extension CollectionView {
                                      fill: Theme.jade, edge: GrowthColors.jadeDark, foreground: .white,
                                      font: actionFont, height: 50, minWidth: 0, expands: true)
                         .frame(maxWidth: .infinity)
-                        .overlay(Capsule().stroke(GrowthColors.jadeDark.opacity(0.6), lineWidth: 2))
                 }
                 .buttonStyle(PressableStyle())
             }
