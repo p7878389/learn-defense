@@ -20,50 +20,60 @@ struct AdventureLobbyView: View {
     private var growth: GrowthStore { model.growth(for: profileID) }
     private var regularDefenders: [DefenderKind] { AdventureCatalog.defenders.filter { $0.id != AdventureDoom.id } }
     private var doomDefender: DefenderKind? { AdventureCatalog.defenders.first { $0.id == AdventureDoom.id } }
+    private var recommendedLevelID: Int? {
+        let adventure = growth.state.adventure
+        return AdventureCatalog.levels
+            .filter { adventure.isUnlocked($0.id) && (adventure.bestStars[String($0.id)] ?? 0) < 3 }
+            .map(\.id)
+            .max()
+    }
 
     var body: some View {
         GeometryReader { geometry in
             let landscape = geometry.size.width > geometry.size.height
             let hasSaved = growth.state.adventure.active != nil
             let compact = geometry.size.height < 760 || hasSaved
-            VStack(spacing: compact ? 10 : 14) {
+            VStack(spacing: compact ? AppSpacing.xs : AppSpacing.sm) {
                 GrowthPageHeader(icon: "🗺️", title: "森林冒险", subtitle: "15 积分 / 局", backTitle: "返回主页", onClose: onClose) {
                     CoinPill(coins: growth.state.coins, size: 20)
                 }
-                HStack(spacing: 12) {
+                HStack(spacing: AppSpacing.sm) {
                     GrowthSegmentedPicker(options: Difficulty.allCases, title: \.displayName, selection: $difficulty)
                     Spacer()
-                    HStack(spacing: 6) {
-                        Image(systemName: "star.fill").foregroundStyle(AppColor.gold)
+                    HStack(spacing: AppSpacing.xs) {
+                        Image(systemName: "star.fill")
+                            .font(AppFont.rounded(15, weight: .bold))
+                            .foregroundStyle(AppColor.gold)
                         Text("\(growth.state.adventure.totalStars) / 18")
                             .font(AppFont.digits(17, weight: .black))
-                            .foregroundStyle(AppColor.accentEdge)
+                            .foregroundStyle(AppColor.goldEdge)
                     }
-                    .padding(.horizontal, 14).frame(height: 44)
-                    .background(Capsule().fill(AppColor.surface).overlay(Capsule().strokeBorder(AppColor.cardStroke, lineWidth: 1.5)))
+                    .padding(.horizontal, AppSpacing.sm)
+                    .frame(height: 44)
+                    .appInset(radius: 22, tint: AppColor.gold)
                 }
                 if landscape {
-                    HStack(alignment: .top, spacing: 14) {
+                    HStack(alignment: .top, spacing: AppSpacing.sm) {
                         deckPanel(columns: 2, compact: compact)
                             .frame(width: 286)
                         levelGrid(columns: 3, compact: compact)
                     }
-                    .frame(maxHeight: .infinity)
+                    .frame(maxHeight: .infinity, alignment: .top)
                 } else {
-                    VStack(spacing: 14) {
+                    VStack(spacing: AppSpacing.sm) {
                         deckPanel(columns: 3, compact: true)
                         levelGrid(columns: 2, compact: compact)
                     }
-                    .frame(maxHeight: .infinity)
+                    .frame(maxHeight: .infinity, alignment: .top)
                 }
                 Text(growth.state.adventure.chapterComplete ? "🏅 森林守卫纪念章 · 六关全部通关！" : "经典答题赚积分 · 布阵免费，开战扣费 · 局内只用阳光")
                     .font(AppFont.caption)
-                    .foregroundStyle(Theme.muted)
+                    .foregroundStyle(AppColor.muted)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, compact ? 12 : 18)
+            .padding(.horizontal, AppSpacing.md)
+            .padding(.vertical, compact ? AppSpacing.sm : AppSpacing.md)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(GrowthPageBackground())
@@ -75,30 +85,30 @@ struct AdventureLobbyView: View {
     }
 
     private func deckPanel(columns: Int, compact: Bool) -> some View {
-        VStack(alignment: .leading, spacing: compact ? 8 : 10) {
+        VStack(alignment: .leading, spacing: compact ? AppSpacing.xs : AppSpacing.sm) {
             HStack {
                 Label("准备卡组", systemImage: "leaf.fill")
                     .font(AppFont.rounded(19, weight: .heavy))
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(AppColor.ink)
                 Spacer()
                 Text("\(deck.count) / 4")
                     .font(AppFont.digits(15, weight: .black))
-                    .foregroundStyle(validDeck ? AppColor.jadeEdge : AppColor.accentEdge)
-                    .padding(.horizontal, 10).padding(.vertical, 3)
-                    .background(Capsule().fill((validDeck ? AppColor.jade : AppColor.accent).opacity(0.15)))
+                    .foregroundStyle(validDeck ? AppColor.jadeEdge : AppColor.dangerText)
+                    .padding(.horizontal, AppSpacing.sm).padding(.vertical, 3)
+                    .background(Capsule().fill((validDeck ? AppColor.jade : AppColor.dangerText).opacity(0.14)))
             }
             Text("带上四张卡，至少一位射手")
                 .font(AppFont.caption)
-                .foregroundStyle(Theme.muted)
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: columns), spacing: 8) {
+                .foregroundStyle(AppColor.muted)
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: AppSpacing.xs), count: columns), spacing: AppSpacing.xs) {
                 ForEach(regularDefenders) { kind in deckButton(kind, compact: compact) }
             }
             if let doom = doomDefender {
                 doomDeckBanner(doom, compact: compact)
             }
         }
-        .padding(compact ? 12 : 14)
-        .candyCard(radius: AppRadius.lg)
+        .padding(compact ? AppSpacing.sm : AppSpacing.md)
+        .appPanel(radius: AppRadius.lg)
     }
 
     private func deckButton(_ kind: DefenderKind, compact: Bool) -> some View {
@@ -114,15 +124,19 @@ struct AdventureLobbyView: View {
                 Text(HeraldicArtwork.defenderName(kind: kind, skin: growth.loadout.defenderSkins[kind.id]))
                     .font(AppFont.rounded(compact ? 13 : 14, weight: .heavy))
                     .lineLimit(1).minimumScaleFactor(0.8)
-                HStack(spacing: 4) {
-                    Image(systemName: "sun.max.fill").font(.system(size: 10, weight: .bold))
-                        .foregroundStyle(selected ? AppColor.goldLight : AppColor.accent)
+                HStack(spacing: AppSpacing.xxs) {
+                    Image(systemName: "sun.max.fill")
+                        .font(AppFont.rounded(10, weight: .bold))
+                        .foregroundStyle(selected ? AppColor.goldLight : AppColor.goldEdge)
                     Text("\(kind.sunCost)").font(AppFont.digits(12, weight: .heavy))
-                    if selected { Image(systemName: "checkmark.circle.fill").font(.system(size: 11, weight: .bold)) }
+                    if selected {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(AppFont.rounded(11, weight: .bold))
+                    }
                 }
             }
             .frame(maxWidth: .infinity, minHeight: compact ? 74 : 90)
-            .foregroundStyle(selected ? .white : Theme.ink)
+            .foregroundStyle(selected ? .white : AppColor.ink)
             .background(CandyTileBackground(selected: selected, selectedFill: AppColor.adventure, selectedEdge: AppColor.adventureEdge, radius: AppRadius.sm))
         }
         .buttonStyle(PressableStyle())
@@ -139,7 +153,7 @@ struct AdventureLobbyView: View {
         return Button {
             toggleDeck(kind.id, unlocked: unlocked)
         } label: {
-            HStack(spacing: 10) {
+            HStack(spacing: AppSpacing.sm) {
                 if let image = UnitSprites.portrait(of: kind, skin: growth.loadout.defenderSkins[kind.id]) {
                     Image(decorative: image, scale: 1).resizable().scaledToFit().frame(width: 34, height: 34)
                 }
@@ -150,13 +164,13 @@ struct AdventureLobbyView: View {
                         .opacity(selected ? 0.9 : 0.72)
                         .lineLimit(1).minimumScaleFactor(0.75)
                 }
-                Spacer(minLength: 4)
+                Spacer(minLength: AppSpacing.xxs)
                 Image(systemName: unlocked ? (selected ? "checkmark.circle.fill" : "plus.circle") : "lock.fill")
-                    .font(.system(size: 16, weight: .bold))
+                    .font(AppFont.rounded(16, weight: .bold))
             }
-            .padding(.horizontal, 12)
+            .padding(.horizontal, AppSpacing.sm)
             .frame(maxWidth: .infinity, minHeight: compact ? 52 : 60)
-            .foregroundStyle(selected ? .white : (unlocked ? Theme.ink : Theme.muted))
+            .foregroundStyle(selected ? .white : (unlocked ? AppColor.ink : AppColor.muted))
             .background(
                 CandyTileBackground(
                     selected: selected,
@@ -184,14 +198,14 @@ struct AdventureLobbyView: View {
     }
 
     private func levelGrid(columns: Int, compact: Bool) -> some View {
-        VStack(spacing: compact ? 10 : 14) {
+        VStack(spacing: compact ? AppSpacing.xs : AppSpacing.sm) {
             ForEach(0..<(6 / columns), id: \.self) { row in
-                HStack(spacing: compact ? 10 : 14) {
+                HStack(spacing: compact ? AppSpacing.xs : AppSpacing.sm) {
                     ForEach(Array(AdventureCatalog.levels[(row * columns)..<((row + 1) * columns)])) { level in
                         levelCard(level, compact: compact)
                     }
                 }
-                .frame(maxHeight: .infinity)
+                .fixedSize(horizontal: false, vertical: true)
             }
         }
     }
@@ -200,10 +214,10 @@ struct AdventureLobbyView: View {
         switch id {
         case 1: AppColor.jade
         case 2: AppColor.adventure
-        case 3: Color(red: 0.30, green: 0.49, blue: 0.78)
-        case 4: AppColor.accent
+        case 3: AppColor.calm
+        case 4: AppColor.woodTrim
         case 5: AppColor.violet
-        default: Color(red: 0.84, green: 0.34, blue: 0.24)
+        default: AppColor.dangerSolidBottom
         }
     }
 
@@ -212,68 +226,81 @@ struct AdventureLobbyView: View {
         let stars = growth.state.adventure.bestStars[String(level.id)] ?? 0
         let tint = levelTint(level.id)
         let isBoss = level.id == 6
+        let isRecommended = level.id == recommendedLevelID
         return Button {
             if growth.state.coins < AdventureCatalog.entryCost { onClose() }
             else { launch = AdventureLaunch(levelID: level.id, difficulty: difficulty, deck: deck) }
         } label: {
-            VStack(alignment: .leading, spacing: compact ? 6 : 8) {
-                HStack(spacing: 8) {
+            let cardContent = VStack(alignment: .leading, spacing: compact ? AppSpacing.xxs : AppSpacing.xs) {
+                HStack(spacing: 6) {
                     Text(String(format: "%02d", level.id))
-                        .font(AppFont.digits(15, weight: .black))
+                        .font(AppFont.digits(14, weight: .black))
                         .foregroundStyle(.white)
-                        .padding(.horizontal, 10).padding(.vertical, 4)
-                        .background(Capsule().fill(unlocked ? tint : AppColor.disabledEdge))
+                        .padding(.horizontal, AppSpacing.xs).padding(.vertical, 3)
+                        .background(Capsule().fill(unlocked ? tint : AppColor.disabledText))
                     if isBoss {
                         Label("首领关", systemImage: "crown.fill")
                             .font(AppFont.caption)
-                            .foregroundStyle(AppColor.accentEdge)
-                            .padding(.horizontal, 8).padding(.vertical, 3)
-                            .background(Capsule().fill(AppColor.gold.opacity(0.28)))
+                            .foregroundStyle(unlocked ? AppColor.dangerText : AppColor.muted)
+                            .padding(.horizontal, AppSpacing.xs).padding(.vertical, 3)
+                            .background(Capsule().fill(unlocked ? AppColor.dangerFill : AppColor.disabledFill))
+                            .lineLimit(1)
                     }
-                    Spacer()
+                    Spacer(minLength: AppSpacing.xxs)
+                    if isRecommended {
+                        Text("推荐")
+                            .font(AppFont.caption)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, AppSpacing.xs).padding(.vertical, 3)
+                            .background(Capsule().fill(AppColor.jade))
+                            .lineLimit(1)
+                    }
                     HStack(spacing: 2) {
                         ForEach(0..<3, id: \.self) { idx in
                             Image(systemName: idx < stars ? "star.fill" : "star")
-                                .font(.system(size: 14, weight: .bold))
-                                .foregroundStyle(idx < stars ? AppColor.gold : AppColor.cardEdge)
+                                .font(AppFont.rounded(13, weight: .bold))
+                                .foregroundStyle(idx < stars ? AppColor.gold : (unlocked ? AppColor.cardEdge : AppColor.disabledEdge))
                         }
                     }
                 }
                 Text(level.title)
-                    .font(AppFont.rounded(compact ? 19 : 21, weight: .heavy))
-                    .foregroundStyle(unlocked ? Theme.ink : Theme.muted)
+                    .font(AppFont.rounded(compact ? 18 : 20, weight: .heavy))
+                    .foregroundStyle(unlocked ? AppColor.ink : AppColor.ink.opacity(0.55))
                     .lineLimit(1).minimumScaleFactor(0.85)
                 Text(level.hint)
                     .font(AppFont.label)
-                    .foregroundStyle(Theme.muted)
+                    .foregroundStyle(AppColor.muted)
                     .lineLimit(2)
-                Spacer(minLength: 0)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: AppSpacing.xs)
                 HStack(spacing: 6) {
                     Text(!unlocked ? "通过前一关解锁" : growth.state.coins < 15 ? "回主页赚积分" : !validDeck ? "请选择四张卡牌" : "15 积分 · 准备布阵")
                         .font(AppFont.label)
                         .lineLimit(1).minimumScaleFactor(0.8)
-                    Spacer(minLength: 4)
+                    Spacer(minLength: AppSpacing.xxs)
                     Image(systemName: unlocked ? "arrow.right.circle.fill" : "lock.fill")
-                        .font(.system(size: 16, weight: .bold))
+                        .font(AppFont.rounded(15, weight: .bold))
                 }
-                .foregroundStyle(unlocked ? (stars > 0 ? AppColor.jadeEdge : tint) : Theme.muted)
-                .padding(.horizontal, 10).padding(.vertical, 6)
-                .background(Capsule().fill(unlocked ? tint.opacity(0.12) : AppColor.disabledFill.opacity(0.65)))
+                .foregroundStyle(unlocked ? (isRecommended || stars > 0 ? AppColor.jadeEdge : tint) : AppColor.muted)
+                .padding(.horizontal, AppSpacing.sm).padding(.vertical, 6)
+                .background(Capsule().fill(unlocked ? (isRecommended ? AppColor.jade : tint).opacity(0.12) : AppColor.disabledFill))
             }
-            .padding(compact ? 12 : 16)
+            .padding(compact ? AppSpacing.sm : AppSpacing.md)
+            .padding(.bottom, unlocked ? 3 : 0)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .background(
-                CandyTileBackground(
-                    selected: false,
-                    radius: AppRadius.lg
-                )
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: AppRadius.lg)
-                    .strokeBorder(unlocked ? tint.opacity(0.42) : .clear, lineWidth: 2)
-                    .padding(.bottom, 3)
-            )
-            .opacity(unlocked ? 1 : 0.68)
+
+            if unlocked {
+                cardContent
+                    .background(CandyTileBackground(selected: false, radius: AppRadius.lg))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: AppRadius.lg)
+                            .strokeBorder(isRecommended ? AppColor.jade : tint.opacity(0.42), lineWidth: isRecommended ? 2.5 : 2)
+                            .padding(.bottom, 3)
+                    )
+            } else {
+                cardContent
+                    .appPanel(radius: AppRadius.lg)
+            }
         }
         .buttonStyle(PressableStyle())
         .disabled(!unlocked || (!validDeck && growth.state.coins >= 15))

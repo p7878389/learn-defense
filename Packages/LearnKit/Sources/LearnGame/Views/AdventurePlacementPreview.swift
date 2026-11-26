@@ -14,7 +14,7 @@ struct AdventurePlacementPreview: View {
                 let sy = geometry.size.height / 600
                 let center = CGPoint(x: AdventureDoom.x(cell.column) * sx, y: (600 - AdventureDoom.y(cell.lane)) * sy)
                 let valid = battle.canPlant(kindID, lane: cell.lane, column: cell.column)
-                let color: Color = valid ? (kindID == AdventureDoom.id ? .purple : Theme.jade) : Theme.wrong
+                let color: Color = valid ? (kindID == AdventureDoom.id ? AppColor.violet : AppColor.jade) : AppColor.dangerText
                 ZStack {
                     if kindID == AdventureDoom.id {
                         Ellipse()
@@ -28,8 +28,12 @@ struct AdventurePlacementPreview: View {
                         Image(decorative: image, scale: 1).resizable().scaledToFit()
                             .frame(width: 75 * sx, height: 80 * sy).opacity(0.65).position(center)
                     } else if !valid {
-                        Text("不可放置").font(.system(size: max(10, 14 * sx), weight: .bold))
-                            .foregroundStyle(.white).padding(4).background(Theme.wrong, in: Capsule()).position(center)
+                        Text("不可放置")
+                            .font(AppFont.rounded(max(10, 14 * sx), weight: .bold))
+                            .foregroundStyle(.white)
+                            .padding(AppSpacing.xxs)
+                            .background(AppColor.dangerText, in: Capsule())
+                            .position(center)
                     }
                 }
                 .frame(width: geometry.size.width, height: geometry.size.height)
