@@ -31,10 +31,8 @@ struct AdventureScreen: View {
             topBar
             cards
             GeometryReader { geometry in
-                let size = CGSize(width: min(geometry.size.width, geometry.size.height * 2),
-                                  height: min(geometry.size.height, geometry.size.width / 2))
                 SpriteView(scene: session.scene)
-                    .frame(width: size.width, height: size.height)
+                    .frame(width: geometry.size.width, height: geometry.size.height)
                     .background(GeometryReader { proxy in
                         Color.clear.onChange(of: proxy.frame(in: .named("adventure")), initial: true) { _, value in frame = value }
                     })
@@ -56,7 +54,7 @@ struct AdventureScreen: View {
         .overlay { exitConfirmOverlay }
         .interactiveDismissDisabled()
         .onChange(of: scenePhase) { _, phase in if phase != .active { session.suspend() } }
-        .onDisappear { session.suspend() }
+        .onDisappear { session.abandon() }
     }
 
     private var topBar: some View {
@@ -218,9 +216,9 @@ struct AdventureScreen: View {
                             .multilineTextAlignment(.center)
                         VStack(spacing: 12) {
                             AdventureAction(title: "继续战斗", icon: "▶", height: 56, expands: true, action: session.resume)
-                            AdventureAction(title: "保存并返回地图", icon: "🗺️", fill: GrowthColors.surface,
+                            AdventureAction(title: "返回地图（结束本局）", icon: "🗺️", fill: GrowthColors.surface,
                                             edge: GrowthColors.cardEdge, foreground: Theme.ink, height: 50, expands: true) {
-                                session.suspend(); if session.error == nil { onClose() }
+                                if session.abandon() { onClose() }
                             }
                             AdventureAction(title: "放弃对局", icon: "🚪", fill: Theme.wrong.opacity(0.14),
                                             edge: Theme.wrong.opacity(0.45), foreground: Theme.wrong, height: 48, expands: true) {
@@ -257,12 +255,9 @@ struct AdventureScreen: View {
                 CandyConfirmModal(
                     title: "离开冒险",
                     icon: "⚠️",
-                    message: "你可以保存当前波次以便下次继续，或直接放弃本局（15 积分不返还）。",
+                    message: "返回地图后本局结束，再次进入将开始新游戏。已消耗的 15 积分不返还。",
                     buttons: [
-                        CandyConfirmButton(title: "保存并返回地图", icon: "💾", role: .primary) {
-                            showExit = false; session.suspend(); if session.error == nil { onClose() }
-                        },
-                        CandyConfirmButton(title: "放弃对局（不返还积分）", icon: "🚪", role: .destructive) {
+                        CandyConfirmButton(title: "返回地图（结束本局）", icon: "🗺️", role: .primary) {
                             showExit = false; if session.abandon() { onClose() }
                         },
                         CandyConfirmButton(title: "继续冒险", role: .cancel) { showExit = false }
@@ -274,7 +269,7 @@ struct AdventureScreen: View {
     }
 
     private func place(at location: CGPoint) {
-        guard let point = GameScene.scenePoint(at: location, in: frame), let cell = Lawn(lanes: 5).cell(at: point) else { return }
+        guard let point = AdventureScene.scenePoint(at: location, in: frame), let cell = Lawn(lanes: 5).cell(at: point) else { return }
         if shoveling { session.shovel(lane: cell.lane, column: cell.column) }
         else if let selected {
             if session.plant(selected, lane: cell.lane, column: cell.column) {
@@ -289,7 +284,7 @@ struct AdventureScreen: View {
     }
 
     private func updatePreview(at location: CGPoint) {
-        placementCell = GameScene.scenePoint(at: location, in: frame).flatMap { Lawn(lanes: 5).cell(at: $0) }
+        placementCell = AdventureScene.scenePoint(at: location, in: frame).flatMap { Lawn(lanes: 5).cell(at: $0) }
     }
 }
 

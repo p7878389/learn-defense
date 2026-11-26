@@ -4,9 +4,9 @@ import Testing
 @testable import LearnGame
 
 @MainActor
-@Suite("毁灭菇会话恢复")
+@Suite("毁灭菇暂停与新局")
 struct AdventureDoomSessionTests {
-    @Test func paidBattleRestoresFuseCooldownAndCraterWithoutChargingAgain() throws {
+    @Test func pausePreservesFuseButNewGameDiscardsCooldownAndCrater() throws {
         let database = try LearnDatabase(url: nil)
         let profile = Profile(name: "爆破测试", grade: .g3, avatar: "🐯")
         try database.saveProfiles([profile])
@@ -25,20 +25,19 @@ struct AdventureDoomSessionTests {
         session.suspend()
         let saved = session.battle
         #expect(session.hud.doomCooldown == 50)
-        let restored = AdventureSession(levelID: 1, model: model, profileID: profile.id, difficulty: .normal)
-        #expect(restored.battle == saved)
-        #expect(restored.battle.doomCharges.count == 1)
-        restored.advance(by: 30)
-        #expect(restored.battle == saved)
-        restored.resume()
-        restored.advance(by: 0.5)
-        #expect(restored.battle.doomCharges.isEmpty)
-        #expect(restored.battle.doomCraters.count == 1)
-        #expect(restored.hud.doomCooldown == 49)
-        restored.suspend()
-        let crater = AdventureSession(levelID: 1, model: model, profileID: profile.id, difficulty: .normal)
-        #expect(crater.battle.doomCraters == restored.battle.doomCraters)
-        #expect(crater.scene.childNode(withName: "DoomExplosion") == nil)
+        session.advance(by: 30)
+        #expect(session.battle == saved)
+        session.resume()
+        session.advance(by: 0.5)
+        #expect(session.battle.doomCharges.isEmpty)
+        #expect(session.battle.doomCraters.count == 1)
+        #expect(session.hud.doomCooldown == 49)
+        #expect(session.abandon())
+        let next = AdventureSession(levelID: 1, model: model, profileID: profile.id, difficulty: .normal)
+        #expect(next.battle.phase == .preparing)
+        #expect(next.battle.doomCharges.isEmpty && next.battle.doomCraters.isEmpty)
+        #expect(next.hud.doomCooldown == 0)
+        #expect(next.scene.childNode(withName: "DoomExplosion") == nil)
         #expect(model.growth(for: profile.id).state.coins == 35)
     }
 }

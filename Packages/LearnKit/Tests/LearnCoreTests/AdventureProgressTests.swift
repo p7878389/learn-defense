@@ -89,7 +89,7 @@ struct AdventureProgressTests {
         #expect(store.state.stats.coinsToday == allowance)
     }
 
-    @Test func oldSaveDefaultsAndDatabaseReopenPreservesPaidBattleAndWallet() throws {
+    @Test func oldSaveDefaultsAndDatabaseReopenDiscardsBattleButPreservesWallet() throws {
         let old = try JSONDecoder().decode(GrowthState.self, from: Data(#"{"coins":19,"xp":20}"#.utf8))
         #expect(old.coins == 19)
         #expect(old.adventure.active == nil)
@@ -108,10 +108,25 @@ struct AdventureProgressTests {
         let db = try LearnDatabase(url: url)
         let reopened = GrowthStore(profileID: profileID, database: db, catalog: .bundled)
         #expect(reopened.state.coins == 35)
-        #expect(reopened.state.adventure.active?.id == battle.id)
+        #expect(reopened.state.adventure.active == nil)
         let other = GrowthStore(profileID: UUID(), database: db, catalog: .bundled)
         #expect(other.state.adventure.active == nil)
         #expect(other.state.coins == 0)
+    }
+
+    @Test func legacyBattleIsIgnoredWhileStarsAndResultsSurvive() throws {
+        let store = try store()
+        var paid = readyBattle()
+        try store.startAdventure(paid)
+        _ = paid.advance(by: 600)
+        try store.finishAdventure(paid)
+        let data = try JSONEncoder().encode(store.state.adventure)
+        var legacy = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        legacy["active"] = try JSONSerialization.jsonObject(with: JSONEncoder().encode(readyBattle()))
+        let decoded = try JSONDecoder().decode(AdventureProgress.self, from: JSONSerialization.data(withJSONObject: legacy))
+        #expect(decoded.active == nil)
+        #expect(decoded.bestStars == store.state.adventure.bestStars)
+        #expect(decoded.results == store.state.adventure.results)
     }
 
     @Test func existingBackupAndProfileDeletionIncludeAdventureData() throws {
@@ -126,7 +141,7 @@ struct AdventureProgressTests {
         let restoredDB = try LearnDatabase(url: nil)
         try restoredDB.restore(archive)
         let restored = GrowthStore(profileID: profile.id, database: restoredDB, catalog: .bundled)
-        #expect(restored.state.adventure.active?.id == battle.id)
+        #expect(restored.state.adventure.active == nil)
         #expect(restored.state.coins == 35)
         try restoredDB.deletePersonalData(profileID: profile.id)
         #expect(try restoredDB.growthState(profileID: profile.id) == nil)

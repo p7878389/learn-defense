@@ -13,9 +13,19 @@ public struct AdventureResult: Codable, Equatable, Identifiable, Sendable {
 public struct AdventureProgress: Codable, Equatable, Sendable {
     public var bestStars: [String: Int] = [:]
     public var results: [AdventureResult] = []
+    /// 仅当前对局用于扣费与结算校验，不写入存档，也不读取旧版续局。
     public var active: AdventureBattle?
 
     public init() {}
+
+    private enum CodingKeys: String, CodingKey { case bestStars, results }
+
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        bestStars = try values.decodeIfPresent([String: Int].self, forKey: .bestStars) ?? [:]
+        results = try values.decodeIfPresent([AdventureResult].self, forKey: .results) ?? []
+        active = nil
+    }
 
     public func isUnlocked(_ levelID: Int) -> Bool {
         AdventureCatalog.level(levelID) != nil && (levelID == 1 || (bestStars[String(levelID - 1)] ?? 0) > 0)

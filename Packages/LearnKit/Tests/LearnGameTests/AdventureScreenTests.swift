@@ -30,6 +30,45 @@ struct AdventureScreenTests {
         }
     }
 
+    @Test func battlefieldFillsAvailableSpaceWithoutLetterboxing() throws {
+        let database = try LearnDatabase(url: nil)
+        let profile = Profile(name: "全屏地图", grade: .g3, avatar: "🐯")
+        try database.saveProfiles([profile])
+        let model = AppModel(database: database, library: .load(userDirectory: nil),
+                             speechLibrary: SpeechLibrary(database: database))
+        for size in [CGSize(width: 1180, height: 736), CGSize(width: 820, height: 1100)] {
+            let session = AdventureSession(levelID: 1, model: model, profileID: profile.id, difficulty: .easy)
+            session.plant("inkling", lane: 0, column: 0)
+            let host = NSHostingView(rootView: AdventureScreen(session: session, onClose: {}).frame(width: size.width, height: size.height))
+            host.frame = CGRect(origin: .zero, size: size)
+            for _ in 0..<4 {
+                host.layoutSubtreeIfNeeded()
+                RunLoop.current.run(until: Date().addingTimeInterval(0.04))
+            }
+            let view = try #require(spriteView(host))
+            #expect(view.bounds.width >= size.width - 24)
+            #expect(view.bounds.height >= size.height - 330)
+            let origin = session.scene.convertPoint(toView: .zero)
+            let corner = session.scene.convertPoint(toView: CGPoint(x: 1200, y: 600))
+            #expect(abs(corner.x - origin.x) >= view.bounds.width - 1)
+            #expect(abs(corner.y - origin.y) >= view.bounds.height - 1)
+            let defender = try #require(session.scene.children.first { $0 is DefenderNode })
+            let sx = view.bounds.width / 1200 * abs(defender.xScale)
+            let sy = view.bounds.height / 600 * abs(defender.yScale)
+            #expect(abs(sx - sy) < 0.01, "铺满地图时角色不能被拉长或压扁")
+            for lane in 0..<5 {
+                for column in 0..<9 {
+                    let expected = CGPoint(x: AdventureDoom.x(column), y: AdventureDoom.y(lane))
+                    var point = session.scene.convertPoint(toView: expected)
+                    if !view.isFlipped { point.y = view.bounds.maxY - point.y }
+                    let mapped = try #require(AdventureScene.scenePoint(at: point, in: view.bounds))
+                    #expect(abs(mapped.x - expected.x) < 0.01 && abs(mapped.y - expected.y) < 0.01)
+                    #expect(Lawn(lanes: 5).cell(at: mapped) == DefenderCell(lane: lane, column: column))
+                }
+            }
+        }
+    }
+
     private func assertNoVerticalOverflow<V: View>(_ screen: V, size: CGSize, name: String) throws {
         let host = NSHostingView(rootView: screen.frame(width: size.width, height: size.height))
         let window = NSWindow(contentRect: CGRect(origin: CGPoint(x: -5000, y: -5000), size: size),

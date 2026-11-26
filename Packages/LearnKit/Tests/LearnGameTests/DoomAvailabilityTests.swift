@@ -61,7 +61,7 @@ struct DoomAvailabilityTests {
         #expect(session.battle.sun == before)
     }
 
-    @Test func legacyBattleKeepsPaidChargeButCannotOfferAnotherLockedDoom() throws {
+    @Test func legacyBattleIsDiscardedAndCannotOfferLockedDoom() throws {
         var battle = AdventureBattle(level: AdventureCatalog.levels[0], deck: ["inkling", "frost", "wallnut", "doomShroom"])
         #expect(battle.plant("inkling", lane: 0, column: 0) == true)
         #expect(battle.plant("doomShroom", lane: 2, column: 5) == true)
@@ -69,13 +69,13 @@ struct DoomAvailabilityTests {
         _ = battle.advance(by: 0.5)
         let (model, profile) = try model(unlocked: false, active: battle)
         let session = AdventureSession(levelID: 1, model: model, profileID: profile.id, difficulty: .normal)
-        #expect(session.battle.id == battle.id)
-        #expect(session.battle.doomCharges.count == 1)
+        #expect(session.battle.id != battle.id)
+        #expect(session.battle.doomCharges.isEmpty)
         #expect(!session.plantable.contains { $0.id == "doomShroom" })
         session.resume()
         session.advance(by: 0.5)
         #expect(session.battle.doomCharges.isEmpty)
-        #expect(session.battle.doomCraters.count == 1)
+        #expect(session.battle.doomCraters.isEmpty)
         #expect(model.growth(for: profile.id).state.coins == 600)
         #expect(!session.plant("doomShroom", lane: 2, column: 6))
     }

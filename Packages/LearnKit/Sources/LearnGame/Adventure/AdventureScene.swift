@@ -19,19 +19,28 @@ final class AdventureScene: SKScene {
     init(loadout: Loadout) {
         self.loadout = loadout
         super.init(size: GameScene.designSize)
-        scaleMode = .aspectFit
+        scaleMode = .fill
         backgroundColor = Palette.paper
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
+    /// 冒险战场铺满视口，横纵方向分别换算，保持拖放、预览和渲染一致。
+    static func scenePoint(at location: CGPoint, in frame: CGRect) -> CGPoint? {
+        guard frame.width > 0, frame.height > 0, frame.contains(location) else { return nil }
+        return CGPoint(x: (location.x - frame.minX) * GameScene.designSize.width / frame.width,
+                       y: (frame.maxY - location.y) * GameScene.designSize.height / frame.height)
+    }
+
     override func didMove(to view: SKView) {
         guard !built else { return }
         built = true
         Backdrop(theme: .meadow, size: size, skyHeight: 80, lawn: lawn, baseWidth: 64, map: .woodland).build(in: self)
+        fitCharactersToViewport()
     }
 
     override func update(_ currentTime: TimeInterval) {
+        fitCharactersToViewport()
         let delta = previousTime.map { max(0, min(0.1, currentTime - $0)) } ?? 0
         previousTime = currentTime
         guard !pausedGameplay, delta > 0 else { return }
@@ -178,10 +187,19 @@ final class AdventureScene: SKScene {
             node.setChewing(chewing)
         }
         doomArtwork.render(battle, in: self)
+        fitCharactersToViewport()
         setPaused(battle.phase == .paused)
         pausedGameplay = battle.phase != .playing
         // 准备和结算阶段保留角色待机、子弹及退场动画。
         if battle.phase != .paused { speed = 1 }
+    }
+
+    private func fitCharactersToViewport() {
+        guard let viewport = view?.bounds.size, viewport.width > 0, viewport.height > 0 else { return }
+        let ratio = (viewport.width / size.width) / (viewport.height / size.height)
+        for node in children where node is DefenderNode || node is EnemyNode {
+            node.yScale = abs(node.xScale) * ratio
+        }
     }
 
     private static func enemySpeed(_ kind: AdventureEnemyKind) -> Double {

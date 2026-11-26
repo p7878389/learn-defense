@@ -37,9 +37,11 @@ extension GrowthStore {
         }
     }
 
-    public func abandonAdventure() throws {
+    public func abandonAdventure(_ current: AdventureBattle? = nil) throws {
         try updateAdventureState { state in
-            guard let battle = state.adventure.active else { return }
+            guard let active = state.adventure.active else { return }
+            let battle = current ?? active
+            guard battle.id == active.id else { throw AdventureError.missingSave }
             state.adventure.record(battle, abandoned: true)
         }
     }

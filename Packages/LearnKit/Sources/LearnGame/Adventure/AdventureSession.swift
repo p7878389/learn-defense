@@ -38,7 +38,6 @@ final class AdventureSession: ObservableObject {
     @Published private(set) var error: String?
     private let model: AppModel
     private let growth: GrowthStore
-    private var lastSave: Double = 0
     private var closed = false
 
     var plantable: [DefenderKind] {
@@ -50,9 +49,7 @@ final class AdventureSession: ObservableObject {
         self.model = model
         growth = model.growth(for: profileID)
         let allowedDeck = deck.allSatisfy(growth.state.canUseDefender) ? deck : AdventureCatalog.defaultDeck
-        var state = growth.state.adventure.active
-            ?? AdventureBattle(level: AdventureCatalog.level(levelID) ?? AdventureCatalog.levels[0], difficulty: difficulty, deck: allowedDeck)
-        state.pause()
+        let state = AdventureBattle(level: AdventureCatalog.level(levelID) ?? AdventureCatalog.levels[0], difficulty: difficulty, deck: allowedDeck)
         battle = state
         hud = AdventureHUD(state)
         loadout = growth.loadout
@@ -61,19 +58,18 @@ final class AdventureSession: ObservableObject {
         UnitSprites.preloadCombat(defenders: plantable, enemies: enemies, loadout: loadout)
         scene.onAdvance = { [weak self] dt in self?.advance(by: dt) }
         scene.render(state, events: [])
-        if state.isFinished { persist() }
     }
 
     @discardableResult
     func plant(_ id: String, lane: Int, column: Int) -> Bool {
         guard !closed, error == nil, growth.state.canUseDefender(id), battle.plant(id, lane: lane, column: column) else { return false }
-        changed(save: battle.phase != .preparing)
+        changed()
         return true
     }
 
     func shovel(lane: Int, column: Int) {
         guard !closed, battle.shovel(lane: lane, column: column) else { return }
-        changed(save: battle.phase != .preparing)
+        changed()
     }
 
     func start() {
@@ -84,7 +80,7 @@ final class AdventureSession: ObservableObject {
             try growth.startAdventure(next)
             battle = next
             error = nil
-            changed(save: false)
+            changed()
             model.objectWillChange.send()
         } catch { self.error = error.localizedDescription }
     }
@@ -94,7 +90,7 @@ final class AdventureSession: ObservableObject {
         let events = battle.advance(by: seconds)
         scene.render(battle, events: events)
         publishHUD()
-        if battle.isFinished || battle.elapsed - lastSave >= 2 { persist() }
+        if battle.isFinished { persist() }
     }
 
     func unleash() {
@@ -102,7 +98,7 @@ final class AdventureSession: ObservableObject {
         let events = battle.unleash()
         guard !events.isEmpty else { return }
         scene.render(battle, events: events)
-        changed(save: true)
+        changed()
     }
 
     func suspend() {
@@ -110,27 +106,25 @@ final class AdventureSession: ObservableObject {
         battle.pause()
         scene.setPaused(true)
         publishHUD()
-        if battle.phase != .preparing { persist() }
     }
 
     func resume() {
         guard !closed, battle.phase == .paused else { return }
         error = nil
         battle.resume()
-        persist()
-        changed(save: false)
+        changed()
     }
 
     func retrySave() {
         error = nil
-        if battle.phase != .preparing { persist() }
+        if battle.isFinished { persist() }
     }
 
     @discardableResult
     func abandon() -> Bool {
         guard !closed else { return true }
         do {
-            if battle.phase != .preparing && !battle.isFinished { try growth.abandonAdventure() }
+            if battle.phase != .preparing && !battle.isFinished { try growth.abandonAdventure(battle) }
             else if battle.isFinished { try growth.finishAdventure(battle) }
             closed = true
             scene.setPaused(true)
@@ -142,10 +136,9 @@ final class AdventureSession: ObservableObject {
         }
     }
 
-    private func changed(save: Bool) {
+    private func changed() {
         scene.render(battle, events: [])
         publishHUD()
-        if save { persist() }
     }
 
     private func publishHUD() {
@@ -156,8 +149,6 @@ final class AdventureSession: ObservableObject {
     private func persist() {
         do {
             if battle.isFinished { try growth.finishAdventure(battle) }
-            else { try growth.saveAdventure(battle) }
-            lastSave = battle.elapsed
             model.objectWillChange.send()
         } catch {
             battle.pause()

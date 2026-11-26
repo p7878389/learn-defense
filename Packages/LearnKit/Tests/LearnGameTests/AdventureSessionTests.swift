@@ -24,26 +24,32 @@ struct AdventureSessionTests {
         return (model, config)
     }
 
-    @Test func preparationIsFreeAndRestoredAdventureStartsPausedWithoutCharging() throws {
+    @Test func leavingDiscardsBattleAndNextEntryStartsFresh() throws {
         let (model, config) = try context()
+        let growth = model.growth(for: config.profileID)
         let session = AdventureSession(levelID: 1, model: model, profileID: config.profileID, difficulty: .easy)
         session.plant("inkling", lane: 0, column: 0)
-        #expect(model.growth(for: config.profileID).state.coins == 50)
+        #expect(growth.state.coins == 50)
         session.start()
         session.start()
-        #expect(model.growth(for: config.profileID).state.coins == 35)
         session.advance(by: 5)
         session.suspend()
-        let before = session.battle
+        #expect(growth.state.coins == 35)
+        #expect(try model.database?.growthState(profileID: config.profileID)?.adventure.active == nil)
+        #expect(session.abandon())
+        #expect(growth.state.adventure.active == nil)
+        #expect(growth.state.adventure.results.first?.seconds == 5)
+        let next = AdventureSession(levelID: 1, model: model, profileID: config.profileID, difficulty: .hard)
+        #expect(next.battle.id != session.battle.id)
+        #expect(next.battle.phase == .preparing && next.battle.elapsed == 0 && next.battle.wave == 1)
+        #expect(next.battle.towers.isEmpty && next.battle.enemies.isEmpty)
+        #expect(next.battle.difficulty == .hard)
+        session.resume()
         session.advance(by: 20)
-        #expect(session.battle == before)
-        let restored = AdventureSession(levelID: 1, model: model, profileID: config.profileID, difficulty: .easy)
-        #expect(restored.battle.phase == .paused)
-        #expect(restored.battle.id == session.battle.id)
-        restored.resume()
-        restored.advance(by: 1)
-        #expect(model.growth(for: config.profileID).state.coins == 35)
-        #expect(restored.battle.elapsed > before.elapsed)
+        #expect(session.battle.elapsed == 5)
+        next.plant("inkling", lane: 0, column: 0)
+        next.start()
+        #expect(growth.state.coins == 20)
     }
 
     @Test func finishingAndLeavingNeverProduceClassicLearningRewards() throws {

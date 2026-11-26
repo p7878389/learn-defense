@@ -16,8 +16,6 @@ struct AdventureLobbyView: View {
     @State private var difficulty: Difficulty = .normal
     @State private var deck = AdventureCatalog.defaultDeck
     @State private var launch: AdventureLaunch?
-    @State private var confirmAbandon = false
-    @State private var error: String?
 
     private var growth: GrowthStore { model.growth(for: profileID) }
 
@@ -36,7 +34,6 @@ struct AdventureLobbyView: View {
                     AdventureAction(title: "经典闯关", icon: "📖", fill: GrowthColors.surface,
                                     edge: GrowthColors.cardEdge, foreground: Theme.ink, action: onClose)
                 }
-                if let active = growth.state.adventure.active { savedBattle(active) }
                 if landscape {
                     HStack(alignment: .top, spacing: 16) {
                         deckPanel(columns: 2, compact: geometry.size.height < 760)
@@ -56,39 +53,12 @@ struct AdventureLobbyView: View {
                     .foregroundStyle(Theme.muted).lineLimit(1).minimumScaleFactor(0.8)
             }
             .padding(20)
-            .frame(maxWidth: 1200)
             .frame(maxWidth: .infinity)
         }
         .background(GrowthPageBackground())
         .gameCover(item: $launch, onDismiss: { model.objectWillChange.send() }) { launch in
             AdventureView(levelID: launch.levelID, model: model, profileID: profileID,
                           difficulty: launch.difficulty, deck: launch.deck, onClose: { self.launch = nil })
-        }
-        .overlay {
-            if confirmAbandon {
-                CandyConfirmModal(
-                    title: "放弃这场冒险？",
-                    icon: "⚠️",
-                    message: "放弃后将清除当前进度，已消耗的 15 积分不会返还。",
-                    buttons: [
-                        CandyConfirmButton(title: "确认放弃", icon: "🚪", role: .destructive) {
-                            confirmAbandon = false
-                            do { try growth.abandonAdventure(); model.objectWillChange.send() }
-                            catch { self.error = error.localizedDescription }
-                        },
-                        CandyConfirmButton(title: "再想想", role: .cancel) { confirmAbandon = false }
-                    ],
-                    onDismiss: { confirmAbandon = false }
-                )
-            } else if let message = error {
-                CandyConfirmModal(
-                    title: "操作未完成",
-                    icon: "⚠️",
-                    message: message,
-                    buttons: [CandyConfirmButton(title: "知道了", role: .primary) { error = nil }],
-                    onDismiss: { error = nil }
-                )
-            }
         }
         .interactiveDismissDisabled()
     }
@@ -190,25 +160,7 @@ struct AdventureLobbyView: View {
             .opacity(unlocked ? 1 : 0.6)
         }
         .buttonStyle(PressableStyle())
-        .disabled(!unlocked || (!validDeck && growth.state.coins >= 15) || growth.state.adventure.active != nil)
+        .disabled(!unlocked || (!validDeck && growth.state.coins >= 15))
     }
 
-    private func savedBattle(_ battle: AdventureBattle) -> some View {
-        HStack(spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("继续上次冒险 · \(battle.level.title)").font(.headline)
-                Text("第 \(battle.wave) 波 · 基地 \(battle.lives)/10 · 不再扣积分").font(.caption).foregroundStyle(Theme.muted)
-            }
-            Spacer()
-            AdventureAction(title: "继续冒险", icon: "▶") {
-                launch = AdventureLaunch(levelID: battle.level.id, difficulty: battle.difficulty, deck: battle.deck)
-            }
-            AdventureAction(title: "放弃", icon: "✕", fill: Theme.wrong.opacity(0.14),
-                            edge: Theme.wrong.opacity(0.45), foreground: Theme.wrong) {
-                confirmAbandon = true
-            }
-        }
-        .padding(12)
-        .candyCard(fill: GrowthColors.gold.opacity(0.16), radius: 18)
-    }
 }
