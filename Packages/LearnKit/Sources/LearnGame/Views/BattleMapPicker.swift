@@ -7,27 +7,27 @@ struct BattleMapPicker: View {
     let onSelect: (BattleMap) -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: AppSpacing.sm) {
             VStack(alignment: .leading, spacing: 2) {
-                Text("战场地图").font(AppFont.bodyStrong).foregroundStyle(Theme.ink)
-                Text("开战后锁定").font(AppFont.caption).foregroundStyle(Theme.muted)
+                Text("战场地图").font(AppFont.bodyStrong).foregroundStyle(AppColor.ink)
+                Text("开战后锁定").font(AppFont.caption).foregroundStyle(AppColor.muted)
             }
             ForEach(BattleMap.allCases) { map in
                 let selected = selection == map
                 Button { onSelect(map) } label: {
-                    VStack(spacing: 4) {
+                    VStack(spacing: AppSpacing.xxs) {
                         if let image = BattleMapArtwork.image(map) {
                             Image(decorative: image, scale: 1)
                                 .resizable().aspectRatio(2, contentMode: .fit)
                                 .frame(width: 112, height: 56)
                                 .clipShape(RoundedRectangle(cornerRadius: AppRadius.xs))
                         }
-                        HStack(spacing: 4) {
+                        HStack(spacing: AppSpacing.xxs) {
                             Text(map.name).font(AppFont.label)
                             if selected {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .font(.system(size: 13, weight: .bold))
-                                    .foregroundStyle(Theme.jade)
+                                    .font(AppFont.rounded(13, weight: .bold))
+                                    .foregroundStyle(AppColor.jade)
                             }
                         }
                         .frame(height: 18)
@@ -41,7 +41,7 @@ struct BattleMapPicker: View {
                             radius: AppRadius.sm
                         )
                     )
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(AppColor.ink)
                 }
                 .buttonStyle(PressableStyle())
                 .accessibilityLabel(map.name)

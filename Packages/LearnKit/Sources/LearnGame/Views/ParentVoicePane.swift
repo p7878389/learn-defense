@@ -8,16 +8,16 @@ struct ParentVoicePane: View {
     @State private var message: String?
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: AppSpacing.md) {
             SettingsCard(title: "当前朗读方式", systemImage: "speaker.wave.2.fill", tint: AppColor.parentAccent) {
-                HStack(spacing: 14) {
+                HStack(spacing: AppSpacing.sm) {
                     source(.system, systemImage: "ipad", title: "iPad 系统语音", detail: "离线可用，零配置")
                     source(.doubao, systemImage: "cloud.fill", title: "豆包语音", detail: doubaoDetail)
                 }
                 HStack {
                     Text("高级设置可配置豆包账号与中英文音色。")
                         .font(AppFont.label)
-                        .foregroundStyle(Theme.muted)
+                        .foregroundStyle(AppColor.muted)
                     Spacer()
                     AppButton(title: "高级设置（账号 · 音色）", systemImage: "slider.horizontal.3", role: .accent, size: .medium) {
                         advanced = true
@@ -28,16 +28,16 @@ struct ParentVoicePane: View {
                 slider("语速", value: $draft.rate, range: 0.25...0.65, format: "%.2f")
                 slider("音调（系统语音）", value: $draft.pitch, range: 0.7...1.5, format: "%.2f")
                 slider("音量", value: $draft.volume, range: 0...1, format: "%.2f")
-                VStack(spacing: 10) {
+                VStack(spacing: AppSpacing.xs) {
                     Toggle("自动朗读题目", isOn: $draft.readQuestions)
                     Toggle("朗读游戏提示语", isOn: $draft.readGuidance)
                     Toggle("静音模式下也朗读", isOn: $draft.readsWhenSilent)
                 }
                 .font(AppFont.body)
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(AppColor.ink)
                 .tint(AppColor.parentAccent)
 
-                HStack(spacing: 12) {
+                HStack(spacing: AppSpacing.sm) {
                     AppButton(title: "保存设置", systemImage: "checkmark", role: .primary, size: .medium) { save() }
                     AppButton(title: "试读", systemImage: "speaker.wave.2.fill", role: .secondary, size: .medium) {
                         if save() { model.speech.speak("春眠不觉晓，处处闻啼鸟。Hello, welcome!", interrupt: true, channel: .preview) }
@@ -58,30 +58,30 @@ struct ParentVoicePane: View {
     private func source(_ source: ReaderPreferences.Source, systemImage: String, title: String, detail: String) -> some View {
         let selected = draft.source == source
         return Button { draft.source = source } label: {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: AppSpacing.xs) {
+                HStack(spacing: AppSpacing.xs) {
                     AppIconBadge(systemImage: systemImage, tint: selected ? AppColor.parentAccent : AppColor.muted, size: 30)
                     Text(title).font(AppFont.bodyStrong)
                     Spacer()
                     Image(systemName: selected ? "checkmark.circle.fill" : "circle")
-                        .font(.system(size: 20, weight: .bold))
+                        .font(AppFont.rounded(20, weight: .bold))
                         .foregroundStyle(selected ? AppColor.parentAccent : AppColor.cardStroke)
                 }
-                Text(detail).font(AppFont.label).foregroundStyle(Theme.muted).multilineTextAlignment(.leading)
+                Text(detail).font(AppFont.label).foregroundStyle(AppColor.muted).multilineTextAlignment(.leading)
             }
-            .padding(16)
+            .padding(AppSpacing.md)
             .frame(maxWidth: .infinity, minHeight: 102, alignment: .topLeading)
-            .background(selected ? AppColor.parentAccent.opacity(0.09) : Theme.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
+            .background(selected ? AppColor.parentAccent.opacity(0.09) : AppColor.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
             .overlay(RoundedRectangle(cornerRadius: AppRadius.sm).strokeBorder(selected ? AppColor.parentAccent : AppColor.parentStroke, lineWidth: selected ? 2 : 1.2))
         }
         .buttonStyle(PressableStyle())
-        .foregroundStyle(Theme.ink)
+        .foregroundStyle(AppColor.ink)
     }
 
     private func slider(_ title: String, value: Binding<Double>, range: ClosedRange<Double>, format: String) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text(title).font(AppFont.body).foregroundStyle(Theme.ink)
+                Text(title).font(AppFont.body).foregroundStyle(AppColor.ink)
                 Spacer()
                 Text(String(format: format, value.wrappedValue))
                     .font(AppFont.digits(16, weight: .heavy))
@@ -89,8 +89,8 @@ struct ParentVoicePane: View {
             }
             Slider(value: value, in: range).tint(AppColor.parentAccent)
         }
-        .padding(14)
-        .background(Theme.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
+        .padding(AppSpacing.sm)
+        .background(AppColor.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
     }
 
     @discardableResult private func save() -> Bool {
@@ -106,18 +106,18 @@ struct ParentGamePane: View {
     @State private var message: String?
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: AppSpacing.md) {
             SettingsCard(title: "声音与游戏规则", systemImage: "gamecontroller.fill", tint: AppColor.violet) {
-                Text("保存后，从下一局游戏开始使用新规则。").font(AppFont.label).foregroundStyle(Theme.muted)
+                Text("保存后，从下一局游戏开始使用新规则。").font(AppFont.label).foregroundStyle(AppColor.muted)
                 HStack {
                     Text("答题提示音音量").font(AppFont.body)
                     Spacer()
                     Slider(value: $effects, in: 0...1).tint(AppColor.parentAccent).frame(maxWidth: 320)
                 }
-                .padding(12)
-                .background(Theme.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
+                .padding(AppSpacing.sm)
+                .background(AppColor.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
 
-                VStack(spacing: 10) {
+                VStack(spacing: AppSpacing.xs) {
                     Stepper("开始 \(rules.initialRestRounds) 回合使用固定休息", value: $rules.initialRestRounds, in: 1...20)
                     Stepper("初始休息 \(rules.initialRestSeconds) 秒", value: $rules.initialRestSeconds, in: 1...90)
                     Stepper("后续每回合增加 \(rules.restIncrementSeconds) 秒", value: $rules.restIncrementSeconds, in: 1...30)
@@ -131,10 +131,10 @@ struct ParentGamePane: View {
                     Stepper("挑战：每回合增加 \(rules.questionIncrement.hard) 题", value: $rules.questionIncrement.hard, in: 1...20)
                 }
                 .font(AppFont.body)
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(AppColor.ink)
             }
             SettingsCard(title: "每日积分上限", systemImage: "star.circle.fill", tint: AppColor.goldEdge) {
-                VStack(spacing: 10) {
+                VStack(spacing: AppSpacing.xs) {
                     ForEach(CoinSource.allCases, id: \.rawValue) { source in
                         Stepper("\(title(source))：\(rules.coinLimits[source.rawValue] ?? 0) 分",
                                 value: Binding(get: { rules.coinLimits[source.rawValue] ?? 0 },
@@ -142,10 +142,10 @@ struct ParentGamePane: View {
                     }
                 }
                 .font(AppFont.body)
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(AppColor.ink)
                 Text("上限设为 0 可关闭该来源。调高上限不会重置今天已领取的积分。")
-                    .font(AppFont.caption).foregroundStyle(Theme.muted)
-                HStack(spacing: 12) {
+                    .font(AppFont.caption).foregroundStyle(AppColor.muted)
+                HStack(spacing: AppSpacing.sm) {
                     AppButton(title: "保存游戏设置", systemImage: "checkmark", role: .primary, size: .medium) {
                         do {
                             try model.updateRules(rules)

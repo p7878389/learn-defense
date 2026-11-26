@@ -51,7 +51,7 @@ struct ProfileEditor: View {
                 ScrollView {
                     panel
                         .frame(maxWidth: 960)
-                        .padding(24)
+                        .padding(AppSpacing.lg)
                         .frame(minWidth: geo.size.width, minHeight: geo.size.height)
                 }
                 .scrollBounceBehavior(.basedOnSize)
@@ -80,36 +80,36 @@ struct ProfileEditor: View {
     private var panel: some View {
         let shape = RoundedRectangle(cornerRadius: AppRadius.xl)
         return VStack(alignment: .leading, spacing: 0) {
-            HStack(alignment: .center, spacing: 14) {
+            HStack(alignment: .center, spacing: AppSpacing.sm) {
                 AppIconBadge(systemImage: isNew ? "sparkles" : "person.crop.circle.badge.checkmark", tint: AppColor.accent, size: 42)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(isNew ? "欢迎新的小守卫！" : "修改小守卫")
                         .font(AppFont.title)
-                        .foregroundStyle(Theme.ink)
+                        .foregroundStyle(AppColor.ink)
                     Text(isNew ? "选个喜欢的小动物，一起去守护书本吧！" : "修改完成后点击底部「保存」即可生效")
                         .font(AppFont.body)
-                        .foregroundStyle(Theme.muted)
+                        .foregroundStyle(AppColor.muted)
                 }
                 Spacer()
             }
-            .padding(.bottom, 16)
+            .padding(.bottom, AppSpacing.md)
 
             Divider()
 
-            HStack(alignment: .top, spacing: 24) {
+            HStack(alignment: .top, spacing: AppSpacing.lg) {
                 preview
-                VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: AppSpacing.md) {
                     avatarStep
                     nameStep
                     gradeStep
                 }
             }
-            .padding(.vertical, 20)
+            .padding(.vertical, AppSpacing.md)
 
             Divider()
 
             // 底部同行按钮全部统一 .large（54pt），不再参差不齐
-            HStack(spacing: 14) {
+            HStack(spacing: AppSpacing.sm) {
                 if !isNew, onDelete != nil {
                     AppButton(title: "删除档案", systemImage: "trash.fill", role: .destructive, size: .large, minWidth: 136) {
                         confirmingDelete = true
@@ -117,7 +117,7 @@ struct ProfileEditor: View {
                 } else {
                     Label("以后点卡片右上角的编辑按钮可以随时修改", systemImage: "lightbulb.fill")
                         .font(AppFont.label)
-                        .foregroundStyle(Theme.muted)
+                        .foregroundStyle(AppColor.muted)
                 }
                 Spacer()
                 AppButton(title: "取消", role: .secondary, size: .large, minWidth: 120) {
@@ -130,14 +130,14 @@ struct ProfileEditor: View {
                 }
                 .disabled(!canSave)
             }
-            .padding(.top, 16)
+            .padding(.top, AppSpacing.md)
         }
-        .padding(28)
+        .padding(AppSpacing.lg)
         .background(
             ZStack {
                 shape.fill(AppColor.cardEdge)
-                    .shadow(color: .black.opacity(0.22), radius: 24, y: 12)
-                shape.fill(LinearGradient(colors: [AppColor.paperTop, Theme.paper], startPoint: .top, endPoint: .bottom))
+                    .appShadow(.floating)
+                shape.fill(LinearGradient(colors: [AppColor.paperTop, AppColor.paper], startPoint: .top, endPoint: .bottom))
                     .overlay(shape.strokeBorder(AppColor.gold.opacity(0.75), lineWidth: 2.5))
                     .padding(.bottom, 5)
             }
@@ -148,10 +148,10 @@ struct ProfileEditor: View {
 
     private var preview: some View {
         let tint = AvatarTint.color(for: profile.avatar)
-        return VStack(spacing: 14) {
+        return VStack(spacing: AppSpacing.sm) {
             Label("实时卡片预览", systemImage: "eye.fill")
                 .font(AppFont.bodyStrong)
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(AppColor.ink)
             VStack(spacing: 10) {
                 ZStack {
                     Circle()
@@ -163,36 +163,36 @@ struct ProfileEditor: View {
                         .frame(width: 100, height: 100)
                         .overlay(PictureView(emoji: profile.avatar, size: 70))
                 }
-                .padding(.top, 20)
+                .padding(.top, AppSpacing.md)
                 Text(trimmedName.isEmpty ? "小守卫" : trimmedName)
                     .font(AppFont.title)
-                    .foregroundStyle(trimmedName.isEmpty ? Theme.muted.opacity(0.6) : Theme.ink)
+                    .foregroundStyle(trimmedName.isEmpty ? AppColor.muted.opacity(0.6) : AppColor.ink)
                     .lineLimit(1)
                     .minimumScaleFactor(0.5)
                     .fixedSize(horizontal: false, vertical: true)
                 Text(profile.grade.displayName)
                     .font(AppFont.label)
                     .foregroundStyle(AppColor.jadeEdge)
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, AppSpacing.md)
                     .frame(height: 30)
                     .background(Capsule().fill(AppColor.jade.opacity(0.14)))
-                    .padding(.bottom, 18)
+                    .padding(.bottom, AppSpacing.md)
             }
             .frame(maxWidth: .infinity)
-            .padding(.horizontal, 16)
-            .candyCard(fill: .white, radius: AppRadius.lg)
+            .padding(.horizontal, AppSpacing.md)
+            .appInset(radius: AppRadius.lg)
             .overlay(alignment: .top) {
                 if isNew {
-                    HomeRibbon(text: "🌱 新伙伴", fill: Theme.jade, edge: GrowthColors.jadeDark).offset(y: -16)
+                    HomeRibbon(text: "🌱 新伙伴", fill: AppColor.jade, edge: AppColor.jadeEdge).offset(y: -16)
                 }
             }
             Text(isNew ? "建好后会出现在首页舞台" : "首页的卡片会同步更新")
                 .font(AppFont.label)
-                .foregroundStyle(Theme.muted)
+                .foregroundStyle(AppColor.muted)
         }
-        .padding(18)
+        .padding(AppSpacing.md)
         .frame(width: 288)
-        .candyCard(radius: AppRadius.lg)
+        .appPanel(radius: AppRadius.lg)
     }
 
     // MARK: - 右栏：三步
@@ -206,12 +206,12 @@ struct ProfileEditor: View {
                 .background(Circle().fill(AppColor.accent))
             Text(title)
                 .font(AppFont.heading)
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(AppColor.ink)
             if let note {
                 Spacer()
                 Text(note)
                     .font(AppFont.label)
-                    .foregroundStyle(nameTooLong && number == 2 ? Theme.wrong : Theme.muted)
+                    .foregroundStyle(nameTooLong && number == 2 ? AppColor.dangerText : AppColor.muted)
             }
         }
     }
@@ -229,10 +229,10 @@ struct ProfileEditor: View {
                             .overlay(alignment: .topTrailing) {
                                 if selected {
                                     Image(systemName: "checkmark")
-                                        .font(.system(size: 11, weight: .black))
+                                        .font(AppFont.rounded(11, weight: .black))
                                         .foregroundStyle(.white)
                                         .frame(width: 22, height: 22)
-                                        .background(Circle().fill(Theme.jade))
+                                        .background(Circle().fill(AppColor.jade))
                                         .overlay(Circle().strokeBorder(.white, lineWidth: 2))
                                         .offset(x: 5, y: -5)
                                 }
@@ -251,10 +251,10 @@ struct ProfileEditor: View {
             stepTitle(2, "名字或小名", note: nameTooLong ? "最多 \(Self.maxNameLength) 个字哦" : "最多 \(Self.maxNameLength) 个字")
             TextField("例如：乐乐、朵朵", text: $profile.name)
                 .font(AppFont.heading)
-                .padding(.horizontal, 18)
+                .padding(.horizontal, AppSpacing.md)
                 .frame(height: 58)
                 .background(RoundedRectangle(cornerRadius: AppRadius.md).fill(AppColor.surface))
-                .overlay(RoundedRectangle(cornerRadius: AppRadius.md).strokeBorder(nameTooLong ? Theme.wrong : AppColor.gold, lineWidth: 2.5))
+                .overlay(RoundedRectangle(cornerRadius: AppRadius.md).strokeBorder(nameTooLong ? AppColor.dangerText : AppColor.gold, lineWidth: 2.5))
                 .submitLabel(.done)
         }
     }
@@ -268,7 +268,7 @@ struct ProfileEditor: View {
                     Button { profile.grade = grade } label: {
                         Text(grade.displayName)
                             .font(AppFont.bodyStrong)
-                            .foregroundStyle(selected ? .white : Theme.ink)
+                            .foregroundStyle(selected ? .white : AppColor.ink)
                             .frame(maxWidth: .infinity, minHeight: 52)
                             .background(CandyTileBackground(selected: selected, radius: AppRadius.md))
                     }

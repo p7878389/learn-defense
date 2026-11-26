@@ -12,7 +12,7 @@ public struct RootView: View {
             ProfilesView()
         }
         .environmentObject(model)
-        .tint(Theme.accent)
+        .tint(AppColor.accent)
     }
 }
 
@@ -53,8 +53,7 @@ struct ProfilesView: View {
                 CarouselPager(cards: cards, current: current) { card in
                     select(card)
                 }
-                .padding(.top, 6)
-                .padding(.bottom, 6)
+                .padding(.vertical, AppSpacing.xs)
             }
             HomeLawn()
         }
@@ -79,8 +78,8 @@ struct ProfilesView: View {
             VStack(spacing: 6) {
                 GameLogo(size: 52)
                 Text("今天谁来守护书本？")
-                    .font(.system(size: 22, weight: .heavy, design: .rounded))
-                    .foregroundStyle(Theme.ink)
+                    .font(AppFont.heading)
+                    .foregroundStyle(AppColor.ink)
             }
             .frame(maxWidth: .infinity)
 
@@ -89,8 +88,8 @@ struct ProfilesView: View {
                 showingVoiceSettings = true
             }
         }
-        .padding(.horizontal, 32)
-        .padding(.top, 8)
+        .padding(.horizontal, AppSpacing.xl)
+        .padding(.top, AppSpacing.xs)
     }
 
     private var spotlightColor: Color {
@@ -98,7 +97,7 @@ struct ProfilesView: View {
            let profile = model.profiles.first(where: { $0.id == id }) {
             return AvatarTint.color(for: profile.avatar)
         }
-        return GrowthColors.gold
+        return AppColor.gold
     }
 
     private var homeBackground: some View {
@@ -106,14 +105,14 @@ struct ProfilesView: View {
             GrowthPageBackground()
             // 顶部柔和天空微蓝渐变
             LinearGradient(
-                colors: [GrowthColors.sky.opacity(0.65), GrowthColors.sky.opacity(0.2), .clear],
+                colors: [AppColor.sky.opacity(0.65), AppColor.sky.opacity(0.2), .clear],
                 startPoint: .top,
                 endPoint: .center
             )
             .ignoresSafeArea()
             // 舞台中央聚光灯随当前聚焦孩子平滑切换主题色并轻微呼吸
             RadialGradient(
-                colors: [spotlightColor.opacity(stageGlow ? 0.46 : 0.34), GrowthColors.gold.opacity(0.14), .clear],
+                colors: [spotlightColor.opacity(stageGlow ? 0.46 : 0.34), AppColor.gold.opacity(0.14), .clear],
                 center: UnitPoint(x: 0.5, y: 0.42),
                 startRadius: 30,
                 endRadius: 500
@@ -143,7 +142,7 @@ struct ProfilesView: View {
                 Ellipse()
                     .fill(
                         RadialGradient(
-                            colors: [spotlightColor.opacity(0.42), GrowthColors.gold.opacity(0.18), .clear],
+                            colors: [spotlightColor.opacity(0.42), AppColor.gold.opacity(0.18), .clear],
                             center: .center,
                             startRadius: 12,
                             endRadius: 260
@@ -201,7 +200,7 @@ struct ProfilesView: View {
                         .zIndex(g.zIndex)
                     }
                 }
-                .padding(.vertical, 24)
+                .padding(.vertical, AppSpacing.lg)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .contentShape(Rectangle())

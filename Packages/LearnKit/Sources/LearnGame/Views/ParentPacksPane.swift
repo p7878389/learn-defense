@@ -24,34 +24,34 @@ struct ParentPacksPane: View {
     private var importedIDs: Set<String> { Set(manager.imported().map(\.id)) }
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: AppSpacing.md) {
             SettingsCard(title: "导入课本", systemImage: "square.and.arrow.down.fill", tint: AppColor.jade) {
                 Text("添加自制或分享的 JSON 题库。导入前会先检查内容。")
-                    .font(AppFont.body).foregroundStyle(Theme.muted)
-                HStack(spacing: 14) {
+                    .font(AppFont.body).foregroundStyle(AppColor.muted)
+                HStack(spacing: AppSpacing.sm) {
                     AppButton(title: "从文件 App 选择", systemImage: "plus", role: .primary, size: .medium) { choosing = true }
                     AppButton(title: "怎么做题库？", systemImage: "questionmark.circle", role: .secondary, size: .medium) { help = true }
                 }
             }
             SettingsCard(title: "已安装课本（\(model.library.packs.count)）", systemImage: "books.vertical.fill", tint: AppColor.parentAccent) {
                 ForEach(model.library.packs) { pack in
-                    HStack(spacing: 14) {
+                    HStack(spacing: AppSpacing.sm) {
                         AppIconBadge(
                             systemImage: pack.subject == .english ? "character.book.closed.fill" : "book.closed.fill",
                             tint: pack.subject == .english ? AppColor.adventure : AppColor.accent,
                             size: 42
                         )
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack(spacing: 8) {
-                                Text(pack.title).font(AppFont.bodyStrong).foregroundStyle(Theme.ink)
+                        VStack(alignment: .leading, spacing: AppSpacing.xxs) {
+                            HStack(spacing: AppSpacing.xs) {
+                                Text(pack.title).font(AppFont.bodyStrong).foregroundStyle(AppColor.ink)
                                 Text(importedIDs.contains(pack.id) ? "已导入" : "内置")
                                     .font(AppFont.caption)
-                                    .foregroundStyle(importedIDs.contains(pack.id) ? AppColor.jadeEdge : Theme.muted)
-                                    .padding(.horizontal, 8).padding(.vertical, 3)
+                                    .foregroundStyle(importedIDs.contains(pack.id) ? AppColor.jadeEdge : AppColor.muted)
+                                    .padding(.horizontal, AppSpacing.xs).padding(.vertical, 3)
                                     .background(Capsule().fill(importedIDs.contains(pack.id) ? AppColor.jade.opacity(0.14) : AppColor.surface))
                             }
                             Text("\(pack.grade.displayName) · \(pack.units.count) 个单元 · \(ItemPool(packs: [pack], selection: .all).items.count) 个知识点")
-                                .font(AppFont.caption).foregroundStyle(Theme.muted)
+                                .font(AppFont.caption).foregroundStyle(AppColor.muted)
                         }
                         Spacer()
                         if importedIDs.contains(pack.id) {
@@ -60,8 +60,8 @@ struct ParentPacksPane: View {
                             }
                         }
                     }
-                    .padding(14)
-                    .background(Theme.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
+                    .padding(AppSpacing.sm)
+                    .background(AppColor.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
                 }
             }.id(revision)
         }
@@ -72,29 +72,29 @@ struct ParentPacksPane: View {
             } catch { self.error = error.localizedDescription }
         }
         .sheet(item: $pending) { draft in
-            VStack(spacing: 18) {
+            VStack(spacing: AppSpacing.md) {
                 GrowthPageHeader(
                     icon: "📗", systemIcon: "book.badge.plus", iconTint: AppColor.jade,
                     title: "确认导入课本", backTitle: "关闭", backSystemImage: "xmark", parentStyle: true,
                     onClose: { pending = nil }
                 ) {}
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text(draft.pack.title).font(AppFont.title).foregroundStyle(Theme.ink)
+                    VStack(alignment: .leading, spacing: AppSpacing.md) {
+                        Text(draft.pack.title).font(AppFont.title).foregroundStyle(AppColor.ink)
                         Text("\(draft.pack.grade.displayName) · \(draft.pack.edition ?? "通用版")")
-                            .font(AppFont.body).foregroundStyle(Theme.muted)
-                        HStack(spacing: 24) {
+                            .font(AppFont.body).foregroundStyle(AppColor.muted)
+                        HStack(spacing: AppSpacing.lg) {
                             Label("\(draft.pack.units.count) 个单元", systemImage: "books.vertical")
                             Label("\(draft.itemCount) 个知识点", systemImage: "checkmark.circle")
-                        }.font(AppFont.bodyStrong).foregroundStyle(Theme.ink)
+                        }.font(AppFont.bodyStrong).foregroundStyle(AppColor.ink)
                         if model.library.pack(id: draft.pack.id) != nil {
                             Label("同 id 课本将被替换，已有学习记录会保留。", systemImage: "exclamationmark.triangle.fill")
-                                .font(AppFont.body).foregroundStyle(Theme.accent)
+                                .font(AppFont.body).foregroundStyle(AppColor.accent)
                         }
                         Label("文件格式检查通过", systemImage: "checkmark.seal.fill")
-                            .font(AppFont.bodyStrong).foregroundStyle(Theme.jade)
-                        Text("导入后立即可选，无需重启。").font(AppFont.label).foregroundStyle(Theme.muted)
-                        HStack(spacing: 14) {
+                            .font(AppFont.bodyStrong).foregroundStyle(AppColor.jade)
+                        Text("导入后立即可选，无需重启。").font(AppFont.label).foregroundStyle(AppColor.muted)
+                        HStack(spacing: AppSpacing.sm) {
                             AppButton(title: "取消", role: .secondary, size: .large, expands: true) { pending = nil }
                             AppButton(
                                 title: model.library.pack(id: draft.pack.id) == nil ? "确认导入" : "导入并替换",
@@ -109,22 +109,22 @@ struct ParentPacksPane: View {
                             }
                         }
                     }
-                    .padding(24)
+                    .padding(AppSpacing.lg)
                     .parentSurfaceCard(radius: AppRadius.md)
                 }
             }
-            .padding(20)
+            .padding(AppSpacing.md)
             .background(GrowthPageBackground())
         }
         .sheet(isPresented: $help) {
-            VStack(spacing: 18) {
+            VStack(spacing: AppSpacing.md) {
                 GrowthPageHeader(
                     icon: "💡", systemIcon: "lightbulb.fill", iconTint: AppColor.accent,
                     title: "怎么做题库", backTitle: "关闭", backSystemImage: "xmark", parentStyle: true,
                     onClose: { help = false }
                 ) {}
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 14) {
+                    VStack(alignment: .leading, spacing: AppSpacing.sm) {
                         Text("准备一份 UTF-8 编码的 JSON 文件，包含课本 id、书名、学科、年级、单元及课文内容。").font(AppFont.bodyStrong)
                         Text("支持生字、词语、古诗、成语、图片、英语词句和自定义选择题；每个知识点要提供对应的读音或答案。").font(AppFont.body)
                         Text("同 id 的课本会覆盖导入版本；删除导入版本后，内置课本会重新出现。").font(AppFont.body)
@@ -149,15 +149,15 @@ struct ParentPacksPane: View {
                           }]
                         }
                         """).font(.system(.body, design: .monospaced)).textSelection(.enabled)
-                            .padding(14).frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Theme.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
+                            .padding(AppSpacing.sm).frame(maxWidth: .infinity, alignment: .leading)
+                            .background(AppColor.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
                     }
-                    .foregroundStyle(Theme.ink)
-                    .padding(24)
+                    .foregroundStyle(AppColor.ink)
+                    .padding(AppSpacing.lg)
                     .parentSurfaceCard(radius: AppRadius.md)
                 }
             }
-            .padding(20)
+            .padding(AppSpacing.md)
             .background(GrowthPageBackground())
         }
         .overlay {
@@ -198,13 +198,13 @@ struct ParentProfilesPane: View {
     var body: some View {
         SettingsCard(title: "孩子档案", systemImage: "person.2.fill", tint: AppColor.accent) {
             ForEach(model.profiles) { profile in
-                HStack(spacing: 14) {
+                HStack(spacing: AppSpacing.sm) {
                     PictureView(emoji: profile.avatar, size: 42)
                         .frame(width: 52, height: 52)
                         .background(Circle().fill(AvatarTint.color(for: profile.avatar).opacity(0.65)))
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(profile.name).font(AppFont.bodyStrong).foregroundStyle(Theme.ink)
-                        Text(profile.grade.displayName).font(AppFont.label).foregroundStyle(Theme.muted)
+                        Text(profile.name).font(AppFont.bodyStrong).foregroundStyle(AppColor.ink)
+                        Text(profile.grade.displayName).font(AppFont.label).foregroundStyle(AppColor.muted)
                     }
                     Spacer()
                     AppButton(title: "编辑", systemImage: "pencil", role: .secondary, size: .small, minWidth: 88) {
@@ -214,8 +214,8 @@ struct ParentProfilesPane: View {
                         deleting = profile
                     }
                 }
-                .padding(12)
-                .background(Theme.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
+                .padding(AppSpacing.sm)
+                .background(AppColor.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
             }
             AppButton(title: "添加孩子", systemImage: "plus", role: .primary, size: .medium) {
                 editing = EditingProfile(profile: Profile(name: "", grade: .g3, avatar: "🐯"), isNew: true)
