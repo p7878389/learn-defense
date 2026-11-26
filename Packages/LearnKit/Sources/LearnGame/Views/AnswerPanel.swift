@@ -17,13 +17,13 @@ struct AnswerPanel: View {
     private var revealed: Bool { !wrongPicks.isEmpty }
 
     var body: some View {
-        VStack(spacing: compact ? 8 : 14) {
+        VStack(spacing: compact ? AppSpacing.xs : AppSpacing.sm) {
             if let q = question, let spec = q.input {
                 header(q)
                 TileAnswerView(spec: spec, wrongCount: wrongPicks.count, compact: compact, onStart: onStartInput, onSubmit: onSubmitInput)
             } else if let q = question {
                 header(q)
-                HStack(spacing: 14) {
+                HStack(spacing: AppSpacing.sm) {
                     ForEach(q.options.indices, id: \.self) { i in
                         OptionButton(text: q.options[i], style: q.optionStyle, state: state(of: i, in: q)) {
                             onAnswer(i)
@@ -33,18 +33,18 @@ struct AnswerPanel: View {
                 if revealed {
                     Text("再想一想，试试其他选项")
                         .font(AppFont.bodyStrong)
-                        .foregroundStyle(Theme.muted)
+                        .foregroundStyle(AppColor.muted)
                 }
             } else {
                 Text("僵尸马上就来，准备答题！")
                     .font(AppFont.heading)
-                    .foregroundStyle(Theme.muted)
+                    .foregroundStyle(AppColor.muted)
                     .frame(maxWidth: .infinity, minHeight: 120)
             }
             if retrying {
                 Text("刚才答错了，题目已刷新，请重新作答")
                     .font(AppFont.bodyStrong)
-                    .foregroundStyle(AppColor.accentEdge)
+                    .foregroundStyle(AppColor.dangerText)
             }
         }
         .id(question?.id)
@@ -52,28 +52,28 @@ struct AnswerPanel: View {
     }
 
     private func header(_ q: Question) -> some View {
-        HStack(alignment: .center, spacing: 16) {
+        HStack(alignment: .center, spacing: AppSpacing.md) {
             Text(q.instruction)
                 .font(AppFont.bodyStrong)
-                .foregroundStyle(Theme.muted)
+                .foregroundStyle(AppColor.muted)
             if q.prompt != "🔊", Pictures.image(q.prompt) != nil {
                 PictureView(emoji: q.prompt, size: 70)
             } else if q.prompt != "🔊" {
                 Text(q.prompt)
                     .font(AppFont.rounded(q.prompt.count > 10 ? 26 : 38, weight: .black))
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(AppColor.ink)
                     .lineLimit(2)
                     .minimumScaleFactor(0.6)
             }
             if let hint = q.hint {
                 Text(hint)
                     .font(AppFont.bodyStrong)
-                    .foregroundStyle(AppColor.accentEdge)
-                    .padding(.horizontal, 10).padding(.vertical, 4)
-                    .background(Capsule().fill(AppColor.gold.opacity(0.24)))
+                    .foregroundStyle(AppColor.jadeEdge)
+                    .padding(.horizontal, AppSpacing.sm).padding(.vertical, AppSpacing.xxs)
+                    .background(Capsule().fill(AppColor.jade.opacity(0.14)))
             }
             if q.promptSpeech != nil {
-                AppButton(title: "再听一遍", systemImage: "speaker.wave.2.fill", role: .accent, size: .medium, action: onReplay)
+                AppButton(title: "再听一遍", systemImage: "speaker.wave.2.fill", role: .secondary, size: .medium, action: onReplay)
             }
         }
     }
@@ -107,7 +107,7 @@ struct OptionButton: View {
         let lip: CGFloat = state == .wrong ? 0 : 4
         Button(action: action) {
             label
-                .padding(.horizontal, 10)
+                .padding(.horizontal, AppSpacing.sm)
                 .frame(maxWidth: .infinity, minHeight: style == .emoji ? 114 : 84)
                 .padding(.bottom, lip)
                 .background {
@@ -151,7 +151,7 @@ struct OptionButton: View {
                 .lineLimit(text.count > 10 ? 2 : 1)
                 .multilineTextAlignment(.center)
                 .minimumScaleFactor(0.5)
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(AppColor.ink)
         }
     }
 
@@ -159,7 +159,7 @@ struct OptionButton: View {
         switch state {
         case .normal: AppColor.surface
         case .wrong: AppColor.dangerFill
-        case .reveal: Color(red: 0.88, green: 0.98, blue: 0.93)
+        case .reveal: AppColor.meadow
         }
     }
 
@@ -167,15 +167,15 @@ struct OptionButton: View {
         switch state {
         case .normal: AppColor.surfaceBottom
         case .wrong: AppColor.dangerFill
-        case .reveal: Theme.jade.opacity(0.24)
+        case .reveal: AppColor.jade.opacity(0.24)
         }
     }
 
     private var borderColor: Color {
         switch state {
         case .normal: AppColor.cardStroke
-        case .wrong: Theme.wrong
-        case .reveal: Theme.jade
+        case .wrong: AppColor.dangerText
+        case .reveal: AppColor.jade
         }
     }
 

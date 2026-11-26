@@ -26,8 +26,14 @@ struct AdventureScreen: View {
     @State private var showExit = false
     let onClose: () -> Void
 
+    /// 冒险战斗专属美术色：雷霆就绪亮青高光与失败弹窗深蓝底边。
+    private enum LocalArt {
+        static let ultimateReadyTop = Color(red: 0.30, green: 0.86, blue: 1.0)
+        static let defeatBannerEdge = Color(red: 0.18, green: 0.31, blue: 0.54)
+    }
+
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: AppSpacing.xs) {
             topBar
             cards
             GeometryReader { geometry in
@@ -51,7 +57,7 @@ struct AdventureScreen: View {
             }
             bottomBar
         }
-        .padding(12)
+        .padding(AppSpacing.sm)
         .coordinateSpace(name: "adventure")
         .background(GrowthPageBackground())
         .overlay { stateOverlay }
@@ -61,55 +67,62 @@ struct AdventureScreen: View {
         .onDisappear { session.abandon() }
     }
 
+    /// 合并关卡徽章、生命/计时与暂停按钮为单条 .appPanel 状态栏，消除各自厚底与外框。
     private var topBar: some View {
         ViewThatFits(in: .horizontal) {
-            HStack(spacing: 12) { titleBadge; Spacer(); counters; pauseButton }
-            VStack(spacing: 8) { HStack { titleBadge; Spacer(); pauseButton }; counters }
+            HStack(spacing: AppSpacing.sm) {
+                titleBadge
+                Spacer(minLength: AppSpacing.xs)
+                counters
+                barDivider
+                pauseButton
+            }
+            VStack(spacing: AppSpacing.xs) {
+                HStack(spacing: AppSpacing.sm) {
+                    titleBadge
+                    Spacer(minLength: AppSpacing.xs)
+                    pauseButton
+                }
+                counters
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
         }
+        .padding(.horizontal, AppSpacing.sm)
+        .padding(.vertical, AppSpacing.xs)
+        .appPanel(radius: AppRadius.md)
     }
 
-    /// 森林徽章关卡标牌：不再让标题和波次裸浮在米色背景上
     private var titleBadge: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: AppSpacing.xs) {
             AppIconBadge(systemImage: "leaf.fill", tint: AppColor.adventure, size: 36)
             VStack(alignment: .leading, spacing: 2) {
                 Text(session.battle.level.title)
                     .font(AppFont.bodyStrong)
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(AppColor.ink)
                 Text("第 \(session.hud.wave)/5 波 · \(session.battle.difficulty.displayName)")
                     .font(AppFont.caption)
                     .foregroundStyle(AppColor.adventureEdge)
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .candyCard(radius: AppRadius.md)
     }
 
-    /// 消除与下方种植托盘重复的阳光数字，专注基地生命与计时
+    /// 平铺显示基地生命与计时，避免与外层状态栏形成卡套卡。
     private var counters: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: AppSpacing.sm) {
             Label("\(session.hud.lives)/10", systemImage: "heart.fill")
-                .foregroundStyle(Theme.wrong)
-            RoundedRectangle(cornerRadius: 1)
-                .fill(AppColor.cardEdge.opacity(0.75))
-                .frame(width: 1.5, height: 18)
+                .foregroundStyle(AppColor.dangerText)
+            barDivider
             Label(String(format: "%02d:%02d", session.hud.seconds / 60, session.hud.seconds % 60), systemImage: "clock.fill")
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(AppColor.ink)
         }
         .font(AppFont.digits(17, weight: .heavy))
-        .padding(.horizontal, 16)
-        .frame(height: 46)
-        .padding(.bottom, 3)
-        .background {
-            ZStack {
-                Capsule().fill(AppColor.cardEdge)
-                Capsule()
-                    .fill(LinearGradient(colors: [AppColor.surface, AppColor.surfaceBottom], startPoint: .top, endPoint: .bottom))
-                    .overlay(Capsule().strokeBorder(AppColor.cardStroke, lineWidth: 1.5))
-                    .padding(.bottom, 3)
-            }
-        }
+        .padding(.horizontal, AppSpacing.xs)
+    }
+
+    private var barDivider: some View {
+        RoundedRectangle(cornerRadius: 1)
+            .fill(AppColor.cardEdge.opacity(0.65))
+            .frame(width: 1.5, height: 18)
     }
 
     private var pauseButton: some View {
@@ -126,7 +139,7 @@ struct AdventureScreen: View {
 
     private var cards: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
+            HStack(spacing: AppSpacing.sm) {
                 SeedPacketStrip(kinds: session.plantable, sun: session.hud.sun,
                     enabled: session.battle.canBuild, draggingID: selected, skins: session.loadout.defenderSkins,
                     onDragChanged: { kind, point in
@@ -141,7 +154,7 @@ struct AdventureScreen: View {
                 AppButton(
                     title: shoveling ? "点击草坪铲除" : "铲除植物",
                     systemImage: shoveling ? "xmark.circle.fill" : "trash.slash.fill",
-                    role: shoveling ? .accent : .secondary,
+                    role: shoveling ? .destructive : .secondary,
                     size: .medium
                 ) {
                     shoveling.toggle(); selected = nil; placementCell = nil; placementMessage = nil
@@ -151,58 +164,60 @@ struct AdventureScreen: View {
         }
     }
 
-    /// 底部状态与操作统一收进绘本底栏卡片，信息结构均衡
+    /// 底部状态与操作统一收进 .appPanel 底栏，收紧竖向内边距为全屏战场留出最大高度。
     private var bottomBar: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: AppSpacing.xs) {
             if let error = session.error {
-                HStack(spacing: 12) {
-                    Text(error).font(AppFont.label).foregroundStyle(Theme.wrong)
-                    AppButton(title: "重试保存", systemImage: "arrow.clockwise", role: .accent, size: .small, action: session.retrySave)
+                HStack(spacing: AppSpacing.sm) {
+                    Text(error).font(AppFont.label).foregroundStyle(AppColor.dangerText)
+                    AppButton(title: "重试保存", systemImage: "arrow.clockwise", role: .secondary, size: .small, action: session.retrySave)
                 }
             }
             if session.hud.phase == .preparing {
-                HStack(spacing: 16) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack(spacing: 8) {
+                HStack(spacing: AppSpacing.md) {
+                    VStack(alignment: .leading, spacing: AppSpacing.xxs) {
+                        HStack(spacing: AppSpacing.xs) {
                             Text(placementPrompt ?? "点击或拖动卡牌到草坪布阵，至少种下一位射手（铲除不返阳光）")
                                 .font(AppFont.label)
-                                .foregroundStyle(placementPrompt != nil ? AppColor.accentEdge : Theme.ink)
+                                .foregroundStyle(placementMessage != nil ? AppColor.dangerText : (placementPrompt != nil ? AppColor.adventureEdge : AppColor.ink))
                                 .lineLimit(2)
                             placementCancel
                         }
                         enemyPreviewTag
                     }
-                    Spacer(minLength: 8)
+                    Spacer(minLength: AppSpacing.xs)
                     AppButton(title: "开始战斗 · 消耗 15 积分", systemImage: "play.fill", role: .primary, size: .large, action: session.start)
                         .disabled(!session.battle.towers.contains { AdventureCatalog.defender($0.kindID)?.canShoot == true })
                 }
             } else {
-                HStack(spacing: 16) {
-                    HStack(spacing: 10) {
+                HStack(spacing: AppSpacing.md) {
+                    HStack(spacing: AppSpacing.sm) {
                         Label(
                             session.hud.rest > 0 ? "下波倒计时 \(session.hud.rest)s" : "已击败 \(session.hud.defeated) 只",
                             systemImage: session.hud.rest > 0 ? "hourglass" : "flame.fill"
                         )
                         .font(AppFont.digits(15, weight: .heavy))
                         .foregroundStyle(AppColor.adventureEdge)
-                        .padding(.horizontal, 12).padding(.vertical, 6)
+                        .padding(.horizontal, AppSpacing.sm).padding(.vertical, 6)
                         .background(Capsule().fill(AppColor.adventure.opacity(0.14)))
 
                         if let prompt = placementPrompt {
-                            Text(prompt).font(AppFont.label).foregroundStyle(AppColor.accentEdge)
+                            Text(prompt)
+                                .font(AppFont.label)
+                                .foregroundStyle(placementMessage != nil ? AppColor.dangerText : AppColor.adventureEdge)
                             placementCancel
                         } else {
                             enemyPreviewTag
                         }
                     }
-                    Spacer(minLength: 8)
+                    Spacer(minLength: AppSpacing.xs)
                     ultimateButton
                 }
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .candyCard(radius: AppRadius.md)
+        .padding(.horizontal, AppSpacing.md)
+        .padding(.vertical, AppSpacing.xs)
+        .appPanel(radius: AppRadius.md)
     }
 
     private var enemyPreviewTag: some View {
@@ -211,7 +226,7 @@ struct AdventureScreen: View {
             systemImage: "eye.fill"
         )
         .font(AppFont.caption)
-        .foregroundStyle(Theme.muted)
+        .foregroundStyle(AppColor.muted)
         .lineLimit(1)
         .minimumScaleFactor(0.8)
     }
@@ -219,9 +234,9 @@ struct AdventureScreen: View {
     private var ultimateButton: some View {
         let ready = session.hud.ultimateReady
         return Button(action: session.unleash) {
-            HStack(spacing: 8) {
+            HStack(spacing: AppSpacing.xs) {
                 Image(systemName: "bolt.fill")
-                    .font(.system(size: 16, weight: .black))
+                    .font(AppFont.rounded(16, weight: .black))
                 Text(ready ? "雷霆就绪 · 释放" : "雷霆大招 \(session.hud.energy)/12")
                     .font(AppFont.digits(16, weight: .black))
             }
@@ -231,13 +246,13 @@ struct AdventureScreen: View {
             .padding(.bottom, 3.5)
             .background {
                 ZStack {
-                    Capsule().fill(ready ? GrowthColors.lightningDark : AppColor.accentEdge)
-                        .shadow(color: (ready ? GrowthColors.lightning : AppColor.accent).opacity(ready ? 0.45 : 0.18), radius: ready ? 10 : 4, y: 3)
+                    Capsule().fill(ready ? AppColor.lightningDark : AppColor.accentEdge)
+                        .shadow(color: (ready ? AppColor.lightning : AppColor.accent).opacity(ready ? 0.45 : 0.18), radius: ready ? 10 : 4, y: 3)
                     Capsule()
                         .fill(
                             LinearGradient(
                                 colors: ready
-                                    ? [Color(red: 0.30, green: 0.86, blue: 1.0), GrowthColors.lightning]
+                                    ? [LocalArt.ultimateReadyTop, AppColor.lightning]
                                     : [AppColor.accentTop, AppColor.accentBottom],
                                 startPoint: .top, endPoint: .bottom
                             )
@@ -273,15 +288,15 @@ struct AdventureScreen: View {
                     CandyModalCard(
                         bannerTitle: won ? "守住了！" : "这次差一点",
                         bannerIcon: won ? "🎉" : "🌱",
-                        bannerColors: won ? [AppColor.gold, AppColor.accent] : [GrowthColors.calm.opacity(0.8), GrowthColors.calm],
-                        bannerEdge: won ? AppColor.accentEdge : Color(red: 0.18, green: 0.31, blue: 0.54),
+                        bannerColors: won ? [AppColor.gold, AppColor.accent] : [AppColor.calm.opacity(0.8), AppColor.calm],
+                        bannerEdge: won ? AppColor.accentEdge : LocalArt.defeatBannerEdge,
                         maxWidth: 500
                     ) {
                         HStack(spacing: 10) {
                             if won {
                                 ForEach(0..<3, id: \.self) { i in
                                     Image(systemName: i < session.battle.stars ? "star.fill" : "star")
-                                        .font(.system(size: 42, weight: .black))
+                                        .font(AppFont.rounded(42, weight: .black))
                                         .foregroundStyle(i < session.battle.stars ? AppColor.gold : AppColor.cardEdge)
                                 }
                             } else {
@@ -290,22 +305,22 @@ struct AdventureScreen: View {
                         }
                         Text(session.battle.advice)
                             .font(AppFont.bodyStrong)
-                            .foregroundStyle(Theme.ink)
+                            .foregroundStyle(AppColor.ink)
                             .multilineTextAlignment(.center)
                         Text("冒险只记录关卡和星级，不发放积分与学习奖励。")
                             .font(AppFont.label)
-                            .foregroundStyle(Theme.muted)
+                            .foregroundStyle(AppColor.muted)
                         if session.error == nil {
                             AppButton(title: "返回地图", systemImage: "map.fill", role: .adventure, size: .large, expands: true) {
                                 if session.abandon() { onClose() }
                             }
                         }
                         if let error = session.error {
-                            Text(error).font(AppFont.label).foregroundStyle(Theme.wrong)
-                            AppButton(title: "重试保存", systemImage: "arrow.clockwise", role: .accent, size: .large, expands: true, action: session.retrySave)
+                            Text(error).font(AppFont.label).foregroundStyle(AppColor.dangerText)
+                            AppButton(title: "重试保存", systemImage: "arrow.clockwise", role: .secondary, size: .large, expands: true, action: session.retrySave)
                         }
                     }
-                    .padding(24)
+                    .padding(AppSpacing.lg)
                 } else {
                     CandyModalCard(
                         bannerTitle: "冒险已暂停",
@@ -316,9 +331,9 @@ struct AdventureScreen: View {
                     ) {
                         Text("阳光、怪物和战斗时间都已暂停，继续不会再次扣积分。")
                             .font(AppFont.body)
-                            .foregroundStyle(Theme.muted)
+                            .foregroundStyle(AppColor.muted)
                             .multilineTextAlignment(.center)
-                        VStack(spacing: 12) {
+                        VStack(spacing: AppSpacing.sm) {
                             AppButton(title: "继续战斗", systemImage: "play.fill", role: .primary, size: .large, expands: true, action: session.resume)
                             AppButton(title: "返回地图（结束本局）", systemImage: "map.fill", role: .secondary, size: .large, expands: true) {
                                 if session.abandon() { onClose() }
@@ -328,11 +343,11 @@ struct AdventureScreen: View {
                             }
                         }
                         if let error = session.error {
-                            Text(error).font(AppFont.label).foregroundStyle(Theme.wrong)
-                            AppButton(title: "重试保存", systemImage: "arrow.clockwise", role: .accent, size: .medium, expands: true, action: session.retrySave)
+                            Text(error).font(AppFont.label).foregroundStyle(AppColor.dangerText)
+                            AppButton(title: "重试保存", systemImage: "arrow.clockwise", role: .secondary, size: .medium, expands: true, action: session.retrySave)
                         }
                     }
-                    .padding(24)
+                    .padding(AppSpacing.lg)
                 }
             }
         }

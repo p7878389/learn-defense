@@ -9,21 +9,22 @@ struct BattleTopBar<Seeds: View>: View {
 
     var body: some View {
         ViewThatFits(in: .horizontal) {
-            HStack(spacing: 12) {
+            HStack(spacing: AppSpacing.sm) {
                 seeds()
                 Spacer(minLength: 0)
                 GameHUD(session: session, onExit: onExit)
             }
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: AppSpacing.xs) {
                 GameHUD(session: session, onExit: onExit)
                     .frame(maxWidth: .infinity, alignment: .trailing)
                 seeds()
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 10)
-        .padding(.top, 6)
-        .padding(.bottom, 2)
+        .padding(.horizontal, AppSpacing.sm)
+        .padding(.vertical, AppSpacing.xs)
+        .appPanel(radius: AppRadius.md)
+        .padding(.horizontal, AppSpacing.sm)
     }
 }
 
@@ -34,7 +35,7 @@ struct BattleActionBar: View {
     private var slotCount: Int { max(3, session.inventory.capacity) }
 
     var body: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: AppSpacing.md) {
             UltimateButton(energy: session.energy, maxEnergy: session.tuning.ultimateEnergy,
                            ready: session.ultimateReady, action: session.startUltimate,
                            casting: session.isUnleashing, challenging: session.ultimate != nil)
@@ -43,17 +44,17 @@ struct BattleActionBar: View {
                 .fill(AppColor.cardEdge.opacity(0.65))
                 .frame(width: 1.5, height: 44)
 
-            HStack(spacing: 10) {
+            HStack(spacing: AppSpacing.sm) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("战场道具")
                         .font(AppFont.label)
-                        .foregroundStyle(Theme.ink)
+                        .foregroundStyle(AppColor.ink)
                     Text(session.inventory.items.isEmpty ? "击败怪物掉落" : "点按即可使用")
                         .font(AppFont.caption)
-                        .foregroundStyle(Theme.muted)
+                        .foregroundStyle(AppColor.muted)
                 }
 
-                HStack(spacing: 8) {
+                HStack(spacing: AppSpacing.xs) {
                     ForEach(0..<slotCount, id: \.self) { index in
                         if index < session.inventory.items.count {
                             let item = session.inventory.items[index]
@@ -85,7 +86,7 @@ struct BattleActionBar: View {
                                 )
                                 .overlay(
                                     Image(systemName: "sparkles")
-                                        .font(.system(size: 14, weight: .semibold))
+                                        .font(AppFont.rounded(14, weight: .semibold))
                                         .foregroundStyle(AppColor.cardEdge)
                                 )
                                 .frame(width: 50, height: 50)
@@ -100,18 +101,18 @@ struct BattleActionBar: View {
 
             HStack(spacing: 6) {
                 Circle().fill(AppColor.jade).frame(width: 8, height: 8)
-                Image(systemName: "map.fill").font(.system(size: 12, weight: .bold))
+                Image(systemName: "map.fill").font(AppFont.rounded(12, weight: .bold))
                 Text(session.map.name).font(AppFont.label)
             }
-            .foregroundStyle(AppColor.accentEdge)
-            .padding(.horizontal, 12)
+            .foregroundStyle(AppColor.jadeEdge)
+            .padding(.horizontal, AppSpacing.sm)
             .padding(.vertical, 7)
-            .background(Capsule().fill(AppColor.gold.opacity(0.22)))
-            .overlay(Capsule().strokeBorder(AppColor.gold.opacity(0.45), lineWidth: 1))
+            .background(Capsule().fill(AppColor.jade.opacity(0.14)))
+            .overlay(Capsule().strokeBorder(AppColor.jade.opacity(0.32), lineWidth: 1))
         }
         .frame(minHeight: 68)
-        .padding(.horizontal, 14)
-        .padding(.vertical, 4)
-        .candyCard(radius: AppRadius.md)
+        .padding(.horizontal, AppSpacing.md)
+        .padding(.vertical, AppSpacing.xs)
+        .appPanel(radius: AppRadius.md)
     }
 }

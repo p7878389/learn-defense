@@ -20,16 +20,16 @@ struct UltimateOverlay: View {
             CandyModalCard(
                 bannerTitle: title,
                 bannerIcon: "⚡️",
-                bannerColors: [GrowthColors.lightning, Theme.accent],
-                bannerEdge: GrowthColors.lightningDark,
-                borderColor: GrowthColors.lightning.opacity(0.8),
+                bannerColors: [AppColor.lightning, AppColor.accent],
+                bannerEdge: AppColor.lightningDark,
+                borderColor: AppColor.lightning.opacity(0.8),
                 maxWidth: 900
             ) {
                 AnswerPanel(question: question, wrongPicks: wrongPicks, onAnswer: onAnswer, onReplay: onReplay, retrying: retrying)
                 AppButton(title: "先不放了", systemImage: "xmark", role: .secondary, size: .medium, minWidth: 140, action: onCancel)
                 Text(!retrying ? "点空白处也能取消，能量会留着" : "已经答错过，答对或取消都会用掉这次能量")
                     .font(AppFont.label)
-                    .foregroundStyle(Theme.muted)
+                    .foregroundStyle(AppColor.muted)
             }
             .padding(40)
         }
@@ -52,13 +52,13 @@ struct PauseOverlay: View {
                 bannerEdge: AppColor.accentEdge,
                 maxWidth: 440
             ) {
-                VStack(spacing: 12) {
+                VStack(spacing: AppSpacing.sm) {
                     AppButton(title: "继续闯关", systemImage: "play.fill", role: .primary, size: .large, expands: true, action: onResume)
                     AppButton(title: "结束并结算", systemImage: "flag.checkered", role: .secondary, size: .large, expands: true, action: onFinish)
                     AppButton(title: "退出游戏", systemImage: "rectangle.portrait.and.arrow.right", role: .destructive, size: .large, expands: true, action: onQuit)
                 }
             }
-            .padding(24)
+            .padding(AppSpacing.lg)
         }
     }
 }
@@ -85,24 +85,24 @@ struct RoundRestOverlay: View {
                     ) {
                         Text("本回合 \(session.roundQuestions) 题 · 评分 \(session.roundScore) · 首答正确率 \(Int((session.roundAccuracy * 100).rounded()))%")
                             .font(AppFont.bodyStrong)
-                            .foregroundStyle(Theme.ink)
+                            .foregroundStyle(AppColor.ink)
 
                         ZStack {
-                            Circle().stroke(Theme.jade.opacity(0.15), lineWidth: 8)
+                            Circle().stroke(AppColor.jade.opacity(0.15), lineWidth: 8)
                             Circle()
                                 .trim(from: 0, to: 1 - min(1, Double(session.restRemaining) / Double(session.rules.restSeconds(afterRound: session.round))))
-                                .stroke(Theme.jade, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                                .stroke(AppColor.jade, style: StrokeStyle(lineWidth: 8, lineCap: .round))
                                 .rotationEffect(.degrees(-90))
                             VStack(spacing: 2) {
                                 if isReady {
-                                    Image(systemName: "checkmark").font(.system(size: 42, weight: .black))
+                                    Image(systemName: "checkmark").font(AppFont.rounded(42, weight: .black))
                                     Text("准备好了").font(AppFont.label)
                                 } else {
                                     Text("\(session.restRemaining)").font(AppFont.digits(42, weight: .black))
                                     Text("秒后可继续").font(AppFont.caption)
                                 }
                             }
-                            .foregroundStyle(Theme.jade)
+                            .foregroundStyle(AppColor.jade)
                         }
                         .frame(width: 132, height: 132)
                         .accessibilityElement(children: .ignore)
@@ -113,7 +113,7 @@ struct RoundRestOverlay: View {
                                 .font(AppFont.heading)
                             Text("下一回合：第 \(session.round + 1) 回合 · \(session.roundQuestions + session.rules.questionIncrement[session.config.difficulty]) 题")
                                 .font(AppFont.label)
-                                .foregroundStyle(Theme.muted)
+                                .foregroundStyle(AppColor.muted)
                         }
 
                         AppButton(
@@ -126,17 +126,17 @@ struct RoundRestOverlay: View {
                         )
                         .disabled(!isReady)
 
-                        VStack(spacing: 8) {
+                        VStack(spacing: AppSpacing.xs) {
                             AppButton(title: "结束并结算", systemImage: "flag.checkered", role: .secondary, size: .medium, minWidth: 180, action: session.finishGame)
                             Text("随时可以结束，积分将在整局结束后统一结算")
                                 .font(AppFont.caption)
-                                .foregroundStyle(Theme.muted)
+                                .foregroundStyle(AppColor.muted)
                         }
                     }
                     .multilineTextAlignment(.center)
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(AppColor.ink)
                     .padding(.top, 26)
-                    .padding(16)
+                    .padding(AppSpacing.md)
                     .frame(maxWidth: .infinity, minHeight: proxy.size.height)
                 }
                 .scrollIndicators(.hidden)

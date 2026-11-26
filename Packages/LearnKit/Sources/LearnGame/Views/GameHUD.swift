@@ -5,9 +5,9 @@ struct GameHUD: View {
     @ObservedObject var session: GameSession
     let onExit: () -> Void
 
-    /// 顶部状态胶囊：与原木种植槽等高呼应，统一 SF Rounded 等宽数字与细分隔线分组。
+    /// 顶部状态内嵌栏：平铺于 BattleTopBar 面板内，去掉厚底与卡套卡，统一 SF Rounded 等宽数字。
     var body: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: AppSpacing.sm) {
             if session.phase == .preparing {
                 Button(action: onExit) {
                     circleControl(systemImage: "chevron.left")
@@ -29,15 +29,15 @@ struct GameHUD: View {
             divider
 
             if let hearts = session.hearts, let maxHearts = session.tuning.hearts {
-                HStack(spacing: 4) {
+                HStack(spacing: AppSpacing.xxs) {
                     ForEach(0..<maxHearts, id: \.self) { i in
                         Image(systemName: i < hearts ? "heart.fill" : "heart")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundStyle(i < hearts ? Theme.wrong : AppColor.cardEdge)
+                            .font(AppFont.rounded(20, weight: .bold))
+                            .foregroundStyle(i < hearts ? AppColor.dangerText : AppColor.cardEdge)
                     }
                 }
             } else {
-                HStack(spacing: 4) {
+                HStack(spacing: AppSpacing.xxs) {
                     Text("不怕失败")
                         .font(AppFont.bodyStrong)
                         .foregroundStyle(AppColor.jadeEdge)
@@ -49,28 +49,17 @@ struct GameHUD: View {
 
             Label("第 \(session.round) 回合 · \(session.roundResolved)/\(session.totalEnemies)", systemImage: "flag.fill")
                 .font(AppFont.digits(18, weight: .heavy))
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(AppColor.ink)
 
             divider
 
             Label("\(session.score)", systemImage: "star.fill")
                 .font(AppFont.digits(18, weight: .heavy))
-                .foregroundStyle(AppColor.accent)
+                .foregroundStyle(AppColor.goldEdge)
         }
-        .padding(.horizontal, 14)
-        .frame(height: 54)
-        .padding(.bottom, 3.5)
-        .background {
-            ZStack {
-                Capsule().fill(AppColor.cardEdge)
-                    .shadow(color: AppColor.warmShadow.opacity(0.10), radius: 8, y: 4)
-                Capsule()
-                    .fill(LinearGradient(colors: [AppColor.surface, AppColor.surfaceBottom], startPoint: .top, endPoint: .bottom))
-                    .overlay(Capsule().strokeBorder(.white.opacity(0.8), lineWidth: 1.5))
-                    .overlay(Capsule().strokeBorder(AppColor.cardStroke, lineWidth: 1.5))
-                    .padding(.bottom, 3.5)
-            }
-        }
+        .padding(.horizontal, AppSpacing.sm)
+        .frame(height: 52)
+        .appInset(radius: AppRadius.md)
     }
 
     private var divider: some View {
@@ -81,14 +70,14 @@ struct GameHUD: View {
 
     private func circleControl(systemImage: String) -> some View {
         Image(systemName: systemImage)
-            .font(.system(size: 16, weight: .black))
-            .foregroundStyle(.white)
+            .font(AppFont.rounded(16, weight: .black))
+            .foregroundStyle(AppColor.ink)
             .frame(width: 36, height: 36)
             .background(
-                Circle().fill(LinearGradient(colors: [AppColor.accentTop, AppColor.accentBottom], startPoint: .top, endPoint: .bottom))
+                Circle().fill(LinearGradient(colors: [AppColor.surface, AppColor.surfaceBottom], startPoint: .top, endPoint: .bottom))
             )
-            .overlay(Circle().strokeBorder(.white.opacity(0.5), lineWidth: 1.5))
-            .shadow(color: AppColor.accentEdge.opacity(0.28), radius: 3, y: 2)
+            .overlay(Circle().strokeBorder(AppColor.cardStroke, lineWidth: 1.5))
+            .shadow(color: AppColor.warmShadow.opacity(0.10), radius: 3, y: 2)
     }
 }
 
@@ -99,10 +88,10 @@ struct PreparationPanel: View {
     var bankSummary: String? = nil
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 12) {
+        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+            HStack(spacing: AppSpacing.sm) {
                 BattleMapPicker(selection: session.map, onSelect: session.selectMap)
-                Spacer(minLength: 12)
+                Spacer(minLength: AppSpacing.sm)
                 AppButton(
                     title: session.bankConfirmed ? "题库与难度" : "选择题库与难度",
                     systemImage: "books.vertical.fill",
@@ -111,25 +100,25 @@ struct PreparationPanel: View {
                     action: onChooseBank
                 )
             }
-            HStack(spacing: 18) {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 8) {
+            HStack(spacing: AppSpacing.md) {
+                VStack(alignment: .leading, spacing: AppSpacing.xxs) {
+                    HStack(spacing: AppSpacing.xs) {
                         Text("准备布阵")
                             .font(AppFont.heading)
-                            .foregroundStyle(Theme.ink)
+                            .foregroundStyle(AppColor.ink)
                         Text(session.bankConfirmed ? bankSummary ?? "\(session.config.grade.displayName) · \(session.config.difficulty.displayName)" : "请先手动选择题库")
                             .font(AppFont.label)
-                            .foregroundStyle(session.bankConfirmed ? AppColor.jadeEdge : AppColor.accentEdge)
-                            .padding(.horizontal, 10).padding(.vertical, 3)
-                            .background(Capsule().fill((session.bankConfirmed ? AppColor.jade : AppColor.accent).opacity(0.14)))
+                            .foregroundStyle(session.bankConfirmed ? AppColor.jadeEdge : AppColor.dangerText)
+                            .padding(.horizontal, AppSpacing.sm).padding(.vertical, 3)
+                            .background(Capsule().fill(session.bankConfirmed ? AppColor.jade.opacity(0.14) : AppColor.dangerFill))
                             .lineLimit(1)
                     }
                     Text("把植物卡拖到草坪空位。种下后不能修改，已布阵 \(session.plantedLaneCount)/\(session.tuning.lanes) 路")
                         .font(AppFont.body)
-                        .foregroundStyle(Theme.muted)
+                        .foregroundStyle(AppColor.muted)
                 }
 
-                Spacer(minLength: 8)
+                Spacer(minLength: AppSpacing.xs)
 
                 AppButton(
                     title: !session.bankConfirmed ? "请先选择题库" : session.canStartBattle ? "准备好了" : "先种一株植物",
@@ -156,23 +145,23 @@ struct ItemBar: View {
     private var folds: Bool { !horizontal && inventory.items.count > 1 }
 
     var body: some View {
-        let layout = horizontal ? AnyLayout(HStackLayout(alignment: .center, spacing: 8))
-            : AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
+        let layout = horizontal ? AnyLayout(HStackLayout(alignment: .center, spacing: AppSpacing.xs))
+            : AnyLayout(VStackLayout(alignment: .leading, spacing: AppSpacing.xs))
         layout {
             if folds {
                 Button { expanded.toggle() } label: {
-                    HStack(spacing: 4) {
+                    HStack(spacing: AppSpacing.xxs) {
                         PictureView(emoji: "🎒", size: 28)
                         Text("×\(inventory.items.count)")
                             .font(AppFont.digits(17, weight: .heavy))
                         Image(systemName: expanded ? "chevron.up" : "chevron.down")
-                            .font(.system(size: 13, weight: .heavy))
+                            .font(AppFont.rounded(13, weight: .heavy))
                     }
-                    .foregroundStyle(Theme.ink)
-                    .padding(.horizontal, 10)
+                    .foregroundStyle(AppColor.ink)
+                    .padding(.horizontal, AppSpacing.sm)
                     .frame(height: 52)
                     .background(CandyTileBackground(radius: AppRadius.sm))
-                    .overlay(RoundedRectangle(cornerRadius: AppRadius.sm).strokeBorder(Theme.jade, lineWidth: 2).padding(.bottom, 3))
+                    .overlay(RoundedRectangle(cornerRadius: AppRadius.sm).strokeBorder(AppColor.jade, lineWidth: 2).padding(.bottom, 3))
                 }
                 .buttonStyle(PressableStyle())
                 .accessibilityLabel(expanded ? "收起道具" : "展开道具，共 \(inventory.items.count) 个")
@@ -183,7 +172,7 @@ struct ItemBar: View {
                         PictureView(emoji: item.icon, size: 36)
                             .frame(width: 52, height: 52)
                             .background(CandyTileBackground(radius: AppRadius.sm))
-                            .overlay(RoundedRectangle(cornerRadius: AppRadius.sm).strokeBorder(Theme.jade, lineWidth: 2).padding(.bottom, 3))
+                            .overlay(RoundedRectangle(cornerRadius: AppRadius.sm).strokeBorder(AppColor.jade, lineWidth: 2).padding(.bottom, 3))
                     }
                     .buttonStyle(PressableStyle())
                     .disabled(!enabled)

@@ -31,16 +31,16 @@ struct GameView: View {
                     CandyModalCard(bannerTitle: "准备开战", bannerIcon: "📚", maxWidth: 440) {
                         Text("先选好本局题库，再进入草坪准备布阵。")
                             .font(AppFont.body)
-                            .foregroundStyle(Theme.muted)
+                            .foregroundStyle(AppColor.muted)
                             .multilineTextAlignment(.center)
-                        VStack(spacing: 12) {
+                        VStack(spacing: AppSpacing.sm) {
                             AppButton(title: "选择题库", systemImage: "books.vertical.fill", role: .primary, size: .large, expands: true) {
                                 preparation.chooseBank()
                             }
                             AppButton(title: "返回主页", systemImage: "chevron.left", role: .secondary, size: .large, expands: true, action: exitGame)
                         }
                     }
-                    .padding(24)
+                    .padding(AppSpacing.lg)
                 }
             }
         }
