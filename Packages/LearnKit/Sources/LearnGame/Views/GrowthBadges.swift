@@ -1,6 +1,21 @@
 import LearnCore
 import SwiftUI
 
+private enum LocalArt {
+    /// 金色积分牌上的深褐金数字墨色，保证高对比度
+    static let coinText = Color(red: 0.42, green: 0.26, blue: 0.0)
+    /// 金色积分牌上的深褐金单位文字色
+    static let coinSubtext = Color(red: 0.52, green: 0.36, blue: 0.04)
+    /// 经验条暖羊皮纸凹槽底色
+    static let xpTrackFill = Color(red: 0.90, green: 0.86, blue: 0.77)
+    /// 未解锁奖章的银灰金属高光色
+    static let lockedMedalTop = Color(white: 0.92)
+    /// 未解锁奖章的银灰金属底色
+    static let lockedMedalBottom = Color(white: 0.84)
+    /// 未解锁奖章的银灰金属描边色
+    static let lockedMedalEdge = Color(white: 0.74)
+}
+
 /// 橙金色等级牌「Lv.5」
 struct LevelBadge: View {
     let level: Int
@@ -33,7 +48,7 @@ struct LevelPill: View {
                 .font(AppFont.digits(20, weight: .black))
         }
         .foregroundStyle(.white)
-        .padding(.horizontal, 16)
+        .padding(.horizontal, AppSpacing.md)
         .frame(height: 42.5)
         .padding(.bottom, 3.5)
         .background {
@@ -60,12 +75,12 @@ struct CoinPill: View {
             CoinIcon(size: size * 1.1)
             Text("\(coins)")
                 .font(AppFont.digits(size, weight: .black))
-                .foregroundStyle(Color(red: 0.42, green: 0.26, blue: 0.0))
+                .foregroundStyle(LocalArt.coinText)
             Text("积分")
                 .font(AppFont.rounded(max(12, size * 0.54), weight: .heavy))
-                .foregroundStyle(Color(red: 0.52, green: 0.36, blue: 0.04))
+                .foregroundStyle(LocalArt.coinSubtext)
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, AppSpacing.md)
         .frame(height: pillHeight - 3.5)
         .padding(.bottom, 3.5)
         .background {
@@ -97,11 +112,11 @@ struct XPBar: View {
             let old = max(0, now - CGFloat(gained))
             ZStack(alignment: .leading) {
                 Capsule()
-                    .fill(Color(red: 0.90, green: 0.86, blue: 0.77))
+                    .fill(LocalArt.xpTrackFill)
                     .overlay(Capsule().strokeBorder(AppColor.cardStroke.opacity(0.8), lineWidth: 1.5))
                 if now > 0 {
                     Capsule()
-                        .fill(LinearGradient(colors: [GrowthColors.jadeLight, AppColor.jadeTop, AppColor.jade],
+                        .fill(LinearGradient(colors: [AppColor.jadeLight, AppColor.jadeTop, AppColor.jade],
                                              startPoint: .top, endPoint: .bottom))
                         .overlay(alignment: .top) {
                             Capsule()
@@ -140,8 +155,8 @@ struct MedalView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             HStack(spacing: 3) {
-                ribbon(earned ? Theme.wrong : Color.gray.opacity(0.45))
-                ribbon(earned ? Theme.jade : Color.gray.opacity(0.36))
+                ribbon(earned ? AppColor.dangerSolidBottom : AppColor.disabledEdge)
+                ribbon(earned ? AppColor.jade : AppColor.disabledFill)
             }
             .offset(y: size * 0.19)
             Circle()
@@ -152,11 +167,11 @@ struct MedalView: View {
                             center: .topLeading, startRadius: 2, endRadius: size * 0.95
                         ))
                         : AnyShapeStyle(LinearGradient(
-                            colors: [Color(white: 0.92), Color(white: 0.84)],
+                            colors: [LocalArt.lockedMedalTop, LocalArt.lockedMedalBottom],
                             startPoint: .top, endPoint: .bottom
                         ))
                 )
-                .overlay(Circle().strokeBorder(earned ? AppColor.goldEdge : Color(white: 0.74), lineWidth: max(2.5, size * 0.055)))
+                .overlay(Circle().strokeBorder(earned ? AppColor.goldEdge : LocalArt.lockedMedalEdge, lineWidth: max(2.5, size * 0.055)))
                 .overlay(Circle().inset(by: size * 0.09).strokeBorder(.white.opacity(earned ? 0.65 : 0.35), lineWidth: 1.5))
                 .frame(width: size, height: size)
                 .overlay(
@@ -167,7 +182,7 @@ struct MedalView: View {
                 .overlay(alignment: .bottomTrailing) {
                     if !earned {
                         Image(systemName: "lock.fill")
-                            .font(.system(size: size * 0.17, weight: .bold))
+                            .font(AppFont.rounded(size * 0.17, weight: .bold))
                             .foregroundStyle(AppColor.muted)
                             .padding(size * 0.06)
                             .background(Circle().fill(.white).overlay(Circle().strokeBorder(AppColor.cardStroke, lineWidth: 1)))
@@ -201,7 +216,7 @@ private struct Ribbon: Shape {
 struct HintCapsule: View {
     let icon: String
     let text: String
-    var tint: Color = Theme.accent
+    var tint: Color = AppColor.accent
 
     var body: some View {
         HStack(spacing: 6) {
@@ -210,8 +225,8 @@ struct HintCapsule: View {
         }
         .font(AppFont.body)
         .foregroundStyle(tint)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
+        .padding(.horizontal, AppSpacing.md)
+        .padding(.vertical, AppSpacing.xs)
         .frame(maxWidth: .infinity)
         .background(Capsule().fill(tint.opacity(0.11)))
         .overlay(Capsule().strokeBorder(tint.opacity(0.32), lineWidth: 1.5))

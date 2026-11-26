@@ -1,6 +1,11 @@
 import LearnCore
 import SwiftUI
 
+private enum LocalArt {
+    /// 试穿小舞台底部的战场草坪专色
+    static let stageGrass = Color(red: 0.46, green: 0.72, blue: 0.2)
+}
+
 /// 收藏馆：按类别看外观，用积分买、装备、换回原版。设计稿 docs/ui-growth/03、03b~03e
 struct CollectionView: View {
     @EnvironmentObject var model: AppModel
@@ -41,14 +46,14 @@ struct CollectionView: View {
     var body: some View {
         GeometryReader { geometry in
             let wide = geometry.size.width >= 900 && geometry.size.height >= 650
-            VStack(spacing: 18) {
+            VStack(spacing: AppSpacing.md) {
                 topBar(level: growth.level.level)
                 slotTabs
                 if showingTools {
                     DoomShroomUnlockView(profileID: profileID, onClose: { showingTools = false }, embedded: true, wideLayout: wide)
                         .environmentObject(model)
                 } else if wide {
-                    HStack(alignment: .top, spacing: 20) {
+                    HStack(alignment: .top, spacing: AppSpacing.md) {
                         ScrollView { sidebar.padding(6) }
                             .frame(width: 190)
                         wardrobe
@@ -57,7 +62,7 @@ struct CollectionView: View {
                     }
                 } else {
                     ScrollView {
-                        VStack(spacing: 22) {
+                        VStack(spacing: AppSpacing.lg) {
                             sidebar
                             fittingRoom
                             wardrobe
@@ -66,7 +71,7 @@ struct CollectionView: View {
                     }
                 }
             }
-            .padding(geometry.size.width < 600 ? 14 : 24)
+            .padding(geometry.size.width < 600 ? AppSpacing.sm : AppSpacing.lg)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .background(GrowthPageBackground())
@@ -90,10 +95,10 @@ struct CollectionView: View {
     }
 
     private var sidebar: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: AppSpacing.md) {
             Text(slot == .defenderSkin ? "选择小伙伴" : "当前分类")
-                .font(.system(size: 14, weight: .bold, design: .rounded))
-                .foregroundStyle(Theme.muted)
+                .font(AppFont.label)
+                .foregroundStyle(AppColor.muted)
             if slot == .defenderSkin {
                 shooterTabs
             } else if slot == .enemySkin {
@@ -103,46 +108,47 @@ struct CollectionView: View {
                         previewID = nil
                     } label: {
                         Text(group)
-                            .font(.system(size: 18, weight: .heavy, design: .rounded))
-                            .foregroundStyle(monsterGroup == group ? .white : Theme.ink)
-                            .padding(18).frame(maxWidth: .infinity, alignment: .leading)
-                            .background(CandyTileBackground(selected: monsterGroup == group))
+                            .font(AppFont.bodyStrong)
+                            .foregroundStyle(monsterGroup == group ? .white : AppColor.ink)
+                            .padding(AppSpacing.md)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(CandyTileBackground(selected: monsterGroup == group, selectedFill: AppColor.adventure, selectedEdge: AppColor.adventureEdge))
                     }
                     .buttonStyle(PressableStyle())
                     .accessibilityAddTraits(monsterGroup == group ? .isSelected : [])
                 }
                 Text("已解锁并购买的怪物会在经典模式中随机展示，只换外观，不改变能力或关卡难度。")
-                    .font(.system(size: 14, weight: .medium, design: .rounded))
-                    .foregroundStyle(Theme.muted)
+                    .font(AppFont.rounded(14, weight: .medium))
+                    .foregroundStyle(AppColor.muted)
             } else {
                 Label(slot.displayName, systemImage: "sparkles")
-                    .font(.system(size: 18, weight: .heavy, design: .rounded))
-                    .foregroundStyle(.white)
-                    .padding(18)
+                    .font(AppFont.bodyStrong)
+                    .foregroundStyle(AppColor.ink)
+                    .padding(AppSpacing.md)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(CandyTileBackground(selected: true))
+                    .appInset(radius: AppRadius.md, tint: AppColor.adventure)
                 Text(slot == .enemySkin ? "装扮统一应用于怪物" : "挑选喜欢的外观，先试看再装备")
-                    .font(.system(size: 14, weight: .medium, design: .rounded))
-                    .foregroundStyle(Theme.muted)
+                    .font(AppFont.rounded(14, weight: .medium))
+                    .foregroundStyle(AppColor.muted)
             }
         }
     }
 
     private var wardrobe: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: AppSpacing.sm) {
             HStack {
                 Text(slot == .defenderSkin ? shooterKind.name : slot.displayName)
-                    .font(.system(size: 24, weight: .heavy, design: .rounded))
-                    .foregroundStyle(Theme.ink)
-                Spacer(minLength: 8)
+                    .font(AppFont.rounded(24, weight: .heavy))
+                    .foregroundStyle(AppColor.ink)
+                Spacer(minLength: AppSpacing.xs)
                 Text("共 \(items.count) 件")
-                    .font(.system(size: 13, weight: .bold, design: .rounded))
-                    .foregroundStyle(GrowthColors.orangeDark)
+                    .font(AppFont.rounded(13, weight: .bold))
+                    .foregroundStyle(AppColor.muted)
             }
             cards(level: growth.level.level)
-            Text(slot == .enemySkin ? "购买即加入怪物队伍，无需装备" : "橙色边框表示试看，绿色标记表示已装备")
-                .font(.system(size: 12, weight: .medium, design: .rounded))
-                .foregroundStyle(Theme.muted)
+            Text(slot == .enemySkin ? "购买即加入怪物队伍，无需装备" : "青色边框表示试看，绿色标记表示已装备")
+                .font(AppFont.rounded(12, weight: .medium))
+                .foregroundStyle(AppColor.muted)
         }
         .frame(maxWidth: .infinity, alignment: .topLeading)
     }
@@ -157,56 +163,65 @@ struct CollectionView: View {
         let item = previewItem
         let equipped = item.map { growth.state.status(of: $0, level: growth.level.level) == .equipped } ?? false
         let ownedMonster = slot == .enemySkin && item.map { growth.state.owns($0, level: growth.level.level) } == true
-        return VStack(alignment: .leading, spacing: 10) {
+        let activeBadge = equipped || ownedMonster
+        return VStack(alignment: .leading, spacing: AppSpacing.xs) {
             HStack {
                 Text("试穿小舞台")
-                    .font(.system(size: 17, weight: .heavy, design: .rounded))
+                    .font(AppFont.rounded(17, weight: .heavy))
+                    .foregroundStyle(AppColor.ink)
                 Spacer()
                 Label(equipped ? "已装备" : ownedMonster ? "自动展示" : "仅试看",
-                      systemImage: equipped || ownedMonster ? "checkmark.circle.fill" : "eye")
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
-                    .foregroundStyle(equipped || ownedMonster ? GrowthColors.jadeDark : GrowthColors.orangeDark)
-                    .padding(.horizontal, 9).padding(.vertical, 5)
-                    .background(Capsule().fill((equipped || ownedMonster ? Theme.jade : GrowthColors.gold).opacity(0.16)))
+                      systemImage: activeBadge ? "checkmark.circle.fill" : "eye")
+                    .font(AppFont.caption)
+                    .foregroundStyle(activeBadge ? AppColor.jadeEdge : AppColor.adventure)
+                    .padding(.horizontal, AppSpacing.xs)
+                    .padding(.vertical, AppSpacing.xxs)
+                    .background(Capsule().fill((activeBadge ? AppColor.jade : AppColor.adventure).opacity(0.14)))
             }
             stage
             if let item {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: AppSpacing.xxs) {
                     HStack(alignment: .firstTextBaseline) {
                         Text(item.name)
-                            .font(.system(size: 22, weight: .heavy, design: .rounded))
-                            .foregroundStyle(Theme.ink)
+                            .font(AppFont.heading)
+                            .foregroundStyle(AppColor.ink)
                             .lineLimit(1).minimumScaleFactor(0.85)
-                        Spacer(minLength: 4)
+                        Spacer(minLength: AppSpacing.xxs)
                         Text(item.rarity.displayName)
-                            .font(.system(size: 12, weight: .heavy, design: .rounded))
-                            .foregroundStyle(GrowthColors.rarity(item.rarity))
+                            .font(AppFont.caption)
+                            .foregroundStyle(rarityColor(item.rarity))
                     }
                     Text(item.summary)
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
-                        .foregroundStyle(Theme.muted)
+                        .font(AppFont.rounded(13, weight: .medium))
+                        .foregroundStyle(AppColor.muted)
                         .lineLimit(3)
                         .accessibilityLabel(item.summary)
                 }
                 if slot == .defenderSkin {
                     Label("当前装备：\(equippedShooterName)", systemImage: "checkmark.seal.fill")
-                        .font(.system(size: 13, weight: .bold, design: .rounded))
-                        .foregroundStyle(GrowthColors.jadeDark)
-                        .padding(8)
+                        .font(AppFont.rounded(13, weight: .bold))
+                        .foregroundStyle(AppColor.jadeEdge)
+                        .padding(AppSpacing.xs)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(RoundedRectangle(cornerRadius: 12).fill(Theme.jade.opacity(0.12)))
+                        .appInset(radius: AppRadius.sm, tint: AppColor.jade)
                 }
                 unlockRequirements(item)
                 cardAction(item, status: growth.state.status(of: item, level: growth.level.level), level: growth.level.level)
             }
             Text(slot == .enemySkin ? "拥有即参与随机展示 · 不改变能力" : "点卡片只试看 · 装备后下局生效")
-                .font(.system(size: 12, weight: .medium, design: .rounded))
-                .foregroundStyle(Theme.muted)
+                .font(AppFont.rounded(12, weight: .medium))
+                .foregroundStyle(AppColor.muted)
         }
-        .padding(12)
-        .background(RoundedRectangle(cornerRadius: 26).fill(GrowthColors.surface)
-            .shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 5))
-        .overlay(RoundedRectangle(cornerRadius: 26).stroke(GrowthColors.gold.opacity(0.65), lineWidth: 3))
+        .padding(AppSpacing.sm)
+        .appPanel(radius: AppRadius.lg)
+    }
+
+    private func rarityColor(_ rarity: CosmeticRarity) -> Color {
+        switch rarity {
+        case .common: AppColor.rarityCommon
+        case .rare: AppColor.rarityRare
+        case .legendary: AppColor.rarityLegendary
+        }
     }
 
     // MARK: 顶部和分类
@@ -220,38 +235,39 @@ struct CollectionView: View {
 
     private var slotTabs: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
+            HStack(spacing: AppSpacing.sm) {
                 ForEach(CosmeticSlot.allCases.filter(\.isCollectible)) { s in
+                    let isSelected = !showingTools && slot == s
                     Button {
                         showingTools = false
                         slot = s
                         previewID = nil
                     } label: {
-                        HStack(spacing: 8) {
+                        HStack(spacing: AppSpacing.xs) {
                             PictureView(emoji: s.icon, size: 24)
                             Text(s.displayName)
-                                .font(.system(size: 18, weight: .heavy, design: .rounded))
+                                .font(AppFont.bodyStrong)
                         }
-                        .foregroundStyle(!showingTools && slot == s ? .white : Theme.ink)
-                        .padding(.horizontal, 18)
+                        .foregroundStyle(isSelected ? .white : AppColor.ink)
+                        .padding(.horizontal, AppSpacing.md)
                         .frame(height: 52)
-                        .background(CandyTileBackground(selected: !showingTools && slot == s))
+                        .background(CandyTileBackground(selected: isSelected, selectedFill: AppColor.adventure, selectedEdge: AppColor.adventureEdge))
                     }
                     .buttonStyle(PressableStyle())
-                    .accessibilityAddTraits(!showingTools && slot == s ? .isSelected : [])
+                    .accessibilityAddTraits(isSelected ? .isSelected : [])
                 }
                 Button {
                     showingTools = true
                     previewID = nil
                 } label: {
-                    HStack(spacing: 8) {
+                    HStack(spacing: AppSpacing.xs) {
                         PictureView(emoji: "💥", size: 24)
-                        Text("道具解锁").font(.system(size: 18, weight: .heavy, design: .rounded))
+                        Text("道具解锁").font(AppFont.bodyStrong)
                     }
-                    .foregroundStyle(showingTools ? .white : Theme.ink)
-                    .padding(.horizontal, 18)
+                    .foregroundStyle(showingTools ? .white : AppColor.ink)
+                    .padding(.horizontal, AppSpacing.md)
                     .frame(height: 52)
-                    .background(CandyTileBackground(selected: showingTools))
+                    .background(CandyTileBackground(selected: showingTools, selectedFill: AppColor.adventure, selectedEdge: AppColor.adventureEdge))
                 }
                 .buttonStyle(PressableStyle())
                 .accessibilityAddTraits(showingTools ? .isSelected : [])
@@ -268,7 +284,7 @@ struct CollectionView: View {
         let loadout = growth.loadout
         let grade = model.profiles.first { $0.id == profileID }?.grade
         let playable = grade.map { Set(GameTuning.defenders(for: $0).map(\.id)) }
-        return VStack(spacing: 14) {
+        return VStack(spacing: AppSpacing.sm) {
             // 只列会射击的植物；坚果墙、土豆雷这类防御植物没有射手皮肤
             ForEach(UnitCatalog.defenders.filter(\.canShoot), id: \.id) { kind in
                 let selected = shooter == kind.id
@@ -281,26 +297,26 @@ struct CollectionView: View {
                     shooter = kind.id
                     previewID = nil
                 } label: {
-                    HStack(spacing: 8) {
+                    HStack(spacing: AppSpacing.xs) {
                         if let image = UnitSprites.portrait(of: kind, skin: worn) {
                             Image(decorative: image, scale: 1).resizable().scaledToFit().frame(width: 42, height: 42)
                                 .opacity(onField ? 1 : 0.5)
                         }
                         VStack(alignment: .leading, spacing: 1) {
-                            Text(kind.name).font(.system(size: 16, weight: .heavy, design: .rounded))
+                            Text(kind.name).font(AppFont.rounded(16, weight: .heavy))
                             Label(wornName, systemImage: "checkmark.circle.fill")
-                                .font(.system(size: 12, weight: .bold, design: .rounded))
+                                .font(AppFont.caption)
                             Text(onField ? "✅ 已上场" : (grade?.isPreschool == true ? "🔒 上小学后上场" : "🔒 暂未上场"))
-                                .font(.system(size: 11, weight: .heavy, design: .rounded))
+                                .font(AppFont.rounded(11, weight: .heavy))
                         }
                         .lineLimit(1).minimumScaleFactor(0.7)
                         Spacer(minLength: 0)
                     }
-                    .foregroundStyle(selected ? .white : Theme.ink)
+                    .foregroundStyle(selected ? .white : AppColor.ink)
                     .padding(.horizontal, 10)
                     .frame(maxWidth: .infinity)
                     .frame(height: 86)
-                    .background(CandyTileBackground(selected: selected))
+                    .background(CandyTileBackground(selected: selected, selectedFill: AppColor.adventure, selectedEdge: AppColor.adventureEdge))
                 }
                 .buttonStyle(PressableStyle())
                 .accessibilityLabel("\(kind.name)，穿着\(wornName)，\(onField ? "已上场" : "暂未上场")")
@@ -319,26 +335,25 @@ struct CollectionView: View {
     private var stage: some View {
         let item = previewItem
         return ZStack(alignment: .topLeading) {
-            RoundedRectangle(cornerRadius: 26)
-                .fill(LinearGradient(colors: [GrowthColors.sky, Color(red: 0.86, green: 0.95, blue: 0.82)],
+            RoundedRectangle(cornerRadius: AppRadius.md)
+                .fill(LinearGradient(colors: [AppColor.sky, AppColor.meadow],
                                      startPoint: .top, endPoint: .bottom))
-                .shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 5)
             VStack(spacing: 0) {
                 Spacer(minLength: 0)
                 stageContent(item)
                 Spacer(minLength: 0)
-                Rectangle().fill(Color(red: 0.46, green: 0.72, blue: 0.2)).frame(height: 14)
+                Rectangle().fill(LocalArt.stageGrass).frame(height: 14)
             }
-            .clipShape(RoundedRectangle(cornerRadius: 26))
+            .clipShape(RoundedRectangle(cornerRadius: AppRadius.md))
             Text("👁 战场试穿")
-                .font(.system(size: 17, weight: .heavy, design: .rounded))
+                .font(AppFont.label)
                 .foregroundStyle(.white)
-                .padding(.horizontal, 16).padding(.vertical, 8)
-                .background(Capsule().fill(Color(red: 0.63, green: 0.39, blue: 0.2)))
-                .padding(16)
+                .padding(.horizontal, AppSpacing.sm).padding(.vertical, 6)
+                .background(Capsule().fill(AppColor.woodTop.opacity(0.92)))
+                .padding(AppSpacing.sm)
         }
         .frame(height: 158)
-        .overlay(RoundedRectangle(cornerRadius: 26).stroke(GrowthColors.gold.opacity(0.7), lineWidth: 4))
+        .overlay(RoundedRectangle(cornerRadius: AppRadius.md).strokeBorder(AppColor.cardStroke, lineWidth: 1.5))
     }
 
     @ViewBuilder
