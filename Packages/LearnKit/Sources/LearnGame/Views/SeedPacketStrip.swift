@@ -1,6 +1,19 @@
 import LearnCore
 import SwiftUI
 
+/// 金砖阳光铭牌、深蓝纹章卡文字与冷银金属盾门卡专属美术色。
+private enum LocalArt {
+    static let sunIcon = Color(red: 0.72, green: 0.36, blue: 0.0)
+    static let sunText = Color(red: 0.34, green: 0.20, blue: 0.02)
+    static let cardText = Color(red: 0.97, green: 0.93, blue: 0.82)
+    static let gateText = Color(red: 0.92, green: 0.96, blue: 1.0)
+    static let gateTop = Color(red: 0.28, green: 0.36, blue: 0.48)
+    static let gateBottom = Color(red: 0.16, green: 0.22, blue: 0.31)
+    static let gateBorder = Color(red: 0.70, green: 0.79, blue: 0.90)
+    static let gateMetalTop = Color(red: 0.88, green: 0.93, blue: 0.98)
+    static let gateMetalBottom = Color(red: 0.56, green: 0.65, blue: 0.76)
+}
+
 /// 森林原木圆角种植托盘：暖胡桃木渐变 + 金砖阳光 + 金属纹章植物卡 + 冷银金属铁栅门卡
 struct SeedPacketStrip: View {
     let kinds: [DefenderKind]
@@ -47,7 +60,7 @@ struct SeedPacketStrip: View {
                 barricadePacket(for: barricade)
             }
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal, AppSpacing.xs)
         .padding(.top, 6)
         .padding(.bottom, 9)
         .background {
@@ -72,11 +85,11 @@ struct SeedPacketStrip: View {
         let shape = RoundedRectangle(cornerRadius: AppRadius.xs)
         return VStack(spacing: 2) {
             Image(systemName: "sun.max.fill")
-                .font(.system(size: 20, weight: .black))
-                .foregroundStyle(Color(red: 0.72, green: 0.36, blue: 0.0))
+                .font(AppFont.rounded(20, weight: .black))
+                .foregroundStyle(LocalArt.sunIcon)
             Text("\(sun)")
                 .font(AppFont.digits(17, weight: .black))
-                .foregroundStyle(Color(red: 0.34, green: 0.20, blue: 0.02))
+                .foregroundStyle(LocalArt.sunText)
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
         }
@@ -111,11 +124,11 @@ struct SeedPacketStrip: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
             HStack(spacing: 1.5) {
-                Image(systemName: "sun.max.fill").font(.system(size: 8, weight: .bold)).foregroundStyle(AppColor.gold)
+                Image(systemName: "sun.max.fill").font(AppFont.rounded(8, weight: .bold)).foregroundStyle(AppColor.gold)
                 Text("\(kind.sunCost)").font(AppFont.digits(11, weight: .heavy))
             }
         }
-        .foregroundStyle(Color(red: 0.97, green: 0.93, blue: 0.82))
+        .foregroundStyle(LocalArt.cardText)
         .padding(.top, 5)
         .frame(width: cardWidth, height: 64)
         .background(CollectionCardFrame(rarity: rarity, locked: false))
@@ -156,21 +169,21 @@ struct SeedPacketStrip: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.75)
                 HStack(spacing: 1.5) {
-                    Image(systemName: "sun.max.fill").font(.system(size: 8, weight: .bold)).foregroundStyle(AppColor.gold)
+                    Image(systemName: "sun.max.fill").font(AppFont.rounded(8, weight: .bold)).foregroundStyle(AppColor.gold)
                     Text("\(kind.sunCost)").font(AppFont.digits(11, weight: .heavy))
                 }
             }
-            .foregroundStyle(Color(red: 0.92, green: 0.96, blue: 1.0))
+            .foregroundStyle(LocalArt.gateText)
             .frame(width: cardWidth, height: 64)
             .background(
                 shape.fill(
                     LinearGradient(
-                        colors: [Color(red: 0.28, green: 0.36, blue: 0.48), Color(red: 0.16, green: 0.22, blue: 0.31)],
+                        colors: [LocalArt.gateTop, LocalArt.gateBottom],
                         startPoint: .top, endPoint: .bottom
                     )
                 )
             )
-            .overlay(shape.strokeBorder(Color(red: 0.70, green: 0.79, blue: 0.90), lineWidth: 2))
+            .overlay(shape.strokeBorder(LocalArt.gateBorder, lineWidth: 2))
             .overlay(shape.inset(by: 2).strokeBorder(.white.opacity(0.22), lineWidth: 1))
         }
         .buttonStyle(PressableStyle())
@@ -187,7 +200,7 @@ private struct GateIcon: View {
         Canvas { context, size in
             let w = size.width, h = size.height
             let metal = GraphicsContext.Shading.linearGradient(
-                Gradient(colors: [Color(red: 0.88, green: 0.93, blue: 0.98), Color(red: 0.56, green: 0.65, blue: 0.76)]),
+                Gradient(colors: [LocalArt.gateMetalTop, LocalArt.gateMetalBottom]),
                 startPoint: .zero, endPoint: CGPoint(x: 0, y: h)
             )
             for y in [h * 0.28, h * 0.72] {
@@ -214,10 +227,10 @@ struct SunCounter: View {
     var body: some View {
         HStack(spacing: 5) {
             Image(systemName: "sun.max.fill")
-                .foregroundStyle(Theme.accent)
+                .foregroundStyle(AppColor.goldEdge)
             Text("\(amount)")
                 .font(AppFont.digits(20, weight: .heavy))
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(AppColor.ink)
         }
         .accessibilityLabel("阳光 \(amount)")
     }

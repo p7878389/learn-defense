@@ -67,8 +67,8 @@ struct PlantDropHighlight: View {
     var body: some View {
         if drag.kind != nil, battlefield.contains(drag.location) {
             RoundedRectangle(cornerRadius: 6)
-                .stroke(Theme.jade, lineWidth: 5)
-                .padding(4)
+                .stroke(AppColor.jade, lineWidth: 5)
+                .padding(AppSpacing.xxs)
                 .allowsHitTesting(false)
         }
     }
@@ -79,18 +79,18 @@ private struct PlantDragGhost: View {
     let skin: CharacterSkin?
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: AppSpacing.xs) {
             if let image = UnitSprites.portrait(of: kind, skin: skin) {
                 Image(decorative: image, scale: 1)
                     .resizable().scaledToFit().frame(width: 54, height: 50)
             }
             Text(HeraldicArtwork.defenderName(kind: kind, skin: skin))
                 .font(AppFont.bodyStrong)
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(AppColor.ink)
         }
-        .padding(10)
+        .padding(AppSpacing.xs)
         .background(AppColor.goldLight.opacity(0.92), in: RoundedRectangle(cornerRadius: AppRadius.sm))
-        .overlay(RoundedRectangle(cornerRadius: AppRadius.sm).strokeBorder(AppColor.accent, lineWidth: 2.5))
+        .overlay(RoundedRectangle(cornerRadius: AppRadius.sm).strokeBorder(AppColor.goldEdge, lineWidth: 2.5))
         .shadow(color: AppColor.warmShadow.opacity(0.28), radius: 10, y: 5)
     }
 }

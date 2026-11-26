@@ -67,15 +67,15 @@ struct BattleScreen: View {
             Button { session.selectQuestion(id) } label: {
                 HStack(spacing: 5) {
                     Circle()
-                        .fill(selected ? .white : AppColor.accent)
+                        .fill(selected ? .white : AppColor.jade)
                         .frame(width: 7, height: 7)
                     Text("题目 \(offset + 1)")
                         .font(AppFont.label)
                 }
-                .padding(.horizontal, 12)
+                .padding(.horizontal, AppSpacing.sm)
                 .frame(height: 36)
                 .padding(.bottom, 3)
-                .foregroundStyle(selected ? .white : Theme.ink)
+                .foregroundStyle(selected ? .white : AppColor.ink)
                 .background {
                     ZStack {
                         Capsule().fill(selected ? AppColor.jadeEdge : AppColor.cardEdge)
@@ -94,7 +94,7 @@ struct BattleScreen: View {
         if session.isUnleashing {
             Label("雷霆正在清场", systemImage: "bolt.fill")
                 .font(AppFont.heading)
-                .foregroundStyle(Theme.accent)
+                .foregroundStyle(AppColor.accent)
                 .frame(maxWidth: .infinity, minHeight: 120)
         } else {
             let shownQuestion = session.current
@@ -124,16 +124,16 @@ struct BattleScreen: View {
                 ) {
                     Text(session.bankConfirmed ? "当前范围还没有可以出的题，换一个题库或单元试试吧。" : "首次游戏需要先选择适合的课本和难度。")
                         .font(AppFont.body)
-                        .foregroundStyle(Theme.muted)
+                        .foregroundStyle(AppColor.muted)
                         .multilineTextAlignment(.center)
-                    VStack(spacing: 12) {
+                    VStack(spacing: AppSpacing.sm) {
                         AppButton(title: "选择题库与难度", systemImage: "books.vertical.fill", role: .primary, size: .large, expands: true, action: onChooseBank)
                         AppButton(title: "返回主页", systemImage: "chevron.left", role: .secondary, size: .medium, expands: true, action: onExit)
                     }
                 }
-                .padding(24)
+                .padding(AppSpacing.lg)
             } else {
-                VStack(spacing: 6) {
+                VStack(spacing: AppSpacing.xs) {
                     BattleTopBar(session: session, onExit: onExit) { seedPackets }
 
                     // 森林木艺细画框装裱战场，让古树秘境草坪具备立体舞台景深
@@ -156,12 +156,12 @@ struct BattleScreen: View {
                                 }
                             })
                         .overlay { PlantDropHighlight(drag: drag, battlefield: battlefieldFrame) }
-                        .padding(.horizontal, 10)
+                        .padding(.horizontal, AppSpacing.sm)
                         .layoutPriority(-1)
 
                     // 准备与战斗阶段均保留紧凑工具条，确保开战瞬间草坪位置与缩放 0 跳动
                     BattleActionBar(session: session)
-                        .padding(.horizontal, 10)
+                        .padding(.horizontal, AppSpacing.sm)
 
                     Group {
                         if session.phase == .preparing {
@@ -187,9 +187,9 @@ struct BattleScreen: View {
                         } else {
                             Group {
                                 if isPortrait {
-                                    VStack(spacing: 8) {
+                                    VStack(spacing: AppSpacing.xs) {
                                         ScrollView(.horizontal, showsIndicators: false) {
-                                            HStack(spacing: 8) { questionTabs }
+                                            HStack(spacing: AppSpacing.xs) { questionTabs }
                                         }
                                         .frame(height: 42)
                                         .disabled(!canAnswer)
@@ -202,11 +202,11 @@ struct BattleScreen: View {
                                     }
                                     .overlay(alignment: .topLeading) {
                                         ScrollView(.vertical, showsIndicators: false) {
-                                            VStack(alignment: .leading, spacing: 8) { questionTabs }
+                                            VStack(alignment: .leading, spacing: AppSpacing.xs) { questionTabs }
                                                 .padding(6)
                                         }
                                         .frame(width: Self.sideTabsWidth)
-                                        .background(RoundedRectangle(cornerRadius: AppRadius.sm).fill(AppColor.surface.opacity(0.65)))
+                                        .appInset(radius: AppRadius.sm)
                                         .disabled(!canAnswer)
                                     }
                                 }
@@ -215,10 +215,10 @@ struct BattleScreen: View {
                         }
                     }
                     .frame(maxWidth: .infinity, minHeight: answerPanelHeight)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, isPortrait ? 10 : 8)
-                    .candyCard(fill: GrowthColors.answerTray, radius: AppRadius.md)
-                    .padding(.horizontal, 10)
+                    .padding(.horizontal, AppSpacing.sm)
+                    .padding(.vertical, AppSpacing.xs)
+                    .appPanel(radius: AppRadius.md, tint: AppColor.gold)
+                    .padding(.horizontal, AppSpacing.sm)
                     .padding(.bottom, isPortrait ? 0 : 6)
 
                     if !isPortrait {
