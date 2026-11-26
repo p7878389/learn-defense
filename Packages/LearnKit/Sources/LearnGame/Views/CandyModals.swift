@@ -88,7 +88,7 @@ struct CandyModalCard<Content: View>: View {
         VStack(spacing: 18) {
             if let bannerTitle {
                 HStack(spacing: 10) {
-                    if let bannerIcon { Text(bannerIcon).font(.system(size: 24)) }
+                    if let bannerIcon { Text(bannerIcon).font(AppFont.rounded(24)) }
                     Text(bannerTitle)
                         .font(AppFont.title)
                         .lineLimit(1)
@@ -119,7 +119,7 @@ struct CandyModalCard<Content: View>: View {
         .background(
             ZStack {
                 shape.fill(AppColor.cardEdge)
-                    .shadow(color: .black.opacity(0.20), radius: 22, y: 12)
+                    .appShadow(.floating)
                 shape.fill(LinearGradient(colors: [AppColor.paperTop, Theme.paper], startPoint: .top, endPoint: .bottom))
                     .overlay(shape.strokeBorder(borderColor, lineWidth: 2.5))
                     .padding(.bottom, 5)

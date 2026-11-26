@@ -5,60 +5,72 @@ import SwiftUI
 enum GrowthColors {
     static let gold = AppColor.gold
     static let goldDark = AppColor.goldEdge
-    static let sky = Color(red: 0.87, green: 0.95, blue: 1.0)
-    static let meadow = Color(red: 0.90, green: 0.96, blue: 0.84)
+    static let sky = AppColor.sky
+    static let meadow = AppColor.meadow
     static let surface = AppColor.surface
     static let cardEdge = AppColor.cardEdge
     static let orangeDeep = AppColor.accentEdge
     static let purple = AppColor.violet
     static let purpleDark = AppColor.violetEdge
-    static let jadeLight = Color(red: 0.48, green: 0.89, blue: 0.74)
+    static let jadeLight = AppColor.jadeLight
     static let jadeDark = AppColor.jadeEdge
     static let orangeDark = AppColor.accentEdge
-    static let calm = Color(red: 0.36, green: 0.55, blue: 0.85)
-    static let answerTray = Color(red: 0.985, green: 0.95, blue: 0.84)
-    static let tileFill = Color(red: 1.0, green: 0.98, blue: 0.91)
+    static let calm = AppColor.calm
+    static let answerTray = AppColor.answerTray
+    static let tileFill = AppColor.tileFill
     static let wrongDark = AppColor.dangerSolidEdge
-    static let lightning = Color(red: 0.12, green: 0.72, blue: 0.95)
-    static let lightningDark = Color(red: 0.04, green: 0.48, blue: 0.68)
+    static let lightning = AppColor.lightning
+    static let lightningDark = AppColor.lightningDark
     static let disabledFill = AppColor.disabledFill
     static let disabledEdge = AppColor.disabledEdge
 
     static func rarity(_ rarity: CosmeticRarity) -> Color {
         switch rarity {
-        case .common: Color(red: 0.45, green: 0.74, blue: 0.94)
-        case .rare: Color(red: 0.62, green: 0.44, blue: 0.96)
-        case .legendary: gold
+        case .common: AppColor.rarityCommon
+        case .rare: AppColor.rarityRare
+        case .legendary: AppColor.rarityLegendary
         }
     }
 }
 
-/// 成长系统页面共用的暖羊皮绘本纸底色：顶部柔和天光、底部极淡浅草气韵。
+/// 成长系统页面共用的暖羊皮绘本纸底色：顶部柔和天光、温和纸面光斑、底部极淡浅草气韵。
 struct GrowthPageBackground: View {
     var body: some View {
         ZStack {
-            Theme.paper
+            AppColor.paper
             LinearGradient(
                 colors: [
-                    GrowthColors.sky.opacity(0.36),
-                    Theme.paper,
-                    GrowthColors.meadow.opacity(0.42)
+                    AppColor.sky.opacity(0.36),
+                    AppColor.paper,
+                    AppColor.meadow.opacity(0.42)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
             RadialGradient(
-                colors: [Color.white.opacity(0.45), .clear],
+                colors: [Color.white.opacity(0.50), .clear],
                 center: UnitPoint(x: 0.5, y: 0.12),
                 startRadius: 20,
                 endRadius: 520
+            )
+            RadialGradient(
+                colors: [AppColor.paperTop.opacity(0.55), .clear],
+                center: UnitPoint(x: 0.18, y: 0.45),
+                startRadius: 10,
+                endRadius: 420
+            )
+            RadialGradient(
+                colors: [AppColor.meadow.opacity(0.52), AppColor.jadeLight.opacity(0.06), .clear],
+                center: UnitPoint(x: 0.5, y: 1.0),
+                startRadius: 20,
+                endRadius: 540
             )
         }
         .ignoresSafeArea()
     }
 }
 
-/// 玩具胶囊分段器：柔和内槽 + 顶部高光活力橙选中滑块。
+/// 玩具胶囊分段器：柔和内槽 + 白色凸起滑块与深墨文字。
 struct GrowthSegmentedPicker<Selection: Hashable>: View {
     let options: [Selection]
     let title: (Selection) -> String
@@ -73,18 +85,19 @@ struct GrowthSegmentedPicker<Selection: Hashable>: View {
                 } label: {
                     Text(title(option))
                         .font(AppFont.bodyStrong)
-                        .foregroundStyle(selected ? .white : Theme.muted)
+                        .foregroundStyle(selected ? AppColor.ink : AppColor.muted)
                         .frame(minWidth: 92, minHeight: selected ? 41 : 44)
                         .padding(.horizontal, 14)
                         .padding(.bottom, selected ? 3 : 0)
+                        .contentShape(Capsule())
                         .background {
                             if selected {
                                 ZStack(alignment: .top) {
-                                    Capsule().fill(AppColor.accentEdge)
+                                    Capsule().fill(AppColor.cardEdge)
                                     Capsule()
-                                        .fill(LinearGradient(colors: [AppColor.accentTop, AppColor.accentBottom],
+                                        .fill(LinearGradient(colors: [AppColor.surface, .white],
                                                              startPoint: .top, endPoint: .bottom))
-                                        .overlay(Capsule().strokeBorder(.white.opacity(0.45), lineWidth: 1.2))
+                                        .overlay(Capsule().strokeBorder(AppColor.cardStroke.opacity(0.7), lineWidth: 1))
                                         .padding(.bottom, 3)
                                 }
                             }
@@ -99,12 +112,13 @@ struct GrowthSegmentedPicker<Selection: Hashable>: View {
             ZStack(alignment: .top) {
                 Capsule().fill(AppColor.cardEdge)
                 Capsule()
-                    .fill(LinearGradient(colors: [AppColor.surface, AppColor.surfaceBottom], startPoint: .top, endPoint: .bottom))
+                    .fill(LinearGradient(colors: [AppColor.surfaceBottom, AppColor.paper], startPoint: .top, endPoint: .bottom))
+                    .overlay(Capsule().fill(AppColor.ink.opacity(0.035)))
                     .padding(.bottom, 3)
                     .overlay(Capsule().strokeBorder(AppColor.cardStroke, lineWidth: 1.5).padding(.bottom, 3))
             }
         )
-        .animation(.spring(response: 0.24, dampingFraction: 0.75), value: selection)
+        .animation(AppMotion.press, value: selection)
     }
 }
 

@@ -49,7 +49,7 @@ struct PressableStyle: ButtonStyle {
         configuration.label
             .scaleEffect(configuration.isPressed ? 0.965 : 1)
             .offset(y: configuration.isPressed ? 2 : 0)
-            .animation(.spring(response: 0.22, dampingFraction: 0.66), value: configuration.isPressed)
+            .animation(AppMotion.press, value: configuration.isPressed)
     }
 }
 
