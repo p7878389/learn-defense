@@ -225,7 +225,7 @@ struct ProfileEditor: View {
                     Button { profile.avatar = avatar } label: {
                         PictureView(emoji: avatar, size: 42)
                             .frame(maxWidth: .infinity, minHeight: 62)
-                            .background(CandyTileBackground(selected: selected, selectedFill: AppColor.goldLight.opacity(0.45), selectedEdge: AppColor.accent, radius: AppRadius.md))
+                            .background(CandyTileBackground(selected: selected, selectedFill: AppColor.jade.opacity(0.14), selectedEdge: AppColor.jade, radius: AppRadius.md))
                             .overlay(alignment: .topTrailing) {
                                 if selected {
                                     Image(systemName: "checkmark")
@@ -270,7 +270,7 @@ struct ProfileEditor: View {
                             .font(AppFont.bodyStrong)
                             .foregroundStyle(selected ? .white : AppColor.ink)
                             .frame(maxWidth: .infinity, minHeight: 52)
-                            .background(CandyTileBackground(selected: selected, radius: AppRadius.md))
+                            .background(CandyTileBackground(selected: selected, selectedFill: AppColor.jade, selectedEdge: AppColor.jadeEdge, radius: AppRadius.md))
                     }
                     .buttonStyle(PressableStyle())
                     .accessibilityAddTraits(selected ? .isSelected : [])

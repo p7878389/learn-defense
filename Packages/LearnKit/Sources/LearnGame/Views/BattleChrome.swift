@@ -21,7 +21,7 @@ struct BattleTopBar<Seeds: View>: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, AppSpacing.sm)
+        .padding(.horizontal, AppSpacing.xs)
         .padding(.vertical, AppSpacing.xs)
         .appPanel(radius: AppRadius.md)
         .padding(.horizontal, AppSpacing.sm)

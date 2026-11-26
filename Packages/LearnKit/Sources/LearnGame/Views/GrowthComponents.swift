@@ -262,6 +262,12 @@ struct CandyTileBackground: View {
 }
 
 /// 金色积分硬币。
+private enum CoinLocalArt {
+    /// 硬币内环与星标浮雕专用深金褐描边色
+    static let rim = Color(red: 0.78, green: 0.52, blue: 0.0)
+    static let star = Color(red: 0.82, green: 0.54, blue: 0.0)
+}
+
 struct CoinIcon: View {
     var size: CGFloat = 28
 
@@ -269,9 +275,9 @@ struct CoinIcon: View {
         Circle()
             .fill(RadialGradient(colors: [AppColor.goldLight, GrowthColors.gold, GrowthColors.goldDark],
                                  center: .topLeading, startRadius: 1, endRadius: size))
-            .overlay(Circle().inset(by: size * 0.14).stroke(Color(red: 0.78, green: 0.52, blue: 0.0).opacity(0.75), lineWidth: size * 0.06))
-            .overlay(Image(systemName: "star.fill").font(.system(size: size * 0.42, weight: .black))
-                .foregroundStyle(Color(red: 0.82, green: 0.54, blue: 0.0)))
+            .overlay(Circle().inset(by: size * 0.14).stroke(CoinLocalArt.rim.opacity(0.75), lineWidth: size * 0.06))
+            .overlay(Image(systemName: "star.fill").font(AppFont.rounded(size * 0.42, weight: .black))
+                .foregroundStyle(CoinLocalArt.star))
             .frame(width: size, height: size)
             .accessibilityLabel("积分")
     }

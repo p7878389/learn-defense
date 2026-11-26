@@ -49,13 +49,13 @@ struct CandyDropdownButton: View {
                 Spacer(minLength: AppSpacing.xxs)
                 Image(systemName: "chevron.down")
                     .font(AppFont.rounded(15, weight: .heavy))
-                    .foregroundStyle(open ? .white : AppColor.accent)
+                    .foregroundStyle(open ? .white : AppColor.jade)
                     .rotationEffect(.degrees(open ? 180 : 0))
             }
             .padding(.horizontal, AppSpacing.sm)
             .padding(.vertical, AppSpacing.xs)
             .frame(maxWidth: .infinity, minHeight: 58)
-            .background(CandyTileBackground(selected: open, radius: AppRadius.md))
+            .background(CandyTileBackground(selected: open, selectedFill: AppColor.jade, selectedEdge: AppColor.jadeEdge, radius: AppRadius.md))
             .contentShape(RoundedRectangle(cornerRadius: AppRadius.md))
         }
         .buttonStyle(PressableStyle())

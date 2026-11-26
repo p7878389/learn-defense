@@ -36,8 +36,8 @@ struct BattleMapPicker: View {
                     .background(
                         CandyTileBackground(
                             selected: selected,
-                            selectedFill: AppColor.goldLight.opacity(0.35),
-                            selectedEdge: AppColor.accent,
+                            selectedFill: AppColor.jade.opacity(0.12),
+                            selectedEdge: AppColor.jade,
                             radius: AppRadius.sm
                         )
                     )
