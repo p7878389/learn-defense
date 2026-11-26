@@ -1,7 +1,6 @@
 import LearnCore
-import SwiftUI
-
 import SpriteKit
+import SwiftUI
 
 /// 完整战斗界面，由 GameView 持有的对局状态驱动。
 struct BattleScreen: View {
@@ -24,9 +23,7 @@ struct BattleScreen: View {
     var onRequestStart: (() -> Void)? = nil
     var bankSummary: String? = nil
 
-    private var debugOptions: SpriteView.DebugOptions {
-        []
-    }
+    private var debugOptions: SpriteView.DebugOptions { [] }
 
     private var seedPackets: some View {
         SeedPacketStrip(
@@ -41,7 +38,6 @@ struct BattleScreen: View {
                 session.previewSeed(at: GameScene.scenePoint(at: location, in: battlefieldFrame))
             },
             onDragEnded: { kind, location in
-                // 只点一下卡牌、或拖回卡牌栏松手，都当作取消，不提示种错
                 if !seedStripFrame.contains(location),
                    let point = GameScene.scenePoint(at: location, in: battlefieldFrame) {
                     _ = session.dropSeed(id: kind.id, at: point)
@@ -60,8 +56,7 @@ struct BattleScreen: View {
                 })
     }
 
-    /// 横屏时左边竖排切题栏的宽度
-    private static let sideTabsWidth: CGFloat = 96
+    private static let sideTabsWidth: CGFloat = 104
 
     private var canAnswer: Bool { session.phase == .playing && session.ultimate == nil && !session.isUnleashing }
 
@@ -70,16 +65,26 @@ struct BattleScreen: View {
         ForEach(Array(session.questionIDs.enumerated()), id: \.element) { offset, id in
             let selected = session.selectedQuestionID == id
             Button { session.selectQuestion(id) } label: {
-                Text("题目 \(offset + 1)")
-                    .font(.system(size: 16, weight: .heavy, design: .rounded))
-                    .padding(.horizontal, 14).padding(.vertical, 8)
-                    .background(
+                HStack(spacing: 5) {
+                    Circle()
+                        .fill(selected ? .white : AppColor.accent)
+                        .frame(width: 7, height: 7)
+                    Text("题目 \(offset + 1)")
+                        .font(AppFont.label)
+                }
+                .padding(.horizontal, 12)
+                .frame(height: 36)
+                .padding(.bottom, 3)
+                .foregroundStyle(selected ? .white : Theme.ink)
+                .background {
+                    ZStack {
+                        Capsule().fill(selected ? AppColor.jadeEdge : AppColor.cardEdge)
                         Capsule()
-                            .fill(selected ? Theme.jade : GrowthColors.surface)
-                            .shadow(color: selected ? GrowthColors.jadeDark : GrowthColors.cardEdge, radius: 0, x: 0, y: 3)
-                    )
-                    .overlay(Capsule().stroke(selected ? GrowthColors.jadeDark : GrowthColors.cardEdge, lineWidth: 1.5))
-                    .foregroundStyle(selected ? .white : Theme.ink)
+                            .fill(selected ? AppColor.jade : AppColor.surface)
+                            .overlay(Capsule().strokeBorder(selected ? AppColor.jadeEdge : AppColor.cardStroke, lineWidth: 1.5))
+                            .padding(.bottom, 3)
+                    }
+                }
             }
             .buttonStyle(PressableStyle())
         }
@@ -88,7 +93,7 @@ struct BattleScreen: View {
     @ViewBuilder private var answerPanel: some View {
         if session.isUnleashing {
             Label("雷霆正在清场", systemImage: "bolt.fill")
-                .font(.title2.weight(.bold))
+                .font(AppFont.heading)
                 .foregroundStyle(Theme.accent)
                 .frame(maxWidth: .infinity, minHeight: 120)
         } else {
@@ -109,7 +114,7 @@ struct BattleScreen: View {
 
     var body: some View {
         ZStack {
-            Theme.paper.ignoresSafeArea()
+            GrowthPageBackground()
 
             if session.isEmpty {
                 CandyModalCard(
@@ -118,60 +123,61 @@ struct BattleScreen: View {
                     maxWidth: 440
                 ) {
                     Text(session.bankConfirmed ? "当前范围还没有可以出的题，换一个题库或单元试试吧。" : "首次游戏需要先选择适合的课本和难度。")
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .font(AppFont.body)
                         .foregroundStyle(Theme.muted)
                         .multilineTextAlignment(.center)
                     VStack(spacing: 12) {
-                        Button(action: onChooseBank) {
-                            CandyButtonLabel(title: "选择题库与难度", icon: "📚", font: .system(size: 20, weight: .heavy, design: .rounded),
-                                             height: 54, minWidth: 0, expands: true)
-                        }
-                        Button(action: onExit) {
-                            CandyButtonLabel(title: "返回主页", icon: "←", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
-                                             foreground: Theme.ink, font: .system(size: 18, weight: .heavy, design: .rounded),
-                                             height: 48, minWidth: 0, expands: true)
-                        }
+                        AppButton(title: "选择题库与难度", systemImage: "books.vertical.fill", role: .primary, size: .large, expands: true, action: onChooseBank)
+                        AppButton(title: "返回主页", systemImage: "chevron.left", role: .secondary, size: .medium, expands: true, action: onExit)
                     }
-                    .buttonStyle(PressableStyle())
                 }
                 .padding(24)
             } else {
-                // 工具栏与操作栏独立排布，种植区保持完整；战场使用剩余可用空间
                 VStack(spacing: 6) {
                     BattleTopBar(session: session, onExit: onExit) { seedPackets }
+
+                    // 森林木艺细画框装裱战场，让古树秘境草坪具备立体舞台景深
                     BattlefieldView(session: session, debugOptions: debugOptions)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .clipShape(RoundedRectangle(cornerRadius: AppRadius.sm))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: AppRadius.sm)
+                                .strokeBorder(AppColor.woodTop.opacity(0.85), lineWidth: 3)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: AppRadius.sm)
+                                .inset(by: 2)
+                                .strokeBorder(AppColor.goldLight.opacity(0.35), lineWidth: 1)
+                        )
+                        .shadow(color: AppColor.warmShadow.opacity(0.18), radius: 10, y: 4)
                         .background(
-                            // 直接记下战场位置；用 PreferenceKey 传到外层时真机上一直是 .zero
                             GeometryReader { proxy in
                                 Color.clear.onChange(of: proxy.frame(in: .named("gameLayout")), initial: true) { _, frame in
                                     battlefieldFrame = frame
                                 }
                             })
                         .overlay { PlantDropHighlight(drag: drag, battlefield: battlefieldFrame) }
-                        // 和上下的道具栏、答题区一样左右各留 10，宽度对齐
                         .padding(.horizontal, 10)
                         .layoutPriority(-1)
+
+                    // 准备与战斗阶段均保留紧凑工具条，确保开战瞬间草坪位置与缩放 0 跳动
                     BattleActionBar(session: session)
                         .padding(.horizontal, 10)
+
                     Group {
                         if session.phase == .preparing {
                             PreparationPanel(session: session, onChooseBank: onChooseBank, onStart: onRequestStart, bankSummary: bankSummary)
                                 .background(alignment: .top) {
-                                    // 按本局出题方式量一道答错后的样题，开局前就把答题区的高度留出来
                                     if let sample = session.layoutSample {
                                         AnswerPanel(
                                             question: sample,
-                                            // 字块题按答错一次量（多一行提示）
                                             wrongPicks: sample.input != nil ? [1]
                                                 : Set(sample.options.indices.filter { $0 != sample.answerIndex }.prefix(1)),
                                             onAnswer: { _ in },
                                             onReplay: {},
                                             compact: !isPortrait)
                                             .fixedSize(horizontal: false, vertical: true)
-                                            // 预留切题栏（竖屏在上面，横屏在左边），开局时战场不缩放
                                             .padding(.top, isPortrait ? 52 : 0)
-                                            .padding(.leading, isPortrait ? 0 : Self.sideTabsWidth + 12)
+                                            .padding(.leading, isPortrait ? 0 : Self.sideTabsWidth + 14)
                                             .modifier(MaxHeightReader(height: $answerPanelHeight, resetKey: isPortrait))
                                             .opacity(0)
                                             .allowsHitTesting(false)
@@ -182,25 +188,25 @@ struct BattleScreen: View {
                             Group {
                                 if isPortrait {
                                     VStack(spacing: 8) {
-                                        ScrollView(.horizontal) {
-                                            HStack(spacing: 10) { questionTabs }
+                                        ScrollView(.horizontal, showsIndicators: false) {
+                                            HStack(spacing: 8) { questionTabs }
                                         }
-                                        .frame(height: 44)
+                                        .frame(height: 42)
                                         .disabled(!canAnswer)
                                         answerPanel
                                     }
                                 } else {
-                                    // 横屏高度紧：切题栏竖排在左边，答题区少占一行，战场才能铺满宽度。
-                                    // 切题栏放在 overlay 里，高度跟着答题区走，题多了就上下滚
-                                    HStack(alignment: .top, spacing: 12) {
+                                    HStack(alignment: .top, spacing: 14) {
                                         Color.clear.frame(width: Self.sideTabsWidth, height: 0)
                                         answerPanel
                                     }
                                     .overlay(alignment: .topLeading) {
-                                        ScrollView(.vertical) {
+                                        ScrollView(.vertical, showsIndicators: false) {
                                             VStack(alignment: .leading, spacing: 8) { questionTabs }
+                                                .padding(6)
                                         }
                                         .frame(width: Self.sideTabsWidth)
+                                        .background(RoundedRectangle(cornerRadius: AppRadius.sm).fill(AppColor.surface.opacity(0.65)))
                                         .disabled(!canAnswer)
                                     }
                                 }
@@ -209,23 +215,17 @@ struct BattleScreen: View {
                         }
                     }
                     .frame(maxWidth: .infinity, minHeight: answerPanelHeight)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, isPortrait ? 10 : 6)
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(GrowthColors.answerTray)
-                            .shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 3)
-                    )
-                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(GrowthColors.cardEdge, lineWidth: 2))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, isPortrait ? 10 : 8)
+                    .candyCard(fill: GrowthColors.answerTray, radius: AppRadius.md)
                     .padding(.horizontal, 10)
                     .padding(.bottom, isPortrait ? 0 : 6)
-                    // 竖屏时战场宽度到头，下面会空出一大块，去掉占位让战场和答题区整体居中
+
                     if !isPortrait {
                         Spacer(minLength: 0)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                // 横屏高度紧：底部的系统安全区也给答题区用（横条已隐藏），多出来的高度让给战场
                 .ignoresSafeArea(.container, edges: isPortrait ? [] : .bottom)
             }
 

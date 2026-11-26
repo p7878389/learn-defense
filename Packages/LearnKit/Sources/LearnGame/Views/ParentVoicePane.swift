@@ -8,73 +8,89 @@ struct ParentVoicePane: View {
     @State private var message: String?
 
     var body: some View {
-        VStack(spacing: 24) {
-            SettingsCard(title: "🔊 当前朗读方式") {
-                HStack(spacing: 16) {
-                    source(.system, title: "🤖 iPad 系统语音", detail: "离线可用")
-                    source(.doubao, title: "☁️ 豆包语音", detail: doubaoDetail)
+        VStack(spacing: 20) {
+            SettingsCard(title: "当前朗读方式", systemImage: "speaker.wave.2.fill", tint: AppColor.parentAccent) {
+                HStack(spacing: 14) {
+                    source(.system, systemImage: "ipad", title: "iPad 系统语音", detail: "离线可用，零配置")
+                    source(.doubao, systemImage: "cloud.fill", title: "豆包语音", detail: doubaoDetail)
                 }
                 HStack {
-                    Text("高级设置可配置豆包账号与中英文音色。").foregroundStyle(Theme.muted)
+                    Text("高级设置可配置豆包账号与中英文音色。")
+                        .font(AppFont.label)
+                        .foregroundStyle(Theme.muted)
                     Spacer()
-                    Button { advanced = true } label: {
-                        CandyButtonLabel(title: "高级设置（账号 · 音色） ›", fill: Theme.accent, edge: GrowthColors.orangeDark,
-                                         font: .system(size: 16, weight: .heavy, design: .rounded), height: 42)
+                    AppButton(title: "高级设置（账号 · 音色）", systemImage: "slider.horizontal.3", role: .accent, size: .medium) {
+                        advanced = true
                     }
-                    .buttonStyle(PressableStyle())
                 }
             }
-            SettingsCard(title: "🎛️ 朗读参数") {
+            SettingsCard(title: "朗读参数", systemImage: "dial.medium.fill", tint: AppColor.adventure) {
                 slider("语速", value: $draft.rate, range: 0.25...0.65, format: "%.2f")
                 slider("音调（系统语音）", value: $draft.pitch, range: 0.7...1.5, format: "%.2f")
                 slider("音量", value: $draft.volume, range: 0...1, format: "%.2f")
-                Toggle("自动朗读题目", isOn: $draft.readQuestions)
-                Toggle("朗读游戏提示语", isOn: $draft.readGuidance)
-                Toggle("静音模式下也朗读", isOn: $draft.readsWhenSilent)
+                VStack(spacing: 10) {
+                    Toggle("自动朗读题目", isOn: $draft.readQuestions)
+                    Toggle("朗读游戏提示语", isOn: $draft.readGuidance)
+                    Toggle("静音模式下也朗读", isOn: $draft.readsWhenSilent)
+                }
+                .font(AppFont.body)
+                .foregroundStyle(Theme.ink)
+                .tint(AppColor.parentAccent)
+
                 HStack(spacing: 12) {
-                    Button { save() } label: {
-                        CandyButtonLabel(title: "保存设置", icon: "✓", fill: Theme.jade, edge: GrowthColors.jadeDark,
-                                         font: .system(size: 16, weight: .heavy, design: .rounded), height: 44)
-                    }
-                    .buttonStyle(PressableStyle())
-                    Button {
+                    AppButton(title: "保存设置", systemImage: "checkmark", role: .primary, size: .medium) { save() }
+                    AppButton(title: "试读", systemImage: "speaker.wave.2.fill", role: .secondary, size: .medium) {
                         if save() { model.speech.speak("春眠不觉晓，处处闻啼鸟。Hello, welcome!", interrupt: true, channel: .preview) }
-                    } label: {
-                        CandyButtonLabel(title: "试读", icon: "🔊", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
-                                         foreground: Theme.ink, font: .system(size: 16, weight: .heavy, design: .rounded), height: 44)
                     }
-                    .buttonStyle(PressableStyle())
-                    if let message { Text(message).font(.footnote).foregroundStyle(Theme.muted) }
+                    if let message { Text(message).font(AppFont.label).foregroundStyle(AppColor.jadeEdge) }
                 }
             }
         }
         .onAppear { draft = model.readerPreferences }
-        // 和设置页一样全屏显示，沿用家长专区的纸张底色和糖果卡片
         .growthCover(isPresented: $advanced) { VoiceSettingsView(library: model.speechLibrary) }
     }
 
     private var doubaoDetail: String {
         if model.speechLibrary.settings?.isUsable == true { return "已配置 · 不可用时回退系统语音" }
-        return model.speechLibrary.hasRemote ? "使用云端语音 · 没有时回退系统语音" : "配置账号后可生成语音"
+        return model.speechLibrary.hasRemote ? "使用云端语音 · 没有时回退系统语音" : "配置账号后可生成高质量语音"
     }
 
-    private func source(_ source: ReaderPreferences.Source, title: String, detail: String) -> some View {
-        Button { draft.source = source } label: {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack { Text(title).font(.title3.bold()); Spacer(); Image(systemName: draft.source == source ? "checkmark.circle.fill" : "circle") }
-                Text(detail).font(.footnote).multilineTextAlignment(.leading)
+    private func source(_ source: ReaderPreferences.Source, systemImage: String, title: String, detail: String) -> some View {
+        let selected = draft.source == source
+        return Button { draft.source = source } label: {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
+                    AppIconBadge(systemImage: systemImage, tint: selected ? AppColor.parentAccent : AppColor.muted, size: 30)
+                    Text(title).font(AppFont.bodyStrong)
+                    Spacer()
+                    Image(systemName: selected ? "checkmark.circle.fill" : "circle")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundStyle(selected ? AppColor.parentAccent : AppColor.cardStroke)
+                }
+                Text(detail).font(AppFont.label).foregroundStyle(Theme.muted).multilineTextAlignment(.leading)
             }
-            .padding(18).frame(maxWidth: .infinity, minHeight: 110)
-            .background(source == draft.source ? Theme.accent.opacity(0.1) : Theme.paper, in: RoundedRectangle(cornerRadius: 20))
-            .overlay(RoundedRectangle(cornerRadius: 20).stroke(source == draft.source ? Theme.accent : GrowthColors.cardEdge, lineWidth: 2))
-        }.buttonStyle(.plain).foregroundStyle(Theme.ink)
+            .padding(16)
+            .frame(maxWidth: .infinity, minHeight: 102, alignment: .topLeading)
+            .background(selected ? AppColor.parentAccent.opacity(0.09) : Theme.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
+            .overlay(RoundedRectangle(cornerRadius: AppRadius.sm).strokeBorder(selected ? AppColor.parentAccent : AppColor.parentStroke, lineWidth: selected ? 2 : 1.2))
+        }
+        .buttonStyle(PressableStyle())
+        .foregroundStyle(Theme.ink)
     }
 
     private func slider(_ title: String, value: Binding<Double>, range: ClosedRange<Double>, format: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack { Text(title).bold(); Spacer(); Text(String(format: format, value.wrappedValue)).monospacedDigit().foregroundStyle(Theme.accent) }
-            Slider(value: value, in: range)
-        }.padding(14).background(Theme.paper, in: RoundedRectangle(cornerRadius: 16))
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text(title).font(AppFont.body).foregroundStyle(Theme.ink)
+                Spacer()
+                Text(String(format: format, value.wrappedValue))
+                    .font(AppFont.digits(16, weight: .heavy))
+                    .foregroundStyle(AppColor.parentAccent)
+            }
+            Slider(value: value, in: range).tint(AppColor.parentAccent)
+        }
+        .padding(14)
+        .background(Theme.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
     }
 
     @discardableResult private func save() -> Bool {
@@ -90,42 +106,56 @@ struct ParentGamePane: View {
     @State private var message: String?
 
     var body: some View {
-        VStack(spacing: 24) {
-            SettingsCard(title: "🎮 声音与游戏") {
-                Text("保存后，从下一局游戏开始使用新规则。").foregroundStyle(Theme.muted)
-                HStack { Text("答题提示音音量"); Slider(value: $effects, in: 0...1).frame(maxWidth: 320) }
-                Stepper("开始 \(rules.initialRestRounds) 回合使用固定休息", value: $rules.initialRestRounds, in: 1...20)
-                Stepper("初始休息 \(rules.initialRestSeconds) 秒", value: $rules.initialRestSeconds, in: 1...90)
-                Stepper("后续每回合增加 \(rules.restIncrementSeconds) 秒", value: $rules.restIncrementSeconds, in: 1...30)
-                Stepper("最长休息 \(rules.maxRestSeconds) 秒", value: $rules.maxRestSeconds, in: rules.initialRestSeconds...600)
-                Stepper("每 \(rules.reviewEvery) 题穿插一次错题", value: $rules.reviewEvery, in: 2...20)
-                Stepper(rules.newItemGraceSeconds == 0 ? "新知识点不额外等待"
-                        : "新知识点先等 \(rules.newItemGraceSeconds) 秒再逼近",
-                        value: $rules.newItemGraceSeconds, in: 0...60, step: 2)
-                Stepper("简单：每回合增加 \(rules.questionIncrement.easy) 题", value: $rules.questionIncrement.easy, in: 1...20)
-                Stepper("标准：每回合增加 \(rules.questionIncrement.normal) 题", value: $rules.questionIncrement.normal, in: 1...20)
-                Stepper("挑战：每回合增加 \(rules.questionIncrement.hard) 题", value: $rules.questionIncrement.hard, in: 1...20)
+        VStack(spacing: 20) {
+            SettingsCard(title: "声音与游戏规则", systemImage: "gamecontroller.fill", tint: AppColor.violet) {
+                Text("保存后，从下一局游戏开始使用新规则。").font(AppFont.label).foregroundStyle(Theme.muted)
+                HStack {
+                    Text("答题提示音音量").font(AppFont.body)
+                    Spacer()
+                    Slider(value: $effects, in: 0...1).tint(AppColor.parentAccent).frame(maxWidth: 320)
+                }
+                .padding(12)
+                .background(Theme.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
+
+                VStack(spacing: 10) {
+                    Stepper("开始 \(rules.initialRestRounds) 回合使用固定休息", value: $rules.initialRestRounds, in: 1...20)
+                    Stepper("初始休息 \(rules.initialRestSeconds) 秒", value: $rules.initialRestSeconds, in: 1...90)
+                    Stepper("后续每回合增加 \(rules.restIncrementSeconds) 秒", value: $rules.restIncrementSeconds, in: 1...30)
+                    Stepper("最长休息 \(rules.maxRestSeconds) 秒", value: $rules.maxRestSeconds, in: rules.initialRestSeconds...600)
+                    Stepper("每 \(rules.reviewEvery) 题穿插一次错题", value: $rules.reviewEvery, in: 2...20)
+                    Stepper(rules.newItemGraceSeconds == 0 ? "新知识点不额外等待"
+                            : "新知识点先等 \(rules.newItemGraceSeconds) 秒再逼近",
+                            value: $rules.newItemGraceSeconds, in: 0...60, step: 2)
+                    Stepper("入门：每回合增加 \(rules.questionIncrement.easy) 题", value: $rules.questionIncrement.easy, in: 1...20)
+                    Stepper("标准：每回合增加 \(rules.questionIncrement.normal) 题", value: $rules.questionIncrement.normal, in: 1...20)
+                    Stepper("挑战：每回合增加 \(rules.questionIncrement.hard) 题", value: $rules.questionIncrement.hard, in: 1...20)
+                }
+                .font(AppFont.body)
+                .foregroundStyle(Theme.ink)
             }
-            SettingsCard(title: "🪙 每日积分上限") {
-                ForEach(CoinSource.allCases, id: \.rawValue) { source in
-                    Stepper("\(title(source))：\(rules.coinLimits[source.rawValue] ?? 0) 分",
-                            value: Binding(get: { rules.coinLimits[source.rawValue] ?? 0 },
-                                           set: { rules.coinLimits[source.rawValue] = $0 }), in: 0...10000, step: 10)
+            SettingsCard(title: "每日积分上限", systemImage: "star.circle.fill", tint: AppColor.goldEdge) {
+                VStack(spacing: 10) {
+                    ForEach(CoinSource.allCases, id: \.rawValue) { source in
+                        Stepper("\(title(source))：\(rules.coinLimits[source.rawValue] ?? 0) 分",
+                                value: Binding(get: { rules.coinLimits[source.rawValue] ?? 0 },
+                                               set: { rules.coinLimits[source.rawValue] = $0 }), in: 0...10000, step: 10)
+                    }
                 }
-                Text("上限设为 0 可关闭该来源。调高上限不会重置今天已领取的积分。").font(.footnote).foregroundStyle(Theme.muted)
-                Button {
-                    do {
-                        try model.updateRules(rules)
-                        var reader = model.readerPreferences; reader.effectsVolume = effects
-                        try model.updateReader(reader)
-                        message = "已保存"
-                    } catch { message = error.localizedDescription }
-                } label: {
-                    CandyButtonLabel(title: "保存游戏设置", icon: "✓", fill: Theme.jade, edge: GrowthColors.jadeDark,
-                                     font: .system(size: 16, weight: .heavy, design: .rounded), height: 44)
+                .font(AppFont.body)
+                .foregroundStyle(Theme.ink)
+                Text("上限设为 0 可关闭该来源。调高上限不会重置今天已领取的积分。")
+                    .font(AppFont.caption).foregroundStyle(Theme.muted)
+                HStack(spacing: 12) {
+                    AppButton(title: "保存游戏设置", systemImage: "checkmark", role: .primary, size: .medium) {
+                        do {
+                            try model.updateRules(rules)
+                            var reader = model.readerPreferences; reader.effectsVolume = effects
+                            try model.updateReader(reader)
+                            message = "已保存"
+                        } catch { message = error.localizedDescription }
+                    }
+                    if let message { Text(message).font(AppFont.label).foregroundStyle(AppColor.jadeEdge) }
                 }
-                .buttonStyle(PressableStyle())
-                if let message { Text(message).foregroundStyle(Theme.muted) }
             }
         }
         .onAppear { rules = model.gameRules; effects = model.readerPreferences.effectsVolume }

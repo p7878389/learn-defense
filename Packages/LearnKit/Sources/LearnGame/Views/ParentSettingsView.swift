@@ -6,14 +6,26 @@ enum ParentSection: String, CaseIterable, Identifiable {
     case voice = "朗读语音", packs = "课本与题库", profiles = "孩子档案"
     case game = "声音与游戏", data = "数据与备份", about = "关于"
     var id: String { rawValue }
-    var icon: String {
+
+    var systemImage: String {
         switch self {
-        case .voice: "🔊"
-        case .packs: "📚"
-        case .profiles: "👧"
-        case .game: "🎮"
-        case .data: "💾"
-        case .about: "ℹ️"
+        case .voice: "speaker.wave.2.fill"
+        case .packs: "books.vertical.fill"
+        case .profiles: "person.2.fill"
+        case .game: "gamecontroller.fill"
+        case .data: "externaldrive.fill"
+        case .about: "info.circle.fill"
+        }
+    }
+
+    var tint: Color {
+        switch self {
+        case .voice: AppColor.parentAccent
+        case .packs: AppColor.jade
+        case .profiles: AppColor.accent
+        case .game: AppColor.violet
+        case .data: AppColor.adventure
+        case .about: AppColor.muted
         }
     }
 }
@@ -39,18 +51,26 @@ struct ParentSettingsView: View {
     }
 }
 
+/// 家长端清雅设置卡片：同源暖米色 + 利落圆角 + 轻柔投影 + 统一 SF Symbols 徽章
 struct SettingsCard<Content: View>: View {
     let title: String
+    var systemImage: String? = nil
+    var tint: Color = AppColor.parentAccent
     @ViewBuilder var content: Content
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            Text(title).font(.title2.bold()).foregroundStyle(Theme.ink)
+        VStack(alignment: .leading, spacing: 18) {
+            HStack(spacing: 10) {
+                if let systemImage {
+                    AppIconBadge(systemImage: systemImage, tint: tint, size: 32)
+                }
+                Text(title).font(AppFont.heading).foregroundStyle(Theme.ink)
+            }
             content
         }
-        .padding(24)
+        .padding(22)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .candyCard(fill: GrowthColors.surface)
-        .overlay(RoundedRectangle(cornerRadius: 24).stroke(GrowthColors.cardEdge, lineWidth: 2))
+        .parentSurfaceCard(radius: AppRadius.md)
     }
 }
 
@@ -64,12 +84,14 @@ private struct ParentGateView: View {
     let onCancel: () -> Void
 
     var body: some View {
-        CandyModalCard(bannerTitle: "家长验证", bannerIcon: "🔒", maxWidth: 640) {
-            Text("请家长完成下面的计算，进入家长专区").foregroundStyle(Theme.muted)
+        CandyModalCard(bannerTitle: "家长验证", bannerIcon: "🔒", maxWidth: 620) {
+            Text("请家长完成下面的计算，进入家长专区")
+                .font(AppFont.body)
+                .foregroundStyle(Theme.muted)
             Text("\(gate.left) × \(gate.right) = ?")
-                .font(.system(size: 48, weight: .heavy, design: .rounded))
+                .font(AppFont.digits(46, weight: .black))
                 .foregroundStyle(Theme.ink)
-            HStack(spacing: 16) {
+            HStack(spacing: 14) {
                 ForEach(gate.options, id: \.self) { option in
                     Button {
                         let success = gate.submit(option)
@@ -84,23 +106,19 @@ private struct ParentGateView: View {
                         }
                     } label: {
                         Text("\(option)")
-                            .font(.system(size: 28, weight: .heavy, design: .rounded))
-                            .frame(minWidth: 100, minHeight: 72)
+                            .font(AppFont.digits(28, weight: .heavy))
+                            .frame(minWidth: 100, minHeight: 70)
                             .foregroundStyle(Theme.ink)
-                            .background(CandyTileBackground(radius: 18))
+                            .background(CandyTileBackground(radius: AppRadius.md))
                     }
                     .buttonStyle(PressableStyle())
                     .disabled(!gate.canAnswer(now: now) || persistenceFailed)
                 }
             }
             Text(message.isEmpty ? "连续答错 3 次后，需要稍后再试" : message)
-                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .font(AppFont.label)
                 .foregroundStyle(Theme.muted)
-            Button(action: onCancel) {
-                CandyButtonLabel(title: "返回主页", icon: "←", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
-                                 foreground: Theme.ink, font: .headline, height: 44, minWidth: 140)
-            }
-            .buttonStyle(PressableStyle())
+            AppButton(title: "返回主页", systemImage: "chevron.left", role: .secondary, size: .medium, minWidth: 140, action: onCancel)
         }
         .padding(30)
         .onAppear {
@@ -116,75 +134,112 @@ private struct ParentGateView: View {
 
 private struct ParentAboutPane: View {
     var body: some View {
-        SettingsCard(title: "ℹ️ 关于字灵守卫") {
-            Text("通过答题守护书本，在游戏中练习语文和英语。").font(.title3)
+        SettingsCard(title: "关于字灵守卫", systemImage: "info.circle.fill", tint: AppColor.muted) {
+            Text("通过答题守护书本，在游戏中练习语文和英语。").font(AppFont.bodyStrong).foregroundStyle(Theme.ink)
             Text("版本 \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")")
+                .font(AppFont.body).foregroundStyle(Theme.ink)
             Text("学习记录存储在本机。导出备份后，请妥善保存文件。")
+                .font(AppFont.body).foregroundStyle(Theme.muted)
             Text("图片：Microsoft Fluent Emoji（MIT）\n植物与僵尸素材说明见项目 Resources/Sprites。\n项目使用 GPL-3.0 许可。")
-                .font(.footnote).foregroundStyle(Theme.muted)
+                .font(AppFont.caption).foregroundStyle(Theme.muted)
         }
     }
 }
 
-/// 由家长验证后的容器呈现；可指定初始分区，保留独立的页面布局。
+/// 家长专区主容器：移除重复的右侧“退出家长模式”按钮，采用清雅松石绿导航与圆润 SF Symbols 图标。
 struct ParentSettingsContent: View {
     @State var section: ParentSection = .voice
     let onClose: () -> Void
+
     var body: some View {
         ZStack {
             GrowthPageBackground()
-                VStack(spacing: 20) {
-                    GrowthPageHeader(icon: "⚙️", title: "家长设置", subtitle: "🔒 家长专区", onClose: onClose) {
-                        Button(action: onClose) {
-                            CandyButtonLabel(title: "退出家长模式", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
-                                             foreground: Theme.ink, font: .system(size: 16, weight: .heavy, design: .rounded), height: 44)
-                        }
-                        .buttonStyle(PressableStyle())
-                    }
-                    HStack(alignment: .top, spacing: 24) {
-                        VStack(alignment: .leading, spacing: 10) {
-                            ForEach(ParentSection.allCases) { item in
-                                Button { section = item } label: {
-                                    HStack(spacing: 14) {
-                                        Text(item.icon)
-                                        Text(item.rawValue)
-                                        Spacer(minLength: 0)
-                                        if item == section { Circle().fill(.white.opacity(0.7)).frame(width: 8, height: 8) }
-                                    }
-                                    .font(.title3.bold())
-                                    .foregroundStyle(item == section ? .white : Theme.ink)
-                                    .padding(18)
-                                    .frame(maxWidth: .infinity, minHeight: 68, alignment: .leading)
-                                    .background(CandyTileBackground(selected: item == section, radius: 18))
-                                }
-                                .buttonStyle(PressableStyle())
-                            }
-                            Spacer()
-                            Text("档案和学习记录只保存在这台 iPad 上")
-                                .font(.footnote).foregroundStyle(Theme.muted)
-                                .padding(14).background(Theme.paper, in: RoundedRectangle(cornerRadius: 16))
-                        }
-                        .padding(18).frame(width: 250).candyCard(fill: GrowthColors.surface)
-                        .overlay(RoundedRectangle(cornerRadius: 24).stroke(GrowthColors.cardEdge, lineWidth: 2))
-                        ScrollView {
-                            Group {
-                                switch section {
-                                case .voice: ParentVoicePane()
-                                case .packs: ParentPacksPane()
-                                case .profiles: ParentProfilesPane()
-                                case .game: ParentGamePane()
-                                case .data: ParentDataPane(onReset: onClose)
-                                case .about: ParentAboutPane()
-                                }
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.bottom, 12)
-                        }
-                        .scrollBounceBehavior(.basedOnSize)
-                    }
+            VStack(spacing: 18) {
+                GrowthPageHeader(
+                    icon: "⚙️",
+                    systemIcon: "gearshape.fill",
+                    iconTint: AppColor.parentAccent,
+                    title: "家长设置",
+                    subtitle: "家长专区",
+                    backTitle: "退出家长专区",
+                    backSystemImage: "chevron.left",
+                    parentStyle: true,
+                    onClose: onClose
+                ) {
+                    EmptyView()
                 }
-                .padding(24)
+                HStack(alignment: .top, spacing: 20) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        ForEach(ParentSection.allCases) { item in
+                            let selected = item == section
+                            Button { section = item } label: {
+                                HStack(spacing: 12) {
+                                    Image(systemName: item.systemImage)
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundStyle(selected ? .white : item.tint)
+                                        .frame(width: 32, height: 32)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: AppRadius.xs)
+                                                .fill(selected ? .white.opacity(0.22) : item.tint.opacity(0.14))
+                                        )
+                                    Text(item.rawValue)
+                                        .font(AppFont.bodyStrong)
+                                    Spacer(minLength: 0)
+                                    if selected {
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 13, weight: .heavy))
+                                            .foregroundStyle(.white.opacity(0.8))
+                                    }
+                                }
+                                .foregroundStyle(selected ? .white : Theme.ink)
+                                .padding(.horizontal, 12)
+                                .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
+                                .background(
+                                    RoundedRectangle(cornerRadius: AppRadius.sm)
+                                        .fill(
+                                            selected
+                                                ? AnyShapeStyle(LinearGradient(colors: [AppColor.parentAccent, AppColor.adventureBottom],
+                                                                               startPoint: .topLeading, endPoint: .bottomTrailing))
+                                                : AnyShapeStyle(Color.clear)
+                                        )
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: AppRadius.sm)
+                                        .strokeBorder(selected ? .clear : AppColor.parentStroke.opacity(0.5), lineWidth: 1)
+                                )
+                            }
+                            .buttonStyle(PressableStyle())
+                        }
+                        Spacer()
+                        Label("档案和学习记录仅保存在本台 iPad 上", systemImage: "lock.shield.fill")
+                            .font(AppFont.caption)
+                            .foregroundStyle(Theme.muted)
+                            .padding(12)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Theme.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
+                    }
+                    .padding(14)
+                    .frame(width: 248)
+                    .parentSurfaceCard(radius: AppRadius.md)
 
+                    ScrollView {
+                        Group {
+                            switch section {
+                            case .voice: ParentVoicePane()
+                            case .packs: ParentPacksPane()
+                            case .profiles: ParentProfilesPane()
+                            case .game: ParentGamePane()
+                            case .data: ParentDataPane(onReset: onClose)
+                            case .about: ParentAboutPane()
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.bottom, 12)
+                    }
+                    .scrollBounceBehavior(.basedOnSize)
+                }
+            }
+            .padding(22)
         }
     }
 }

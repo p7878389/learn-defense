@@ -11,9 +11,9 @@ struct BattleTopBar<Seeds: View>: View {
         ViewThatFits(in: .horizontal) {
             HStack(spacing: 12) {
                 seeds()
+                Spacer(minLength: 0)
                 GameHUD(session: session, onExit: onExit)
             }
-            .fixedSize(horizontal: true, vertical: false)
             VStack(alignment: .leading, spacing: 6) {
                 GameHUD(session: session, onExit: onExit)
                     .frame(maxWidth: .infinity, alignment: .trailing)
@@ -22,46 +22,96 @@ struct BattleTopBar<Seeds: View>: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .background(Theme.paper)
+        .padding(.top, 6)
+        .padding(.bottom, 2)
     }
 }
 
-/// 大招与道具拥有独立操作空间，不盖住第一列植物。
+/// 经典战斗中栏：左侧雷霆大招 + 中间 3 格可视化道具凹槽（不再大面积空荡）+ 右侧绘本地图标签。
 struct BattleActionBar: View {
     @ObservedObject var session: GameSession
+
+    private var slotCount: Int { max(3, session.inventory.capacity) }
 
     var body: some View {
         HStack(spacing: 14) {
             UltimateButton(energy: session.energy, maxEnergy: session.tuning.ultimateEnergy,
                            ready: session.ultimateReady, action: session.startUltimate,
                            casting: session.isUnleashing, challenging: session.ultimate != nil)
-            Rectangle().fill(Theme.muted.opacity(0.25)).frame(width: 1, height: 40)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("道具").font(.caption.weight(.bold)).foregroundStyle(Theme.muted)
-                if session.inventory.items.isEmpty {
-                    Text("击败怪物有机会获得").font(.caption).foregroundStyle(Theme.muted)
-                } else {
-                    ItemBar(inventory: session.inventory, enabled: session.canUseItems,
-                            onUse: session.useItem(at:), horizontal: true)
+
+            RoundedRectangle(cornerRadius: 1)
+                .fill(AppColor.cardEdge.opacity(0.65))
+                .frame(width: 1.5, height: 44)
+
+            HStack(spacing: 10) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("战场道具")
+                        .font(AppFont.label)
+                        .foregroundStyle(Theme.ink)
+                    Text(session.inventory.items.isEmpty ? "击败怪物掉落" : "点按即可使用")
+                        .font(AppFont.caption)
+                        .foregroundStyle(Theme.muted)
                 }
+
+                HStack(spacing: 8) {
+                    ForEach(0..<slotCount, id: \.self) { index in
+                        if index < session.inventory.items.count {
+                            let item = session.inventory.items[index]
+                            Button { session.useItem(at: index) } label: {
+                                PictureView(emoji: item.icon, size: 34)
+                                    .frame(width: 50, height: 50)
+                                    .background(
+                                        CandyTileBackground(
+                                            selected: false,
+                                            radius: AppRadius.sm
+                                        )
+                                    )
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: AppRadius.sm)
+                                            .strokeBorder(AppColor.jade, lineWidth: 2)
+                                            .padding(.bottom, 3)
+                                    )
+                            }
+                            .buttonStyle(PressableStyle())
+                            .disabled(!session.canUseItems)
+                            .accessibilityLabel("\(item.name)，\(item.summary)")
+                            .transition(.scale(scale: 0.7).combined(with: .opacity))
+                        } else {
+                            RoundedRectangle(cornerRadius: AppRadius.sm)
+                                .fill(AppColor.paper.opacity(0.85))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: AppRadius.sm)
+                                        .strokeBorder(AppColor.cardEdge.opacity(0.75), style: StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
+                                )
+                                .overlay(
+                                    Image(systemName: "sparkles")
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundStyle(AppColor.cardEdge)
+                                )
+                                .frame(width: 50, height: 50)
+                                .accessibilityHidden(true)
+                        }
+                    }
+                }
+                .animation(.spring(response: 0.28, dampingFraction: 0.65), value: session.inventory)
             }
+
             Spacer(minLength: 0)
-            Label(session.map.name, systemImage: "map.fill")
-                .font(.system(size: 13, weight: .heavy, design: .rounded))
-                .foregroundStyle(GrowthColors.orangeDark)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 5)
-                .background(Capsule().fill(GrowthColors.gold.opacity(0.22)))
+
+            HStack(spacing: 6) {
+                Circle().fill(AppColor.jade).frame(width: 8, height: 8)
+                Image(systemName: "map.fill").font(.system(size: 12, weight: .bold))
+                Text(session.map.name).font(AppFont.label)
+            }
+            .foregroundStyle(AppColor.accentEdge)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
+            .background(Capsule().fill(AppColor.gold.opacity(0.22)))
+            .overlay(Capsule().strokeBorder(AppColor.gold.opacity(0.45), lineWidth: 1))
         }
-        .frame(minHeight: 72)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 3)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(GrowthColors.surface)
-                .shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 3)
-        )
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(GrowthColors.cardEdge, lineWidth: 2))
+        .frame(minHeight: 68)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 4)
+        .candyCard(radius: AppRadius.md)
     }
 }

@@ -8,35 +8,44 @@ struct BattleMapPicker: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 3) {
-                Text("战场地图").font(.headline.weight(.heavy))
-                Text("开战后锁定").font(.caption).foregroundStyle(Theme.muted)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("战场地图").font(AppFont.bodyStrong).foregroundStyle(Theme.ink)
+                Text("开战后锁定").font(AppFont.caption).foregroundStyle(Theme.muted)
             }
             ForEach(BattleMap.allCases) { map in
+                let selected = selection == map
                 Button { onSelect(map) } label: {
                     VStack(spacing: 4) {
                         if let image = BattleMapArtwork.image(map) {
                             Image(decorative: image, scale: 1)
                                 .resizable().aspectRatio(2, contentMode: .fit)
                                 .frame(width: 112, height: 56)
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                                .clipShape(RoundedRectangle(cornerRadius: AppRadius.xs))
                         }
                         HStack(spacing: 4) {
-                            Text(map.name).font(.system(size: 13, weight: .bold))
-                            if selection == map { Image(systemName: "checkmark.circle.fill").foregroundStyle(Theme.jade) }
+                            Text(map.name).font(AppFont.label)
+                            if selected {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 13, weight: .bold))
+                                    .foregroundStyle(Theme.jade)
+                            }
                         }
                         .frame(height: 18)
                     }
                     .padding(6)
-                    .background(CandyTileBackground(selected: selection == map,
-                                                    selectedFill: GrowthColors.gold.opacity(0.18),
-                                                    selectedEdge: Theme.accent,
-                                                    radius: 12))
+                    .background(
+                        CandyTileBackground(
+                            selected: selected,
+                            selectedFill: AppColor.goldLight.opacity(0.35),
+                            selectedEdge: AppColor.accent,
+                            radius: AppRadius.sm
+                        )
+                    )
                     .foregroundStyle(Theme.ink)
                 }
                 .buttonStyle(PressableStyle())
                 .accessibilityLabel(map.name)
-                .accessibilityAddTraits(selection == map ? [.isSelected] : [])
+                .accessibilityAddTraits(selected ? [.isSelected] : [])
             }
             Spacer(minLength: 0)
         }

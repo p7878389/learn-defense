@@ -23,7 +23,7 @@ struct AnswerPanel: View {
                 TileAnswerView(spec: spec, wrongCount: wrongPicks.count, compact: compact, onStart: onStartInput, onSubmit: onSubmitInput)
             } else if let q = question {
                 header(q)
-                HStack(spacing: 16) {
+                HStack(spacing: 14) {
                     ForEach(q.options.indices, id: \.self) { i in
                         OptionButton(text: q.options[i], style: q.optionStyle, state: state(of: i, in: q)) {
                             onAnswer(i)
@@ -32,19 +32,19 @@ struct AnswerPanel: View {
                 }
                 if revealed {
                     Text("再想一想，试试其他选项")
-                        .font(.title3.weight(.medium))
+                        .font(AppFont.bodyStrong)
                         .foregroundStyle(Theme.muted)
                 }
             } else {
                 Text("僵尸马上就来，准备答题！")
-                    .font(.title2)
+                    .font(AppFont.heading)
                     .foregroundStyle(Theme.muted)
                     .frame(maxWidth: .infinity, minHeight: 120)
             }
             if retrying {
                 Text("刚才答错了，题目已刷新，请重新作答")
-                    .font(.title3.weight(.medium))
-                    .foregroundStyle(Theme.muted)
+                    .font(AppFont.bodyStrong)
+                    .foregroundStyle(AppColor.accentEdge)
             }
         }
         .id(question?.id)
@@ -52,38 +52,28 @@ struct AnswerPanel: View {
     }
 
     private func header(_ q: Question) -> some View {
-        HStack(alignment: .center, spacing: 18) {
+        HStack(alignment: .center, spacing: 16) {
             Text(q.instruction)
-                .font(.title3.weight(.semibold))
+                .font(AppFont.bodyStrong)
                 .foregroundStyle(Theme.muted)
             if q.prompt != "🔊", Pictures.image(q.prompt) != nil {
-                PictureView(emoji: q.prompt, size: 72)
+                PictureView(emoji: q.prompt, size: 70)
             } else if q.prompt != "🔊" {
                 Text(q.prompt)
-                    .font(.system(size: q.prompt.count > 10 ? 26 : 38, weight: .bold, design: .rounded))
+                    .font(AppFont.rounded(q.prompt.count > 10 ? 26 : 38, weight: .black))
                     .foregroundStyle(Theme.ink)
                     .lineLimit(2)
                     .minimumScaleFactor(0.6)
             }
             if let hint = q.hint {
                 Text(hint)
-                    .font(.title3.weight(.medium))
-                    .foregroundStyle(Theme.accent)
+                    .font(AppFont.bodyStrong)
+                    .foregroundStyle(AppColor.accentEdge)
+                    .padding(.horizontal, 10).padding(.vertical, 4)
+                    .background(Capsule().fill(AppColor.gold.opacity(0.24)))
             }
             if q.promptSpeech != nil {
-                Button(action: onReplay) {
-                    Label("再听一遍", systemImage: "speaker.wave.2.fill")
-                        .font(.system(size: 20, weight: .heavy, design: .rounded))
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 11)
-                        .background(
-                            Capsule()
-                                .fill(Theme.accent)
-                                .shadow(color: GrowthColors.orangeDark, radius: 0, x: 0, y: 4)
-                        )
-                        .foregroundStyle(.white)
-                }
-                .buttonStyle(PressableStyle())
+                AppButton(title: "再听一遍", systemImage: "speaker.wave.2.fill", role: .accent, size: .medium, action: onReplay)
             }
         }
     }
@@ -108,37 +98,56 @@ struct OptionButton: View {
         switch style {
         case .emoji: 64
         case .pinyin: 40
-        case .text: text.count > 4 ? 30 : 44
+        case .text: text.count > 4 ? 30 : 42
         }
     }
 
     var body: some View {
+        let shape = RoundedRectangle(cornerRadius: AppRadius.lg)
+        let lip: CGFloat = state == .wrong ? 0 : 4
         Button(action: action) {
             label
                 .padding(.horizontal, 10)
-                .frame(maxWidth: .infinity, minHeight: style == .emoji ? 116 : 86)
-                .background(
-                    RoundedRectangle(cornerRadius: 22)
-                        .fill(background)
-                        .shadow(color: edgeShadow, radius: 0, x: 0, y: state == .wrong ? 0 : 4)
-                )
-                .overlay(RoundedRectangle(cornerRadius: 22).stroke(border, lineWidth: state == .reveal ? 5 : 2))
+                .frame(maxWidth: .infinity, minHeight: style == .emoji ? 114 : 84)
+                .padding(.bottom, lip)
+                .background {
+                    ZStack {
+                        if lip > 0 {
+                            shape.fill(edgeColor)
+                                .shadow(color: AppColor.warmShadow.opacity(0.10), radius: 6, y: 3)
+                        }
+                        shape
+                            .fill(
+                                LinearGradient(
+                                    colors: [topFill, bottomFill],
+                                    startPoint: .top, endPoint: .bottom
+                                )
+                            )
+                            .overlay(
+                                shape.strokeBorder(
+                                    LinearGradient(colors: [.white.opacity(0.85), .clear], startPoint: .top, endPoint: .center),
+                                    lineWidth: 1.5
+                                )
+                            )
+                            .overlay(shape.strokeBorder(borderColor, lineWidth: state == .reveal ? 3.5 : 1.8))
+                            .padding(.bottom, lip)
+                    }
+                }
         }
         .buttonStyle(PressableStyle())
         .disabled(state == .wrong)
-        .opacity(state == .wrong ? 0.45 : 1)
+        .opacity(state == .wrong ? 0.52 : 1)
         .modifier(Shake(animatableData: state == .wrong ? 1 : 0))
-        .scaleEffect(state == .reveal ? 1.05 : 1)
+        .scaleEffect(state == .reveal ? 1.04 : 1)
     }
 
     @ViewBuilder
     private var label: some View {
         if style == .emoji {
-            PictureView(emoji: text, size: 92)
+            PictureView(emoji: text, size: 90)
         } else {
-            // 句子意思这类长选项可以折成两行
             Text(text)
-                .font(.system(size: fontSize, weight: .bold, design: .rounded))
+                .font(AppFont.rounded(fontSize, weight: .heavy))
                 .lineLimit(text.count > 10 ? 2 : 1)
                 .multilineTextAlignment(.center)
                 .minimumScaleFactor(0.5)
@@ -146,27 +155,35 @@ struct OptionButton: View {
         }
     }
 
-    private var background: Color {
+    private var topFill: Color {
         switch state {
-        case .normal: GrowthColors.surface
-        case .wrong: Theme.wrong.opacity(0.22)
-        case .reveal: Theme.jade.opacity(0.25)
+        case .normal: AppColor.surface
+        case .wrong: AppColor.dangerFill
+        case .reveal: Color(red: 0.88, green: 0.98, blue: 0.93)
         }
     }
 
-    private var border: Color {
+    private var bottomFill: Color {
         switch state {
-        case .normal: GrowthColors.cardEdge
+        case .normal: AppColor.surfaceBottom
+        case .wrong: AppColor.dangerFill
+        case .reveal: Theme.jade.opacity(0.24)
+        }
+    }
+
+    private var borderColor: Color {
+        switch state {
+        case .normal: AppColor.cardStroke
         case .wrong: Theme.wrong
         case .reveal: Theme.jade
         }
     }
 
-    private var edgeShadow: Color {
+    private var edgeColor: Color {
         switch state {
-        case .normal: GrowthColors.cardEdge
+        case .normal: AppColor.cardEdge
         case .wrong: .clear
-        case .reveal: GrowthColors.jadeDark
+        case .reveal: AppColor.jadeEdge
         }
     }
 }

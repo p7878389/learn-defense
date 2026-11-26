@@ -1,6 +1,6 @@
 {
-  "date": "2026-11-22",
-  "base_commit": "a8986a5b6c4cf72152a65f6108281e5212231ae3",
+  "date": "2026-11-26",
+  "base_commit": "0aab576a09be88d10c24a2d5371f6e71e13a87fd",
   "source": "Existing AdventureScreenTests.rendersRealMapAndBattleAtBothOrientations; NSHostingView and SpriteKit texture capture on macOS",
   "scope": "Current real UI with in-memory sample data; not an iPad device capture",
   "tests": {
@@ -14,7 +14,7 @@
         2360,
         1472
       ],
-      "sha256": "2c2fc5b25a17db73749e2c5504615a6812ca4a4d20fac796d0b4362addd8e803"
+      "sha256": "761a0d4eedc93327ee027c07001e3841203ee912454299bdac4783cc6cb9001d"
     },
     {
       "path": "captures/landscape-home.png",
@@ -22,7 +22,7 @@
         2360,
         1472
       ],
-      "sha256": "79beca98c150ba26103f6ba3722db6eee1aa132661ac69c423408664d360ebbe"
+      "sha256": "3f0ec255a4bc937add3eedf62f9b1104a5a4dffa9c8492df9e95ee969d8d244d"
     },
     {
       "path": "captures/landscape-map.png",
@@ -30,7 +30,7 @@
         2360,
         1472
       ],
-      "sha256": "01c4db4e8ed9d2a4bef80a0202710d10cab1158e306ccbde638cddf7f6787bcf"
+      "sha256": "f6c89d66d1a96efec33d261cffca8ea7a4fe12b59d08610fc4bdf187b81a5a22"
     },
     {
       "path": "captures/landscape-preparing.png",
@@ -38,7 +38,7 @@
         2360,
         1472
       ],
-      "sha256": "7dad689fb360ff8e228c9fba328bb21b53cabe6216900f9ce346bdd5d9507536"
+      "sha256": "cbb9e0dcbcdbaf081d9411c1fcde225eaa5d4f715042503ec09e57245267b4df"
     },
     {
       "path": "captures/landscape-saved-map.png",
@@ -46,7 +46,7 @@
         2360,
         1472
       ],
-      "sha256": "8066912dd4876d7453e83cfc7f3e828176a1ea5867693accfbd7e835c9a767c9"
+      "sha256": "761a6749f7c4a41c83827a02e2c9d939f2b61ca886fe8cef1a70691766606a22"
     },
     {
       "path": "captures/portrait-battle.png",
@@ -54,7 +54,7 @@
         1640,
         2200
       ],
-      "sha256": "89fee4258a2cd6c95fd9548b6a91995fa4dac65a77738b867402ce0eee6adaf6"
+      "sha256": "a019f8da35040a816668a43df5c92fb12d7f34fac5397f1950d65cee2734f523"
     },
     {
       "path": "captures/portrait-home.png",
@@ -62,7 +62,7 @@
         1640,
         2200
       ],
-      "sha256": "55ad565dd989c49bc7c6a930cfb5992835202ee87d0bd05b1644fbf8dd382d89"
+      "sha256": "59cedb3610aa526b5a57dcc60b7c8b5faca1b2606258e9eefe2b86eb466305d5"
     },
     {
       "path": "captures/portrait-map.png",
@@ -70,7 +70,7 @@
         1640,
         2200
       ],
-      "sha256": "5dd8e17be4574350dae26f2be7ca0268dd46b5a07eb8a936b36cc01decbc6b95"
+      "sha256": "24410592162a564081e95b7b61e11bb7b4a41e7f3f4342512de3100bda101919"
     },
     {
       "path": "captures/portrait-preparing.png",
@@ -78,7 +78,7 @@
         1640,
         2200
       ],
-      "sha256": "fee8c1588148e08bb08aeb7bd057c665ce8857f901b25857f6ff194ef4875348"
+      "sha256": "c6bd6340d6ea23526944eaf478b6015bde45d33e96ae595f71d684b62b0dcea5"
     },
     {
       "path": "captures/portrait-saved-map.png",
@@ -86,7 +86,7 @@
         1640,
         2200
       ],
-      "sha256": "b8c43a5073eefb611b836c1d60d66f2bb23cbb03fcee609419da27ca36504c9c"
+      "sha256": "65a659b04b5a98c25db1a70f3e5a53302bcbd73021056021b2cb36b53486b7ca"
     },
     {
       "path": "captures/question-bank-partial.png",
@@ -94,7 +94,7 @@
         1800,
         1400
       ],
-      "sha256": "83357ed5fabbd80cdc4d70554ef1a3fe506d4884b9c704e5b6af3d8bf5d8660d"
+      "sha256": "a30956deff13a2d89498a5b77965cfaa81cba53f5cc432493df3c102288f0a46"
     },
     {
       "path": "captures/question-bank.png",
@@ -102,7 +102,7 @@
         1800,
         1400
       ],
-      "sha256": "26ed68d8bd323784dbc56e7ea2c738e29ddb479c5561d90f57221a82d76568da"
+      "sha256": "051d6e746104abc077c2866507c90ac4367ce467e8895b61ab6035fdb65a2a2b"
     },
     {
       "path": "captures/start-confirmation.png",
@@ -110,7 +110,7 @@
         1520,
         1280
       ],
-      "sha256": "08d14f3617c44452afed666f1c2464ead5e3b86a85c930b8b0df66dfac11eb48"
+      "sha256": "0b3b2bcc27855d62d99629615564d92d6f33d0ae18d554642a21b607036a5f80"
     }
   ]
 }

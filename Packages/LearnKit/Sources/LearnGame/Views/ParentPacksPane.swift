@@ -24,46 +24,44 @@ struct ParentPacksPane: View {
     private var importedIDs: Set<String> { Set(manager.imported().map(\.id)) }
 
     var body: some View {
-        VStack(spacing: 24) {
-            SettingsCard(title: "📚 导入课本") {
-                Text("添加自制或分享的 JSON 题库。导入前会先检查内容。").foregroundStyle(Theme.muted)
-                HStack(spacing: 16) {
-                    Button { choosing = true } label: {
-                        CandyButtonLabel(title: "从文件 App 选择", icon: "＋", fill: Theme.jade, edge: GrowthColors.jadeDark,
-                                         font: .system(size: 16, weight: .heavy, design: .rounded), height: 44)
-                    }
-                    .buttonStyle(PressableStyle())
-                    Button { help = true } label: {
-                        CandyButtonLabel(title: "怎么做题库？", icon: "💡", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
-                                         foreground: Theme.ink, font: .system(size: 16, weight: .heavy, design: .rounded), height: 44)
-                    }
-                    .buttonStyle(PressableStyle())
+        VStack(spacing: 20) {
+            SettingsCard(title: "导入课本", systemImage: "square.and.arrow.down.fill", tint: AppColor.jade) {
+                Text("添加自制或分享的 JSON 题库。导入前会先检查内容。")
+                    .font(AppFont.body).foregroundStyle(Theme.muted)
+                HStack(spacing: 14) {
+                    AppButton(title: "从文件 App 选择", systemImage: "plus", role: .primary, size: .medium) { choosing = true }
+                    AppButton(title: "怎么做题库？", systemImage: "questionmark.circle", role: .secondary, size: .medium) { help = true }
                 }
             }
-            SettingsCard(title: "📖 已安装课本（\(model.library.packs.count)）") {
+            SettingsCard(title: "已安装课本（\(model.library.packs.count)）", systemImage: "books.vertical.fill", tint: AppColor.parentAccent) {
                 ForEach(model.library.packs) { pack in
-                    HStack(spacing: 16) {
-                        Text(pack.subject == .english ? "📘" : "📕").font(.system(size: 42))
-                        VStack(alignment: .leading, spacing: 6) {
-                            HStack {
-                                Text(pack.title).font(.title3.bold())
+                    HStack(spacing: 14) {
+                        AppIconBadge(
+                            systemImage: pack.subject == .english ? "character.book.closed.fill" : "book.closed.fill",
+                            tint: pack.subject == .english ? AppColor.adventure : AppColor.accent,
+                            size: 42
+                        )
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack(spacing: 8) {
+                                Text(pack.title).font(AppFont.bodyStrong).foregroundStyle(Theme.ink)
                                 Text(importedIDs.contains(pack.id) ? "已导入" : "内置")
-                                    .font(.caption.bold()).padding(6).background(Theme.paper, in: Capsule())
+                                    .font(AppFont.caption)
+                                    .foregroundStyle(importedIDs.contains(pack.id) ? AppColor.jadeEdge : Theme.muted)
+                                    .padding(.horizontal, 8).padding(.vertical, 3)
+                                    .background(Capsule().fill(importedIDs.contains(pack.id) ? AppColor.jade.opacity(0.14) : AppColor.surface))
                             }
                             Text("\(pack.grade.displayName) · \(pack.units.count) 个单元 · \(ItemPool(packs: [pack], selection: .all).items.count) 个知识点")
-                                .font(.footnote).foregroundStyle(Theme.muted)
+                                .font(AppFont.caption).foregroundStyle(Theme.muted)
                         }
                         Spacer()
                         if importedIDs.contains(pack.id) {
-                            Button { deleting = pack.id } label: {
-                                CandyButtonLabel(title: "删除", icon: "🗑", fill: Theme.wrong.opacity(0.14),
-                                                 edge: Theme.wrong.opacity(0.45), foreground: Theme.wrong,
-                                                 font: .system(size: 15, weight: .heavy, design: .rounded), height: 40, minWidth: 86)
+                            AppButton(title: "删除", systemImage: "trash.fill", role: .destructive, size: .small, minWidth: 88) {
+                                deleting = pack.id
                             }
-                            .buttonStyle(PressableStyle())
                         }
                     }
-                    .padding(16).background(Theme.paper, in: RoundedRectangle(cornerRadius: 18))
+                    .padding(14)
+                    .background(Theme.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
                 }
             }.id(revision)
         }
@@ -75,40 +73,44 @@ struct ParentPacksPane: View {
         }
         .sheet(item: $pending) { draft in
             VStack(spacing: 18) {
-                GrowthPageHeader(icon: "📗", title: "确认导入课本", onClose: { pending = nil }) {}
+                GrowthPageHeader(
+                    icon: "📗", systemIcon: "book.badge.plus", iconTint: AppColor.jade,
+                    title: "确认导入课本", backTitle: "关闭", backSystemImage: "xmark", parentStyle: true,
+                    onClose: { pending = nil }
+                ) {}
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 18) {
-                        Text(draft.pack.title).font(.largeTitle.bold())
-                        Text("\(draft.pack.grade.displayName) · \(draft.pack.edition ?? "通用版")").foregroundStyle(Theme.muted)
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text(draft.pack.title).font(AppFont.title).foregroundStyle(Theme.ink)
+                        Text("\(draft.pack.grade.displayName) · \(draft.pack.edition ?? "通用版")")
+                            .font(AppFont.body).foregroundStyle(Theme.muted)
                         HStack(spacing: 24) {
                             Label("\(draft.pack.units.count) 个单元", systemImage: "books.vertical")
                             Label("\(draft.itemCount) 个知识点", systemImage: "checkmark.circle")
-                        }.font(.title3)
+                        }.font(AppFont.bodyStrong).foregroundStyle(Theme.ink)
                         if model.library.pack(id: draft.pack.id) != nil {
                             Label("同 id 课本将被替换，已有学习记录会保留。", systemImage: "exclamationmark.triangle.fill")
-                                .foregroundStyle(Theme.accent)
+                                .font(AppFont.body).foregroundStyle(Theme.accent)
                         }
-                        Text("✓ 文件格式检查通过").foregroundStyle(Theme.jade)
-                        Text("导入后立即可选，无需重启。").foregroundStyle(Theme.muted)
+                        Label("文件格式检查通过", systemImage: "checkmark.seal.fill")
+                            .font(AppFont.bodyStrong).foregroundStyle(Theme.jade)
+                        Text("导入后立即可选，无需重启。").font(AppFont.label).foregroundStyle(Theme.muted)
                         HStack(spacing: 14) {
-                            Button { pending = nil } label: {
-                                CandyButtonLabel(title: "再想想", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
-                                                 foreground: Theme.ink, font: .headline, height: 50, expands: true)
-                            }
-                            Button {
+                            AppButton(title: "取消", role: .secondary, size: .large, expands: true) { pending = nil }
+                            AppButton(
+                                title: model.library.pack(id: draft.pack.id) == nil ? "确认导入" : "导入并替换",
+                                systemImage: "checkmark", role: .primary, size: .large, expands: true
+                            ) {
                                 do {
                                     try manager.install(draft)
                                     model.reloadLibrary()
                                     revision += 1
                                     pending = nil
                                 } catch { self.error = error.localizedDescription }
-                            } label: {
-                                CandyButtonLabel(title: model.library.pack(id: draft.pack.id) == nil ? "确认导入" : "导入并替换",
-                                                 icon: "✓", font: .headline, height: 50, expands: true)
                             }
                         }
-                        .buttonStyle(PressableStyle())
-                    }.padding(24).candyCard()
+                    }
+                    .padding(24)
+                    .parentSurfaceCard(radius: AppRadius.md)
                 }
             }
             .padding(20)
@@ -116,13 +118,17 @@ struct ParentPacksPane: View {
         }
         .sheet(isPresented: $help) {
             VStack(spacing: 18) {
-                GrowthPageHeader(icon: "💡", title: "怎么做题库", onClose: { help = false }) {}
+                GrowthPageHeader(
+                    icon: "💡", systemIcon: "lightbulb.fill", iconTint: AppColor.accent,
+                    title: "怎么做题库", backTitle: "关闭", backSystemImage: "xmark", parentStyle: true,
+                    onClose: { help = false }
+                ) {}
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 18) {
-                        Text("准备一份 UTF-8 编码的 JSON 文件，包含课本 id、书名、学科、年级、单元及课文内容。").font(.title3)
-                        Text("支持生字、词语、古诗、成语、图片、英语词句和自定义选择题；每个知识点要提供对应的读音或答案。")
-                        Text("同 id 的课本会覆盖导入版本；删除导入版本后，内置课本会重新出现。")
-                        Text("生字拼音使用带声调的拼音（例如 chén）；选择题答案必须存在于选项中。")
+                    VStack(alignment: .leading, spacing: 14) {
+                        Text("准备一份 UTF-8 编码的 JSON 文件，包含课本 id、书名、学科、年级、单元及课文内容。").font(AppFont.bodyStrong)
+                        Text("支持生字、词语、古诗、成语、图片、英语词句和自定义选择题；每个知识点要提供对应的读音或答案。").font(AppFont.body)
+                        Text("同 id 的课本会覆盖导入版本；删除导入版本后，内置课本会重新出现。").font(AppFont.body)
+                        Text("生字拼音使用带声调的拼音（例如 chén）；选择题答案必须存在于选项中。").font(AppFont.body)
                         Text("""
                         {
                           "schemaVersion": 1,
@@ -143,7 +149,12 @@ struct ParentPacksPane: View {
                           }]
                         }
                         """).font(.system(.body, design: .monospaced)).textSelection(.enabled)
-                    }.padding(24).candyCard()
+                            .padding(14).frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Theme.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
+                    }
+                    .foregroundStyle(Theme.ink)
+                    .padding(24)
+                    .parentSurfaceCard(radius: AppRadius.md)
                 }
             }
             .padding(20)
@@ -156,7 +167,7 @@ struct ParentPacksPane: View {
                     icon: "⚠️",
                     message: "若覆盖了内置课本，将恢复内置版本，已有学习记录保留。",
                     buttons: [
-                        CandyConfirmButton(title: "确认删除", icon: "🗑", role: .destructive) {
+                        CandyConfirmButton(title: "确认删除", systemImage: "trash.fill", role: .destructive) {
                             do {
                                 try manager.remove(id: deleting)
                                 model.reloadLibrary(); revision += 1; self.deleting = nil
@@ -185,34 +196,30 @@ struct ParentProfilesPane: View {
     @State private var deleting: Profile?
 
     var body: some View {
-        SettingsCard(title: "👧 孩子档案") {
+        SettingsCard(title: "孩子档案", systemImage: "person.2.fill", tint: AppColor.accent) {
             ForEach(model.profiles) { profile in
-                HStack(spacing: 16) {
-                    Text(profile.avatar).font(.largeTitle)
-                    VStack(alignment: .leading) {
-                        Text(profile.name).font(.title3.bold())
-                        Text(profile.grade.displayName).foregroundStyle(Theme.muted)
+                HStack(spacing: 14) {
+                    PictureView(emoji: profile.avatar, size: 42)
+                        .frame(width: 52, height: 52)
+                        .background(Circle().fill(AvatarTint.color(for: profile.avatar).opacity(0.65)))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(profile.name).font(AppFont.bodyStrong).foregroundStyle(Theme.ink)
+                        Text(profile.grade.displayName).font(AppFont.label).foregroundStyle(Theme.muted)
                     }
                     Spacer()
-                    Button { editing = EditingProfile(profile: profile, isNew: false) } label: {
-                        CandyButtonLabel(title: "编辑", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
-                                         foreground: Theme.ink, font: .system(size: 15, weight: .heavy, design: .rounded),
-                                         height: 40, minWidth: 80)
+                    AppButton(title: "编辑", systemImage: "pencil", role: .secondary, size: .small, minWidth: 88) {
+                        editing = EditingProfile(profile: profile, isNew: false)
                     }
-                    Button { deleting = profile } label: {
-                        CandyButtonLabel(title: "删除", fill: Theme.wrong.opacity(0.14), edge: Theme.wrong.opacity(0.45),
-                                         foreground: Theme.wrong, font: .system(size: 15, weight: .heavy, design: .rounded),
-                                         height: 40, minWidth: 80)
+                    AppButton(title: "删除", systemImage: "trash.fill", role: .destructive, size: .small, minWidth: 88) {
+                        deleting = profile
                     }
-                }.buttonStyle(PressableStyle()).padding(14).background(Theme.paper, in: RoundedRectangle(cornerRadius: 18))
+                }
+                .padding(12)
+                .background(Theme.paper, in: RoundedRectangle(cornerRadius: AppRadius.sm))
             }
-            Button {
+            AppButton(title: "添加孩子", systemImage: "plus", role: .primary, size: .medium) {
                 editing = EditingProfile(profile: Profile(name: "", grade: .g3, avatar: "🐯"), isNew: true)
-            } label: {
-                CandyButtonLabel(title: "添加孩子", icon: "＋", fill: Theme.jade, edge: GrowthColors.jadeDark,
-                                 font: .system(size: 16, weight: .heavy, design: .rounded), height: 44)
             }
-            .buttonStyle(PressableStyle())
         }
         .profileEditorCover(item: $editing) { model.save($0) }
         .overlay {
@@ -222,7 +229,7 @@ struct ParentProfilesPane: View {
                     icon: "⚠️",
                     message: "删除「\(deleting.name)」及其全部学习、成长和对局记录后无法恢复。",
                     buttons: [
-                        CandyConfirmButton(title: "确认删除", icon: "🗑", role: .destructive) {
+                        CandyConfirmButton(title: "确认删除", systemImage: "trash.fill", role: .destructive) {
                             model.delete(deleting); self.deleting = nil
                         },
                         CandyConfirmButton(title: "取消", role: .cancel) { self.deleting = nil }

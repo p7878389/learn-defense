@@ -148,11 +148,7 @@ struct BadgeWallView: View {
                 .background(RoundedRectangle(cornerRadius: 18).fill(GrowthColors.gold.opacity(0.15)))
             }
             Spacer(minLength: 0)
-            Button(action: onClose) {
-                CandyButtonLabel(title: "去闯关，拿下一枚", icon: "▶", fill: Theme.jade, edge: GrowthColors.jadeDark)
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(PressableStyle())
+            AppButton(title: "去闯关，拿下一枚", systemImage: "play.fill", role: .primary, size: .large, expands: true, action: onClose)
         }
         .padding(20)
         .frame(maxHeight: .infinity)

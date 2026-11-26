@@ -1,7 +1,7 @@
 import LearnCore
 import SwiftUI
 
-/// 阳光和植物卡：把卡牌拖到草坪空位种下。最后一张铁栅门卡点一下就放在正在答题的僵尸面前
+/// 森林原木圆角种植托盘：暖胡桃木渐变 + 金砖阳光 + 金属纹章植物卡 + 冷银金属铁栅门卡
 struct SeedPacketStrip: View {
     let kinds: [DefenderKind]
     let sun: Int
@@ -24,7 +24,6 @@ struct SeedPacketStrip: View {
         var id: String { kind.id }
     }
 
-    /// 每种植物只保留一张卡，名称与头像共同使用本局已装备的皮肤。
     var packets: [Packet] {
         var seen: Set<String> = []
         return kinds.filter { seen.insert($0.id).inserted }.map { kind in
@@ -34,18 +33,12 @@ struct SeedPacketStrip: View {
         }
     }
 
-    /// 卡牌多时窄一点，免得挡住右上角的按钮
     private var cardWidth: CGFloat { packets.count + (barricade == nil ? 0 : 1) > 7 ? 54 : 62 }
 
     var body: some View {
+        let trayShape = RoundedRectangle(cornerRadius: AppRadius.md)
         HStack(spacing: 6) {
-            Label("\(sun)", systemImage: "sun.max.fill")
-                .font(.system(size: 16, weight: .heavy, design: .rounded).monospacedDigit())
-                .foregroundStyle(Color(red: 0.34, green: 0.22, blue: 0.04))
-                .frame(width: 70, height: 58)
-                .background(Color(red: 1.0, green: 0.78, blue: 0.16), in: RoundedRectangle(cornerRadius: 5))
-                .overlay(RoundedRectangle(cornerRadius: 5).stroke(Color(red: 0.48, green: 0.31, blue: 0.06), lineWidth: 2))
-                .accessibilityLabel("阳光 \(sun)")
+            sunBadge
 
             ForEach(packets) { card in
                 packet(for: card)
@@ -54,8 +47,52 @@ struct SeedPacketStrip: View {
                 barricadePacket(for: barricade)
             }
         }
-        .padding(6)
-        .background(Color(red: 0.43, green: 0.32, blue: 0.16), in: RoundedRectangle(cornerRadius: 6))
+        .padding(.horizontal, 8)
+        .padding(.top, 6)
+        .padding(.bottom, 9)
+        .background {
+            ZStack {
+                trayShape.fill(AppColor.woodEdge)
+                    .shadow(color: AppColor.warmShadow.opacity(0.20), radius: 8, y: 4)
+                trayShape
+                    .fill(LinearGradient(colors: [AppColor.woodTop, AppColor.woodBottom], startPoint: .top, endPoint: .bottom))
+                    .overlay(
+                        trayShape.strokeBorder(
+                            LinearGradient(colors: [AppColor.woodTrim.opacity(0.65), .clear], startPoint: .top, endPoint: .center),
+                            lineWidth: 1.5
+                        )
+                    )
+                    .overlay(trayShape.strokeBorder(AppColor.woodEdge.opacity(0.9), lineWidth: 1.5))
+                    .padding(.bottom, 3)
+            }
+        }
+    }
+
+    private var sunBadge: some View {
+        let shape = RoundedRectangle(cornerRadius: AppRadius.xs)
+        return VStack(spacing: 2) {
+            Image(systemName: "sun.max.fill")
+                .font(.system(size: 20, weight: .black))
+                .foregroundStyle(Color(red: 0.72, green: 0.36, blue: 0.0))
+            Text("\(sun)")
+                .font(AppFont.digits(17, weight: .black))
+                .foregroundStyle(Color(red: 0.34, green: 0.20, blue: 0.02))
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+        }
+        .frame(width: 66, height: 61)
+        .padding(.bottom, 3)
+        .background {
+            ZStack {
+                shape.fill(AppColor.goldEdge)
+                shape
+                    .fill(LinearGradient(colors: [AppColor.goldLight, AppColor.gold], startPoint: .top, endPoint: .bottom))
+                    .overlay(shape.strokeBorder(.white.opacity(0.65), lineWidth: 1.2))
+                    .overlay(shape.strokeBorder(AppColor.goldEdge, lineWidth: 1.5))
+                    .padding(.bottom, 3)
+            }
+        }
+        .accessibilityLabel("阳光 \(sun)")
     }
 
     private func packet(for card: Packet) -> some View {
@@ -70,28 +107,31 @@ struct SeedPacketStrip: View {
                     .resizable().scaledToFit().frame(width: 34, height: 29)
             }
             Text(card.name)
-                .font(.system(size: 9, weight: .bold))
+                .font(AppFont.rounded(9, weight: .heavy))
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
-            Text("☀️\(kind.sunCost)")
-                .font(.system(size: 11, weight: .heavy, design: .rounded).monospacedDigit())
+            HStack(spacing: 1.5) {
+                Image(systemName: "sun.max.fill").font(.system(size: 8, weight: .bold)).foregroundStyle(AppColor.gold)
+                Text("\(kind.sunCost)").font(AppFont.digits(11, weight: .heavy))
+            }
         }
-        .foregroundStyle(Color(red: 0.97, green: 0.92, blue: 0.78))
-        .padding(.top, 6)
+        .foregroundStyle(Color(red: 0.97, green: 0.93, blue: 0.82))
+        .padding(.top, 5)
         .frame(width: cardWidth, height: 64)
         .background(CollectionCardFrame(rarity: rarity, locked: false))
         .overlay {
             if cooldown > 0 {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 3).fill(.black.opacity(0.65))
-                    Text("\(cooldown)s").font(.system(size: 17, weight: .heavy, design: .rounded)).foregroundStyle(.white)
+                    RoundedRectangle(cornerRadius: 6).fill(.black.opacity(0.65))
+                    Text("\(cooldown)s").font(AppFont.digits(16, weight: .heavy)).foregroundStyle(.white)
                 }
             } else if draggingID == kind.id {
-                RoundedRectangle(cornerRadius: 3).stroke(kind.id == AdventureDoom.id ? .purple : Theme.jade, lineWidth: 3)
+                RoundedRectangle(cornerRadius: 6)
+                    .strokeBorder(kind.id == AdventureDoom.id ? AppColor.violetTop : AppColor.jadeTop, lineWidth: 2.5)
             }
         }
-        .opacity(available ? 1 : 0.52)
-        .contentShape(RoundedRectangle(cornerRadius: 3))
+        .opacity(available ? 1 : 0.48)
+        .contentShape(RoundedRectangle(cornerRadius: 6))
         .scaleEffect(draggingID == kind.id ? 0.94 : 1)
         .gesture(
             DragGesture(minimumDistance: 0, coordinateSpace: .named(gestureSpace))
@@ -103,52 +143,63 @@ struct SeedPacketStrip: View {
         .accessibilityHint(cooldown > 0 ? "冷却还有 \(cooldown) 秒" : "拖到战场空位种下")
     }
 
+    /// 冷银蓝金属盾门卡：与植物纹章卡同高（64pt）、同圆角，彻底替代旧版简陋灰方框
     private func barricadePacket(for kind: DefenderKind) -> some View {
         let affordable = sun >= kind.sunCost
         let available = barricadeEnabled && affordable
+        let shape = RoundedRectangle(cornerRadius: 8)
         return Button(action: onBarricade) {
-            VStack(spacing: 0) {
-                GateIcon().frame(width: 30, height: 34).padding(.vertical, 1)
+            VStack(spacing: 1) {
+                GateIcon().frame(width: 28, height: 28).padding(.top, 4)
                 Text(kind.name)
-                    .font(.system(size: 9, weight: .bold))
+                    .font(AppFont.rounded(9, weight: .heavy))
                     .lineLimit(1)
                     .minimumScaleFactor(0.75)
-                Text("☀️\(kind.sunCost)")
-                    .font(.system(size: 11, weight: .heavy, design: .rounded).monospacedDigit())
+                HStack(spacing: 1.5) {
+                    Image(systemName: "sun.max.fill").font(.system(size: 8, weight: .bold)).foregroundStyle(AppColor.gold)
+                    Text("\(kind.sunCost)").font(AppFont.digits(11, weight: .heavy))
+                }
             }
-            .foregroundStyle(Color(red: 0.16, green: 0.18, blue: 0.22))
-            .frame(width: cardWidth, height: 58)
+            .foregroundStyle(Color(red: 0.92, green: 0.96, blue: 1.0))
+            .frame(width: cardWidth, height: 64)
             .background(
-                Color(red: affordable ? 0.82 : 0.70, green: affordable ? 0.86 : 0.70, blue: affordable ? 0.90 : 0.70),
-                in: RoundedRectangle(cornerRadius: 3))
-            .overlay(
-                RoundedRectangle(cornerRadius: 3)
-                    .stroke(Color(red: 0.25, green: 0.28, blue: 0.33), lineWidth: 2))
+                shape.fill(
+                    LinearGradient(
+                        colors: [Color(red: 0.28, green: 0.36, blue: 0.48), Color(red: 0.16, green: 0.22, blue: 0.31)],
+                        startPoint: .top, endPoint: .bottom
+                    )
+                )
+            )
+            .overlay(shape.strokeBorder(Color(red: 0.70, green: 0.79, blue: 0.90), lineWidth: 2))
+            .overlay(shape.inset(by: 2).strokeBorder(.white.opacity(0.22), lineWidth: 1))
         }
-        .buttonStyle(.plain)
-        .opacity(available ? 1 : 0.52)
+        .buttonStyle(PressableStyle())
+        .opacity(available ? 1 : 0.48)
         .disabled(!available)
         .accessibilityLabel("\(kind.name)，需要 \(kind.sunCost) 阳光")
         .accessibilityHint("点一下，挡住正在答题的僵尸")
     }
 }
 
-/// 卡牌上的铁栅门：两道横梁、四根竖栏
+/// 卡牌上的金属铁栅门：银白金属渐变栏杆
 private struct GateIcon: View {
     var body: some View {
         Canvas { context, size in
             let w = size.width, h = size.height
-            let metal = GraphicsContext.Shading.color(Color(white: 0.45))
+            let metal = GraphicsContext.Shading.linearGradient(
+                Gradient(colors: [Color(red: 0.88, green: 0.93, blue: 0.98), Color(red: 0.56, green: 0.65, blue: 0.76)]),
+                startPoint: .zero, endPoint: CGPoint(x: 0, y: h)
+            )
             for y in [h * 0.28, h * 0.72] {
-                context.fill(Path(CGRect(x: 0, y: y, width: w, height: h * 0.09)), with: metal)
+                context.fill(Path(roundedRect: CGRect(x: 0, y: y, width: w, height: h * 0.1), cornerRadius: 2), with: metal)
             }
             for i in 0..<4 {
-                let x = w * (CGFloat(i) + 0.5) / 4 - w * 0.05
-                context.fill(Path(CGRect(x: x, y: h * 0.12, width: w * 0.1, height: h * 0.88)), with: metal)
+                let x = w * (CGFloat(i) + 0.5) / 4 - w * 0.055
+                context.fill(Path(CGRect(x: x, y: h * 0.14, width: w * 0.11, height: h * 0.86)), with: metal)
                 var tip = Path()
-                tip.move(to: CGPoint(x: x - w * 0.03, y: h * 0.13))
-                tip.addLine(to: CGPoint(x: x + w * 0.05, y: 0))
-                tip.addLine(to: CGPoint(x: x + w * 0.13, y: h * 0.13))
+                tip.move(to: CGPoint(x: x - w * 0.03, y: h * 0.15))
+                tip.addLine(to: CGPoint(x: x + w * 0.055, y: 0))
+                tip.addLine(to: CGPoint(x: x + w * 0.14, y: h * 0.15))
                 tip.closeSubpath()
                 context.fill(tip, with: metal)
             }
@@ -165,7 +216,7 @@ struct SunCounter: View {
             Image(systemName: "sun.max.fill")
                 .foregroundStyle(Theme.accent)
             Text("\(amount)")
-                .font(.title3.weight(.heavy).monospacedDigit())
+                .font(AppFont.digits(20, weight: .heavy))
                 .foregroundStyle(Theme.ink)
         }
         .accessibilityLabel("阳光 \(amount)")

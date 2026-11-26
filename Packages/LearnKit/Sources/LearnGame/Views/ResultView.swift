@@ -65,21 +65,27 @@ struct ResultView: View {
 
     private var banner: some View {
         HStack(spacing: 12) {
-            PictureView(emoji: won ? "🎉" : "💪", size: 38)
+            PictureView(emoji: won ? "🎉" : "💪", size: 36)
             Text("本局结束 · 完成 \(session.completedRounds) 回合")
-                .font(.system(size: 34, weight: .heavy, design: .rounded))
-            PictureView(emoji: won ? "🌟" : "📚", size: 38)
+                .font(AppFont.rounded(30, weight: .black))
+            PictureView(emoji: won ? "🌟" : "📚", size: 36)
         }
         .foregroundStyle(.white)
-        .padding(.horizontal, 36)
-        .frame(height: 60)
-        .background(
-            Capsule()
-                .fill(LinearGradient(colors: won ? [GrowthColors.gold, Theme.accent] : [GrowthColors.calm.opacity(0.8), GrowthColors.calm],
-                                     startPoint: .top, endPoint: .bottom))
-                .shadow(color: won ? GrowthColors.orangeDark : Color(red: 0.18, green: 0.31, blue: 0.54), radius: 0, x: 0, y: 6))
-        .overlay(Capsule().stroke(.white.opacity(0.85), lineWidth: 2))
-        // 横幅一半压在弹窗上沿
+        .padding(.horizontal, 34)
+        .frame(height: 54)
+        .padding(.bottom, 5)
+        .background {
+            ZStack(alignment: .top) {
+                Capsule()
+                    .fill(won ? AppColor.accentEdge : Color(red: 0.18, green: 0.31, blue: 0.54))
+                    .shadow(color: (won ? AppColor.accentEdge : GrowthColors.calm).opacity(0.28), radius: 8, y: 4)
+                Capsule()
+                    .fill(LinearGradient(colors: won ? [AppColor.gold, AppColor.accent] : [GrowthColors.calm.opacity(0.85), GrowthColors.calm],
+                                         startPoint: .top, endPoint: .bottom))
+                    .overlay(Capsule().strokeBorder(.white.opacity(0.75), lineWidth: 2))
+                    .padding(.bottom, 5)
+            }
+        }
         .padding(.top, -48)
     }
 
@@ -319,22 +325,14 @@ struct ResultView: View {
     // MARK: - 按钮
 
     private var buttons: some View {
-        HStack(spacing: 18) {
-            Button(action: onExit) {
-                CandyButtonLabel(title: "回主页", icon: "🏡", fill: GrowthColors.surface, edge: GrowthColors.cardEdge, foreground: Theme.ink)
-            }
+        HStack(spacing: 16) {
+            AppButton(title: "返回主页", systemImage: "house.fill", role: .secondary, size: .large, action: onExit)
             Spacer()
             if won, growth != nil {
-                Button(action: onOpenCollection) {
-                    CandyButtonLabel(title: "去收藏馆看看", icon: "🎁", fill: Theme.accent, edge: GrowthColors.orangeDark)
-                }
+                AppButton(title: "去收藏馆看看", systemImage: "gift.fill", role: .accent, size: .large, action: onOpenCollection)
             }
-            Button(action: onReplay) {
-                CandyButtonLabel(title: won ? "再来一局" : "再试一次", icon: "▶", fill: Theme.jade, edge: GrowthColors.jadeDark,
-                                 font: .system(size: 28, weight: .heavy, design: .rounded))
-            }
+            AppButton(title: won ? "再来一局" : "再试一次", systemImage: "play.fill", role: .primary, size: .large, minWidth: 180, action: onReplay)
         }
-        .buttonStyle(PressableStyle())
     }
 }
 

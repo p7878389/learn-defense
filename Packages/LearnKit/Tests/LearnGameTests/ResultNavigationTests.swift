@@ -123,10 +123,10 @@ struct ResultNavigationTests {
     }
 
     private func clickHome(in window: NSWindow) throws {
-        // 固定测试窗口中，成功与失败结算页左下角均为“回主页”。
+        // 固定测试窗口中，成功与失败结算页左下角均为“返回主页”。
         let content = try #require(window.contentView)
-        #expect(content.bounds.size == CGSize(width: 642, height: 724))
-        try click(window, in: content, at: CGPoint(x: 125, y: 624))
+        #expect(content.bounds.size == CGSize(width: 642, height: 794))
+        try click(window, in: content, at: CGPoint(x: 125, y: 659))
     }
 
     private func click(_ window: NSWindow, in view: NSView, at point: CGPoint) throws {

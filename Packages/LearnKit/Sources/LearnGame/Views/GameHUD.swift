@@ -5,66 +5,90 @@ struct GameHUD: View {
     @ObservedObject var session: GameSession
     let onExit: () -> Void
 
-    /// 顶部状态栏：暂停、生命、回合进度和得分；阳光在同一工具区的种植卡栏里。
+    /// 顶部状态胶囊：与原木种植槽等高呼应，统一 SF Rounded 等宽数字与细分隔线分组。
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 14) {
             if session.phase == .preparing {
-                // 还没开局：直接回到上一页，不结算
                 Button(action: onExit) {
-                    Image(systemName: "chevron.backward.circle.fill")
-                        .font(.system(size: 38, weight: .bold))
-                        .foregroundStyle(GrowthColors.orangeDark)
-                        .background(Circle().fill(GrowthColors.gold.opacity(0.25)).frame(width: 34, height: 34))
+                    circleControl(systemImage: "chevron.left")
                 }
                 .buttonStyle(PressableStyle())
                 .accessibilityLabel("返回")
+
                 Label("准备", systemImage: "leaf.fill")
-                    .font(.system(size: 19, weight: .heavy, design: .rounded))
-                    .foregroundStyle(Theme.jade)
+                    .font(AppFont.bodyStrong)
+                    .foregroundStyle(AppColor.jadeEdge)
             } else {
                 Button(action: session.togglePause) {
-                    Image(systemName: "pause.circle.fill")
-                        .font(.system(size: 38, weight: .bold))
-                        .foregroundStyle(GrowthColors.orangeDark)
-                        .background(Circle().fill(GrowthColors.gold.opacity(0.25)).frame(width: 34, height: 34))
+                    circleControl(systemImage: "pause.fill")
                 }
                 .buttonStyle(PressableStyle())
                 .accessibilityLabel("暂停")
             }
 
+            divider
+
             if let hearts = session.hearts, let maxHearts = session.tuning.hearts {
                 HStack(spacing: 4) {
                     ForEach(0..<maxHearts, id: \.self) { i in
                         Image(systemName: i < hearts ? "heart.fill" : "heart")
-                            .foregroundStyle(Theme.wrong)
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundStyle(i < hearts ? Theme.wrong : AppColor.cardEdge)
                     }
                 }
-                .font(.title2)
             } else {
                 HStack(spacing: 4) {
                     Text("不怕失败")
-                        .font(.system(size: 18, weight: .heavy, design: .rounded))
-                        .foregroundStyle(Theme.jade)
-                    PictureView(emoji: "💪", size: 28)
+                        .font(AppFont.bodyStrong)
+                        .foregroundStyle(AppColor.jadeEdge)
+                    PictureView(emoji: "💪", size: 24)
                 }
             }
 
+            divider
+
             Label("第 \(session.round) 回合 · \(session.roundResolved)/\(session.totalEnemies)", systemImage: "flag.fill")
-                .font(.system(size: 19, weight: .heavy, design: .rounded).monospacedDigit())
+                .font(AppFont.digits(18, weight: .heavy))
                 .foregroundStyle(Theme.ink)
 
+            divider
+
             Label("\(session.score)", systemImage: "star.fill")
-                .font(.system(size: 19, weight: .heavy, design: .rounded).monospacedDigit())
-                .foregroundStyle(Theme.accent)
+                .font(AppFont.digits(18, weight: .heavy))
+                .foregroundStyle(AppColor.accent)
         }
         .padding(.horizontal, 14)
-        .padding(.vertical, 6)
-        .background(
-            Capsule()
-                .fill(GrowthColors.surface)
-                .shadow(color: GrowthColors.cardEdge, radius: 0, x: 0, y: 3)
-        )
-        .overlay(Capsule().stroke(GrowthColors.cardEdge, lineWidth: 2))
+        .frame(height: 54)
+        .padding(.bottom, 3.5)
+        .background {
+            ZStack {
+                Capsule().fill(AppColor.cardEdge)
+                    .shadow(color: AppColor.warmShadow.opacity(0.10), radius: 8, y: 4)
+                Capsule()
+                    .fill(LinearGradient(colors: [AppColor.surface, AppColor.surfaceBottom], startPoint: .top, endPoint: .bottom))
+                    .overlay(Capsule().strokeBorder(.white.opacity(0.8), lineWidth: 1.5))
+                    .overlay(Capsule().strokeBorder(AppColor.cardStroke, lineWidth: 1.5))
+                    .padding(.bottom, 3.5)
+            }
+        }
+    }
+
+    private var divider: some View {
+        RoundedRectangle(cornerRadius: 1)
+            .fill(AppColor.cardEdge.opacity(0.75))
+            .frame(width: 1.5, height: 22)
+    }
+
+    private func circleControl(systemImage: String) -> some View {
+        Image(systemName: systemImage)
+            .font(.system(size: 16, weight: .black))
+            .foregroundStyle(.white)
+            .frame(width: 36, height: 36)
+            .background(
+                Circle().fill(LinearGradient(colors: [AppColor.accentTop, AppColor.accentBottom], startPoint: .top, endPoint: .bottom))
+            )
+            .overlay(Circle().strokeBorder(.white.opacity(0.5), lineWidth: 1.5))
+            .shadow(color: AppColor.accentEdge.opacity(0.28), radius: 3, y: 2)
     }
 }
 
@@ -75,51 +99,53 @@ struct PreparationPanel: View {
     var bankSummary: String? = nil
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 12) {
                 BattleMapPicker(selection: session.map, onSelect: session.selectMap)
                 Spacer(minLength: 12)
-                Button(action: onChooseBank) {
-                    CandyButtonLabel(title: session.bankConfirmed ? "题库与难度" : "选择题库与难度", icon: "📚", fill: GrowthColors.surface, edge: GrowthColors.cardEdge,
-                                     foreground: Theme.ink, font: .headline, height: 44)
-                }.buttonStyle(PressableStyle())
+                AppButton(
+                    title: session.bankConfirmed ? "题库与难度" : "选择题库与难度",
+                    systemImage: "books.vertical.fill",
+                    role: .secondary,
+                    size: .medium,
+                    action: onChooseBank
+                )
             }
-            HStack(spacing: 20) {
+            HStack(spacing: 18) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("准备布阵")
-                        .font(.title2.weight(.heavy))
-                        .foregroundStyle(Theme.ink)
-                    Text(session.bankConfirmed ? bankSummary ?? "\(session.config.grade.displayName) · \(session.config.difficulty.displayName)" : "首次游戏，请先手动选择并确认题库")
-                        .font(.callout.weight(.semibold)).foregroundStyle(session.bankConfirmed ? GrowthColors.jadeDark : GrowthColors.orangeDark)
-                        .lineLimit(2)
-                    Text("把植物卡拖到战场空位。阳光足够就能继续布阵，种下后不能修改，已布阵 \(session.plantedLaneCount)/\(session.tuning.lanes) 路")
-                        .font(.headline)
+                    HStack(spacing: 8) {
+                        Text("准备布阵")
+                            .font(AppFont.heading)
+                            .foregroundStyle(Theme.ink)
+                        Text(session.bankConfirmed ? bankSummary ?? "\(session.config.grade.displayName) · \(session.config.difficulty.displayName)" : "请先手动选择题库")
+                            .font(AppFont.label)
+                            .foregroundStyle(session.bankConfirmed ? AppColor.jadeEdge : AppColor.accentEdge)
+                            .padding(.horizontal, 10).padding(.vertical, 3)
+                            .background(Capsule().fill((session.bankConfirmed ? AppColor.jade : AppColor.accent).opacity(0.14)))
+                            .lineLimit(1)
+                    }
+                    Text("把植物卡拖到草坪空位。种下后不能修改，已布阵 \(session.plantedLaneCount)/\(session.tuning.lanes) 路")
+                        .font(AppFont.body)
                         .foregroundStyle(Theme.muted)
                 }
 
-                Spacer()
+                Spacer(minLength: 8)
 
-                Button(action: onStart ?? session.startBattle) {
-                    CandyButtonLabel(
-                        title: !session.bankConfirmed ? "请先选择题库" : session.canStartBattle ? "准备好了" : "先种一株植物",
-                        icon: session.canStartBattle ? "▶" : nil,
-                        fill: session.canStartBattle ? Theme.jade : GrowthColors.disabledFill,
-                        edge: session.canStartBattle ? GrowthColors.jadeDark : GrowthColors.disabledEdge,
-                        foreground: session.canStartBattle ? .white : Theme.muted,
-                        font: .system(size: 22, weight: .heavy, design: .rounded),
-                        height: 56,
-                        minWidth: 210
-                    )
-                }
-                .buttonStyle(PressableStyle())
+                AppButton(
+                    title: !session.bankConfirmed ? "请先选择题库" : session.canStartBattle ? "准备好了" : "先种一株植物",
+                    systemImage: session.canStartBattle ? "play.fill" : nil,
+                    role: .primary,
+                    size: .large,
+                    minWidth: 200,
+                    action: onStart ?? session.startBattle
+                )
                 .disabled(!session.canStartBattle)
             }
         }
     }
 }
 
-/// 道具栏：捡到的道具，点一下就用。只显示手里有的道具；
-/// 不止一个时折叠成一个按钮，点开向下展开，免得一长条挡住左边的僵尸和血量
+/// 道具栏：捡到的道具，点一下就用（供独立测试或窄屏折叠复用）。
 struct ItemBar: View {
     let inventory: Inventory
     let enabled: Bool
@@ -136,17 +162,17 @@ struct ItemBar: View {
             if folds {
                 Button { expanded.toggle() } label: {
                     HStack(spacing: 4) {
-                        PictureView(emoji: "🎒", size: 30)
+                        PictureView(emoji: "🎒", size: 28)
                         Text("×\(inventory.items.count)")
-                            .font(.system(size: 18, weight: .heavy, design: .rounded).monospacedDigit())
+                            .font(AppFont.digits(17, weight: .heavy))
                         Image(systemName: expanded ? "chevron.up" : "chevron.down")
-                            .font(.system(size: 14, weight: .heavy))
+                            .font(.system(size: 13, weight: .heavy))
                     }
                     .foregroundStyle(Theme.ink)
                     .padding(.horizontal, 10)
-                    .frame(height: 54)
-                    .background(RoundedRectangle(cornerRadius: 14).fill(Theme.card))
-                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.jade, lineWidth: 3))
+                    .frame(height: 52)
+                    .background(CandyTileBackground(radius: AppRadius.sm))
+                    .overlay(RoundedRectangle(cornerRadius: AppRadius.sm).strokeBorder(Theme.jade, lineWidth: 2).padding(.bottom, 3))
                 }
                 .buttonStyle(PressableStyle())
                 .accessibilityLabel(expanded ? "收起道具" : "展开道具，共 \(inventory.items.count) 个")
@@ -154,10 +180,10 @@ struct ItemBar: View {
             if !folds || expanded {
                 ForEach(Array(inventory.items.enumerated()), id: \.offset) { i, item in
                     Button { onUse(i) } label: {
-                        PictureView(emoji: item.icon, size: 38)
-                            .frame(width: 54, height: 54)
-                            .background(RoundedRectangle(cornerRadius: 14).fill(Theme.card))
-                            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.jade, lineWidth: 3))
+                        PictureView(emoji: item.icon, size: 36)
+                            .frame(width: 52, height: 52)
+                            .background(CandyTileBackground(radius: AppRadius.sm))
+                            .overlay(RoundedRectangle(cornerRadius: AppRadius.sm).strokeBorder(Theme.jade, lineWidth: 2).padding(.bottom, 3))
                     }
                     .buttonStyle(PressableStyle())
                     .disabled(!enabled)

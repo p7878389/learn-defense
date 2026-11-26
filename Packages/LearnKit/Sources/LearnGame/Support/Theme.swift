@@ -43,12 +43,13 @@ extension View {
     }
 }
 
-/// 按下时缩小一点，适合孩子的大按钮
+/// 按下时带物理微沉和柔和弹性缩放，适合孩子的大按钮与卡片
 struct PressableStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? 0.94 : 1)
-            .animation(.spring(response: 0.25, dampingFraction: 0.6), value: configuration.isPressed)
+            .scaleEffect(configuration.isPressed ? 0.965 : 1)
+            .offset(y: configuration.isPressed ? 2 : 0)
+            .animation(.spring(response: 0.22, dampingFraction: 0.66), value: configuration.isPressed)
     }
 }
 
