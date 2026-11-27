@@ -283,6 +283,15 @@ final class SpeechLibrary: ObservableObject {
         refreshRemote()
     }
 
+    /// 网络或临时故障恢复后，重新排队尚未完成的下载或语音合成任务。
+    func resumePending() {
+        guard canGenerate || canDownload else { return }
+        paused = false
+        lastError = nil
+        if canDownload, !remoteRefreshed { retryRemote() }
+        enqueue(prepared, first: false)
+    }
+
     /// 准备云端语音包（自定义来源拉清单）；自动失败重试间隔一分钟。
     private func refreshRemote() {
         guard let remote, canDownload, !remoteRefreshed, refreshing == nil else { return }

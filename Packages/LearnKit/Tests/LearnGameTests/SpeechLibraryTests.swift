@@ -61,7 +61,7 @@ struct SpeechLibraryTests {
         try publish([text: "game/purchase.mp3"], to: oss)
         let library = makeLibrary(oss: oss)
         // 全套 SpriteKit 测试会占用 MainActor；此处验证就绪返回，不测试网络时延。
-        let ready = await library.audioFileWhenReady(for: text, timeout: .seconds(60))
+        let ready = await library.audioFileWhenReady(for: text, timeout: .seconds(180))
         let file = try #require(ready)
         #expect(try Data(contentsOf: file) == Data("audio:game/purchase.mp3".utf8))
         #expect(library.audioFile(for: text) == file)
@@ -144,5 +144,36 @@ struct SpeechLibraryTests {
         #expect(library.pendingCount == 0, "选了系统语音时既不下载也不生成")
         #expect(!library.canDownload && !library.canGenerate)
         #expect(oss.requests.isEmpty)
+    }
+
+    @Test func resumePendingRecoversQueuedClipsAfterTransientNetworkFailures() async throws {
+        defer { try? FileManager.default.removeItem(at: root) }
+        final class FlakyState: @unchecked Sendable {
+            var shouldFail = true
+        }
+        let state = FlakyState()
+        let oss = FakeOSS()
+        try publish(["句一": "g/1.mp3", "句二": "g/2.mp3", "句三": "g/3.mp3", "句四": "g/4.mp3"], to: oss)
+        let config = RemoteSpeech.Config(
+            baseURL: base,
+            directory: root.appendingPathComponent("cache/remote"),
+            fetch: { url in
+                if !url.lastPathComponent.hasSuffix("manifest.json"), state.shouldFail {
+                    throw URLError(.notConnectedToInternet)
+                }
+                return try oss.fetch(url)
+            }
+        )
+        let library = SpeechLibrary(database: nil, settings: nil, premadeDirectories: [],
+                                    cacheDirectory: root.appendingPathComponent("cache"), remote: config)
+        library.prepare(["句一", "句二", "句三", "句四"])
+        await settle(library) { library.remoteTotal == 4 && library.pendingCount == 0 && library.lastError != nil }
+        #expect(library.remoteDownloaded == 0)
+
+        state.shouldFail = false
+        library.resumePending()
+        await settle(library) { library.remoteDownloaded == 4 && library.pendingCount == 0 }
+        #expect(library.remoteDownloaded == 4)
+        #expect(library.lastError == nil)
     }
 }

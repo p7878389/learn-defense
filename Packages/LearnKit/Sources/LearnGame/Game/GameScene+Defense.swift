@@ -263,6 +263,16 @@ extension GameScene {
     var plantedLaneCount: Int { Set(defenders.filter { $0.value.canShoot }.keys.map(\.lane)).count }
     var plantedCellCount: Int { defenders.count }
 
+    /// 准备阶段一键清空已种单位与预放毁灭菇
+    func clearPreparedDefenders() {
+        for node in defenders.values { node.removeFromParent() }
+        defenders.removeAll()
+        doomState = AdventureDoomState()
+        doomRemainder = 0
+        renderDoom()
+        plantPreview?.isHidden = true
+    }
+
     /// 落点是否在本局可种的草坪上（不管格子有没有被占）
     func isPlantable(_ point: CGPoint) -> Bool {
         lawn.cell(at: point) != nil

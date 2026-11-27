@@ -13,10 +13,6 @@ struct UltimateOverlay: View {
     var body: some View {
         ZStack {
             Color.black.opacity(0.45).ignoresSafeArea()
-                .contentShape(Rectangle())
-                .onTapGesture(perform: onCancel)
-                .accessibilityAddTraits(.isButton)
-                .accessibilityLabel("取消大招")
             CandyModalCard(
                 bannerTitle: title,
                 bannerIcon: "⚡️",
@@ -27,7 +23,7 @@ struct UltimateOverlay: View {
             ) {
                 AnswerPanel(question: question, wrongPicks: wrongPicks, onAnswer: onAnswer, onReplay: onReplay, retrying: retrying)
                 AppButton(title: "先不放了", systemImage: "xmark", role: .secondary, size: .medium, minWidth: 140, action: onCancel)
-                Text(!retrying ? "点空白处也能取消，能量会留着" : "已经答错过，答对或取消都会用掉这次能量")
+                Text(!retrying ? "点「先不放了」可取消，能量会留着下次用" : "已经答错过，答对或取消都会用掉这次能量")
                     .font(AppFont.label)
                     .foregroundStyle(AppColor.muted)
             }

@@ -165,6 +165,7 @@ struct QuestionBankPickerView: View {
         guard let raw, !raw.isEmpty else { return "暂无" }
         return raw
             .replacingOccurrences(of: "人民教育出版社（教育部审定）", with: "人教版（部编）")
+            .replacingOccurrences(of: "人民教育出版社（教育部组织编写）", with: "人教版（部编）")
             .replacingOccurrences(of: "人民教育出版社", with: "人教版")
     }
 

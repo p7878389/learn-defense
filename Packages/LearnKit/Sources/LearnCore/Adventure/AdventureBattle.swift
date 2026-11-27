@@ -124,6 +124,15 @@ public struct AdventureBattle: Codable, Equatable, Identifiable, Sendable {
     }
 
     @discardableResult
+    public mutating func resetPreparation() -> Bool {
+        guard phase == .preparing, sun != 250 || !towers.isEmpty || doomState != nil else { return false }
+        sun = 250
+        towers.removeAll()
+        doomState = nil
+        return true
+    }
+
+    @discardableResult
     public mutating func start() -> Bool {
         guard phase == .preparing, !level.waves.isEmpty,
               towers.contains(where: { AdventureCatalog.defender($0.kindID)?.canShoot == true }) else { return false }

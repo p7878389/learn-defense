@@ -50,10 +50,12 @@ final class GameSession: ObservableObject {
     @Published var ultimate: Question?
     @Published var ultimateWrongPicks: Set<Int> = []
     @Published var ultimateRetrying = false
-    @Published private(set) var inventory = Inventory(capacity: 3)
+    @Published var inventory = Inventory(capacity: 3)
     /// 场上已经有一道铁栅门；碎了才能再放
     @Published var barricadeDown = false
     @Published var doomCooldown = 0
+    /// 轻点选中的植物卡 ID，再点草坪空位即可直接种下
+    @Published private(set) var selectedCardID: String?
 
     var plantable: [DefenderKind] {
         tuning.plantable + UnitCatalog.consumables.filter { growth?.state.canUseDefender($0.id) == true }
@@ -228,9 +230,46 @@ final class GameSession: ObservableObject {
             return
         }
         phase = .playing
+        selectedCardID = nil
         resumePlayTimer()
         scene.setPreparing(false)
         speech.speak(SpeechText.Line.battleStart, interrupt: true)
+    }
+
+    var canResetPreparation: Bool {
+        phase == .preparing && (sun != tuning.startingSun || scene.plantedCellCount > 0 || !scene.doomState.charges.isEmpty)
+    }
+
+    /// 准备阶段重置全部预摆植物并全额恢复初始阳光
+    @discardableResult
+    func resetPreparation() -> Bool {
+        guard canResetPreparation else { return false }
+        scene.clearPreparedDefenders()
+        sun = tuning.startingSun
+        selectedCardID = nil
+        objectWillChange.send()
+        return true
+    }
+
+    func selectCard(id: String?) {
+        guard let id else { selectedCardID = nil; return }
+        guard canUseShop, let kind = plantable.first(where: { $0.id == id }),
+              sun >= kind.sunCost, id != AdventureDoom.id || doomCooldown <= 0 else {
+            selectedCardID = nil
+            return
+        }
+        selectedCardID = (selectedCardID == id) ? nil : id
+    }
+
+    @discardableResult
+    func placeSelectedCard(at point: CGPoint) -> Bool {
+        guard let id = selectedCardID else { return false }
+        let planted = dropSeed(id: id, at: point)
+        if planted || sun < (plantable.first { $0.id == id }?.sunCost ?? 0) {
+            selectedCardID = nil
+            previewSeed(at: nil)
+        }
+        return planted
     }
 
     /// 拖动卡牌时在草坪上标出落点格，point 为 nil 时收起
@@ -296,7 +335,14 @@ final class GameSession: ObservableObject {
     }
 
     func useItem(at index: Int) {
-        guard canUseItems, let item = inventory.take(at: index) else { return }
+        guard canUseItems, inventory.items.indices.contains(index) else { return }
+        let check = canApply(inventory.items[index])
+        guard check.allowed, let item = inventory.take(at: index) else {
+            if let reason = check.reason {
+                scene.play(FloatingTextEffect(text: reason, color: Palette.hurt, fontSize: 28))
+            }
+            return
+        }
         itemsUsed += 1
         speech.speak(item.name, interrupt: true)
         scene.play(FloatingTextEffect(text: "\(item.icon) \(item.name)", fontSize: 40))

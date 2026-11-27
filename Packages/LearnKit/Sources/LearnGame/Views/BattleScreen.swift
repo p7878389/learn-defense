@@ -30,7 +30,7 @@ struct BattleScreen: View {
             kinds: session.plantable,
             sun: session.sun,
             enabled: session.canUseShop,
-            draggingID: drag.kind?.id,
+            draggingID: drag.kind?.id ?? session.selectedCardID,
             skins: session.loadout.defenderSkins,
             onDragChanged: { kind, location in
                 if drag.kind != kind { drag.kind = kind }
@@ -38,9 +38,12 @@ struct BattleScreen: View {
                 session.previewSeed(at: GameScene.scenePoint(at: location, in: battlefieldFrame))
             },
             onDragEnded: { kind, location in
-                if !seedStripFrame.contains(location),
-                   let point = GameScene.scenePoint(at: location, in: battlefieldFrame) {
-                    _ = session.dropSeed(id: kind.id, at: point)
+                if seedStripFrame.contains(location) {
+                    session.selectCard(id: kind.id)
+                } else if let point = GameScene.scenePoint(at: location, in: battlefieldFrame) {
+                    if session.dropSeed(id: kind.id, at: point) {
+                        session.selectCard(id: nil)
+                    }
                 }
                 session.previewSeed(at: nil)
                 drag.kind = nil
@@ -69,8 +72,10 @@ struct BattleScreen: View {
                     Circle()
                         .fill(selected ? .white : AppColor.jade)
                         .frame(width: 7, height: 7)
-                    Text("题目 \(offset + 1)")
+                    Text(session.questionTabTitle(for: id, index: offset))
                         .font(AppFont.label)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
                 }
                 .padding(.horizontal, AppSpacing.sm)
                 .frame(height: 36)
@@ -229,7 +234,7 @@ struct BattleScreen: View {
                 .ignoresSafeArea(.container, edges: isPortrait ? [] : .bottom)
             }
 
-            if let kind = drag.kind {
+            if let kind = drag.kind, !seedStripFrame.contains(drag.location) {
                 PlantDragFollower(drag: drag, kind: kind, skin: session.loadout.defenderSkins[kind.id])
                     .zIndex(20)
             }

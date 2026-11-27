@@ -73,7 +73,10 @@ extension QuestionGenerator {
 
     /// 标准交替放入同部首、近音字，挑战先放同部首；不足时用随机字补足。
     func preschoolCharDistractors<R: RandomNumberGenerator>(to c: CharacterItem, _ rng: inout R) -> [String] {
-        let others = pool.characters.filter { $0.char != c.char }.shuffled(using: &rng)
+        let normalized = Pinyin.normalize(c.pinyin)
+        let allOthers = pool.characters.filter { $0.char != c.char }.shuffled(using: &rng)
+        let distinct = allOthers.filter { Pinyin.normalize($0.pinyin) != normalized }
+        let others = distinct.isEmpty ? allOthers : distinct
         guard settings.strategy != .easy else { return others.map(\.char) }
         let radical = Radical.of(c.imageHint)
         let sameRadical = others.filter { radical != nil && Radical.of($0.imageHint) == radical }.map(\.char)

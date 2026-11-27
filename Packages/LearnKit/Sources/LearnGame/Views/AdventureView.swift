@@ -23,11 +23,11 @@ struct AdventureScreen: View {
     @State private var shoveling = false
     @State private var placementCell: DefenderCell?
     @State private var placementMessage: String?
-    @State private var showExit = false
+    @State var showExit = false
     let onClose: () -> Void
 
     /// 冒险战斗专属美术色：雷霆就绪亮青高光与失败弹窗深蓝底边。
-    private enum LocalArt {
+    enum LocalArt {
         static let ultimateReadyTop = Color(red: 0.30, green: 0.86, blue: 1.0)
         static let defeatBannerEdge = Color(red: 0.18, green: 0.31, blue: 0.54)
     }
@@ -133,7 +133,9 @@ struct AdventureScreen: View {
             size: .medium
         ) {
             if session.battle.phase == .playing { session.suspend() }
-            else { showExit = true }
+            else if session.battle.phase == .preparing || session.battle.isFinished {
+                if session.abandon() { onClose() }
+            } else { showExit = true }
         }
     }
 
@@ -186,6 +188,12 @@ struct AdventureScreen: View {
                         enemyPreviewTag
                     }
                     Spacer(minLength: AppSpacing.xs)
+                    if session.battle.sun != 250 || !session.battle.towers.isEmpty || !session.battle.doomCharges.isEmpty {
+                        AppButton(title: "重置布阵", systemImage: "arrow.counterclockwise", role: .secondary, size: .medium) {
+                            selected = nil; shoveling = false; placementCell = nil; placementMessage = nil
+                            session.resetPreparation()
+                        }
+                    }
                     AppButton(title: "开始战斗 · 消耗 15 积分", systemImage: "play.fill", role: .primary, size: .large, action: session.start)
                         .disabled(!session.battle.towers.contains { AdventureCatalog.defender($0.kindID)?.canShoot == true })
                 }
@@ -275,112 +283,6 @@ struct AdventureScreen: View {
         if placementPrompt != nil {
             AppButton(title: "取消", systemImage: "xmark", role: .secondary, size: .small) {
                 selected = nil; placementCell = nil; placementMessage = nil
-            }
-        }
-    }
-
-    @ViewBuilder private var stateOverlay: some View {
-        if session.hud.phase == .paused || session.battle.isFinished {
-            ZStack {
-                Color.black.opacity(0.45).ignoresSafeArea()
-                if session.battle.isFinished {
-                    let won = session.hud.phase == .won
-                    CandyModalCard(
-                        bannerTitle: won ? "守住了！" : "这次差一点",
-                        bannerIcon: won ? "🎉" : "🌱",
-                        bannerColors: won ? [AppColor.gold, AppColor.accent] : [AppColor.calm.opacity(0.8), AppColor.calm],
-                        bannerEdge: won ? AppColor.accentEdge : LocalArt.defeatBannerEdge,
-                        maxWidth: 500
-                    ) {
-                        HStack(spacing: 10) {
-                            if won {
-                                ForEach(0..<3, id: \.self) { i in
-                                    Image(systemName: i < session.battle.stars ? "star.fill" : "star")
-                                        .font(AppFont.rounded(42, weight: .black))
-                                        .foregroundStyle(i < session.battle.stars ? AppColor.gold : AppColor.cardEdge)
-                                }
-                            } else {
-                                PictureView(emoji: "🌱", size: 54)
-                            }
-                        }
-                        Text(session.battle.advice)
-                            .font(AppFont.bodyStrong)
-                            .foregroundStyle(AppColor.ink)
-                            .multilineTextAlignment(.center)
-                        Text("冒险只记录关卡和星级，不发放积分与学习奖励。")
-                            .font(AppFont.label)
-                            .foregroundStyle(AppColor.muted)
-                        if session.error == nil {
-                            AppButton(title: "返回地图", systemImage: "map.fill", role: .adventure, size: .large, expands: true) {
-                                if session.abandon() { onClose() }
-                            }
-                        }
-                        if let error = session.error {
-                            Text(error).font(AppFont.label).foregroundStyle(AppColor.dangerText)
-                            AppButton(title: "重试保存", systemImage: "arrow.clockwise", role: .secondary, size: .large, expands: true, action: session.retrySave)
-                        }
-                    }
-                    .padding(AppSpacing.lg)
-                } else {
-                    CandyModalCard(
-                        bannerTitle: "冒险已暂停",
-                        bannerIcon: "⏸️",
-                        bannerColors: [AppColor.gold, AppColor.accent],
-                        bannerEdge: AppColor.accentEdge,
-                        maxWidth: 460
-                    ) {
-                        Text("阳光、怪物和战斗时间都已暂停，继续不会再次扣积分。")
-                            .font(AppFont.body)
-                            .foregroundStyle(AppColor.muted)
-                            .multilineTextAlignment(.center)
-                        VStack(spacing: AppSpacing.sm) {
-                            AppButton(title: "继续战斗", systemImage: "play.fill", role: .primary, size: .large, expands: true, action: session.resume)
-                            AppButton(title: "返回地图（结束本局）", systemImage: "map.fill", role: .secondary, size: .large, expands: true) {
-                                if session.abandon() { onClose() }
-                            }
-                            AppButton(title: "放弃对局", systemImage: "xmark.circle.fill", role: .destructive, size: .large, expands: true) {
-                                showExit = true
-                            }
-                        }
-                        if let error = session.error {
-                            Text(error).font(AppFont.label).foregroundStyle(AppColor.dangerText)
-                            AppButton(title: "重试保存", systemImage: "arrow.clockwise", role: .secondary, size: .medium, expands: true, action: session.retrySave)
-                        }
-                    }
-                    .padding(AppSpacing.lg)
-                }
-            }
-        }
-    }
-
-    @ViewBuilder private var exitConfirmOverlay: some View {
-        if showExit {
-            if session.battle.phase == .preparing || session.battle.isFinished {
-                CandyConfirmModal(
-                    title: "离开冒险",
-                    icon: "🗺️",
-                    message: "当前尚未开始正式战斗，可以直接返回冒险地图。",
-                    buttons: [
-                        CandyConfirmButton(title: "返回地图", systemImage: "chevron.left", role: .primary) {
-                            showExit = false; if session.abandon() { onClose() }
-                        },
-                        CandyConfirmButton(title: "留在这里", role: .cancel) { showExit = false }
-                    ],
-                    onDismiss: { showExit = false }
-                )
-            } else {
-                CandyConfirmModal(
-                    title: "离开冒险",
-                    icon: "⚠️",
-                    message: "返回地图后本局结束，再次进入将开始新游戏。已消耗的 15 积分不返还。",
-                    buttons: [
-                        CandyConfirmButton(title: "返回地图（结束本局）", systemImage: "map.fill", role: .primary) {
-                            showExit = false; if session.abandon() { onClose() }
-                        },
-                        CandyConfirmButton(title: "继续冒险", role: .cancel) { showExit = false }
-                    ],
-                    onDismiss: { showExit = false }
-                )
             }
         }
     }

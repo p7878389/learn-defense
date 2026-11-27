@@ -17,6 +17,8 @@ paths = subprocess.check_output(
 violations = []
 checked = 0
 for name in sorted(set(paths)):
+    if not name or pathlib.PurePosixPath(name).parts[0].startswith("."):
+        continue
     path = root / name
     if path.suffix not in extensions or not path.is_file():
         continue

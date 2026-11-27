@@ -13,6 +13,8 @@ struct AnswerPanel: View {
     /// 横屏时答题区要矮，行距收紧，战场才能铺满宽度
     var compact = false
     var retrying = false
+    /// 换题瞬间短暂防连点保护，防止双击慢抬手直接误判新题
+    @State private var transitionLocked = false
 
     private var revealed: Bool { !wrongPicks.isEmpty }
 
@@ -20,16 +22,20 @@ struct AnswerPanel: View {
         VStack(spacing: compact ? AppSpacing.xs : AppSpacing.sm) {
             if let q = question, let spec = q.input {
                 header(q)
-                TileAnswerView(spec: spec, wrongCount: wrongPicks.count, compact: compact, onStart: onStartInput, onSubmit: onSubmitInput)
+                TileAnswerView(spec: spec, wrongCount: wrongPicks.count, compact: compact, onStart: onStartInput,
+                               onSubmit: { values in guard !transitionLocked else { return }; onSubmitInput(values) })
+                    .id(q.id)
             } else if let q = question {
                 header(q)
                 HStack(spacing: AppSpacing.sm) {
                     ForEach(q.options.indices, id: \.self) { i in
                         OptionButton(text: q.options[i], style: q.optionStyle, state: state(of: i, in: q)) {
+                            guard !transitionLocked else { return }
                             onAnswer(i)
                         }
                     }
                 }
+                .id(q.id)
                 if revealed {
                     Text("再想一想，试试其他选项")
                         .font(AppFont.bodyStrong)
@@ -42,12 +48,20 @@ struct AnswerPanel: View {
                     .frame(maxWidth: .infinity, minHeight: 120)
             }
             if retrying {
-                Text("刚才答错了，题目已刷新，请重新作答")
+                Label("刚才答错了，已换成新题，看清再选哦", systemImage: "arrow.triangle.2.circlepath")
                     .font(AppFont.bodyStrong)
                     .foregroundStyle(AppColor.dangerText)
+                    .modifier(Shake(animatableData: transitionLocked ? 1 : 0))
             }
         }
-        .id(question?.id)
+        .onChange(of: question?.id) { oldID, newID in
+            guard oldID != nil, newID != nil, oldID != newID else { return }
+            transitionLocked = true
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(360))
+                transitionLocked = false
+            }
+        }
         .animation(.easeOut(duration: 0.2), value: wrongPicks)
     }
 

@@ -144,10 +144,12 @@ struct ResultView: View {
 
     private func rewards(_ g: GrowthResult) -> some View {
         VStack(spacing: 10) {
+            let fullTotal = g.fullCoins + g.levelCoins + g.badgeCoins
             HStack(spacing: AppSpacing.sm) {
                 rewardTile(icon: "⭐", title: "经验", value: g.xp, full: g.reduced ? g.fullXP : nil,
                            tint: AppColor.jade, text: AppColor.jadeEdge)
-                rewardTile(icon: nil, title: "总积分", value: g.totalCoins, full: nil,
+                rewardTile(icon: nil, title: "总积分", value: g.totalCoins,
+                           full: (g.reduced && fullTotal > g.totalCoins) ? fullTotal : nil,
                            tint: AppColor.gold, text: ResultLocalArt.coinRewardText)
             }
             Text("每日上限：答题 \(session.rules.coinLimit(.answers)) · 过关 \(session.rules.coinLimit(.completion)) · 首胜 \(session.rules.coinLimit(.firstWin)) · 升级 \(session.rules.coinLimit(.level)) · 徽章 \(session.rules.coinLimit(.badge))")
@@ -355,12 +357,18 @@ struct MistakeNotebook: View {
         .appPanel(radius: AppRadius.lg)
     }
 
+    static func summaryText(for mistake: GameSession.Mistake) -> String {
+        let prompt = mistake.prompt == "🔊" ? "🔊 听音题" : mistake.prompt
+        let status = mistake.missed ? "（未作答）" : ""
+        return "\(prompt)\(status) → 答案：\(mistake.answer)"
+    }
+
     private var list: some View {
         VStack(alignment: .leading, spacing: 6) {
             ForEach(mistakes) { m in
                 HStack(alignment: .firstTextBaseline, spacing: AppSpacing.xs) {
                     PictureView(emoji: m.missed ? "⏰" : "✏️", size: 22)
-                    Text("\(m.prompt) · " + (m.missed ? "未作答" : "需要再练习"))
+                    Text(Self.summaryText(for: m))
                         .foregroundStyle(AppColor.ink)
                         .fixedSize(horizontal: false, vertical: true)
                 }

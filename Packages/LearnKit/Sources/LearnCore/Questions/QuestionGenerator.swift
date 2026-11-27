@@ -176,7 +176,9 @@ public struct QuestionGenerator: Sendable {
 
     private func listenPickChar<R: RandomNumberGenerator>(_ c: CharacterItem, _ key: String, _ rng: inout R) -> Question? {
         let speech = Self.charSpeech(c)
-        let others = pool.characters.map(\.char).filter { $0 != c.char }.shuffled(using: &rng)
+        let normalized = Pinyin.normalize(c.pinyin)
+        let distinct = pool.characters.filter { $0.char != c.char && Pinyin.normalize($0.pinyin) != normalized }.map(\.char).shuffled(using: &rng)
+        let others = distinct.isEmpty ? pool.characters.map(\.char).filter { $0 != c.char }.shuffled(using: &rng) : distinct
         return build(
             kind: .listenPickChar, key: key, instruction: "听一听，是哪个字？", prompt: "🔊", hint: nil,
             correct: c.char, distractors: others, style: .text,
@@ -186,7 +188,10 @@ public struct QuestionGenerator: Sendable {
 
     private func pinyinToWord<R: RandomNumberGenerator>(_ w: WordItem, _ key: String, _ rng: inout R) -> Question? {
         guard let pinyin = w.pinyin else { return nil }
-        let others = pool.words.map(\.text).filter { $0 != w.text && $0.count == w.text.count }.shuffled(using: &rng)
+        let normalized = Pinyin.normalize(pinyin)
+        let sameLength = pool.words.filter { $0.text != w.text && $0.text.count == w.text.count }
+        let distinct = sameLength.filter { $0.pinyin.map(Pinyin.normalize) != normalized }.map(\.text).shuffled(using: &rng)
+        let others = distinct.isEmpty ? sameLength.map(\.text).shuffled(using: &rng) : distinct
         return build(
             kind: .pinyinToWord, key: key, instruction: "选出正确的词语", prompt: Pinyin.normalize(pinyin), hint: nil,
             correct: w.text, distractors: others, style: .text,

@@ -98,6 +98,8 @@ struct GrowthEntryCards: View {
         let newItems = catalog.cosmetics.filter {
             !$0.isOriginal && $0.unlockLevel <= level && growth.state.status(of: $0, level: level) == .forSale(price: $0.price)
         }
+        let canUnlockDoom = !growth.state.ownsDoomShroom && level >= AdventureDoom.unlockLevel
+        let availableCount = newItems.count + (canUnlockDoom ? 1 : 0)
         let earned = catalog.badges.filter { growth.state.badges[$0.id] != nil }
         let adventureStars = growth.state.adventure.totalStars
         let layout = axis == .horizontal
@@ -126,7 +128,7 @@ struct GrowthEntryCards: View {
                     icon: "🎁",
                     tint: AppColor.accent,
                     edge: AppColor.accentSoftEdge,
-                    badge: newItems.isEmpty ? nil : "可买 \(newItems.count) 件",
+                    badge: availableCount == 0 ? nil : "可买 \(availableCount) 件",
                     badgeFill: AppColor.dangerText,
                     watermark: "sparkles"
                 )

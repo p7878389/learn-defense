@@ -16,6 +16,7 @@ struct AdventureLobbyView: View {
     @State private var difficulty: Difficulty = .normal
     @State private var deck = AdventureCatalog.defaultDeck
     @State private var launch: AdventureLaunch?
+    @State private var showInsufficientCoins = false
 
     private var growth: GrowthStore { model.growth(for: profileID) }
     private var regularDefenders: [DefenderKind] { AdventureCatalog.defenders.filter { $0.id != AdventureDoom.id } }
@@ -31,8 +32,7 @@ struct AdventureLobbyView: View {
     var body: some View {
         GeometryReader { geometry in
             let landscape = geometry.size.width > geometry.size.height
-            let hasSaved = growth.state.adventure.active != nil
-            let compact = geometry.size.height < 760 || hasSaved
+            let compact = geometry.size.height < 760
             VStack(spacing: compact ? AppSpacing.xs : AppSpacing.sm) {
                 GrowthPageHeader(icon: "🗺️", title: "森林冒险", subtitle: "15 积分 / 局", backTitle: "返回主页", onClose: onClose) {
                     CoinPill(coins: growth.state.coins, size: 20)
@@ -80,6 +80,22 @@ struct AdventureLobbyView: View {
         .gameCover(item: $launch, onDismiss: { model.objectWillChange.send() }) { launch in
             AdventureView(levelID: launch.levelID, model: model, profileID: profileID,
                           difficulty: launch.difficulty, deck: launch.deck, onClose: { self.launch = nil })
+        }
+        .overlay {
+            if showInsufficientCoins {
+                CandyConfirmModal(
+                    title: "积分还差一点",
+                    icon: "🪙",
+                    message: "进入森林冒险每局需要 \(AdventureCatalog.entryCost) 积分（当前 \(growth.state.coins) 积分）。先回主页通过经典答题闯关赚取积分吧！",
+                    buttons: [
+                        CandyConfirmButton(title: "回主页赚积分", systemImage: "play.fill", role: .primary) {
+                            showInsufficientCoins = false; onClose()
+                        },
+                        CandyConfirmButton(title: "留在地图", role: .cancel) { showInsufficientCoins = false }
+                    ],
+                    onDismiss: { showInsufficientCoins = false }
+                )
+            }
         }
         .interactiveDismissDisabled()
     }
@@ -228,7 +244,7 @@ struct AdventureLobbyView: View {
         let isBoss = level.id == 6
         let isRecommended = level.id == recommendedLevelID
         return Button {
-            if growth.state.coins < AdventureCatalog.entryCost { onClose() }
+            if growth.state.coins < AdventureCatalog.entryCost { showInsufficientCoins = true }
             else { launch = AdventureLaunch(levelID: level.id, difficulty: difficulty, deck: deck) }
         } label: {
             let cardContent = VStack(alignment: .leading, spacing: compact ? AppSpacing.xxs : AppSpacing.xs) {

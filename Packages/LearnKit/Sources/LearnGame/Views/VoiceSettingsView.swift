@@ -13,6 +13,7 @@ struct VoiceSettingsView: View {
     @State private var message: String?
     @State private var confirmingClear = false
     @State private var showsLegacy = false
+    @State private var revealSecrets = false
     @State private var openMenu: String?
 
     init(library: SpeechLibrary) {
@@ -151,11 +152,18 @@ struct VoiceSettingsView: View {
             }
             if let error = library.lastError {
                 Label(error, systemImage: "exclamationmark.triangle.fill").font(AppFont.label).foregroundStyle(AppColor.dangerText)
-                if library.canDownload {
-                    AppButton(title: "重试下载语音包", systemImage: "arrow.clockwise", role: .secondary, size: .small) {
-                        library.retryRemote()
+                HStack(spacing: AppSpacing.xs) {
+                    if library.canDownload {
+                        AppButton(title: "重试云端清单", systemImage: "arrow.clockwise", role: .secondary, size: .small) {
+                            library.retryRemote()
+                        }
+                        .disabled(library.preparingRemote)
                     }
-                    .disabled(library.preparingRemote)
+                    if (library.canGenerate || library.canDownload), library.pendingCount == 0 {
+                        AppButton(title: "继续生成剩余语音", systemImage: "play.fill", role: .secondary, size: .small) {
+                            library.resumePending()
+                        }
+                    }
                 }
             }
             if let message {
@@ -181,9 +189,17 @@ struct VoiceSettingsView: View {
 
     private var accountCard: some View {
         SettingsCard(title: "账号密钥", systemImage: "key.fill", tint: AppColor.accent) {
-            Text("在火山引擎控制台开通「豆包语音合成」后获取，只保存在这台 iPad 的钥匙串里。")
-                .font(AppFont.caption).foregroundStyle(AppColor.muted)
-            field("API Key", text: $draft.apiKey)
+            HStack {
+                Text("在火山引擎控制台开通「豆包语音合成」后获取，只保存在这台 iPad 的钥匙串里。")
+                    .font(AppFont.caption).foregroundStyle(AppColor.muted)
+                Spacer()
+                Button { revealSecrets.toggle() } label: {
+                    Label(revealSecrets ? "隐藏密钥" : "显示密钥", systemImage: revealSecrets ? "eye.slash" : "eye")
+                        .font(AppFont.caption).foregroundStyle(AppColor.parentAccent)
+                }
+                .buttonStyle(.plain)
+            }
+            field("API Key", text: $draft.apiKey, secret: !revealSecrets)
             Button {
                 withAnimation(.spring(response: 0.25, dampingFraction: 0.85)) { showsLegacy.toggle() }
             } label: {
@@ -198,7 +214,7 @@ struct VoiceSettingsView: View {
             if showsLegacy {
                 HStack(spacing: AppSpacing.sm) {
                     field("APP ID", text: $draft.appID)
-                    field("Access Token", text: $draft.accessToken)
+                    field("Access Token", text: $draft.accessToken, secret: !revealSecrets)
                 }
             }
             tip("填好后，题库和提示语会在后台生成高质量语音。朗读时优先等待所选音色，暂时不可用时才使用系统语音。")
@@ -218,6 +234,12 @@ struct VoiceSettingsView: View {
                             selection: $draft.speaker, voices: TTSSettings.chineseVoices)
                 voiceColumn(id: VoiceMenu.english, caption: "纯英文", idTitle: "英文音色 ID",
                             selection: $draft.englishSpeaker, voices: TTSSettings.englishVoices)
+            }
+            if draft.hasModelSpeakerMismatch {
+                Label("当前选择了 1.0 模型，但音色 ID 仍是 2.0 专属（uranus_bigtts），请切回 2.0 模型或改填已开通的 1.0 音色 ID。",
+                      systemImage: "exclamationmark.triangle.fill")
+                    .font(AppFont.caption)
+                    .foregroundStyle(AppColor.dangerText)
             }
             HStack(spacing: AppSpacing.sm) {
                 rateRow
@@ -282,17 +304,23 @@ struct VoiceSettingsView: View {
         Text(title).font(AppFont.label).foregroundStyle(AppColor.muted)
     }
 
-    private func field(_ title: String, text: Binding<String>) -> some View {
+    private func field(_ title: String, text: Binding<String>, secret: Bool = false) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             fieldLabel(title)
-            TextField(title, text: text)
-                .textFieldStyle(.plain)
-                .credentialInput()
-                .font(.system(.body, design: .monospaced))
-                .foregroundStyle(AppColor.ink)
-                .padding(.horizontal, AppSpacing.sm).frame(minHeight: 46)
-                .background(AppColor.surface, in: RoundedRectangle(cornerRadius: AppRadius.sm))
-                .overlay(RoundedRectangle(cornerRadius: AppRadius.sm).strokeBorder(AppColor.parentStroke, lineWidth: 1.5))
+            Group {
+                if secret {
+                    SecureField(title, text: text)
+                } else {
+                    TextField(title, text: text)
+                }
+            }
+            .textFieldStyle(.plain)
+            .credentialInput()
+            .font(.system(.body, design: .monospaced))
+            .foregroundStyle(AppColor.ink)
+            .padding(.horizontal, AppSpacing.sm).frame(minHeight: 46)
+            .background(AppColor.surface, in: RoundedRectangle(cornerRadius: AppRadius.sm))
+            .overlay(RoundedRectangle(cornerRadius: AppRadius.sm).strokeBorder(AppColor.parentStroke, lineWidth: 1.5))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

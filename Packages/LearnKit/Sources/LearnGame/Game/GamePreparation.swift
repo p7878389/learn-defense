@@ -107,6 +107,28 @@ final class GamePreparation: ObservableObject {
         preferences.removeObject(forKey: BattleMap.preferenceKey)
     }
 
+    /// 汇总全库匹配待复习知识点的题库（含跨年级选库记录），优先对齐孩子当前年级。
+    static func reviewItemCount(in library: ContentLibrary, reviewKeys: Set<String>) -> Int {
+        guard !reviewKeys.isEmpty else { return 0 }
+        return ItemPool(packs: library.packs, selection: .review(reviewKeys)).items.count
+    }
+
+    static func reviewConfig(for profile: Profile, library: ContentLibrary, reviewKeys: Set<String>) -> GameConfig? {
+        guard !reviewKeys.isEmpty else { return nil }
+        let matching = library.packs.filter { !ItemPool(packs: [$0], selection: .review(reviewKeys)).isEmpty }
+        guard !matching.isEmpty else { return nil }
+        let sameGrade = matching.filter { $0.grade == profile.grade }
+        let ordered = sameGrade + matching.filter { $0.grade != profile.grade }
+        let targetGrade = ordered.first?.grade ?? profile.grade
+        return GameConfig(
+            profileID: profile.id,
+            grade: targetGrade,
+            packIDs: ordered.map(\.id),
+            selection: .review(reviewKeys),
+            difficulty: profile.difficulty
+        )
+    }
+
     private func makeSession(_ config: GameConfig, confirmed: Bool) -> GameSession {
         GameSession(config: config, library: model.library, progress: model.progress(for: config.profileID),
                     speech: model.speech, growth: model.growth(for: config.profileID), recorder: model.recorder(for: config),
@@ -173,7 +195,6 @@ struct QuestionBankDraft {
     init(config: GameConfig, library: ContentLibrary) {
         original = config
         self.library = library
-        grade = config.grade
         difficulty = config.difficulty
         let keys: Set<String>?
         if case .review(let value) = config.selection { keys = value } else { keys = nil }
@@ -183,6 +204,7 @@ struct QuestionBankDraft {
             if let keys { return !ItemPool(packs: [pack], selection: .review(keys)).isEmpty }
             return true
         }) ?? candidates.first ?? library.packs.first { $0.grade == config.grade }
+        grade = (keys != nil ? initial?.grade : nil) ?? config.grade
         subject = initial?.subject ?? .chinese
         edition = initial.map(QuestionBankChoice.edition)
         packID = initial?.id
@@ -240,7 +262,8 @@ struct QuestionBankDraft {
         let ids: [String]
         let selection: ItemPool.Selection
         if let reviewKeys {
-            ids = gradePacks.map(\.id)
+            ids = gradePacks.filter { !ItemPool(packs: [$0], selection: .review(reviewKeys)).isEmpty }.map(\.id)
+            guard !ids.isEmpty else { return nil }
             selection = .review(reviewKeys)
         } else {
             guard let pack = selectedPack else { return nil }
