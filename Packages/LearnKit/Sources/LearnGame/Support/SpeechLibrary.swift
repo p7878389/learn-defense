@@ -3,8 +3,8 @@ import LearnCore
 
 /// 预先生成的高质量语音：按文本找音频文件，找不到时在后台从云端（OSS）下载，或用火山引擎生成并缓存。
 ///
-/// 查找顺序：题库自带（Documents/Packs/Audio）→ App 内置（Resources/Speech）→ 用家长的豆包账号生成的缓存
-/// → 从云端下载的缓存。预先生成的目录按 manifest.json 找，没有清单的旧目录按 key 文件名找。
+/// 按配置音色查找：已生成的缓存 → 音色匹配的题库自带 / App 内置音频 → 音色匹配的云端缓存。
+/// 没有指定音色时仍兼容按 key 文件名保存的旧音频。
 /// 都没有时：家长配了自己的豆包账号且音色和云端不同，就用自己的账号生成；否则先从云端下载，云端没有再生成。
 /// 缓存以音频文件是否存在为准，数据库里的 StoredSpeechClip 只是索引，方便查询和清理。
 @MainActor
@@ -84,10 +84,17 @@ final class SpeechLibrary: ObservableObject {
 
     /// 这段文本可以直接播放的音频文件
     func audioFile(for text: String) -> URL? {
-        premadeFile(for: text) ?? cachedFile(for: text) ?? remote?.localFile(for: text)
+        if let file = cachedFile(for: text) ?? premadeFile(for: text) { return file }
+        guard configuredVoice == nil || remote?.voice == configuredVoice else { return nil }
+        return remote?.localFile(for: text)
     }
 
-    /// 购买反馈短暂等待高质量音频；共用原下载/豆包生成队列，取消或超时后交给调用方兜底。
+    private var configuredVoice: String? {
+        guard let settings, settings.isUsable else { return nil }
+        return settings.voiceTag
+    }
+
+    /// 朗读前短暂等待所选音色；共用下载/豆包生成队列，取消或超时后交给调用方兜底。
     func audioFileWhenReady(for text: String, timeout: Duration = .seconds(8)) async -> URL? {
         guard !Task.isCancelled else { return nil }
         if let file = audioFile(for: text) { return file }
@@ -106,7 +113,9 @@ final class SpeechLibrary: ObservableObject {
 
     private func premadeFile(for text: String) -> URL? {
         let legacyName = SpeechText.fileName(for: text)
+        let voice = configuredVoice ?? remote?.voice
         for (directory, manifest) in zip(premadeDirectories, premadeManifests) {
+            guard voice == nil || manifest?.voice == voice else { continue }
             let candidates = [manifest?.path(for: text), legacyName].compactMap { $0 }
             for path in candidates {
                 let url = directory.appendingPathComponent(path)
@@ -147,7 +156,7 @@ final class SpeechLibrary: ObservableObject {
 
     // MARK: - 下载、生成
 
-    /// 刚才没找到音频、用系统语音读了的文本：排到最前面尽快下载或生成
+    /// 当前即将朗读的文本：排到最前面尽快下载或生成
     func requestSoon(_ text: String) {
         guard let text = SpeechText.normalize(text) else { return }
         // 清单尚未到达时也记住临时请求，否则刷新完成后只会重排启动时的题库文本。
@@ -170,12 +179,12 @@ final class SpeechLibrary: ObservableObject {
 
     /// 家长配了自己的豆包账号，且音色和云端不同：用自己的音色，保持前后一致
     private var prefersOwnVoice: Bool {
-        guard canGenerate, !paused, let settings else { return false }
+        guard canGenerate, let settings else { return false }
         return remote?.voice != settings.voiceTag
     }
 
     private func source(for text: String) -> Source? {
-        if prefersOwnVoice, let settings { return .generate(settings) }
+        if prefersOwnVoice, let settings { return paused ? nil : .generate(settings) }
         if let remote, canDownload, remote.has(text) { return .remote(remote) }
         if canGenerate, !paused, let settings { return .generate(settings) }
         return nil
@@ -183,7 +192,7 @@ final class SpeechLibrary: ObservableObject {
 
     /// 还需要下载或生成：已有合适的音频、或者没有来源时不用
     private func needsWork(_ text: String) -> Bool {
-        if premadeFile(for: text) != nil || cachedFile(for: text) != nil { return false }
+        if audioFile(for: text) != nil { return false }
         switch source(for: text) {
         case .remote(let remote): return remote.localFile(for: text) == nil
         case .generate: return true

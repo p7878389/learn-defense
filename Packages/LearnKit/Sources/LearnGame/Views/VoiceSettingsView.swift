@@ -201,7 +201,7 @@ struct VoiceSettingsView: View {
                     field("Access Token", text: $draft.accessToken)
                 }
             }
-            tip("填好后，题库和提示语会在后台生成高质量语音，生成之前先用系统语音朗读。")
+            tip("填好后，题库和提示语会在后台生成高质量语音。朗读时优先等待所选音色，暂时不可用时才使用系统语音。")
         }
     }
 
