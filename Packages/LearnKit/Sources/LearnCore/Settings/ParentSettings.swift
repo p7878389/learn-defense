@@ -27,6 +27,12 @@ public struct ParentGate: Codable, Sendable {
         lockedUntil.map { now >= $0 } ?? true
     }
 
+    public func remainingLockSeconds(now: Date = Date()) -> Int {
+        guard let until = lockedUntil else { return 0 }
+        let remaining = until.timeIntervalSince(now)
+        return remaining > 0 ? Int(ceil(remaining)) : 0
+    }
+
     public mutating func submit(_ value: Int, now: Date = Date()) -> Bool {
         guard canAnswer(now: now) else { return false }
         if lockedUntil != nil { failures = 0; lockedUntil = nil }

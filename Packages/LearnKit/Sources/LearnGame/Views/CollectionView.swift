@@ -216,7 +216,7 @@ struct CollectionView: View {
         .appPanel(radius: AppRadius.lg)
     }
 
-    private func rarityColor(_ rarity: CosmeticRarity) -> Color {
+    func rarityColor(_ rarity: CosmeticRarity) -> Color {
         switch rarity {
         case .common: AppColor.rarityCommon
         case .rare: AppColor.rarityRare

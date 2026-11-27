@@ -35,14 +35,22 @@ struct ParentSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
     @State private var unlocked = false
+    @State private var hasUnlockedOnce = false
 
     var body: some View {
         ZStack {
             GrowthPageBackground()
-            if unlocked {
-                ParentSettingsContent(onClose: { unlocked = false; dismiss() })
-            } else {
-                ParentGateView(onSuccess: { unlocked = true }, onCancel: { dismiss() })
+            if hasUnlockedOnce {
+                ParentSettingsContent(onClose: { unlocked = false; hasUnlockedOnce = false; dismiss() })
+                    .allowsHitTesting(unlocked)
+                    .accessibilityHidden(!unlocked)
+            }
+            if !unlocked {
+                GrowthPageBackground().ignoresSafeArea()
+                ParentGateView(
+                    onSuccess: { unlocked = true; hasUnlockedOnce = true },
+                    onCancel: { unlocked = false; hasUnlockedOnce = false; dismiss() }
+                )
             }
         }
         .onChange(of: scenePhase) { _, phase in
@@ -115,9 +123,10 @@ private struct ParentGateView: View {
                     .disabled(!gate.canAnswer(now: now) || persistenceFailed)
                 }
             }
-            Text(message.isEmpty ? "连续答错 3 次后，需要稍后再试" : message)
+            let lockSeconds = gate.remainingLockSeconds(now: now)
+            Text(lockSeconds > 0 ? "连续答错 3 次，请等待 \(lockSeconds) 秒后再试" : (message.isEmpty ? "连续答错 3 次后，需要稍后再试" : message))
                 .font(AppFont.label)
-                .foregroundStyle(AppColor.muted)
+                .foregroundStyle(lockSeconds > 0 ? AppColor.dangerText : AppColor.muted)
             AppButton(title: "返回主页", systemImage: "chevron.left", role: .secondary, size: .medium, minWidth: 140, action: onCancel)
         }
         .padding(AppSpacing.lg)
@@ -135,7 +144,7 @@ private struct ParentGateView: View {
 private struct ParentAboutPane: View {
     var body: some View {
         SettingsCard(title: "关于字灵守卫", systemImage: "info.circle.fill", tint: AppColor.muted) {
-            Text("通过答题守护书本，在游戏中练习语文和英语。").font(AppFont.bodyStrong).foregroundStyle(AppColor.ink)
+            Text("通过答题守护书本，在游戏中练习语文、数学和英语。").font(AppFont.bodyStrong).foregroundStyle(AppColor.ink)
             Text("版本 \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")")
                 .font(AppFont.body).foregroundStyle(AppColor.ink)
             Text("学习记录存储在本机。导出备份后，请妥善保存文件。")

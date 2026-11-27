@@ -62,6 +62,27 @@ struct AdventureBattleTests {
         #expect(battle.towers.isEmpty)
     }
 
+    @Test func resetPreparationRestoresStartingSunAndClearsDoomDuringPreparingOnly() {
+        var battle = AdventureBattle(level: level([.init(kind: .grunt, lane: 0, delay: 0)]),
+                                     deck: ["inkling", AdventureDoom.id, "frost", "wallnut"])
+        #expect(battle.resetPreparation() == false)
+        #expect(battle.plant("inkling", lane: 0, column: 0) == true)
+        #expect(battle.plant(AdventureDoom.id, lane: 1, column: 1) == true)
+        #expect(battle.shovel(lane: 0, column: 0) == true)
+        #expect(battle.sun == 75)
+        #expect(!battle.doomCharges.isEmpty && battle.doomCooldown > 0)
+
+        #expect(battle.resetPreparation() == true)
+        #expect(battle.sun == 250)
+        #expect(battle.towers.isEmpty)
+        #expect(battle.doomCharges.isEmpty && battle.doomCooldown == 0)
+
+        #expect(battle.plant("inkling", lane: 0, column: 0) == true)
+        #expect(battle.start() == true)
+        #expect(battle.resetPreparation() == false)
+        #expect(battle.towers.count == 1 && battle.sun == 200)
+    }
+
     @Test func leaksCanLoseAndCannotAwardKillsOrNegativeLives() {
         let spawns = (0..<15).map { AdventureSpawn(kind: .runner, lane: 1, delay: Double($0)) }
         var battle = AdventureBattle(level: level(spawns))

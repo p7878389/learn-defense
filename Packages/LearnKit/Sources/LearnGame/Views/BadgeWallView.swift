@@ -16,21 +16,41 @@ struct BadgeWallView: View {
         let level = growth.level.level
         let badges = growth.catalog.badges
         let earned = badges.filter { growth.state.badges[$0.id] != nil }
-        VStack(spacing: AppSpacing.md) {
-            topBar(level: level, earned: earned.count, total: badges.count)
-            HStack(alignment: .top, spacing: AppSpacing.md) {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: AppSpacing.sm), count: 4), spacing: AppSpacing.sm) {
-                    ForEach(badges, id: \.id) { tile($0, level: level) }
+        GeometryReader { geo in
+            let wide = geo.size.width >= 780
+            VStack(spacing: AppSpacing.md) {
+                topBar(level: level, earned: earned.count, total: badges.count)
+                if wide {
+                    HStack(alignment: .top, spacing: AppSpacing.md) {
+                        ScrollView {
+                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: AppSpacing.sm), count: 4), spacing: AppSpacing.sm) {
+                                ForEach(badges, id: \.id) { tile($0, level: level) }
+                            }
+                            .padding(AppSpacing.md)
+                        }
+                        .scrollBounceBehavior(.basedOnSize)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .appPanel(radius: AppRadius.lg)
+                        detail(level: level, badges: badges)
+                            .frame(width: 340)
+                    }
+                } else {
+                    ScrollView {
+                        VStack(spacing: AppSpacing.md) {
+                            detail(level: level, badges: badges)
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: AppSpacing.sm)], spacing: AppSpacing.sm) {
+                                ForEach(badges, id: \.id) { tile($0, level: level) }
+                            }
+                            .padding(AppSpacing.md)
+                            .appPanel(radius: AppRadius.lg)
+                        }
+                    }
+                    .scrollBounceBehavior(.basedOnSize)
                 }
-                .padding(AppSpacing.md)
-                .frame(maxWidth: .infinity)
-                .appPanel(radius: AppRadius.lg)
-                detail(level: level, badges: badges)
-                    .frame(width: 340)
             }
+            .padding(AppSpacing.lg)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        .padding(AppSpacing.lg)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(GrowthPageBackground())
     }
 

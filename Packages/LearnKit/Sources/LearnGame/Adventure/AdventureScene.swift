@@ -197,7 +197,8 @@ final class AdventureScene: SKScene {
     private func fitCharactersToViewport() {
         guard let viewport = view?.bounds.size, viewport.width > 0, viewport.height > 0 else { return }
         let ratio = (viewport.width / size.width) / (viewport.height / size.height)
-        for node in children where node is DefenderNode || node is EnemyNode {
+        for node in children where node is DefenderNode || node is EnemyNode
+            || node.name?.hasPrefix("doom-") == true || node.zPosition >= 20 {
             node.yScale = abs(node.xScale) * ratio
         }
     }

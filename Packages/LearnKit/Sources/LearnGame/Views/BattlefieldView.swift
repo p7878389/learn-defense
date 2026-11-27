@@ -16,10 +16,13 @@ struct BattlefieldView: View {
                     debugOptions: debugOptions)
                     .frame(width: geometry.size.width, height: geometry.size.height)
                     .simultaneousGesture(SpatialTapGesture().onEnded { value in
-                        guard session.phase == .playing, session.ultimate == nil,
-                              let point = GameScene.scenePoint(at: value.location,
-                                  in: CGRect(origin: .zero, size: geometry.size)) else { return }
-                        session.scene.selectTarget(at: point)
+                        guard let point = GameScene.scenePoint(at: value.location,
+                            in: CGRect(origin: .zero, size: geometry.size)) else { return }
+                        if session.selectedCardID != nil, session.canUseShop {
+                            _ = session.placeSelectedCard(at: point)
+                        } else if session.phase == .playing, session.ultimate == nil {
+                            session.scene.selectTarget(at: point)
+                        }
                     })
             }
         }

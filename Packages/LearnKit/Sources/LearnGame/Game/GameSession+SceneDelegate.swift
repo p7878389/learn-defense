@@ -137,6 +137,31 @@ extension GameSession {
     func barricadeRemoved() {
         barricadeDown = false
     }
+
+    func canApply(_ item: ItemKind) -> (allowed: Bool, reason: String?) {
+        if item.onlyHeals, let hearts, let maxHearts = tuning.hearts, hearts >= maxHearts {
+            return (false, "爱心已满，留着危急时用吧")
+        }
+        let needsEnemies = item.effects.allSatisfy {
+            switch $0 {
+            case .freezeField, .clearField: true
+            case .heal, .bonusScore: false
+            }
+        }
+        if needsEnemies, !scene.enemies.values.contains(where: { !$0.doomed }) {
+            return (false, "等怪物出场再用吧")
+        }
+        return (true, nil)
+    }
+
+    func questionTabTitle(for id: Int, index: Int) -> String {
+        let sign = questions[id]?.question.signText.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let lanePrefix = scene.enemies[id].map { "\($0.lane + 1)路·" } ?? ""
+        if !sign.isEmpty {
+            return "\(lanePrefix)\(sign)"
+        }
+        return "\(lanePrefix)题\(index + 1)"
+    }
 }
 
 extension GameSession: Battlefield {

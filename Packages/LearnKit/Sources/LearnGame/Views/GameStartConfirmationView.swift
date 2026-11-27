@@ -39,6 +39,15 @@ struct GameStartConfirmationView: View {
                 }
                 .padding(AppSpacing.md)
                 .appInset(radius: AppRadius.md)
+
+                if let growth = session.growth,
+                   growth.state.stats.gamesToday >= growth.catalog.pacing.daily.fullRewardGames {
+                    HintCapsule(
+                        icon: "😴",
+                        text: "今天已完成 \(growth.state.stats.gamesToday) 局，本局基础奖励减半，注意让眼睛休息一下哦",
+                        tint: AppColor.calm
+                    )
+                }
             }
         } footer: {
             VStack(spacing: AppSpacing.xs) {

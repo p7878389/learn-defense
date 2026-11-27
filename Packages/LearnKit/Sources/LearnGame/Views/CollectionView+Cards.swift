@@ -358,12 +358,4 @@ extension CollectionView {
             .padding(AppSpacing.lg)
         }
     }
-
-    private func rarityColor(_ rarity: CosmeticRarity) -> Color {
-        switch rarity {
-        case .common: AppColor.rarityCommon
-        case .rare: AppColor.rarityRare
-        case .legendary: AppColor.rarityLegendary
-        }
-    }
 }

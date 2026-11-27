@@ -45,7 +45,7 @@ final class Speech: NSObject {
         #if os(iOS)
         try? AVAudioSession.sharedInstance().setCategory(
             preferences.readsWhenSilent ? .playback : .ambient,
-            mode: .default, options: [.duckOthers])
+            mode: .spokenAudio, options: [.duckOthers])
         #endif
     }
 

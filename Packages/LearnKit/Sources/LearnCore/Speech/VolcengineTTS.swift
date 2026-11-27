@@ -93,6 +93,12 @@ public struct TTSSettings: Codable, Equatable, Sendable {
         "\(resourceID.trimmed)/\(speaker.trimmed)/\(englishSpeaker.trimmed)/\(speechRate)"
     }
 
+    /// 1.0 模型与 2.0 专属 uranus_bigtts 音色混用时接口会拒绝请求
+    public var hasModelSpeakerMismatch: Bool {
+        resourceID.trimmed == "seed-tts-1.0"
+            && (speaker.contains("uranus_bigtts") || englishSpeaker.contains("uranus_bigtts"))
+    }
+
     /// 从环境变量读：VOLC_TTS_API_KEY，或 VOLC_TTS_APP_ID + VOLC_TTS_ACCESS_TOKEN；
     /// 可选 VOLC_TTS_RESOURCE_ID、VOLC_TTS_SPEAKER、VOLC_TTS_ENGLISH_SPEAKER、VOLC_TTS_SPEECH_RATE
     public static func fromEnvironment(_ env: [String: String] = ProcessInfo.processInfo.environment) -> TTSSettings {

@@ -113,12 +113,20 @@ struct PreparationPanel: View {
                             .background(Capsule().fill(session.bankConfirmed ? AppColor.jade.opacity(0.14) : AppColor.dangerFill))
                             .lineLimit(1)
                     }
-                    Text("把植物卡拖到草坪空位。种下后不能修改，已布阵 \(session.plantedLaneCount)/\(session.tuning.lanes) 路")
+                    Text(session.selectedCardID != nil
+                         ? "点击草坪空位种下已选植物（再次点击卡片可取消）"
+                         : "点击或拖动植物卡到草坪空位，开战前可随时重摆 · 已布阵 \(session.plantedLaneCount)/\(session.tuning.lanes) 路")
                         .font(AppFont.body)
-                        .foregroundStyle(AppColor.muted)
+                        .foregroundStyle(session.selectedCardID != nil ? AppColor.jadeEdge : AppColor.muted)
                 }
 
                 Spacer(minLength: AppSpacing.xs)
+
+                if session.canResetPreparation {
+                    AppButton(title: "重摆", systemImage: "arrow.counterclockwise", role: .secondary, size: .large) {
+                        _ = session.resetPreparation()
+                    }
+                }
 
                 AppButton(
                     title: !session.bankConfirmed ? "请先选择题库" : session.canStartBattle ? "准备好了" : "先种一株植物",

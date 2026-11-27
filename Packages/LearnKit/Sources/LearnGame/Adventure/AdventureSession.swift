@@ -72,6 +72,13 @@ final class AdventureSession: ObservableObject {
         changed()
     }
 
+    @discardableResult
+    func resetPreparation() -> Bool {
+        guard !closed, battle.resetPreparation() else { return false }
+        changed()
+        return true
+    }
+
     func start() {
         guard !closed else { return }
         var next = battle
