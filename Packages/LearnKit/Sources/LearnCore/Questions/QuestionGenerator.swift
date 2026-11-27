@@ -235,15 +235,17 @@ public struct QuestionGenerator: Sendable {
     }
 
     private func choice<R: RandomNumberGenerator>(_ q: ChoiceItem, _ key: String, _ rng: inout R) -> Question? {
-        let options = q.options.shuffled(using: &rng)
-        guard let answerIndex = options.firstIndex(of: q.answer), options.count >= 2 else { return nil }
+        guard q.options.contains(q.answer) else { return nil }
+        let distractors = q.options.filter { $0 != q.answer }.shuffled(using: &rng)
         let promptSpeech = (settings.preschool || q.speech != nil) ? (q.speech ?? q.prompt) : nil
-        return Question(
-            kind: .choice, itemKey: key, instruction: "选一选", prompt: q.prompt, signText: "？",
-            options: options, optionStyle: .text, answerIndex: answerIndex,
-            promptSpeech: promptSpeech,
-            answerSpeech: q.answer, explanation: q.explain.map { "\(q.answer)。\($0)" } ?? q.answer,
-            card: WordCard(text: q.answer, detail: q.explain))
+        guard var built = build(
+            kind: .choice, key: key, instruction: "选一选", prompt: q.prompt, hint: nil,
+            correct: q.answer, distractors: distractors, style: .text,
+            promptSpeech: promptSpeech, answerSpeech: q.answer,
+            explanation: q.explain.map { "\(q.answer)。\($0)" } ?? q.answer,
+            card: WordCard(text: q.answer, detail: q.explain), &rng) else { return nil }
+        built.signText = "？"
+        return built
     }
 
     func pictureToWord<R: RandomNumberGenerator>(_ p: PictureItem, _ key: String, _ rng: inout R) -> Question? {

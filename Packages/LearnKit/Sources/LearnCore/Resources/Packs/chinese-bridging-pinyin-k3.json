@@ -1,0 +1,1223 @@
+{
+  "schemaVersion": 1,
+  "id": "chinese-bridging-pinyin-k3",
+  "title": "幼小衔接 · 汉语拼音",
+  "subject": "chinese",
+  "grade": "k3",
+  "edition": "幼小衔接",
+  "units": [
+    {
+      "id": "u1",
+      "title": "第一单元 · 单韵母与四声调",
+      "theme": "meadow",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "张大嘴巴 a o e",
+          "characters": [
+            {
+              "char": "阿",
+              "pinyin": "ā",
+              "words": [
+                "阿姨",
+                "阿爸"
+              ],
+              "image_association": "双耳旁配个可，亲切呼唤长辈的声音。"
+            },
+            {
+              "char": "鹅",
+              "pinyin": "é",
+              "words": [
+                "白鹅",
+                "天鹅"
+              ],
+              "image_association": "曲项向天歌，身穿雪白羽毛浮在绿波上。"
+            }
+          ],
+          "questions": [
+            {
+              "id": "py1",
+              "prompt": "「张大嘴巴」读的是哪个单韵母？",
+              "options": [
+                "a",
+                "o",
+                "e",
+                "u"
+              ],
+              "answer": "a",
+              "explain": "张大嘴巴 a a a。",
+              "speech": "张大嘴巴，读的是哪个单韵母？"
+            },
+            {
+              "id": "py2",
+              "prompt": "「圆圆嘴巴」公鸡打鸣读哪个单韵母？",
+              "options": [
+                "o",
+                "a",
+                "i",
+                "ü"
+              ],
+              "answer": "o",
+              "explain": "圆圆嘴巴 o o o。",
+              "speech": "圆圆嘴巴，公鸡打鸣读哪个单韵母？"
+            },
+            {
+              "id": "py3",
+              "prompt": "「扁扁嘴巴」水中倒影读哪个单韵母？",
+              "options": [
+                "e",
+                "o",
+                "u",
+                "a"
+              ],
+              "answer": "e",
+              "explain": "扁扁嘴巴 e e e。",
+              "speech": "扁扁嘴巴，水中倒影读哪个单韵母？"
+            }
+          ]
+        },
+        {
+          "id": "l2",
+          "title": "牙齿对齐 i u ü",
+          "characters": [
+            {
+              "char": "衣",
+              "pinyin": "yī",
+              "words": [
+                "毛衣",
+                "外衣"
+              ],
+              "image_association": "上面一点像领口，两只袖子穿身上暖洋洋。"
+            },
+            {
+              "char": "乌",
+              "pinyin": "wū",
+              "words": [
+                "乌云",
+                "乌鸦"
+              ],
+              "image_association": "全身黑亮亮的小飞鸟，比鸟字少了一点眼珠。"
+            },
+            {
+              "char": "鱼",
+              "pinyin": "yú",
+              "words": [
+                "金鱼",
+                "游鱼"
+              ],
+              "image_association": "身穿闪亮小鳞片，摇着尾巴水里游。"
+            }
+          ],
+          "questions": [
+            {
+              "id": "py4",
+              "prompt": "下面哪个韵母头上有两个小圆点？",
+              "options": [
+                "ü",
+                "u",
+                "i",
+                "o"
+              ],
+              "answer": "ü",
+              "explain": "小鱼吐泡 ü ü ü，头上有两点。",
+              "speech": "下面哪个韵母头上有两个小圆点？"
+            },
+            {
+              "id": "py5",
+              "prompt": "汉语拼音里一共有几个单韵母？",
+              "options": [
+                "6",
+                "4",
+                "8",
+                "5"
+              ],
+              "answer": "6",
+              "explain": "单韵母有 a、o、e、i、u、ü 共 6 个。"
+            },
+            {
+              "id": "py6",
+              "prompt": "小 i 戴上声调帽子时，头上的小点要怎样？",
+              "options": [
+                "去掉小点",
+                "保留小点",
+                "变成两点",
+                "放到下面"
+              ],
+              "answer": "去掉小点",
+              "explain": "小 i 有礼貌，标调先把帽子摘。"
+            }
+          ]
+        },
+        {
+          "id": "l3",
+          "title": "四个声调滑滑梯",
+          "questions": [
+            {
+              "id": "py7",
+              "prompt": "「一声平，二声扬，三声拐弯，四声降」，「ǎ」是第几声？",
+              "options": [
+                "第三声",
+                "第一声",
+                "第二声",
+                "第四声"
+              ],
+              "answer": "第三声",
+              "explain": "ǎ 先下后上拐个弯，是第三声。",
+              "speech": "一声平，二声扬，三声拐弯，四声降，三声拐弯的是第几声？"
+            },
+            {
+              "id": "py8",
+              "prompt": "音节「mā」（妈）的声调是第几声？",
+              "options": [
+                "第一声",
+                "第二声",
+                "第三声",
+                "第四声"
+              ],
+              "answer": "第一声",
+              "explain": "一声平平 mā，是第一声。",
+              "speech": "音节妈的声调是第几声？"
+            },
+            {
+              "id": "py9",
+              "prompt": "标调儿歌「有 a 先找 a」，没 a 找谁呢？",
+              "options": [
+                "o 或 e",
+                "i 或 u",
+                "b 或 p",
+                "y 或 w"
+              ],
+              "answer": "o 或 e",
+              "explain": "有 a 不放过，没 a 找 o e，i u 并列标在后。",
+              "speech": "标调儿歌有阿先找阿，没阿找谁呢？"
+            },
+            {
+              "id": "py10",
+              "prompt": "下面哪个是「去声」（第四声）的韵母？",
+              "options": [
+                "à",
+                "ā",
+                "á",
+                "ǎ"
+              ],
+              "answer": "à",
+              "explain": "四声往下降，à 是第四声。",
+              "speech": "下面哪个是从高往下降的第四声韵母？"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u2",
+      "title": "第二单元 · 声母大家族（上）",
+      "theme": "orchard",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "双唇与唇齿 b p m f",
+          "characters": [
+            {
+              "char": "爸",
+              "pinyin": "bà",
+              "words": [
+                "老爸",
+                "阿爸"
+              ],
+              "image_association": "父字头配个巴，家里有力气的男子汉。"
+            },
+            {
+              "char": "婆",
+              "pinyin": "pó",
+              "words": [
+                "外婆",
+                "阿婆"
+              ],
+              "image_association": "波浪下面女字底，慈祥白发老奶奶。"
+            },
+            {
+              "char": "米",
+              "pinyin": "mǐ",
+              "words": [
+                "大米",
+                "小米"
+              ],
+              "image_association": "稻穗结满白白胖胖的香饭粒。"
+            },
+            {
+              "char": "发",
+              "pinyin": "fā",
+              "words": [
+                "出发",
+                "发现"
+              ],
+              "image_association": "弓箭拉开嗖地射出去，迈步向前走。"
+            }
+          ],
+          "questions": [
+            {
+              "id": "py11",
+              "prompt": "「右下半圆」听广播，是哪个声母？",
+              "options": [
+                "b",
+                "p",
+                "d",
+                "q"
+              ],
+              "answer": "b",
+              "explain": "右下半圆 b b b，右上半圆 p p p。",
+              "speech": "右下半圆听广播，是哪个声母？"
+            },
+            {
+              "id": "py12",
+              "prompt": "「右上半圆」泼水玩，是哪个声母？",
+              "options": [
+                "p",
+                "b",
+                "q",
+                "d"
+              ],
+              "answer": "p",
+              "explain": "右上半圆 p p p。",
+              "speech": "右上半圆泼水玩，是哪个声母？"
+            },
+            {
+              "id": "py13",
+              "prompt": "「两个门洞」用手摸，是哪个声母？",
+              "options": [
+                "m",
+                "n",
+                "f",
+                "t"
+              ],
+              "answer": "m",
+              "explain": "两个门洞 m m m，一个门洞 n n n。",
+              "speech": "两个门洞用手摸，是哪个声母？"
+            }
+          ]
+        },
+        {
+          "id": "l2",
+          "title": "舌尖敲小鼓 d t n l",
+          "characters": [
+            {
+              "char": "大",
+              "pinyin": "dà",
+              "words": [
+                "大家",
+                "高大"
+              ],
+              "image_association": "张开双臂双腿稳稳站立的人。"
+            },
+            {
+              "char": "兔",
+              "pinyin": "tù",
+              "words": [
+                "白兔",
+                "小兔"
+              ],
+              "image_association": "长耳朵红眼睛，身后挂着一点短尾巴。"
+            },
+            {
+              "char": "泥",
+              "pinyin": "ní",
+              "words": [
+                "泥土",
+                "春泥"
+              ],
+              "image_association": "三点水混着土，捏成好玩的小陶人。"
+            },
+            {
+              "char": "梨",
+              "pinyin": "lí",
+              "words": [
+                "香梨",
+                "鸭梨"
+              ],
+              "image_association": "木字底结出黄澄澄水分足的甜果子。"
+            }
+          ],
+          "questions": [
+            {
+              "id": "py14",
+              "prompt": "「左下半圆」马蹄响，跟 b 面对面的是哪个声母？",
+              "options": [
+                "d",
+                "b",
+                "p",
+                "q"
+              ],
+              "answer": "d",
+              "explain": "右下半圆 b，左下半圆 d。",
+              "speech": "左下半圆马蹄响，是哪个声母？"
+            },
+            {
+              "id": "py15",
+              "prompt": "「伞柄朝下」弯弯钩，是哪个声母？",
+              "options": [
+                "t",
+                "f",
+                "l",
+                "n"
+              ],
+              "answer": "t",
+              "explain": "伞柄朝上 f f f，伞柄朝下 t t t。",
+              "speech": "伞柄朝下弯弯钩，是哪个声母？"
+            },
+            {
+              "id": "py16",
+              "prompt": "「一个门洞」和「一根小棍」分别是哪两个声母？",
+              "options": [
+                "n 和 l",
+                "m 和 l",
+                "n 和 t",
+                "b 和 d"
+              ],
+              "answer": "n 和 l",
+              "explain": "一个门洞 n n n，一根小棍 l l l。",
+              "speech": "一个门洞和一根小棍，分别是哪两个声母？"
+            }
+          ]
+        },
+        {
+          "id": "l3",
+          "title": "舌根小鸽子 g k h",
+          "characters": [
+            {
+              "char": "哥",
+              "pinyin": "gē",
+              "words": [
+                "大哥",
+                "表哥"
+              ],
+              "image_association": "两个可字上下叠，照顾弟妹的好兄长。"
+            },
+            {
+              "char": "哭",
+              "pinyin": "kū",
+              "words": [
+                "哭泣",
+                "大哭"
+              ],
+              "image_association": "上面两只眼眶掉下一滴泪珠，伤心流眼泪。"
+            },
+            {
+              "char": "喝",
+              "pinyin": "hē",
+              "words": [
+                "喝水",
+                "喝茶"
+              ],
+              "image_association": "口字旁张开嘴，端起水杯咕咚咽下去。"
+            },
+            {
+              "char": "瓜",
+              "pinyin": "guā",
+              "words": [
+                "西瓜",
+                "南瓜"
+              ],
+              "image_association": "绿藤弯弯挂着圆滚滚的甜果子。"
+            }
+          ],
+          "questions": [
+            {
+              "id": "py17",
+              "prompt": "音节「guā」（瓜）中间的「u」叫什么？",
+              "options": [
+                "介母",
+                "声母",
+                "声调",
+                "前鼻音"
+              ],
+              "answer": "介母",
+              "explain": "g-u-ā 是三拼音节，中间的 u 是介母。",
+              "speech": "音节瓜中间的乌叫什么？"
+            },
+            {
+              "id": "py18",
+              "prompt": "「一把椅子」坐下来喝水，是哪个声母？",
+              "options": [
+                "h",
+                "k",
+                "n",
+                "b"
+              ],
+              "answer": "h",
+              "explain": "一把椅子 h h h。",
+              "speech": "一把椅子坐下来喝水，是哪个声母？"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u3",
+      "title": "第三单元 · 声母大家族（下）",
+      "theme": "academy",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "小鸡吹气球 j q x",
+          "characters": [
+            {
+              "char": "鸡",
+              "pinyin": "jī",
+              "words": [
+                "公鸡",
+                "母鸡"
+              ],
+              "image_association": "头顶红冠喔喔叫，催促大家早早起。"
+            },
+            {
+              "char": "七",
+              "pinyin": "qī",
+              "words": [
+                "七星",
+                "七月"
+              ],
+              "image_association": "一横加个竖弯钩，彩虹颜色正好这么多。"
+            },
+            {
+              "char": "西",
+              "pinyin": "xī",
+              "words": [
+                "西瓜",
+                "西方"
+              ],
+              "image_association": "傍晚太阳慢慢落下去的那一边。"
+            },
+            {
+              "char": "菊",
+              "pinyin": "jú",
+              "words": [
+                "菊花",
+                "秋菊"
+              ],
+              "image_association": "草字头下包着米，深秋季节迎寒盛开。"
+            }
+          ],
+          "questions": [
+            {
+              "id": "py19",
+              "prompt": "「左上半圆」像数字 9，是哪个声母？",
+              "options": [
+                "q",
+                "p",
+                "d",
+                "g"
+              ],
+              "answer": "q",
+              "explain": "像个 9 字 q q q，右上半圆 p p p。",
+              "speech": "左上半圆像数字 9，是哪个声母？"
+            },
+            {
+              "id": "py20",
+              "prompt": "小 ü 见到 j、q、x，拼成音节怎么写？",
+              "options": [
+                "ju qu xu",
+                "jü qü xü",
+                "jv qv xv",
+                "ji qi xi"
+              ],
+              "answer": "ju qu xu",
+              "explain": "小 ü 见了 j q x，摘下墨镜笑嘻嘻，去掉两点还读 ü。",
+              "speech": "小迂见到鸡七西，去掉两点怎么写？"
+            },
+            {
+              "id": "py21",
+              "prompt": "音节「qù」（去）里面的韵母实际是哪个？",
+              "options": [
+                "ü",
+                "u",
+                "i",
+                "o"
+              ],
+              "answer": "ü",
+              "explain": "q 和 ü 相拼省略了两点，韵母仍是 ü。",
+              "speech": "音节去里面的韵母实际是哪个？"
+            }
+          ]
+        },
+        {
+          "id": "l2",
+          "title": "平舌与翘舌 z c s · zh ch sh r",
+          "characters": [
+            {
+              "char": "字",
+              "pinyin": "zì",
+              "words": [
+                "写字",
+                "汉字"
+              ],
+              "image_association": "宝盖头下有个子，一笔一画写在方格里。"
+            },
+            {
+              "char": "竹",
+              "pinyin": "zhú",
+              "words": [
+                "竹叶",
+                "毛竹"
+              ],
+              "image_association": "一节一节笔直长，熊猫最爱吃它的叶子。"
+            },
+            {
+              "char": "车",
+              "pinyin": "chē",
+              "words": [
+                "汽车",
+                "电车"
+              ],
+              "image_association": "底下转着圆轮子，嘟嘟开在马路上。"
+            },
+            {
+              "char": "书",
+              "pinyin": "shū",
+              "words": [
+                "读书",
+                "画书"
+              ],
+              "image_association": "翻开纸页有故事，陪我们快乐涨知识。"
+            },
+            {
+              "char": "日",
+              "pinyin": "rì",
+              "words": [
+                "日出",
+                "红日"
+              ],
+              "image_association": "圆圆火球挂高空，白天带来温暖光芒。"
+            }
+          ],
+          "questions": [
+            {
+              "id": "py22",
+              "prompt": "下面哪一组全部都是「翘舌音」声母？",
+              "options": [
+                "zh ch sh r",
+                "z c s",
+                "j q x",
+                "b p m f"
+              ],
+              "answer": "zh ch sh r",
+              "explain": "zh、ch、sh、r 舌尖翘起，是翘舌音。",
+              "speech": "下面哪一组全部都是翘舌音声母？"
+            },
+            {
+              "id": "py23",
+              "prompt": "下面哪一组全部都是「平舌音」声母？",
+              "options": [
+                "z c s",
+                "zh ch sh",
+                "d t n",
+                "g k h"
+              ],
+              "answer": "z c s",
+              "explain": "z、c、s 舌尖平伸，是平舌音。",
+              "speech": "下面哪一组全部都是平舌音声母？"
+            }
+          ]
+        },
+        {
+          "id": "l3",
+          "title": "大 y 大 w 与声母复习",
+          "characters": [
+            {
+              "char": "鸭",
+              "pinyin": "yā",
+              "words": [
+                "小鸭",
+                "水鸭"
+              ],
+              "image_association": "扁扁嘴巴有脚蹼，摇摇摆摆水里游。"
+            },
+            {
+              "char": "蛙",
+              "pinyin": "wā",
+              "words": [
+                "青蛙",
+                "牛蛙"
+              ],
+              "image_association": "虫字旁绿衣裳，荷叶上面呱呱捉害虫。"
+            }
+          ],
+          "questions": [
+            {
+              "id": "py24",
+              "prompt": "汉语拼音里一共有多少个声母？",
+              "options": [
+                "23",
+                "24",
+                "16",
+                "6"
+              ],
+              "answer": "23",
+              "explain": "汉语拼音共有 23 个声母（含 y、w）。"
+            },
+            {
+              "id": "py25",
+              "prompt": "树杈形状的大「y」跟哪个单韵母读音一样？",
+              "options": [
+                "i",
+                "u",
+                "ü",
+                "e"
+              ],
+              "answer": "i",
+              "explain": "大 y 和小 i 都读衣，大 y 是声母。",
+              "speech": "树杈形状的大衣跟哪个单韵母读音一样？"
+            },
+            {
+              "id": "py26",
+              "prompt": "屋顶形状的大「w」跟哪个单韵母读音一样？",
+              "options": [
+                "u",
+                "ü",
+                "o",
+                "i"
+              ],
+              "answer": "u",
+              "explain": "大 w 和小 u 都读乌，大 w 是声母。",
+              "speech": "屋顶形状的大乌跟哪个单韵母读音一样？"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u4",
+      "title": "第四单元 · 复韵母手拉手",
+      "theme": "meadow",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "挨着坐 ai ei ui",
+          "characters": [
+            {
+              "char": "白",
+              "pinyin": "bái",
+              "words": [
+                "白云",
+                "雪白"
+              ],
+              "image_association": "日字头顶长小撇，像天鹅羽毛一样干净。"
+            },
+            {
+              "char": "飞",
+              "pinyin": "fēi",
+              "words": [
+                "起飞",
+                "飞机"
+              ],
+              "image_association": "张开一对轻翅膀，冲上蓝蓝高空中。"
+            },
+            {
+              "char": "水",
+              "pinyin": "shuǐ",
+              "words": [
+                "河水",
+                "喝水"
+              ],
+              "image_association": "弯弯清溪中间流，两边溅起小浪花。"
+            }
+          ],
+          "questions": [
+            {
+              "id": "py27",
+              "prompt": "复韵母「ui」标第三声时，声调帽子戴在谁头上？",
+              "options": [
+                "uí → uǐ（标在 i 上）",
+                "标在 u 上",
+                "两个都标",
+                "不标声调"
+              ],
+              "answer": "uí → uǐ（标在 i 上）",
+              "explain": "i u 并列标在后，ui 标在后面的 i 上（去点标调 uǐ）。",
+              "speech": "复韵母威标第三声时，声调帽子戴在谁头上？"
+            },
+            {
+              "id": "py28",
+              "prompt": "「白兔」的「白（bái）」韵母是哪个？",
+              "options": [
+                "ai",
+                "ei",
+                "ui",
+                "ao"
+              ],
+              "answer": "ai",
+              "explain": "b-ái → bái，韵母是 ai。",
+              "speech": "白兔的白，韵母是哪个？"
+            }
+          ]
+        },
+        {
+          "id": "l2",
+          "title": "棉袄海鸥 ao ou iu",
+          "characters": [
+            {
+              "char": "猫",
+              "pinyin": "māo",
+              "words": [
+                "小猫",
+                "花猫"
+              ],
+              "image_association": "嘴边长着细胡须，轻手轻脚捉老鼠。"
+            },
+            {
+              "char": "狗",
+              "pinyin": "gǒu",
+              "words": [
+                "小狗",
+                "黄狗"
+              ],
+              "image_association": "忠实伙伴摇尾巴，看家护院汪汪叫。"
+            },
+            {
+              "char": "牛",
+              "pinyin": "niú",
+              "words": [
+                "水牛",
+                "牛奶"
+              ],
+              "image_association": "头长两只弯弯角，田里耕地吃青草。"
+            }
+          ],
+          "questions": [
+            {
+              "id": "py29",
+              "prompt": "复韵母「iu」和「ui」标调有什么共同规律？",
+              "options": [
+                "谁在后面标在谁头上",
+                "都标在 i 上",
+                "都标在 u 上",
+                "标在声母上"
+              ],
+              "answer": "谁在后面标在谁头上",
+              "explain": "i u 并列标在后：iu 标 u，ui 标 i。",
+              "speech": "复韵母优和威标调有什么共同规律？"
+            },
+            {
+              "id": "py30",
+              "prompt": "「小猫」的「猫（māo）」韵母是哪个？",
+              "options": [
+                "ao",
+                "ou",
+                "iu",
+                "ai"
+              ],
+              "answer": "ao",
+              "explain": "m-āo → māo，韵母是 ao。",
+              "speech": "小猫的猫，韵母是哪个？"
+            }
+          ]
+        },
+        {
+          "id": "l3",
+          "title": "椰树月亮 ie üe er",
+          "characters": [
+            {
+              "char": "叶",
+              "pinyin": "yè",
+              "words": [
+                "树叶",
+                "红叶"
+              ],
+              "image_association": "口字旁配个十，树枝上长满绿色小扇子。"
+            },
+            {
+              "char": "月",
+              "pinyin": "yuè",
+              "words": [
+                "月光",
+                "弯月"
+              ],
+              "image_association": "像弯弯金色小船挂在夜空里。"
+            },
+            {
+              "char": "耳",
+              "pinyin": "ěr",
+              "words": [
+                "木耳",
+                "左耳"
+              ],
+              "image_association": "脑袋两边各一只，专心听声本领大。"
+            }
+          ],
+          "questions": [
+            {
+              "id": "py31",
+              "prompt": "哪个特殊韵母从不和任何声母相拼，自己就能给汉字注音？",
+              "options": [
+                "er",
+                "ie",
+                "üe",
+                "ou"
+              ],
+              "answer": "er",
+              "explain": "er 是特殊韵母，独立成音节（如 ěr 耳、èr 二）。",
+              "speech": "哪个特殊韵母从不和任何声母相拼，自己就能注音？"
+            },
+            {
+              "id": "py32",
+              "prompt": "声母 x 和复韵母 üe 相拼（雪），正确写法是？",
+              "options": [
+                "xuě",
+                "xüě",
+                "xiě",
+                "xué"
+              ],
+              "answer": "xuě",
+              "explain": "j q x 与 üe 相拼要去掉 ü 上两点，写成 xuě。",
+              "speech": "声母西和复韵母约相拼读雪，正确写法是哪个？"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u5",
+      "title": "第五单元 · 前鼻韵母与后鼻韵母",
+      "theme": "starry",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "前鼻韵母 an en in un ün",
+          "characters": [
+            {
+              "char": "山",
+              "pinyin": "shān",
+              "words": [
+                "高山",
+                "青山"
+              ],
+              "image_association": "三座青峰并排立，高高耸入白云间。"
+            },
+            {
+              "char": "门",
+              "pinyin": "mén",
+              "words": [
+                "大门",
+                "开门"
+              ],
+              "image_association": "两扇木板立墙边，进屋要先推开它。"
+            },
+            {
+              "char": "心",
+              "pinyin": "xīn",
+              "words": [
+                "开心",
+                "爱心"
+              ],
+              "image_association": "弯弯小碗托三点，胸口跳动暖融融。"
+            },
+            {
+              "char": "春",
+              "pinyin": "chūn",
+              "words": [
+                "春天",
+                "春风"
+              ],
+              "image_association": "三人一起晒太阳，小草发芽百花香。"
+            }
+          ],
+          "questions": [
+            {
+              "id": "py33",
+              "prompt": "前鼻韵母的末尾都是哪个字母？",
+              "options": [
+                "n",
+                "ng",
+                "m",
+                "g"
+              ],
+              "answer": "n",
+              "explain": "an、en、in、un、ün 都以单鼻音 n 结尾。",
+              "speech": "前鼻韵母的末尾都是哪个字母？"
+            },
+            {
+              "id": "py34",
+              "prompt": "声母 q 和前鼻韵母 ün 相拼（群），正确写法是？",
+              "options": [
+                "qún",
+                "qǘn",
+                "qín",
+                "chún"
+              ],
+              "answer": "qún",
+              "explain": "j q x 遇 ün 去掉两点，写成 qún。",
+              "speech": "声母七和前鼻韵母晕相拼读群，正确写法是哪个？"
+            }
+          ]
+        },
+        {
+          "id": "l2",
+          "title": "后鼻韵母 ang eng ing ong",
+          "characters": [
+            {
+              "char": "羊",
+              "pinyin": "yáng",
+              "words": [
+                "山羊",
+                "绵羊"
+              ],
+              "image_association": "头顶两只弯弯角，身穿白袄吃青草。"
+            },
+            {
+              "char": "风",
+              "pinyin": "fēng",
+              "words": [
+                "春风",
+                "微风"
+              ],
+              "image_association": "看不见也摸不着，吹得柳枝轻轻摇。"
+            },
+            {
+              "char": "星",
+              "pinyin": "xīng",
+              "words": [
+                "星光",
+                "亮星"
+              ],
+              "image_association": "夜空一闪又一闪，像无数亮晶晶的小眼睛。"
+            },
+            {
+              "char": "虫",
+              "pinyin": "chóng",
+              "words": [
+                "小虫",
+                "昆虫"
+              ],
+              "image_association": "春天泥里醒过来，草叶上面慢慢爬。"
+            }
+          ],
+          "questions": [
+            {
+              "id": "py35",
+              "prompt": "后鼻韵母 ang、eng、ing、ong 的结尾都是哪两个字母？",
+              "options": [
+                "ng",
+                "an",
+                "en",
+                "in"
+              ],
+              "answer": "ng",
+              "explain": "后鼻韵母都以 ng 结尾，发音时鼻子共鸣更响。",
+              "speech": "后鼻韵母的结尾都是哪两个字母？"
+            },
+            {
+              "id": "py36",
+              "prompt": "下面哪个韵母属于后鼻韵母（没有对应的 u 开头前鼻音）？",
+              "options": [
+                "ong",
+                "an",
+                "en",
+                "in"
+              ],
+              "answer": "ong",
+              "explain": "ong 是后鼻韵母（如虫 chóng、红 hóng）。",
+              "speech": "下面哪个韵母属于后鼻韵母？"
+            }
+          ]
+        },
+        {
+          "id": "l3",
+          "title": "前后鼻音分清楚",
+          "questions": [
+            {
+              "id": "py37",
+              "prompt": "「蓝天」的「蓝（lán）」韵母是前鼻音还是后鼻音？",
+              "options": [
+                "an（前鼻音）",
+                "ang（后鼻音）",
+                "en（前鼻音）",
+                "eng（后鼻音）"
+              ],
+              "answer": "an（前鼻音）",
+              "explain": "蓝 lán 是前鼻音 an。",
+              "speech": "蓝天的蓝，韵母是前鼻音还是后鼻音？"
+            },
+            {
+              "id": "py38",
+              "prompt": "「帮忙」的「帮（bāng）」韵母是哪个？",
+              "options": [
+                "ang",
+                "an",
+                "eng",
+                "ong"
+              ],
+              "answer": "ang",
+              "explain": "帮 bāng 是后鼻音 ang。",
+              "speech": "帮忙的帮，韵母是哪个？"
+            },
+            {
+              "id": "py39",
+              "prompt": "「森林」的「森（sēn）」和「台灯」的「灯（dēng）」，韵母分别是？",
+              "options": [
+                "en 和 eng",
+                "eng 和 en",
+                "in 和 ing",
+                "an 和 ang"
+              ],
+              "answer": "en 和 eng",
+              "explain": "森 sēn 是前鼻音 en，灯 dēng 是后鼻音 eng。",
+              "speech": "森林的森和台灯的灯，韵母分别是哪两个？"
+            },
+            {
+              "id": "py40",
+              "prompt": "「脚印（yìn）」和「老鹰（yīng）」，哪个是后鼻音？",
+              "options": [
+                "老鹰 yīng",
+                "脚印 yìn",
+                "两个都是前鼻音",
+                "两个都是后鼻音"
+              ],
+              "answer": "老鹰 yīng",
+              "explain": "老鹰 yīng 带 ng，是后鼻音。",
+              "speech": "脚印和老鹰，哪个是后鼻音？"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u6",
+      "title": "第六单元 · 整体认读音节",
+      "theme": "academy",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "平翘舌整体认读",
+          "questions": [
+            {
+              "id": "py41",
+              "prompt": "「整体认读音节」读的时候要注意什么？",
+              "options": [
+                "不用拼，直接整个读出来",
+                "拆成声母和韵母拼读",
+                "不标声调",
+                "只能读第一声"
+              ],
+              "answer": "不用拼，直接整个读出来",
+              "explain": "整体认读音节是一个整体，不用拼读，直接认读。"
+            },
+            {
+              "id": "py42",
+              "prompt": "下面哪个是「翘舌」整体认读音节？",
+              "options": [
+                "zhi",
+                "zi",
+                "zhua",
+                "zhu"
+              ],
+              "answer": "zhi",
+              "explain": "zhi、chi、shi、ri 是翘舌整体认读音节。",
+              "speech": "下面哪个是翘舌整体认读音节？"
+            },
+            {
+              "id": "py43",
+              "prompt": "下面哪一组全是「平舌」整体认读音节？",
+              "options": [
+                "zi ci si",
+                "za ca sa",
+                "zu cu su",
+                "ze ce se"
+              ],
+              "answer": "zi ci si",
+              "explain": "zi、ci、si 是平舌整体认读音节。",
+              "speech": "下面哪一组全是平舌整体认读音节？"
+            }
+          ]
+        },
+        {
+          "id": "l2",
+          "title": "yi wu yu ye yue yuan",
+          "questions": [
+            {
+              "id": "py44",
+              "prompt": "单韵母 ü 变成整体认读音节时，要请谁来帮忙并去掉两点？",
+              "options": [
+                "大 y（写成 yu）",
+                "大 w（写成 wu）",
+                "声母 n（写成 nü）",
+                "声母 l（写成 lü）"
+              ],
+              "answer": "大 y（写成 yu）",
+              "explain": "小 ü 见大 y，擦掉眼泪笑嘻嘻，变成整体认读音节 yu。",
+              "speech": "单韵母迂变成整体认读音节时，怎么写？"
+            },
+            {
+              "id": "py45",
+              "prompt": "「月亮」的「月（yuè）」和「圆圈」的「圆（yuán）」是什么音节？",
+              "options": [
+                "整体认读音节",
+                "三拼音节",
+                "两拼音节",
+                "轻声音节"
+              ],
+              "answer": "整体认读音节",
+              "explain": "yue 和 yuan 都是整体认读音节，不用拼直接读。",
+              "speech": "月亮的月和圆圈的圆，是什么音节？"
+            },
+            {
+              "id": "py46",
+              "prompt": "下面哪个音节属于整体认读音节？",
+              "options": [
+                "ye",
+                "ya",
+                "wa",
+                "wo"
+              ],
+              "answer": "ye",
+              "explain": "ye（椰、叶）是整体认读音节；ya、wa、wo 是两拼音节。",
+              "speech": "下面哪个音节属于整体认读音节？"
+            }
+          ]
+        },
+        {
+          "id": "l3",
+          "title": "yin yun ying 与总闯关",
+          "questions": [
+            {
+              "id": "py47",
+              "prompt": "汉语拼音里一共有多少个整体认读音节？",
+              "options": [
+                "16",
+                "23",
+                "24",
+                "6"
+              ],
+              "answer": "16",
+              "explain": "共有 zhi chi shi ri、zi ci si、yi wu yu、ye yue yuan、yin yun ying 共 16 个。"
+            },
+            {
+              "id": "py48",
+              "prompt": "「白云」的「云（yún）」和「老鹰」的「鹰（yīng）」都是什么音节？",
+              "options": [
+                "整体认读音节",
+                "三拼音节",
+                "翘舌音节",
+                "平舌音节"
+              ],
+              "answer": "整体认读音节",
+              "explain": "yin、yun、ying 都是整体认读音节。",
+              "speech": "白云的云和老鹰的鹰，都是什么音节？"
+            },
+            {
+              "id": "py49",
+              "prompt": "下面四个音节中，哪一个「不是」整体认读音节？",
+              "options": [
+                "yan（烟）",
+                "yuan（圆）",
+                "yun（云）",
+                "ying（鹰）"
+              ],
+              "answer": "yan（烟）",
+              "explain": "yan 是 y-an 两拼音节，yuan、yun、ying 才是整体认读音节。",
+              "speech": "下面四个音节中，哪一个不是整体认读音节？"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
