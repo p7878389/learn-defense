@@ -25,6 +25,22 @@ struct BridgingPackTests {
         #expect(k3MathPool.items.count >= 100)
     }
 
+    @Test(arguments: Difficulty.allCases)
+    func appleCountingPromptDoesNotSpeakTheAnswer(difficulty: Difficulty) throws {
+        let pack = try #require(Self.library.pack(id: "math-numbers-k2"))
+        let pool = ItemPool(packs: [pack], selection: .all)
+        let item = try #require(pool.items.first { $0.key == "choice:math-numbers-k2/u1/l1:m2_1" })
+        let generator = QuestionGenerator(pool: pool, settings: GameTuning.make(grade: .k2, difficulty: difficulty).generator)
+        var rng = SeededRNG(state: 31)
+        let question = try #require(generator.makeQuestion(for: item, stats: nil, using: &rng))
+        let speech = try #require(question.promptSpeech)
+
+        #expect(question.prompt.filter { $0 == "🍎" }.count == 3)
+        #expect(question.answer == "3")
+        #expect(speech.contains("苹果"))
+        #expect(!speech.contains("三") && !speech.contains("3"), "数数题朗读不应提前透露苹果数量：\(speech)")
+    }
+
     @Test func mathAndPinyinQuestionsHaveCleanSpokenPromptsAndValidAnswers() throws {
         for id in ["chinese-bridging-pinyin-k3", "math-bridging-numbers-k3", "math-numbers-k2"] {
             let pack = try #require(Self.library.pack(id: id))
