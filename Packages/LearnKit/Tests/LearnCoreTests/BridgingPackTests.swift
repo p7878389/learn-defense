@@ -43,6 +43,9 @@ struct BridgingPackTests {
                         #expect(listed.contains(speech), "语音未列入清单：\(speech)")
                         if q.input == nil {
                             #expect(q.options.count >= 3 && Set(q.options).count == q.options.count)
+                            for opt in q.options {
+                                #expect(opt.contains { $0.isLetter || $0.isNumber || "<>=".contains($0) }, "选项不应为纯裸 Emoji：\(opt)")
+                            }
                         }
                     }
                 }

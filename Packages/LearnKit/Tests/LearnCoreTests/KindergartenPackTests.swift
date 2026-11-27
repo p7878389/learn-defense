@@ -12,6 +12,12 @@ struct KindergartenPackTests {
         #expect(library.issues.isEmpty, "\(library.issues)")
         #expect(library.pack(id: "chinese-k2-sample") == nil)
 
+        let picturesDir = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("Sources/LearnGame/Resources/Pictures")
+
         for grade in [Grade.k2, .k3] {
             let id = "chinese-pictures-\(grade.rawValue)"
             let pack = try #require(library.pack(id: id), "缺少 \(id)")
@@ -20,6 +26,11 @@ struct KindergartenPackTests {
             #expect(Set(pack.units.compactMap(\.theme)) == ["meadow", "orchard", "starry", "academy"])
             let pool = ItemPool(packs: [pack], selection: .all)
             #expect(pool.pictures.count >= 36)
+            for p in pool.pictures {
+                let code = p.emoji.unicodeScalars.filter { $0.value != 0xFE0F }.map { String($0.value, radix: 16) }.joined(separator: "-")
+                let png = picturesDir.appendingPathComponent("\(code).png")
+                #expect(FileManager.default.fileExists(atPath: png.path), "\(id) 图片词「\(p.text) \(p.emoji)」缺少本地 PNG：\(code).png")
+            }
             let gen = QuestionGenerator(pool: pool, settings: GameTuning.make(grade: grade, difficulty: .hard).generator)
             var rng = SeededRNG(state: 23)
             for item in pool.items {

@@ -88,12 +88,16 @@ struct GameRecordTests {
     @Test func deletePersonalDataRemovesGames() throws {
         let db = try LearnDatabase(url: nil)
         let kid = UUID()
+        ProfileStore(database: db).upsert(Profile(id: kid, name: "小宝", grade: .k2, avatar: "🐼"))
         let r = GameRecorder(database: db, profileID: kid, grade: .k2, difficulty: .easy,
                              packIDs: [], selection: .review(["pic:苹果"]), startedAt: start)
         r.recordAnswer(question(.listenPickPicture, key: "pic:苹果", prompt: "苹果", options: ["🍎", "🍌"], answer: 0),
                        chosenIndex: 0, shownAt: nil)
         try r.finish(.won, summary: summary(questions: 1, correct: 1))
         #expect(try db.games(profileID: kid).first?.selection == "review")
+        #expect(try db.kindAccuracy(profileID: kid).map(\.kind) == [.listenPickPicture])
+        let backup = try SettingsBackup.decode(db.backupData(importedPacks: []))
+        #expect(backup.games.first?.answers.first?.kind == .listenPickPicture)
 
         try db.deletePersonalData(profileID: kid)
         #expect(try db.games(profileID: kid).isEmpty)
