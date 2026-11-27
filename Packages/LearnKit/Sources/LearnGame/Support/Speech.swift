@@ -2,14 +2,16 @@ import AVFoundation
 import LearnCore
 
 /// 朗读。有预先生成的高质量语音（见 SpeechLibrary）就播放音频文件，
-/// 没有就用系统语音读，并在后台生成，下次读到同一句时换成高质量语音。
+/// 选择豆包时先等待对应音频下载或生成，确实不可用时才回退系统语音。
 @MainActor
 final class Speech: NSObject {
     let library: SpeechLibrary?
     enum Channel { case question, guidance, preview }
     private var preferences = ReaderPreferences()
     var effectsVolume: Float { Float(preferences.effectsVolume) }
-    private let synthesizer = AVSpeechSynthesizer()
+    private let synthesizer: AVSpeechSynthesizer
+    private let makePlayer: (URL) throws -> AVAudioPlayer
+    private let audioPreparationTimeout: Duration
     private let voice = Speech.bestSystemVoice(language: "zh-CN")
     /// 英语题库的音标是英式的，用英式发音
     private let englishVoice = Speech.bestSystemVoice(language: "en-GB")
@@ -18,10 +20,15 @@ final class Speech: NSObject {
     private var utterance: AVSpeechUtterance?
     /// 排队等着读的文本
     private var queue: [String] = []
-    private var purchasePreparation: Task<Void, Never>?
+    private var preparation: Task<Void, Never>?
 
-    init(library: SpeechLibrary? = nil) {
+    init(library: SpeechLibrary? = nil, synthesizer: AVSpeechSynthesizer = AVSpeechSynthesizer(),
+         audioPreparationTimeout: Duration = .seconds(8),
+         makePlayer: @escaping (URL) throws -> AVAudioPlayer = { try AVAudioPlayer(contentsOf: $0) }) {
         self.library = library
+        self.synthesizer = synthesizer
+        self.makePlayer = makePlayer
+        self.audioPreparationTimeout = audioPreparationTimeout
         super.init()
         synthesizer.delegate = self
         #if os(iOS)
@@ -50,26 +57,14 @@ final class Speech: NSObject {
         if !isPlaying { playNext() }
     }
 
-    /// 豆包来源优先等待购买音频；系统来源和关闭提示语时仍尊重家长设置。
+    /// 购买反馈与题目、提示语共用相同的来源选择和等待规则。
     func speakPurchase(_ item: CosmeticKind) {
-        guard preferences.readGuidance else { return }
-        let text = SpeechText.Line.purchaseSuccess(item)
-        guard preferences.source == .doubao, let library else {
-            speak(text, interrupt: true)
-            return
-        }
-        stop()
-        purchasePreparation = Task { [weak self] in
-            _ = await library.audioFileWhenReady(for: text)
-            guard !Task.isCancelled, let self else { return }
-            self.purchasePreparation = nil
-            self.speak(text, interrupt: true)
-        }
+        speak(SpeechText.Line.purchaseSuccess(item), interrupt: true)
     }
 
     func stop() {
-        purchasePreparation?.cancel()
-        purchasePreparation = nil
+        preparation?.cancel()
+        preparation = nil
         queue.removeAll()
         player?.stop()
         player = nil
@@ -77,22 +72,36 @@ final class Speech: NSObject {
         synthesizer.stopSpeaking(at: .immediate)
     }
 
-    private var isPlaying: Bool { player != nil || utterance != nil }
+    private var isPlaying: Bool { preparation != nil || player != nil || utterance != nil }
 
     private func playNext() {
         guard !queue.isEmpty else { return }
         let text = queue.removeFirst()
-        if preferences.source == .doubao, let url = library?.audioFile(for: text), let player = try? AVAudioPlayer(contentsOf: url) {
-            player.enableRate = true
-            player.rate = Float(preferences.rate / 0.46)
-            player.volume = Float(preferences.volume)
-            player.delegate = self
-            self.player = player
-            if player.play() { return }
-            self.player = nil
+        guard preferences.source == .doubao, let library else {
+            speakWithSystemVoice(text)
+            return
         }
-        if preferences.source == .doubao { library?.requestSoon(text) }
-        speakWithSystemVoice(text)
+        if let url = library.audioFile(for: text), playAudio(url) { return }
+        let timeout = audioPreparationTimeout
+        preparation = Task { [weak self] in
+            let url = await library.audioFileWhenReady(for: text, timeout: timeout)
+            guard !Task.isCancelled, let self else { return }
+            self.preparation = nil
+            if let url, self.playAudio(url) { return }
+            self.speakWithSystemVoice(text)
+        }
+    }
+
+    private func playAudio(_ url: URL) -> Bool {
+        guard let player = try? makePlayer(url) else { return false }
+        player.enableRate = true
+        player.rate = Float(preferences.rate / 0.46)
+        player.volume = Float(preferences.volume)
+        player.delegate = self
+        self.player = player
+        if player.play() { return true }
+        self.player = nil
+        return false
     }
 
     /// 中英混排时分段，英文用英语语音读（纯中文仍是一整句）
