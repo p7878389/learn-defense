@@ -154,14 +154,16 @@ extension QuestionGenerator {
                       hint: "就是这个字：\(c.char)", multi: whole)
     }
 
-    /// 幼儿园听音选图：选出拼音的第一个字母
+    /// 幼儿园看图听音：选出拼音的第一个字母
     func firstLetter<R: RandomNumberGenerator>(_ base: Question, _ p: PictureItem, _ rng: inout R) -> Question? {
         guard let pinyin = p.pinyin, let first = Pinyin.parse(pinyin).base.first, first.isLetter else { return nil }
         let answer = String(first)
         let others = "bpmfdtnlgkhjqxzcsryw".map(String.init).filter { $0 != answer }.shuffled(using: &rng).prefix(groupOptions - 1)
-        return finish(base, instruction: "听一听，选出拼音的第一个字母", prompt: base.prompt, hintLine: nil, style: .letters,
-                      blanks: [InputBlank(answer: answer)], groups: [TileGroup(tiles: ([answer] + others).shuffled(using: &rng))],
-                      template: nil, hint: "就是它：\(p.emoji) \(p.text)", multi: false)
+        var q = finish(base, instruction: "看图听音，选出拼音的第一个字母", prompt: base.prompt, hintLine: nil, style: .letters,
+                       blanks: [InputBlank(answer: answer)], groups: [TileGroup(tiles: ([answer] + others).shuffled(using: &rng))],
+                       template: nil, hint: "就是它：\(p.emoji) \(p.text)", multi: false)
+        q.promptSpeech = "听一听，\(p.text)"
+        return q
     }
 
     // MARK: - 拼音字块

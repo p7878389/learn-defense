@@ -94,18 +94,49 @@ struct PreschoolLadderTests {
         let gen = try generator(grade: .k2)
         let p = try #require(gen.pool.pictures.first)
         var rng = SeededRNG(state: 11)
-        let q = try #require(gen.makeQuestion(for: .picture(p), rung: 1, using: &rng))
-        #expect(q.kind == .pictureToWord && q.prompt == p.emoji)
-        #expect(q.answer == p.text && q.promptSpeech == nil && q.optionStyle == .text)
+        for rung in 0...1 {
+            let q = try #require(gen.makeQuestion(for: .picture(p), rung: rung, using: &rng))
+            #expect(q.kind == .pictureToWord && q.prompt == p.emoji)
+            #expect(q.answer == p.text && q.promptSpeech == "看一看，这是什么？" && q.optionStyle == .text)
+        }
         for rung in 2...3 {
             let typed = try #require(gen.makeQuestion(for: .picture(p), rung: rung, using: &rng))
             #expect(typed.input?.blanks.count == 1 && typed.input?.isMulti == false)
-            #expect(typed.promptSpeech != nil)
+            #expect(typed.prompt == p.emoji)
+            #expect(typed.promptSpeech == "听一听，\(p.text)")
         }
         var missing = p
         missing.pinyin = nil
         let fallback = try #require(gen.makeQuestion(for: .picture(missing), rung: 3, using: &rng))
         #expect(fallback.kind == .pictureToWord && fallback.input == nil)
+    }
+
+    @Test func mathSubjectAndPreschoolChoiceSpeechWork() throws {
+        #expect(Subject.math.displayName == "数学")
+        let qItem = ChoiceItem(prompt: "8 - 3 = ？", options: ["4", "5", "6"], answer: "5", explain: "8减3等于5", speech: "8 减 3 等于几？")
+        let pack = ContentPack(id: "m", title: "数学", subject: .math, grade: .k3,
+            units: [ContentUnit(id: "u1", title: "加减", lessons: [Lesson(id: "l1", title: "减法", questions: [qItem])])])
+        let gen = QuestionGenerator(pool: ItemPool(packs: [pack], selection: .all),
+                                    settings: GameTuning.make(grade: .k3, difficulty: .normal).generator)
+        var rng = SeededRNG(state: 1)
+        let q = try #require(gen.makeQuestion(for: .choice(qItem, scope: "m/u1/l1"), stats: nil, using: &rng))
+        #expect(q.promptSpeech == "8 减 3 等于几？")
+        #expect(SpeechText.texts(in: [pack]).contains("8 减 3 等于几？"))
+    }
+
+    @Test func mixedMeterPoemFallsBackToNearestLineLengthWhenUnique() throws {
+        let pack = ContentPack(id: "p", title: "乐府", subject: .chinese, grade: .g2,
+            units: [ContentUnit(id: "u1", title: "草原", lessons: [Lesson(id: "l1", title: "敕勒歌", poems: [
+                PoemItem(title: "敕勒歌", dynasty: "北朝民歌",
+                         lines: ["敕勒川", "阴山下", "天似穹庐", "笼盖四野", "天苍苍", "野茫茫", "风吹草低见牛羊"])
+            ])])])
+        let pool = ItemPool(packs: [pack], selection: .all)
+        let gen = QuestionGenerator(pool: pool, settings: GameTuning.make(grade: .g2, difficulty: .normal).generator)
+        var rng = SeededRNG(state: 3)
+        for item in pool.items {
+            let q = try #require(gen.makeQuestion(for: item, mode: .choice, using: &rng))
+            #expect(q.options.count >= 2 && Set(q.options).count == q.options.count)
+        }
     }
 
     @Test func hardPrefersSameRadicalWithoutChangingLegacyInterface() throws {

@@ -75,7 +75,7 @@ public struct QuestionGenerator: Sendable {
         case .choice(let q, _):
             return choice(q, item.key, &rng)
         case .picture(let p):
-            return listenPickPicture(p, item.key, &rng)
+            return pictureToWord(p, item.key, &rng)
         case .englishWord(let w):
             return englishWord(w, item.key, &rng)
         case .sentence(let s):
@@ -110,9 +110,9 @@ public struct QuestionGenerator: Sendable {
             guard index + 1 < p.lines.count else { return [] }
             return ["\(p.lines[index])，\(p.lines[index + 1])"]
         case .choice(let q, _):
-            return [q.answer]
+            return [q.speech ?? q.prompt, q.answer]
         case .picture(let p):
-            return ["找一找，\(p.text)", p.text]
+            return ["看一看，这是什么？", "听一听，\(p.text)", p.text]
         case .englishWord(let w):
             return [w.word, englishWordSpeech(w)]
         case .sentence(let s):
@@ -214,12 +214,19 @@ public struct QuestionGenerator: Sendable {
     private func poemNextLine<R: RandomNumberGenerator>(_ poem: PoemItem, _ index: Int, _ key: String, _ rng: inout R) -> Question? {
         let line = poem.lines[index]
         let correct = poem.lines[index + 1]
-        let sameLength: (String) -> Bool = { $0.count == correct.count && $0 != correct && $0 != line }
+        let valid: (String) -> Bool = { $0 != correct && $0 != line }
+        let sameLength: (String) -> Bool = { $0.count == correct.count && valid($0) }
         let ownLines = poem.lines.filter(sameLength).shuffled(using: &rng)
         let otherLines = pool.poems.filter { $0.title != poem.title }
             .flatMap(\.lines).filter(sameLength).shuffled(using: &rng)
-        // 难度高时干扰项多来自同一首诗
-        let distractors = settings.strategy == .easy ? otherLines + ownLines : ownLines + otherLines
+        let nearLines = (poem.lines + pool.poems.filter { $0.title != poem.title }.flatMap(\.lines))
+            .filter { valid($0) && $0.count != correct.count }
+            .shuffled(using: &rng)
+            .enumerated()
+            .sorted { (abs($0.element.count - correct.count), $0.offset) < (abs($1.element.count - correct.count), $1.offset) }
+            .map(\.element)
+        // 难度高时干扰项多来自同一首诗；杂言诗词同字数不足时用字数最接近的诗句兜底
+        let distractors = (settings.strategy == .easy ? otherLines + ownLines : ownLines + otherLines) + nearLines
         return build(
             kind: .poemNextLine, key: key, instruction: "接下一句", prompt: line, hint: poem.byline,
             correct: correct, distractors: distractors, style: .text,
@@ -230,19 +237,22 @@ public struct QuestionGenerator: Sendable {
     private func choice<R: RandomNumberGenerator>(_ q: ChoiceItem, _ key: String, _ rng: inout R) -> Question? {
         let options = q.options.shuffled(using: &rng)
         guard let answerIndex = options.firstIndex(of: q.answer), options.count >= 2 else { return nil }
+        let promptSpeech = (settings.preschool || q.speech != nil) ? (q.speech ?? q.prompt) : nil
         return Question(
             kind: .choice, itemKey: key, instruction: "选一选", prompt: q.prompt, signText: "？",
             options: options, optionStyle: .text, answerIndex: answerIndex,
+            promptSpeech: promptSpeech,
             answerSpeech: q.answer, explanation: q.explain.map { "\(q.answer)。\($0)" } ?? q.answer,
             card: WordCard(text: q.answer, detail: q.explain))
     }
 
-    private func listenPickPicture<R: RandomNumberGenerator>(_ p: PictureItem, _ key: String, _ rng: inout R) -> Question? {
-        let others = pool.pictures.filter { $0.emoji != p.emoji }.map(\.emoji).shuffled(using: &rng)
+    func pictureToWord<R: RandomNumberGenerator>(_ p: PictureItem, _ key: String, _ rng: inout R) -> Question? {
+        let others = pool.pictures.filter { $0.emoji != p.emoji && $0.text != p.text }
+            .map(\.text).shuffled(using: &rng)
         return build(
-            kind: .listenPickPicture, key: key, instruction: "听一听，找出来", prompt: "🔊", hint: nil,
-            correct: p.emoji, distractors: others, style: .emoji,
-            promptSpeech: "找一找，\(p.text)", answerSpeech: p.text, explanation: "\(p.emoji) \(p.text)",
+            kind: .pictureToWord, key: key, instruction: "看图，选出词语", prompt: p.emoji, hint: nil,
+            correct: p.text, distractors: others, style: .text,
+            promptSpeech: "看一看，这是什么？", answerSpeech: p.text, explanation: "\(p.emoji) \(p.text)",
             card: WordCard(picture: p.emoji, text: p.text, pinyin: p.pinyin.map(Pinyin.normalize)), &rng)
     }
 

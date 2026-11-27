@@ -19,18 +19,19 @@ public enum Grade: String, Codable, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    /// 幼儿园阶段：不识字，全程图片 + 语音，不设失败。
+    /// 幼儿园阶段：渐进识字与启蒙练习，不设失败。
     public var isPreschool: Bool { self == .k2 || self == .k3 }
 }
 
 public enum Subject: String, Codable, CaseIterable, Identifiable, Sendable {
-    case chinese, english
+    case chinese, math, english
 
     public var id: String { rawValue }
 
     public var displayName: String {
         switch self {
         case .chinese: "语文"
+        case .math: "数学"
         case .english: "英语"
         }
     }

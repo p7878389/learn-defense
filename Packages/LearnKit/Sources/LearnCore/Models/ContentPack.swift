@@ -240,12 +240,15 @@ public struct ChoiceItem: Codable, Hashable, Sendable {
     public var options: [String]
     public var answer: String
     public var explain: String?
+    /// 可选的自然朗读题干（如算式题读「8 减 3 等于几？」），避免符号漏读
+    public var speech: String?
 
-    public init(id: String? = nil, prompt: String, options: [String], answer: String, explain: String? = nil) {
+    public init(id: String? = nil, prompt: String, options: [String], answer: String, explain: String? = nil, speech: String? = nil) {
         self.id = id
         self.prompt = prompt
         self.options = options
         self.answer = answer
         self.explain = explain
+        self.speech = speech
     }
 }

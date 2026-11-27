@@ -96,7 +96,6 @@ struct OptionButton: View {
 
     private var fontSize: CGFloat {
         switch style {
-        case .emoji: 64
         case .pinyin: 40
         case .text: text.count > 4 ? 30 : 42
         }
@@ -108,7 +107,7 @@ struct OptionButton: View {
         Button(action: action) {
             label
                 .padding(.horizontal, AppSpacing.sm)
-                .frame(maxWidth: .infinity, minHeight: style == .emoji ? 114 : 84)
+                .frame(maxWidth: .infinity, minHeight: 84)
                 .padding(.bottom, lip)
                 .background {
                     ZStack {
@@ -141,18 +140,13 @@ struct OptionButton: View {
         .scaleEffect(state == .reveal ? 1.04 : 1)
     }
 
-    @ViewBuilder
     private var label: some View {
-        if style == .emoji {
-            PictureView(emoji: text, size: 90)
-        } else {
-            Text(text)
-                .font(AppFont.rounded(fontSize, weight: .heavy))
-                .lineLimit(text.count > 10 ? 2 : 1)
-                .multilineTextAlignment(.center)
-                .minimumScaleFactor(0.5)
-                .foregroundStyle(AppColor.ink)
-        }
+        Text(text)
+            .font(AppFont.rounded(fontSize, weight: .heavy))
+            .lineLimit(text.count > 10 ? 2 : 1)
+            .multilineTextAlignment(.center)
+            .minimumScaleFactor(0.5)
+            .foregroundStyle(AppColor.ink)
     }
 
     private var topFill: Color {

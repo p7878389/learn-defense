@@ -16,21 +16,9 @@ extension QuestionGenerator {
             case .character(let c):
                 if let q = preschoolCharacter(c, key: item.key, rung: level, &rng) { return q }
             case .picture(let p):
-                if level >= 2 {
-                    if let base = makeQuestion(for: item, mode: .choice, using: &rng),
-                       let q = firstLetter(base, p, &rng) { return q }
-                } else if level == 1 {
-                    let others = pool.pictures.filter { $0.emoji != p.emoji && $0.text != p.text }
-                        .map(\.text).shuffled(using: &rng)
-                    if let q = build(kind: .pictureToWord, key: item.key, instruction: "看图，选出词语",
-                                     prompt: p.emoji, hint: nil, correct: p.text, distractors: others, style: .text,
-                                     answerSpeech: p.text, explanation: "\(p.emoji) \(p.text)",
-                                     card: WordCard(picture: p.emoji, text: p.text, pinyin: p.pinyin.map(Pinyin.normalize)), &rng) {
-                        return q
-                    }
-                } else {
-                    return makeQuestion(for: item, mode: .choice, using: &rng)
-                }
+                guard let base = pictureToWord(p, item.key, &rng) else { return nil }
+                if level >= 2, let q = firstLetter(base, p, &rng) { return q }
+                return base
             default:
                 return makeQuestion(for: item, using: &rng)
             }

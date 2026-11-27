@@ -8,7 +8,7 @@ public enum QuestionKind: String, Codable, Sendable {
     case idiomFill          // 成语补全
     case poemNextLine       // 接下一句
     case choice             // 手写选择题
-    case listenPickPicture  // 听音选图（幼儿园）
+    case listenPickPicture  // 已停用：仅保留兼容旧对局记录与备份反序列化
     case listenPickChar     // 听音选字（幼儿园）
     case listenFillChar     // 听词填字（幼儿园）
     case shapeRiddle        // 听字形联想选字（幼儿园）
@@ -20,7 +20,7 @@ public enum QuestionKind: String, Codable, Sendable {
 }
 
 public enum OptionStyle: Sendable {
-    case text, pinyin, emoji
+    case text, pinyin
 }
 
 /// 答对后弹出的单词卡：图片 + 字词 + 拼音，帮孩子再看一遍、听一遍
