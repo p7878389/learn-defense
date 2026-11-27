@@ -1,0 +1,326 @@
+{
+  "schemaVersion": 1,
+  "id": "chinese-pictures-k2",
+  "title": "看图识词 · 生活与自然",
+  "subject": "chinese",
+  "grade": "k2",
+  "edition": "幼儿启蒙",
+  "units": [
+    {
+      "id": "u1",
+      "title": "第一单元 · 动物好朋友",
+      "theme": "meadow",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "身边的小动物",
+          "pictures": [
+            {
+              "text": "小猫",
+              "pinyin": "xiǎo māo",
+              "emoji": "🐱",
+              "en": "cat"
+            },
+            {
+              "text": "小狗",
+              "pinyin": "xiǎo gǒu",
+              "emoji": "🐶",
+              "en": "dog"
+            },
+            {
+              "text": "小兔",
+              "pinyin": "xiǎo tù",
+              "emoji": "🐰",
+              "en": "rabbit"
+            },
+            {
+              "text": "小猪",
+              "pinyin": "xiǎo zhū",
+              "emoji": "🐷",
+              "en": "pig"
+            },
+            {
+              "text": "青蛙",
+              "pinyin": "qīng wā",
+              "emoji": "🐸",
+              "en": "frog"
+            }
+          ]
+        },
+        {
+          "id": "l2",
+          "title": "森林与海洋",
+          "pictures": [
+            {
+              "text": "小鱼",
+              "pinyin": "xiǎo yú",
+              "emoji": "🐟",
+              "en": "fish"
+            },
+            {
+              "text": "小鸟",
+              "pinyin": "xiǎo niǎo",
+              "emoji": "🐦",
+              "en": "bird"
+            },
+            {
+              "text": "小熊",
+              "pinyin": "xiǎo xióng",
+              "emoji": "🐻",
+              "en": "bear"
+            },
+            {
+              "text": "熊猫",
+              "pinyin": "xióng māo",
+              "emoji": "🐼",
+              "en": "panda"
+            },
+            {
+              "text": "老虎",
+              "pinyin": "lǎo hǔ",
+              "emoji": "🐯",
+              "en": "tiger"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u2",
+      "title": "第二单元 · 美味果园",
+      "theme": "orchard",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "香甜水果",
+          "pictures": [
+            {
+              "text": "苹果",
+              "pinyin": "píng guǒ",
+              "emoji": "🍎",
+              "en": "apple"
+            },
+            {
+              "text": "香蕉",
+              "pinyin": "xiāng jiāo",
+              "emoji": "🍌",
+              "en": "banana"
+            },
+            {
+              "text": "西瓜",
+              "pinyin": "xī guā",
+              "emoji": "🍉",
+              "en": "watermelon"
+            },
+            {
+              "text": "葡萄",
+              "pinyin": "pú tao",
+              "emoji": "🍇",
+              "en": "grape"
+            },
+            {
+              "text": "草莓",
+              "pinyin": "cǎo méi",
+              "emoji": "🍓",
+              "en": "strawberry"
+            }
+          ]
+        },
+        {
+          "id": "l2",
+          "title": "果蔬与花朵",
+          "pictures": [
+            {
+              "text": "甜梨",
+              "pinyin": "tián lí",
+              "emoji": "🍐",
+              "en": "pear"
+            },
+            {
+              "text": "蘑菇",
+              "pinyin": "mó gu",
+              "emoji": "🍄",
+              "en": "mushroom"
+            },
+            {
+              "text": "桃花",
+              "pinyin": "táo huā",
+              "emoji": "🌸",
+              "en": "blossom"
+            },
+            {
+              "text": "大树",
+              "pinyin": "dà shù",
+              "emoji": "🌳",
+              "en": "tree"
+            },
+            {
+              "text": "绿叶",
+              "pinyin": "lǜ yè",
+              "emoji": "🍃",
+              "en": "leaf"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u3",
+      "title": "第三单元 · 天空与自然",
+      "theme": "starry",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "仰望天空",
+          "pictures": [
+            {
+              "text": "太阳",
+              "pinyin": "tài yáng",
+              "emoji": "☀️",
+              "en": "sun"
+            },
+            {
+              "text": "月亮",
+              "pinyin": "yuè liang",
+              "emoji": "🌙",
+              "en": "moon"
+            },
+            {
+              "text": "星星",
+              "pinyin": "xīng xing",
+              "emoji": "⭐️",
+              "en": "star"
+            },
+            {
+              "text": "白云",
+              "pinyin": "bái yún",
+              "emoji": "☁️",
+              "en": "cloud"
+            },
+            {
+              "text": "彩虹",
+              "pinyin": "cǎi hóng",
+              "emoji": "🌈",
+              "en": "rainbow"
+            }
+          ]
+        },
+        {
+          "id": "l2",
+          "title": "山川与冰雪",
+          "pictures": [
+            {
+              "text": "雪花",
+              "pinyin": "xuě huā",
+              "emoji": "❄️",
+              "en": "snowflake"
+            },
+            {
+              "text": "闪电",
+              "pinyin": "shǎn diàn",
+              "emoji": "⚡️",
+              "en": "lightning"
+            },
+            {
+              "text": "高山",
+              "pinyin": "gāo shān",
+              "emoji": "⛰️",
+              "en": "mountain"
+            },
+            {
+              "text": "海浪",
+              "pinyin": "hǎi làng",
+              "emoji": "🌊",
+              "en": "wave"
+            },
+            {
+              "text": "火焰",
+              "pinyin": "huǒ yàn",
+              "emoji": "🔥",
+              "en": "fire"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u4",
+      "title": "第四单元 · 快乐生活",
+      "theme": "academy",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "学习百宝箱",
+          "pictures": [
+            {
+              "text": "书本",
+              "pinyin": "shū běn",
+              "emoji": "📖",
+              "en": "book"
+            },
+            {
+              "text": "铅笔",
+              "pinyin": "qiān bǐ",
+              "emoji": "✏️",
+              "en": "pencil"
+            },
+            {
+              "text": "画笔",
+              "pinyin": "huà bǐ",
+              "emoji": "🖌️",
+              "en": "paintbrush"
+            },
+            {
+              "text": "闹钟",
+              "pinyin": "nào zhōng",
+              "emoji": "⏰",
+              "en": "clock"
+            },
+            {
+              "text": "灯泡",
+              "pinyin": "dēng pào",
+              "emoji": "💡",
+              "en": "bulb"
+            }
+          ]
+        },
+        {
+          "id": "l2",
+          "title": "节日与礼物",
+          "pictures": [
+            {
+              "text": "气球",
+              "pinyin": "qì qiú",
+              "emoji": "🎈",
+              "en": "balloon"
+            },
+            {
+              "text": "礼物",
+              "pinyin": "lǐ wù",
+              "emoji": "🎁",
+              "en": "gift"
+            },
+            {
+              "text": "风筝",
+              "pinyin": "fēng zheng",
+              "emoji": "🪁",
+              "en": "kite"
+            },
+            {
+              "text": "蝴蝶",
+              "pinyin": "hú dié",
+              "emoji": "🦋",
+              "en": "butterfly"
+            },
+            {
+              "text": "房子",
+              "pinyin": "fáng zi",
+              "emoji": "🏡",
+              "en": "house"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

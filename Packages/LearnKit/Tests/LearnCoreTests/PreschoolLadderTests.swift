@@ -31,7 +31,7 @@ struct PreschoolLadderTests {
     }
 
     @Test func rungsProduceExpectedKinds() throws {
-        let gen = try generator()
+        let gen = try generator(grade: .k2)
         let c = try character("水", in: gen)
         var rng = SeededRNG(state: 42)
         let zero = try #require(gen.makeQuestion(for: .character(c), rung: 0, using: &rng))
@@ -51,10 +51,12 @@ struct PreschoolLadderTests {
     }
 
     @Test func fallsBackWhenRungUnavailable() throws {
-        let gen = try generator()
+        let gen = try generator(grade: .k2)
         var rng = SeededRNG(state: 7)
-        for text in ["手", "交"] {
-            let c = try character(text, in: gen)
+        for c in [
+            CharacterItem(char: "手", pinyin: "shǒu", words: ["拍手"], imageHint: "像张开五指的小手。"),
+            CharacterItem(char: "交", pinyin: "jiāo", words: ["交通"], imageHint: "交叉在一起。"),
+        ] {
             let q = try #require(gen.makeQuestion(for: .character(c), rung: 2, using: &rng))
             #expect(q.kind == .listenPickChar)
             #expect(q.input?.blanks.count == 1 && q.input?.isMulti == false)
@@ -64,7 +66,7 @@ struct PreschoolLadderTests {
         #expect(q.kind == .listenPickChar && q.input == nil)
         let ear = try character("耳", in: gen)
         let fallback = try #require(gen.makeQuestion(for: .character(ear), rung: 3, using: &rng))
-        #expect(fallback.kind == .listenFillChar && fallback.input == nil)
+        #expect(fallback.kind == .shapeRiddle && fallback.input == nil)
         let empty = CharacterItem(char: "水", pinyin: "shuǐ", imageHint: " \n ")
         #expect(try #require(gen.makeQuestion(for: .character(empty), rung: 2, using: &rng)).input?.isMulti == false)
     }
@@ -76,7 +78,7 @@ struct PreschoolLadderTests {
                 let expected: ClosedRange<Int> = difficulty == .easy ? 0...1
                     : (difficulty == .normal ? (grade == .k2 ? 0...2 : 1...2) : 1...3)
                 #expect(gen.settings.ladder == expected)
-                let c = try character("水", in: gen)
+                let c = try character(grade == .k2 ? "水" : "池", in: gen)
                 var rng = SeededRNG(state: 9)
                 for streak in 0...5 {
                     var stats = ItemStats()

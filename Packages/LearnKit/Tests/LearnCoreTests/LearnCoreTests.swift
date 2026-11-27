@@ -49,7 +49,7 @@ struct GeneratorTests {
     @Test func bundledPacksLoadWithoutIssues() {
         #expect(Self.library.issues.isEmpty, "\(Self.library.issues)")
         #expect(Self.library.pack(id: "chinese-g3-up-pep") != nil)
-        #expect(Self.library.pack(id: "chinese-k2-sample") != nil)
+        #expect(Self.library.pack(id: "chinese-pictures-k2") != nil)
         #expect(Self.library.pack(id: "english-g3-up-jingtong") != nil)
         #expect(Self.library.pack(id: "english-g3-up-pep") != nil)
     }

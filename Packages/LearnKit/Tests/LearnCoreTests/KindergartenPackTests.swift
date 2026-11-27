@@ -3,51 +3,81 @@ import SwiftData
 import Testing
 @testable import LearnCore
 
-@Suite("直映识字幼儿园题库")
+@Suite("幼儿园看图识词与直映识字题库")
 struct KindergartenPackTests {
-    @Test(arguments: [Grade.k2, .k3])
-    func bothGradesCanSelectEachVolumeAndHearEveryCharacter(grade: Grade) throws {
+    static let forbiddenRiddleChars = CharacterSet(charactersIn: "刂攵廿敕昷甬孚寅隹")
+
+    @Test func legacySampleRemovedAndPicturePacksUseWordOptions() throws {
         let library = ContentLibrary.load(userDirectory: nil)
         #expect(library.issues.isEmpty, "\(library.issues)")
-        let id = "zhijing-literacy-\(grade.rawValue)"
-        let pack = try #require(library.packs(grade: grade, subject: .chinese).first { $0.id == id })
-        #expect(pack.units.count == 6)
+        #expect(library.pack(id: "chinese-k2-sample") == nil)
 
-        for (unitID, expected) in [
-            ("u1", "人头目耳口手一二马鱼天山水火女"),
-            ("u2", "宋李球脸眼嘴正好爱车太阳"),
-            ("u3", "借知识魔术讲完成老师听懂朋友学校升旗礼敬"),
-            ("u4", "雀收藏铅姑娘玩具抱单满积搭奇怪蜜蜂蜻蜓珍珠"),
-            ("u5", "整齐池塘蝌蚪捕捞平稳交转铁挖受伤首击赞英"),
-            ("u6", "剧痛批评严肃扶梯肚肠承修改诚实温度沉浮演奏躲震"),
-        ] {
-            let pool = ItemPool(packs: [pack], selection: .units(["\(id)/\(unitID)"]))
-            #expect(Set(pool.items.map(\.key)) == Set(expected.map { "char:\($0)" }))
-            for difficulty in Difficulty.allCases {
-                let generator = QuestionGenerator(pool: pool, settings: GameTuning.make(grade: grade, difficulty: difficulty).generator)
-                var rng = SeededRNG(state: 42)
-                for item in pool.items {
-                    let question = try #require(generator.makeQuestion(for: item, mode: .choice, using: &rng))
-                    #expect(question.kind == .listenPickChar)
-                    #expect(question.input == nil)
-                    #expect(question.promptSpeech?.isEmpty == false)
-                    #expect(question.options.count >= 2)
-                    #expect(Set(question.options).count == question.options.count)
-                    #expect(question.options.contains(question.answerSpeech ?? ""))
-                    #expect(question.card?.pinyin?.isEmpty == false)
-
-                    // 标准、挑战难度还会按现有规则生成听音拼音字块题。
-                    let mixed = try #require(generator.makeQuestion(for: item, using: &rng))
-                    #expect(mixed.promptSpeech?.isEmpty == false)
-                    if let input = mixed.input {
-                        #expect(difficulty != .easy)
-                        #expect(!input.blanks.isEmpty)
-                        #expect(input.accepts(input.blanks.map(\.answer)))
+        for grade in [Grade.k2, .k3] {
+            let id = "chinese-pictures-\(grade.rawValue)"
+            let pack = try #require(library.pack(id: id), "缺少 \(id)")
+            #expect(pack.grade == grade && pack.subject == .chinese)
+            #expect(pack.units.count == 4)
+            #expect(Set(pack.units.compactMap(\.theme)) == ["meadow", "orchard", "starry", "academy"])
+            let pool = ItemPool(packs: [pack], selection: .all)
+            #expect(pool.pictures.count >= 36)
+            let gen = QuestionGenerator(pool: pool, settings: GameTuning.make(grade: grade, difficulty: .hard).generator)
+            var rng = SeededRNG(state: 23)
+            for item in pool.items {
+                for rung in 0...3 {
+                    let q = try #require(gen.makeQuestion(for: item, rung: rung, using: &rng))
+                    #expect(q.kind != .listenPickPicture)
+                    #expect(q.optionStyle == .text)
+                    if rung <= 1 {
+                        #expect(q.kind == .pictureToWord)
                     } else {
-                        #expect(mixed.kind == .listenPickChar)
-                        #expect(mixed.options.count >= 2)
+                        #expect(q.input != nil)
                     }
                 }
+            }
+        }
+    }
+
+    @Test func zhijingPacksAreStratifiedWithValidRiddlesAndCleanWords() throws {
+        let library = ContentLibrary.load(userDirectory: nil)
+        #expect(library.issues.isEmpty, "\(library.issues)")
+        let k2Pack = try #require(library.pack(id: "zhijing-literacy-k2"))
+        let k3Pack = try #require(library.pack(id: "zhijing-literacy-k3"))
+
+        let k2Pool = ItemPool(packs: [k2Pack], selection: .all)
+        let k3Pool = ItemPool(packs: [k3Pack], selection: .all)
+        let k2Chars = Set(k2Pool.characters.map(\.char))
+        let k3Chars = Set(k3Pool.characters.map(\.char))
+        #expect(k2Chars.count == 90)
+        #expect(k3Chars.count == 96)
+        #expect(k2Chars.isDisjoint(with: k3Chars), "中班与大班直映识字不应重复选字：\(k2Chars.intersection(k3Chars))")
+
+        for (grade, pack) in [(Grade.k2, k2Pack), (.k3, k3Pack)] {
+            #expect(pack.units.count == 6)
+            #expect(Set(pack.units.compactMap(\.theme)) == ["meadow", "orchard", "starry", "academy"])
+            for unit in pack.units {
+                #expect(unit.lessons.count >= 3, "\(pack.id)/\(unit.id) 应拆分为至少 3 课")
+            }
+
+            let pool = ItemPool(packs: [pack], selection: .all)
+            let gen = QuestionGenerator(pool: pool, settings: GameTuning.make(grade: grade, difficulty: .hard).generator)
+            var rng = SeededRNG(state: 42)
+            for c in pool.characters {
+                let riddle = try #require(QuestionGenerator.shapeRiddleText(c), "\(pack.id)「\(c.char)」字谜为空或包含答案字")
+                #expect(riddle.rangeOfCharacter(from: Self.forbiddenRiddleChars) == nil, "\(c.char) 字谜含生僻构件：\(riddle)")
+
+                let words = c.words ?? []
+                #expect(words.count >= 2, "\(c.char) 组词不足 2 个")
+                #expect(Set(words).count == words.count, "\(c.char) 存在重复组词：\(words)")
+                for w in words {
+                    #expect(w.count >= 2 && w.count <= 3, "\(c.char) 组词长度异常：\(w)")
+                    #expect(w.components(separatedBy: c.char).count == 2, "\(c.char) 组词未恰好出现一次本字：\(w)")
+                }
+
+                let item = LearningItem.character(c)
+                let r1 = try #require(gen.makeQuestion(for: item, rung: 1, using: &rng))
+                #expect(r1.kind == .listenFillChar)
+                let r2 = try #require(gen.makeQuestion(for: item, rung: 2, using: &rng))
+                #expect(r2.kind == .shapeRiddle, "\(c.char) 第 2 阶应生成字谜题而非降级")
             }
         }
     }
@@ -57,18 +87,12 @@ struct KindergartenPackTests {
         for _ in 0..<2 {
             let library = try database.loadContent(userDirectory: nil)
             #expect(library.issues.isEmpty, "\(library.issues)")
-            for grade in [Grade.k2, .k3] {
+            for (grade, expectedCount) in [(Grade.k2, 90), (.k3, 96)] {
                 let id = "zhijing-literacy-\(grade.rawValue)"
                 #expect(try database.packs(grade: grade, subject: .chinese).contains { $0.id == id })
                 let items = try database.context.fetch(FetchDescriptor<StoredItem>()).filter { $0.packID == id }
-                #expect(items.count == 111)
+                #expect(items.count == expectedCount)
                 #expect(items.allSatisfy { $0.grade == grade.rawValue && $0.kind == "character" })
-                #expect(items.filter { $0.unitID == "u1" }.count == 15)
-                #expect(items.filter { $0.unitID == "u2" }.count == 12)
-                #expect(items.filter { $0.unitID == "u3" }.count == 20)
-                #expect(items.filter { $0.unitID == "u4" }.count == 21)
-                #expect(items.filter { $0.unitID == "u5" }.count == 20)
-                #expect(items.filter { $0.unitID == "u6" }.count == 23)
             }
         }
     }

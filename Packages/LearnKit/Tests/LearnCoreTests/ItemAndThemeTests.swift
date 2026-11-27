@@ -50,12 +50,11 @@ struct SceneThemeTests {
 
     @Test func chooseByUnitThenGrade() {
         let k2 = Self.library.packs(grade: .k2, subject: .chinese)
-        #expect(SceneTheme.choose(packs: k2, selection: .units(["chinese-k2-sample/u2"]), grade: .k2) == .orchard)
-        #expect(SceneTheme.choose(packs: k2, selection: .units(["chinese-k2-sample/u3"]), grade: .k2) == .starry)
+        #expect(SceneTheme.choose(packs: k2, selection: .units(["chinese-pictures-k2/u2"]), grade: .k2) == .orchard)
+        #expect(SceneTheme.choose(packs: k2, selection: .units(["chinese-pictures-k2/u3"]), grade: .k2) == .starry)
         // 选了好几个单元：用得最多的主题，一样多时取靠前的
-        #expect(SceneTheme.choose(packs: k2, selection: .units(["chinese-k2-sample/u1", "chinese-k2-sample/u2"]), grade: .k2) == .meadow)
-        // 单元没写主题：按年级
-        #expect(SceneTheme.choose(packs: k2, selection: .units(["chinese-k2-sample/u4"]), grade: .k2) == .meadow)
+        #expect(SceneTheme.choose(packs: k2, selection: .units(["chinese-pictures-k2/u1", "chinese-pictures-k2/u2"]), grade: .k2) == .meadow)
+        #expect(SceneTheme.choose(packs: k2, selection: .units(["chinese-pictures-k2/u4"]), grade: .k2) == .academy)
         #expect(SceneTheme.choose(packs: [], selection: .all, grade: .g3) == .academy)
 
         let g3 = Self.library.packs(grade: .g3, subject: .chinese)

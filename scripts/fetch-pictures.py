@@ -39,6 +39,12 @@ ALIASES = {
     "panda face": "panda",
     "frog face": "frog",
     "bear face": "bear",
+    "electric light bulb": "light bulb",
+    "ear of maize": "ear of corn",
+    "steam locomotive": "locomotive",
+    "earth globe europe-africa": "globe showing europe-africa",
+    "basketball and hoop": "basketball",
+    "school satchel": "backpack",
 }
 
 

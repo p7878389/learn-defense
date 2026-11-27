@@ -1,0 +1,326 @@
+{
+  "schemaVersion": 1,
+  "id": "chinese-pictures-k3",
+  "title": "看图识词 · 探索大世界",
+  "subject": "chinese",
+  "grade": "k3",
+  "edition": "幼儿启蒙",
+  "units": [
+    {
+      "id": "u1",
+      "title": "第一单元 · 奇妙动物园",
+      "theme": "meadow",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "陆地与极地",
+          "pictures": [
+            {
+              "text": "狮子",
+              "pinyin": "shī zi",
+              "emoji": "🦁",
+              "en": "lion"
+            },
+            {
+              "text": "狐狸",
+              "pinyin": "hú li",
+              "emoji": "🦊",
+              "en": "fox"
+            },
+            {
+              "text": "考拉",
+              "pinyin": "kǎo lā",
+              "emoji": "🐨",
+              "en": "koala"
+            },
+            {
+              "text": "企鹅",
+              "pinyin": "qǐ é",
+              "emoji": "🐧",
+              "en": "penguin"
+            },
+            {
+              "text": "鲸鱼",
+              "pinyin": "jīng yú",
+              "emoji": "🐳",
+              "en": "whale"
+            }
+          ]
+        },
+        {
+          "id": "l2",
+          "title": "花间小昆虫",
+          "pictures": [
+            {
+              "text": "蜜蜂",
+              "pinyin": "mì fēng",
+              "emoji": "🐝",
+              "en": "bee"
+            },
+            {
+              "text": "瓢虫",
+              "pinyin": "piáo chóng",
+              "emoji": "🐞",
+              "en": "ladybug"
+            },
+            {
+              "text": "独角兽",
+              "pinyin": "dú jiǎo shòu",
+              "emoji": "🦄",
+              "en": "unicorn"
+            },
+            {
+              "text": "骏马",
+              "pinyin": "jùn mǎ",
+              "emoji": "🐴",
+              "en": "horse"
+            },
+            {
+              "text": "大象",
+              "pinyin": "dà xiàng",
+              "emoji": "🐘",
+              "en": "elephant"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u2",
+      "title": "第二单元 · 田园与植物",
+      "theme": "orchard",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "四季花木",
+          "pictures": [
+            {
+              "text": "向日葵",
+              "pinyin": "xiàng rì kuí",
+              "emoji": "🌻",
+              "en": "sunflower"
+            },
+            {
+              "text": "郁金香",
+              "pinyin": "yù jīn xiāng",
+              "emoji": "🌷",
+              "en": "tulip"
+            },
+            {
+              "text": "松树",
+              "pinyin": "sōng shù",
+              "emoji": "🌲",
+              "en": "pine"
+            },
+            {
+              "text": "稻穗",
+              "pinyin": "dào suì",
+              "emoji": "🌾",
+              "en": "rice"
+            },
+            {
+              "text": "小草",
+              "pinyin": "xiǎo cǎo",
+              "emoji": "🌿",
+              "en": "grass"
+            }
+          ]
+        },
+        {
+          "id": "l2",
+          "title": "缤纷蔬果",
+          "pictures": [
+            {
+              "text": "桃子",
+              "pinyin": "táo zi",
+              "emoji": "🍑",
+              "en": "peach"
+            },
+            {
+              "text": "橘子",
+              "pinyin": "jú zi",
+              "emoji": "🍊",
+              "en": "tangerine"
+            },
+            {
+              "text": "胡萝卜",
+              "pinyin": "hú luó bo",
+              "emoji": "🥕",
+              "en": "carrot"
+            },
+            {
+              "text": "玉米",
+              "pinyin": "yù mǐ",
+              "emoji": "🌽",
+              "en": "corn"
+            },
+            {
+              "text": "西红柿",
+              "pinyin": "xī hóng shì",
+              "emoji": "🍅",
+              "en": "tomato"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u3",
+      "title": "第三单元 · 出行与远方",
+      "theme": "starry",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "交通工具",
+          "pictures": [
+            {
+              "text": "汽车",
+              "pinyin": "qì chē",
+              "emoji": "🚗",
+              "en": "car"
+            },
+            {
+              "text": "公交车",
+              "pinyin": "gōng jiāo chē",
+              "emoji": "🚌",
+              "en": "bus"
+            },
+            {
+              "text": "火车",
+              "pinyin": "huǒ chē",
+              "emoji": "🚂",
+              "en": "train"
+            },
+            {
+              "text": "飞机",
+              "pinyin": "fēi jī",
+              "emoji": "✈️",
+              "en": "airplane"
+            },
+            {
+              "text": "火箭",
+              "pinyin": "huǒ jiàn",
+              "emoji": "🚀",
+              "en": "rocket"
+            }
+          ]
+        },
+        {
+          "id": "l2",
+          "title": "风景与建筑",
+          "pictures": [
+            {
+              "text": "城堡",
+              "pinyin": "chéng bǎo",
+              "emoji": "🏰",
+              "en": "castle"
+            },
+            {
+              "text": "岩石",
+              "pinyin": "yán shí",
+              "emoji": "🪨",
+              "en": "rock"
+            },
+            {
+              "text": "轮船",
+              "pinyin": "lún chuán",
+              "emoji": "🚢",
+              "en": "ship"
+            },
+            {
+              "text": "自行车",
+              "pinyin": "zì xíng chē",
+              "emoji": "🚲",
+              "en": "bicycle"
+            },
+            {
+              "text": "地球",
+              "pinyin": "dì qiú",
+              "emoji": "🌍",
+              "en": "earth"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "u4",
+      "title": "第四单元 · 校园与荣耀",
+      "theme": "academy",
+      "lessons": [
+        {
+          "id": "l1",
+          "title": "读书与运动",
+          "pictures": [
+            {
+              "text": "图书",
+              "pinyin": "tú shū",
+              "emoji": "📚",
+              "en": "books"
+            },
+            {
+              "text": "书包",
+              "pinyin": "shū bāo",
+              "emoji": "🎒",
+              "en": "backpack"
+            },
+            {
+              "text": "足球",
+              "pinyin": "zú qiú",
+              "emoji": "⚽️",
+              "en": "soccer"
+            },
+            {
+              "text": "篮球",
+              "pinyin": "lán qiú",
+              "emoji": "🏀",
+              "en": "basketball"
+            },
+            {
+              "text": "雨伞",
+              "pinyin": "yǔ sǎn",
+              "emoji": "☂️",
+              "en": "umbrella"
+            }
+          ]
+        },
+        {
+          "id": "l2",
+          "title": "成长与奖励",
+          "pictures": [
+            {
+              "text": "奖杯",
+              "pinyin": "jiǎng bēi",
+              "emoji": "🏆",
+              "en": "trophy"
+            },
+            {
+              "text": "奖牌",
+              "pinyin": "jiǎng pái",
+              "emoji": "🏅",
+              "en": "medal"
+            },
+            {
+              "text": "皇冠",
+              "pinyin": "huáng guān",
+              "emoji": "👑",
+              "en": "crown"
+            },
+            {
+              "text": "蝴蝶结",
+              "pinyin": "hú dié jié",
+              "emoji": "🎀",
+              "en": "ribbon"
+            },
+            {
+              "text": "爱心",
+              "pinyin": "ài xīn",
+              "emoji": "💖",
+              "en": "heart"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
