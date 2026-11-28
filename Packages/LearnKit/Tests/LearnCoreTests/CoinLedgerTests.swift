@@ -69,4 +69,80 @@ struct CoinLedgerTests {
         #expect(summary.earned == CoinRecord.maxStoredCount)
         #expect(summary.spent == 0)
     }
+
+    @Test func filtersGroupsAndSummarizesByDirectionRangeAndKind() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try #require(TimeZone(secondsFromGMT: 8 * 3600))
+        let now = try #require(calendar.date(from: DateComponents(year: 2026, month: 11, day: 28, hour: 15, minute: 0)))
+        let threeDaysAgo = try #require(calendar.date(byAdding: .day, value: -3, to: now))
+        let tenDaysAgo = try #require(calendar.date(byAdding: .day, value: -10, to: now))
+
+        var state = GrowthState()
+        state.coins = 50
+        state.appendCoinRecord(kind: .answers, delta: 20, title: "十天前答题", date: tenDaysAgo)
+        state.coins = 75
+        state.appendCoinRecord(kind: .completion, delta: 25, title: "三天前过关", date: threeDaysAgo)
+        state.coins = 60
+        state.appendCoinRecord(kind: .adventureEntry, delta: -15, title: "三天前冒险", date: threeDaysAgo)
+        state.coins = 90
+        state.appendCoinRecord(kind: .answers, delta: 30, title: "今天答题", date: now)
+        state.coins = 50
+        state.appendCoinRecord(kind: .purchaseCosmetic, delta: -40, title: "今天买皮肤", date: now)
+
+        // 1. 今天范围
+        let todayGroups = state.groupedCoinRecords(
+            query: CoinLedgerQuery(direction: .all, range: .today),
+            referenceDate: now,
+            calendar: calendar
+        )
+        #expect(todayGroups.count == 1)
+        #expect(todayGroups[0].earned == 30)
+        #expect(todayGroups[0].spent == 40)
+        #expect(todayGroups[0].records.count == 2)
+
+        // 2. 近 7 天过滤掉 10 天前的记录，按日分组并保持最新在前
+        let weekGroups = state.groupedCoinRecords(
+            query: CoinLedgerQuery(direction: .all, range: .last7Days),
+            referenceDate: now,
+            calendar: calendar
+        )
+        #expect(weekGroups.count == 2)
+        #expect(weekGroups[0].records.map(\.title) == ["今天买皮肤", "今天答题"])
+        #expect(weekGroups[1].earned == 25)
+        #expect(weekGroups[1].spent == 15)
+
+        // 3. 仅获取 + 指定分类，汇总栏仍保留同方向下的全部获取分类以便切换
+        let query = CoinLedgerQuery(direction: .income, range: .all, kind: .answers)
+        let answerRecords = state.filteredCoinRecords(query: query, referenceDate: now, calendar: calendar)
+        #expect(answerRecords.count == 2)
+        #expect(CoinLedgerTotals.summarize(answerRecords) == CoinLedgerTotals(earned: 50, spent: 0))
+
+        let incomeSummaries = state.coinKindSummaries(query: query, referenceDate: now, calendar: calendar)
+        #expect(incomeSummaries.count == 2)
+        #expect(incomeSummaries[0] == CoinLedgerKindSummary(kind: .answers, count: 2, totalAmount: 50))
+        #expect(incomeSummaries[1] == CoinLedgerKindSummary(kind: .completion, count: 1, totalAmount: 25))
+        #expect(CoinLedgerDirection.expense.matches(kind: .purchaseCosmetic))
+        #expect(!CoinLedgerDirection.expense.matches(kind: .answers))
+    }
+
+    @Test func dailyCoinAllowancesResetsAcrossCalendarDays() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try #require(TimeZone(secondsFromGMT: 8 * 3600))
+        let day1 = try #require(calendar.date(from: DateComponents(year: 2026, month: 11, day: 28, hour: 10, minute: 0)))
+        let day2 = try #require(calendar.date(byAdding: .day, value: 1, to: day1))
+
+        var state = GrowthState()
+        let report = GameReport(won: true, difficulty: .normal, questions: 10, firstTryCorrect: 10, stars: 3, date: day1)
+        _ = state.settle(report, catalog: .bundled, calendar: calendar)
+
+        let todayAllowances = state.dailyCoinAllowances(at: day1, calendar: calendar)
+        #expect(todayAllowances.count == CoinSource.allCases.count)
+        let answerAllowance = try #require(todayAllowances.first { $0.source == .answers })
+        #expect(answerAllowance.used > 0)
+        #expect(answerAllowance.remaining == answerAllowance.limit - answerAllowance.used)
+
+        // 跨天未开新局时，今日额度自动归零，不残留昨日计数
+        let nextDayAllowances = state.dailyCoinAllowances(at: day2, calendar: calendar)
+        #expect(nextDayAllowances.allSatisfy { $0.used == 0 && $0.remaining == $0.limit })
+    }
 }

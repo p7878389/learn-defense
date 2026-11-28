@@ -76,11 +76,9 @@ struct CollectionView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .background(GrowthPageBackground())
-        .sheet(isPresented: $showCoinLedger) {
-            if let profile = model.profiles.first(where: { $0.id == profileID }) {
-                CoinLedgerView(profile: profile, growth: growth)
-                    .presentationDetents([.large])
-            }
+        .growthCover(isPresented: $showCoinLedger) {
+            CoinLedgerView(profileID: profileID, backTitle: "返回收藏馆", onClose: { showCoinLedger = false })
+                .environmentObject(model)
         }
         .onAppear {
             // 优先准备少量购买反馈，避免排在整套题库语音之后。

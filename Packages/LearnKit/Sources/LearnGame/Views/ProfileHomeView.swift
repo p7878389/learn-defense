@@ -61,11 +61,9 @@ struct ProfileHomeView: View {
             AdventureLobbyView(profileID: profileID, onClose: { showAdventure = false })
                 .environmentObject(model)
         }
-        .sheet(isPresented: $showCoinLedger) {
-            if let profile {
-                CoinLedgerView(profile: profile, growth: model.growth(for: profile.id))
-                    .presentationDetents([.large])
-            }
+        .growthCover(isPresented: $showCoinLedger) {
+            CoinLedgerView(profileID: profileID, backTitle: "返回主页", onClose: { showCoinLedger = false })
+                .environmentObject(model)
         }
         .sheet(isPresented: $showWrongBook) {
             if let profile {
