@@ -1,7 +1,7 @@
 import LearnCore
 import SwiftUI
 
-/// 积分记录弹窗：展示当前余额、今日/累计收支概览，以及按日期分组的获取与消耗流水。
+/// 积分记录独立全屏页：横屏左右分栏（左侧收支概览与今日额度、右侧按日分组流水），竖屏上下排布。
 struct CoinLedgerView: View {
     enum Filter: String, CaseIterable {
         case all = "全部"
@@ -9,11 +9,16 @@ struct CoinLedgerView: View {
         case expense = "消耗"
     }
 
-    @Environment(\.dismiss) private var dismiss
-    let profile: Profile
-    let growth: GrowthStore
+    @EnvironmentObject private var model: AppModel
+    let profileID: UUID
+    let onClose: () -> Void
     @State private var filter: Filter = .all
 
+    private var profileName: String {
+        model.profiles.first(where: { $0.id == profileID })?.name ?? "小守卫"
+    }
+
+    private var growth: GrowthStore { model.growth(for: profileID) }
     private var allRecords: [CoinRecord] { growth.state.coinLedger }
 
     private var filteredRecords: [CoinRecord] {
@@ -40,87 +45,125 @@ struct CoinLedgerView: View {
 
     var body: some View {
         let today = growth.state.dayCoinsSummary()
-        AppModalScaffold(
-            systemImage: "list.bullet.rectangle.portrait.fill",
-            iconTint: AppColor.goldEdge,
-            title: "\(profile.name)的积分记录",
-            subtitle: "记录每笔答题、通关、升级、徽章奖励与外观、冒险消耗（保留最近 \(CoinRecord.maxStoredCount) 条）",
-            scrollable: false
-        ) {
-            VStack(alignment: .leading, spacing: AppSpacing.md) {
-                summaryStrip(today: today)
+        GeometryReader { geo in
+            let wide = geo.size.width >= 820
+            VStack(spacing: AppSpacing.md) {
+                GrowthPageHeader(icon: "🪙", title: "积分记录", subtitle: "\(profileName)的获取与消耗明细", onClose: onClose) {
+                    LevelPill(level: growth.level.level)
+                    CoinPill(coins: growth.state.coins, size: 24)
+                }
 
-                VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                if wide {
+                    HStack(alignment: .top, spacing: AppSpacing.md) {
+                        ScrollView {
+                            overviewColumn(today: today)
+                        }
+                        .scrollBounceBehavior(.basedOnSize)
+                        .frame(width: 340)
+
+                        ledgerPanel
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                } else {
+                    VStack(spacing: AppSpacing.md) {
+                        compactSummaryRow(today: today)
+                        ledgerPanel
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                }
+            }
+            .padding(geo.size.width < 600 ? AppSpacing.sm : AppSpacing.lg)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        }
+        .background(GrowthPageBackground())
+    }
+
+    private func overviewColumn(today: (earned: Int, spent: Int)) -> some View {
+        VStack(spacing: AppSpacing.sm) {
+            summaryTile(title: "当前余额", value: "\(growth.state.coins)", sub: "可用于收藏馆外观、毁灭菇与冒险闯关",
+                        tint: AppColor.gold, valueColor: AppColor.goldEdge, showCoin: true)
+            summaryTile(title: "今日收支", value: "+\(today.earned)", sub: "今日消耗 -\(today.spent)",
+                        tint: AppColor.jade, valueColor: AppColor.jadeEdge, showCoin: false)
+            summaryTile(title: "累计记录", value: "+\(growth.state.totalCoinsEarned)",
+                        sub: "累计消耗 -\(growth.state.totalCoinsSpent) · 保留最近 \(CoinRecord.maxStoredCount) 条",
+                        tint: AppColor.adventure, valueColor: AppColor.adventureEdge, showCoin: false)
+            dailyAllowanceCard
+        }
+    }
+
+    private func compactSummaryRow(today: (earned: Int, spent: Int)) -> some View {
+        HStack(spacing: AppSpacing.sm) {
+            summaryTile(title: "当前余额", value: "\(growth.state.coins)", sub: "可用积分",
+                        tint: AppColor.gold, valueColor: AppColor.goldEdge, showCoin: true)
+            summaryTile(title: "今日收支", value: "+\(today.earned)", sub: "消耗 -\(today.spent)",
+                        tint: AppColor.jade, valueColor: AppColor.jadeEdge, showCoin: false)
+            summaryTile(title: "累计记录", value: "+\(growth.state.totalCoinsEarned)", sub: "消耗 -\(growth.state.totalCoinsSpent)",
+                        tint: AppColor.adventure, valueColor: AppColor.adventureEdge, showCoin: false)
+        }
+    }
+
+    private var dailyAllowanceCard: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.xs) {
+            Text("今日各来源额度")
+                .font(AppFont.bodyStrong)
+                .foregroundStyle(AppColor.ink)
+            ForEach(CoinSource.allCases, id: \.rawValue) { source in
+                let used = max(0, growth.state.stats.coinsToday[source.rawValue] ?? 0)
+                let limit = growth.rules.coinLimit(source)
+                VStack(alignment: .leading, spacing: 4) {
                     HStack {
-                        GrowthSegmentedPicker(options: Filter.allCases, title: \.rawValue, selection: $filter)
-                        Spacer()
-                        Text("共 \(filteredRecords.count) 条")
+                        Text(Self.sourceTitle(source))
                             .font(AppFont.label)
                             .foregroundStyle(AppColor.muted)
+                        Spacer()
+                        Text("\(used) / \(limit)")
+                            .font(AppFont.digits(14, weight: .heavy))
+                            .foregroundStyle(AppColor.ink)
                     }
+                    MiniBar(value: Double(used), total: Double(max(1, limit)), tint: AppColor.jade)
+                }
+            }
+        }
+        .padding(AppSpacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .appPanel(radius: AppRadius.lg)
+    }
 
-                    if filteredRecords.isEmpty {
-                        emptyState
-                    } else {
-                        ScrollView {
-                            LazyVStack(alignment: .leading, spacing: AppSpacing.sm) {
-                                ForEach(groupedRecords, id: \.dayTitle) { group in
-                                    VStack(alignment: .leading, spacing: AppSpacing.xs) {
-                                        Text(group.dayTitle)
-                                            .font(AppFont.label)
-                                            .foregroundStyle(AppColor.muted)
-                                            .padding(.horizontal, AppSpacing.xs)
-                                        ForEach(group.records) { record in
-                                            recordRow(record)
-                                        }
-                                    }
+    private var ledgerPanel: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+            HStack {
+                GrowthSegmentedPicker(options: Filter.allCases, title: \.rawValue, selection: $filter)
+                Spacer()
+                Text("共 \(filteredRecords.count) 条")
+                    .font(AppFont.label)
+                    .foregroundStyle(AppColor.muted)
+            }
+
+            if filteredRecords.isEmpty {
+                emptyState
+            } else {
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: AppSpacing.sm) {
+                        ForEach(groupedRecords, id: \.dayTitle) { group in
+                            VStack(alignment: .leading, spacing: AppSpacing.xs) {
+                                Text(group.dayTitle)
+                                    .font(AppFont.label)
+                                    .foregroundStyle(AppColor.muted)
+                                    .padding(.horizontal, AppSpacing.xs)
+                                ForEach(group.records) { record in
+                                    recordRow(record)
                                 }
                             }
                         }
-                        .scrollBounceBehavior(.basedOnSize)
                     }
+                    .padding(.bottom, AppSpacing.xs)
                 }
-                .padding(AppSpacing.md)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .appPanel()
-            }
-        } footer: {
-            AppButton(title: "完成", systemImage: "checkmark", role: .primary, size: .large, minWidth: 180) {
-                dismiss()
+                .scrollBounceBehavior(.basedOnSize)
             }
         }
-        #if os(macOS)
-        .frame(minWidth: 660, idealWidth: 820, minHeight: 500, idealHeight: 660)
-        #endif
-    }
-
-    private func summaryStrip(today: (earned: Int, spent: Int)) -> some View {
-        HStack(spacing: AppSpacing.sm) {
-            summaryTile(
-                title: "当前余额",
-                value: "\(growth.state.coins)",
-                sub: "可用积分",
-                tint: AppColor.gold,
-                valueColor: AppColor.goldEdge,
-                showCoin: true
-            )
-            summaryTile(
-                title: "今日收支",
-                value: "+\(today.earned)",
-                sub: "今日消耗 -\(today.spent)",
-                tint: AppColor.jade,
-                valueColor: AppColor.jadeEdge,
-                showCoin: false
-            )
-            summaryTile(
-                title: "累计记录",
-                value: "+\(growth.state.totalCoinsEarned)",
-                sub: "累计消耗 -\(growth.state.totalCoinsSpent)",
-                tint: AppColor.adventure,
-                valueColor: AppColor.adventureEdge,
-                showCoin: false
-            )
-        }
+        .padding(AppSpacing.md)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .appPanel(radius: AppRadius.lg)
     }
 
     private func summaryTile(
@@ -146,7 +189,7 @@ struct CoinLedgerView: View {
             Text(sub)
                 .font(AppFont.caption)
                 .foregroundStyle(AppColor.muted)
-                .lineLimit(1)
+                .lineLimit(2)
         }
         .padding(.horizontal, AppSpacing.md)
         .padding(.vertical, AppSpacing.sm)
@@ -214,7 +257,6 @@ struct CoinLedgerView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(AppSpacing.lg)
-        .appPanel()
     }
 
     private var emptyTitle: String {
@@ -229,6 +271,16 @@ struct CoinLedgerView: View {
         switch filter {
         case .all, .income: "去「经典闯关」答题过关就能赚取积分，每笔获取都会记在这里。"
         case .expense: "在「收藏馆」购买外观、解锁毁灭菇或参加「冒险闯关」的消耗会记在这里。"
+        }
+    }
+
+    private static func sourceTitle(_ source: CoinSource) -> String {
+        switch source {
+        case .answers: "经典答题"
+        case .completion: "过关评分"
+        case .firstWin: "每日首胜"
+        case .level: "升级奖励"
+        case .badge: "徽章奖励"
         }
     }
 
