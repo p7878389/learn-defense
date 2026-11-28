@@ -77,7 +77,7 @@ struct CollectionView: View {
         }
         .background(GrowthPageBackground())
         .growthCover(isPresented: $showCoinLedger) {
-            CoinLedgerView(profileID: profileID, onClose: { showCoinLedger = false })
+            CoinLedgerView(profileID: profileID, backTitle: "返回收藏馆", onClose: { showCoinLedger = false })
                 .environmentObject(model)
         }
         .onAppear {

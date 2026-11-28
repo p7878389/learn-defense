@@ -17,6 +17,7 @@ struct AdventureLobbyView: View {
     @State private var deck = AdventureCatalog.defaultDeck
     @State private var launch: AdventureLaunch?
     @State private var showInsufficientCoins = false
+    @State private var showCoinLedger = false
 
     private var growth: GrowthStore { model.growth(for: profileID) }
     private var regularDefenders: [DefenderKind] { AdventureCatalog.defenders.filter { $0.id != AdventureDoom.id } }
@@ -35,7 +36,11 @@ struct AdventureLobbyView: View {
             let compact = geometry.size.height < 760
             VStack(spacing: compact ? AppSpacing.xs : AppSpacing.sm) {
                 GrowthPageHeader(icon: "🗺️", title: "森林冒险", subtitle: "15 积分 / 局", backTitle: "返回主页", onClose: onClose) {
-                    CoinPill(coins: growth.state.coins, size: 20)
+                    Button { showCoinLedger = true } label: {
+                        CoinPill(coins: growth.state.coins, size: 20)
+                    }
+                    .buttonStyle(PressableStyle())
+                    .accessibilityLabel("查看积分记录，当前 \(growth.state.coins) 积分")
                 }
                 HStack(spacing: AppSpacing.sm) {
                     GrowthSegmentedPicker(options: Difficulty.allCases, title: \.displayName, selection: $difficulty)
@@ -80,6 +85,10 @@ struct AdventureLobbyView: View {
         .gameCover(item: $launch, onDismiss: { model.objectWillChange.send() }) { launch in
             AdventureView(levelID: launch.levelID, model: model, profileID: profileID,
                           difficulty: launch.difficulty, deck: launch.deck, onClose: { self.launch = nil })
+        }
+        .growthCover(isPresented: $showCoinLedger) {
+            CoinLedgerView(profileID: profileID, backTitle: "返回冒险", onClose: { showCoinLedger = false })
+                .environmentObject(model)
         }
         .overlay {
             if showInsufficientCoins {

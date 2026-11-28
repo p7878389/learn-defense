@@ -62,7 +62,7 @@ struct ProfileHomeView: View {
                 .environmentObject(model)
         }
         .growthCover(isPresented: $showCoinLedger) {
-            CoinLedgerView(profileID: profileID, onClose: { showCoinLedger = false })
+            CoinLedgerView(profileID: profileID, backTitle: "返回主页", onClose: { showCoinLedger = false })
                 .environmentObject(model)
         }
         .sheet(isPresented: $showWrongBook) {
