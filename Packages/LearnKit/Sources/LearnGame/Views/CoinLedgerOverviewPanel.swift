@@ -39,59 +39,47 @@ struct CoinLedgerOverviewModel {
     let lifetime: CoinLedgerTotals
     let summaries: [CoinLedgerKindSummary]
     let allowances: [CoinDailyAllowance]
-    let backTitle: String
 }
 
-/// 宽屏左侧概览栏：积分金库余额卡、今日与累计收支、按来源分类汇总（可点击联动右侧筛选）。
+/// 宽屏左侧概览栏：固定一屏展示（不可滚动），包含积分金库余额卡与可切换的「来源分布 / 今日额度」分析卡。
 struct CoinLedgerOverviewPanel: View {
+    private enum InsightTab: String, CaseIterable {
+        case distribution = "来源分布"
+        case allowance = "今日额度"
+    }
+
     let overview: CoinLedgerOverviewModel
     @Binding var selectedKind: CoinRecord.Kind?
-    let onClose: () -> Void
+    @State private var insightTab: InsightTab = .distribution
 
     private var maxSummaryAmount: Int {
         overview.summaries.map(\.totalAmount).max() ?? 1
     }
 
     var body: some View {
-        VStack(spacing: AppSpacing.md) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: AppSpacing.md) {
-                    vaultCard
-                    categoryBreakdownCard
-                    dailyAllowanceCard
-                }
-            }
-            .scrollBounceBehavior(.basedOnSize)
-
-            AppButton(
-                title: overview.backTitle,
-                systemImage: "arrow.uturn.backward",
-                role: .primary,
-                size: .large,
-                expands: true,
-                action: onClose
-            )
+        VStack(alignment: .leading, spacing: AppSpacing.md) {
+            vaultCard
+            insightCard
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
     private var vaultCard: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
             HStack(spacing: AppSpacing.xs) {
-                CoinIcon(size: 32)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("我的积分金库")
-                        .font(AppFont.bodyStrong)
-                        .foregroundStyle(AppColor.ink)
-                    Text("当前可用余额")
-                        .font(AppFont.caption)
-                        .foregroundStyle(AppColor.muted)
-                }
+                CoinIcon(size: 28)
+                Text("我的积分金库")
+                    .font(AppFont.bodyStrong)
+                    .foregroundStyle(AppColor.ink)
                 Spacer()
+                Text("可用余额")
+                    .font(AppFont.caption)
+                    .foregroundStyle(AppColor.muted)
             }
 
             HStack(alignment: .firstTextBaseline, spacing: AppSpacing.xs) {
                 Text("\(overview.coins)")
-                    .font(AppFont.digits(44, weight: .black))
+                    .font(AppFont.digits(40, weight: .black))
                     .foregroundStyle(AppColor.goldEdge)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
@@ -126,14 +114,12 @@ struct CoinLedgerOverviewPanel: View {
         .appPanel(radius: AppRadius.lg, tint: AppColor.gold)
     }
 
-    private var categoryBreakdownCard: some View {
+    private var insightCard: some View {
         VStack(alignment: .leading, spacing: AppSpacing.sm) {
-            HStack {
-                Text("来源与去向分布")
-                    .font(AppFont.bodyStrong)
-                    .foregroundStyle(AppColor.ink)
-                Spacer()
-                if selectedKind != nil {
+            HStack(spacing: AppSpacing.xs) {
+                insightTabBar
+                Spacer(minLength: 4)
+                if insightTab == .distribution, selectedKind != nil {
                     Button("全部") { selectedKind = nil }
                         .font(AppFont.label)
                         .foregroundStyle(AppColor.accentEdge)
@@ -141,29 +127,70 @@ struct CoinLedgerOverviewPanel: View {
                 }
             }
 
-            if overview.summaries.isEmpty {
-                Text("当前筛选条件下暂无分类统计")
-                    .font(AppFont.label)
-                    .foregroundStyle(AppColor.muted)
-                    .padding(.vertical, AppSpacing.xs)
-            } else {
-                VStack(spacing: AppSpacing.xs) {
-                    ForEach(overview.summaries) { item in
-                        categoryRow(item)
-                    }
-                }
+            switch insightTab {
+            case .distribution:
+                distributionContent
+            case .allowance:
+                allowanceContent
             }
+
+            Spacer(minLength: 0)
         }
         .padding(AppSpacing.md)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .appPanel(radius: AppRadius.lg)
     }
 
-    private var dailyAllowanceCard: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.xs) {
-            Text("今日各来源额度")
-                .font(AppFont.bodyStrong)
-                .foregroundStyle(AppColor.ink)
+    private var insightTabBar: some View {
+        HStack(spacing: 4) {
+            ForEach(InsightTab.allCases, id: \.self) { tab in
+                let selected = insightTab == tab
+                Button {
+                    insightTab = tab
+                } label: {
+                    Text(tab.rawValue)
+                        .font(AppFont.label)
+                        .foregroundStyle(selected ? AppColor.ink : AppColor.muted)
+                        .padding(.horizontal, AppSpacing.sm)
+                        .padding(.vertical, 6)
+                        .background(Capsule().fill(selected ? AppColor.surface : .clear))
+                        .overlay(
+                            Capsule().strokeBorder(
+                                selected ? AppColor.cardStroke.opacity(0.85) : .clear,
+                                lineWidth: 1
+                            )
+                        )
+                }
+                .buttonStyle(PressableStyle())
+                .accessibilityAddTraits(selected ? .isSelected : [])
+            }
+        }
+        .padding(3)
+        .background(Capsule().fill(AppColor.ink.opacity(0.05)))
+    }
+
+    @ViewBuilder
+    private var distributionContent: some View {
+        if overview.summaries.isEmpty {
+            Text("当前筛选条件下暂无分类统计")
+                .font(AppFont.label)
+                .foregroundStyle(AppColor.muted)
+                .padding(.vertical, AppSpacing.sm)
+        } else {
+            let columns = [
+                GridItem(.flexible(), spacing: AppSpacing.xs),
+                GridItem(.flexible(), spacing: AppSpacing.xs)
+            ]
+            LazyVGrid(columns: columns, spacing: AppSpacing.xs) {
+                ForEach(overview.summaries) { item in
+                    categoryTile(item)
+                }
+            }
+        }
+    }
+
+    private var allowanceContent: some View {
+        VStack(alignment: .leading, spacing: AppSpacing.sm) {
             ForEach(overview.allowances) { item in
                 let full = item.limit > 0 && item.used >= item.limit
                 VStack(alignment: .leading, spacing: 4) {
@@ -185,12 +212,10 @@ struct CoinLedgerOverviewPanel: View {
                 }
             }
         }
-        .padding(AppSpacing.md)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .appPanel(radius: AppRadius.lg)
+        .padding(.top, AppSpacing.xxs)
     }
 
-    private func categoryRow(_ item: CoinLedgerKindSummary) -> some View {
+    private func categoryTile(_ item: CoinLedgerKindSummary) -> some View {
         let selected = selectedKind == item.kind
         let tint = CoinLedgerKindStyle.tint(for: item.kind)
         let edge = CoinLedgerKindStyle.edge(for: item.kind)
@@ -199,29 +224,32 @@ struct CoinLedgerOverviewPanel: View {
         return Button {
             selectedKind = selected ? nil : item.kind
         } label: {
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: AppSpacing.xs) {
-                    PictureView(emoji: item.kind.icon, size: 22)
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(spacing: 5) {
+                    PictureView(emoji: item.kind.icon, size: 18)
                     Text(item.kind.categoryName)
-                        .font(AppFont.body)
+                        .font(AppFont.label)
                         .foregroundStyle(AppColor.ink)
-                    Text("\(item.count) 笔")
-                        .font(AppFont.caption)
+                        .lineLimit(1)
+                    Spacer(minLength: 2)
+                    Text("\(item.count)笔")
+                        .font(AppFont.micro)
                         .foregroundStyle(AppColor.muted)
-                    Spacer()
-                    Text("\(prefix)\(item.totalAmount)")
-                        .font(AppFont.digits(16, weight: .black))
-                        .foregroundStyle(item.kind.isIncome ? AppColor.jadeEdge : AppColor.dangerText)
                 }
+                Text("\(prefix)\(item.totalAmount)")
+                    .font(AppFont.digits(16, weight: .black))
+                    .foregroundStyle(item.kind.isIncome ? AppColor.jadeEdge : AppColor.dangerText)
+                    .lineLimit(1)
                 MiniBar(
                     value: Double(item.totalAmount),
                     total: Double(max(1, maxSummaryAmount)),
                     tint: tint,
-                    height: 8
+                    height: 6
                 )
             }
-            .padding(.horizontal, AppSpacing.sm)
+            .padding(.horizontal, 10)
             .padding(.vertical, AppSpacing.xs)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .appInset(radius: AppRadius.sm, tint: selected ? tint : nil)
             .overlay(
                 RoundedRectangle(cornerRadius: AppRadius.sm)

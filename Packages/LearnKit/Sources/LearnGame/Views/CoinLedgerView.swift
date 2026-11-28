@@ -38,8 +38,7 @@ struct CoinLedgerView: View {
             today: today,
             lifetime: lifetime,
             summaries: summaries,
-            allowances: state.dailyCoinAllowances(rules: growth.rules),
-            backTitle: backTitle
+            allowances: state.dailyCoinAllowances(rules: growth.rules)
         )
 
         GeometryReader { geo in
@@ -50,8 +49,7 @@ struct CoinLedgerView: View {
                     HStack(alignment: .top, spacing: AppSpacing.md) {
                         CoinLedgerOverviewPanel(
                             overview: overview,
-                            selectedKind: $selectedKind,
-                            onClose: onClose
+                            selectedKind: $selectedKind
                         )
                         .frame(width: 332)
 
