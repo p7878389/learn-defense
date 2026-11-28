@@ -35,6 +35,8 @@ extension GameSession {
             phase = .paused
         }
         if phase == .paused || phase == .resting { scene.setGamePaused(true) }
+        clearPendingSpeechTransition()
+        isVoiceListening = false
         speech.stop()
         progress.save()
     }
@@ -44,6 +46,8 @@ extension GameSession {
         guard phase != .abandoned else { return }
         pausePlayTimer()
         scene.setGamePaused(true)
+        clearPendingSpeechTransition()
+        isVoiceListening = false
         speech.stop()
         progress.save()
         guard phase != .won && phase != .lost else { return }
@@ -72,6 +76,8 @@ extension GameSession {
         targetID = nil
         questionIDs = []
         scene.setGamePaused(true, keepingAnimations: true)
+        clearPendingSpeechTransition()
+        isVoiceListening = false
         progress.save()
         speech.stop()
     }
@@ -101,6 +107,9 @@ extension GameSession {
         roundResolved = 0
         questions.removeAll()
         wrongPicks = []
+        roundReviewCards = []
+        spokenRestCardIDs = []
+        lastMistakeTip = nil
         roundStartScore = score
         roundStartAttempted = attempted
         roundStartCorrect = firstTryCorrect

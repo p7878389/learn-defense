@@ -8,7 +8,14 @@ struct UltimateOverlay: View {
     let onAnswer: (Int) -> Void
     let onReplay: () -> Void
     let onCancel: () -> Void
+    var speechBusy = false
+    var voiceListening = false
+    var onBeforeListen: () -> Void = {}
+    var onListeningChanged: (Bool) -> Void = { _ in }
+    var onVoiceMatch: (() -> Void)? = nil
     var retrying = false
+
+    private var lockedOtherControls: Bool { speechBusy || voiceListening }
 
     var body: some View {
         ZStack {
@@ -21,8 +28,36 @@ struct UltimateOverlay: View {
                 borderColor: AppColor.lightning.opacity(0.8),
                 maxWidth: 900
             ) {
-                AnswerPanel(question: question, wrongPicks: wrongPicks, onAnswer: onAnswer, onReplay: onReplay, retrying: retrying)
+                if let spell = question.speakTarget, let onVoiceMatch {
+                    HStack(spacing: AppSpacing.sm) {
+                        Text("⚡️ 大声念出咒语「\(spell)」直接清场，或点选下方答案")
+                            .font(AppFont.bodyStrong)
+                            .foregroundStyle(AppColor.ink)
+                        VoiceSpeakButton(
+                            title: "大声念咒语",
+                            expected: spell,
+                            english: question.isEnglishSpeaking,
+                            resetKey: question.id,
+                            speechLocked: speechBusy,
+                            onBeforeListen: onBeforeListen,
+                            onListeningChanged: onListeningChanged,
+                            onMatched: onVoiceMatch
+                        )
+                    }
+                    .padding(.horizontal, AppSpacing.md).padding(.vertical, AppSpacing.xs)
+                    .appInset(radius: AppRadius.md, tint: AppColor.gold)
+                }
+                AnswerPanel(
+                    question: question,
+                    wrongPicks: wrongPicks,
+                    onAnswer: onAnswer,
+                    onReplay: onReplay,
+                    retrying: retrying,
+                    speechBusy: speechBusy,
+                    voiceListening: voiceListening
+                )
                 AppButton(title: "先不放了", systemImage: "xmark", role: .secondary, size: .medium, minWidth: 140, action: onCancel)
+                    .disabled(lockedOtherControls)
                 Text(!retrying ? "点「先不放了」可取消，能量会留着下次用" : "已经答错过，答对或取消都会用掉这次能量")
                     .font(AppFont.label)
                     .foregroundStyle(AppColor.muted)
@@ -105,12 +140,14 @@ struct RoundRestOverlay: View {
                         .accessibilityLabel(isReady ? "休息结束，可以开始下一回合" : "休息还剩 \(session.restRemaining) 秒")
 
                         VStack(spacing: 6) {
-                            Text(isReady ? "休息好了，按自己的节奏继续" : "放下屏幕，看看远处，伸个懒腰吧")
+                            Text(isReady ? "休息好了，按自己的节奏继续" : "看看远处，顺便听听本回合的词卡吧")
                                 .font(AppFont.heading)
                             Text("下一回合：第 \(session.round + 1) 回合 · \(session.roundQuestions + session.rules.questionIncrement[session.config.difficulty]) 题")
                                 .font(AppFont.label)
                                 .foregroundStyle(AppColor.muted)
                         }
+
+                        RoundRestFlashcardView(session: session)
 
                         AppButton(
                             title: isReady ? "开始下一回合" : "休息中 · \(session.restRemaining) 秒",
@@ -120,10 +157,11 @@ struct RoundRestOverlay: View {
                             expands: true,
                             action: session.continueRound
                         )
-                        .disabled(!isReady)
+                        .disabled(!isReady || session.isInteractionLocked)
 
                         VStack(spacing: AppSpacing.xs) {
                             AppButton(title: "结束并结算", systemImage: "flag.checkered", role: .secondary, size: .medium, minWidth: 180, action: session.finishGame)
+                                .disabled(session.isInteractionLocked)
                             Text("随时可以结束，积分将在整局结束后统一结算")
                                 .font(AppFont.caption)
                                 .foregroundStyle(AppColor.muted)

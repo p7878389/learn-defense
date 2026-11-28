@@ -5,14 +5,17 @@ extension GameSession: GameSceneDelegate {
     func ultimateAnimationStarted() { isUnleashing = true }
     func ultimateAnimationFinished() { isUnleashing = false }
 
-    /// 拼字块题时战场放慢到一半
-    var speedFactor: Double { tuner.speedFactor * (typing ? 0.5 : 1) }
-    var holdsTarget: Bool { typing || inNewItemGrace }
+    /// 语音播报或跟读期间怪物暂停移动；拼字块题时战场放慢到一半
+    var speedFactor: Double {
+        if isSpeechBlocking || isVoiceListening { return 0 }
+        return tuner.speedFactor * (typing ? 0.5 : 1)
+    }
+    var holdsTarget: Bool { typing || inNewItemGrace || isSpeechBlocking || isVoiceListening }
 
     /// 瞄准的这道题是孩子第一次见的知识点（还没有作答记录）：从瞄准它起的几秒内，
     /// 这只怪物原地等着。答过一次（对或错）就有了记录，之后照常逼近。
     /// 按战场时钟计时，暂停时不走
-    private var inNewItemGrace: Bool {
+    var inNewItemGrace: Bool {
         guard newItemGrace > 0, let id = targetID, let entry = questions[id],
               !questions.isRetry(for: id), progress.stats[entry.item.key] == nil else { return false }
         return questions.isInGrace(id, at: scene.clock, seconds: newItemGrace)
@@ -59,12 +62,18 @@ extension GameSession: GameSceneDelegate {
 
     func targetChanged(to id: Int?) {
         guard phase == .playing else { return }
-        targetID = id
-        typing = false
-        current = id.flatMap { questions[$0]?.question }
-        if let id { questions.markShown(id) }
-        wrongPicks = id.map { questions.wrongPicks(for: $0) } ?? []
-        speech.speak(current?.promptSpeech, interrupt: false, channel: .question)
+        if waitsForSpeechCompletion, speech.isSpeaking {
+            targetID = id
+            typing = false
+            current = nil
+            wrongPicks = []
+            runAfterSpeech { [weak self] in
+                guard let self, self.targetID == id else { return }
+                self.presentTargetQuestion(for: id)
+            }
+            return
+        }
+        presentTargetQuestion(for: id)
     }
 
     func enemyReachedBase(_ id: Int) -> Bool {

@@ -322,7 +322,7 @@ struct ResultView: View {
     }
 
     private var notebook: some View {
-        MistakeNotebook(mistakes: session.mistakes)
+        MistakeNotebook(mistakes: session.mistakes, speech: session.speech)
     }
     // MARK: - 按钮
 
@@ -334,49 +334,6 @@ struct ResultView: View {
                 AppButton(title: "去收藏馆看看", systemImage: "gift.fill", role: .adventure, size: .large, action: onOpenCollection)
             }
             AppButton(title: won ? "再来一局" : "再试一次", systemImage: "play.fill", role: .primary, size: .large, minWidth: 180, action: onReplay)
-        }
-    }
-}
-
-/// 记一记：答错和没来得及答的题，结算后再看一遍。
-/// 放得下就全部列出来；错题多、弹窗放不下时只在这个框里滚动，弹窗高度不跟着错题数变，按钮始终在一屏里
-struct MistakeNotebook: View {
-    let mistakes: [GameSession.Mistake]
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: AppSpacing.xs) {
-            Text("✏️ 记一记（\(mistakes.count)）").font(AppFont.rounded(20, weight: .heavy)).foregroundStyle(AppColor.ink)
-            ViewThatFits(in: .vertical) {
-                list
-                ScrollView { list }
-                    .scrollBounceBehavior(.basedOnSize)
-            }
-        }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .appPanel(radius: AppRadius.lg)
-    }
-
-    static func summaryText(for mistake: GameSession.Mistake) -> String {
-        let prompt = mistake.prompt == "🔊" ? "🔊 听音题" : mistake.prompt
-        let status = mistake.missed ? "（未作答）" : ""
-        return "\(prompt)\(status) → 答案：\(mistake.answer)"
-    }
-
-    private var list: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            ForEach(mistakes) { m in
-                HStack(alignment: .firstTextBaseline, spacing: AppSpacing.xs) {
-                    PictureView(emoji: m.missed ? "⏰" : "✏️", size: 22)
-                    Text(Self.summaryText(for: m))
-                        .foregroundStyle(AppColor.ink)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .font(AppFont.rounded(17, weight: .semibold))
-                .padding(.horizontal, AppSpacing.sm).padding(.vertical, 6)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .appInset(radius: AppRadius.sm)
-            }
         }
     }
 }

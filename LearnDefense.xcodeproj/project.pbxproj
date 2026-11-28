@@ -197,6 +197,8 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "字灵守卫";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "用于朗读汉字、古诗和英语单词，大声读出即可触发暴击和大招";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "用于在设备上识别孩子的朗读，帮助练习发音与开口表达";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIFileSharingEnabled = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -230,6 +232,8 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "字灵守卫";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "用于朗读汉字、古诗和英语单词，大声读出即可触发暴击和大招";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "用于在设备上识别孩子的朗读，帮助练习发音与开口表达";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIFileSharingEnabled = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

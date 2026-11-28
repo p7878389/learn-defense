@@ -15,6 +15,12 @@ public extension GrowthState {
         guard coins >= AdventureDoom.unlockPrice else { return .notEnough(short: AdventureDoom.unlockPrice - coins) }
         coins -= AdventureDoom.unlockPrice
         owned.insert("defender.doomShroom")
+        appendCoinRecord(
+            kind: .purchaseDoomShroom,
+            delta: -AdventureDoom.unlockPrice,
+            title: "解锁道具 · 毁灭菇",
+            detail: "经典与冒险模式通用"
+        )
         return .bought
     }
 }

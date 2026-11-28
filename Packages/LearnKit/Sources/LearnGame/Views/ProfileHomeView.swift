@@ -14,6 +14,7 @@ struct ProfileHomeView: View {
     @State private var refresh = 0
     @State private var showCollection = false
     @State private var showBadges = false
+    @State private var showCoinLedger = false
     /// 结算页点了「去收藏馆看看」：等游戏页关掉后再打开收藏馆
     @State private var openCollectionAfterGame = false
     @State private var showAdventure = false
@@ -59,6 +60,12 @@ struct ProfileHomeView: View {
         .growthCover(isPresented: $showAdventure) {
             AdventureLobbyView(profileID: profileID, onClose: { showAdventure = false })
                 .environmentObject(model)
+        }
+        .sheet(isPresented: $showCoinLedger) {
+            if let profile {
+                CoinLedgerView(profile: profile, growth: model.growth(for: profile.id))
+                    .presentationDetents([.large])
+            }
         }
         .sheet(isPresented: $showWrongBook) {
             if let profile {
@@ -110,7 +117,9 @@ struct ProfileHomeView: View {
                         .appPanel(radius: AppRadius.md, tint: AppColor.dangerText)
                     }
 
-                    GrowthCard(profile: profile, growth: growth) {
+                    GrowthCard(profile: profile, growth: growth, onCoins: {
+                        showCoinLedger = true
+                    }) {
                         editing = EditingProfile(profile: profile, isNew: false)
                     }
 

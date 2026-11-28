@@ -219,6 +219,9 @@ struct AdventureScreen: View {
                         }
                     }
                     Spacer(minLength: AppSpacing.xs)
+                    if let prompt = session.currentVoicePrompt {
+                        voiceBoostBar(prompt)
+                    }
                     ultimateButton
                 }
             }
@@ -226,6 +229,46 @@ struct AdventureScreen: View {
         .padding(.horizontal, AppSpacing.md)
         .padding(.vertical, AppSpacing.xs)
         .appPanel(radius: AppRadius.md)
+    }
+
+    private func voiceBoostBar(_ prompt: AdventureSession.VoicePrompt) -> some View {
+        HStack(spacing: AppSpacing.xs) {
+            Button(action: session.speakCurrentVoicePrompt) {
+                HStack(spacing: 4) {
+                    Image(systemName: "speaker.wave.2.fill")
+                        .font(AppFont.rounded(13, weight: .bold))
+                        .foregroundStyle(AppColor.adventureEdge)
+                    Text(prompt.display)
+                        .font(AppFont.rounded(16, weight: .heavy))
+                        .foregroundStyle(AppColor.ink)
+                        .lineLimit(1)
+                    if let hint = prompt.hint {
+                        Text(hint)
+                            .font(AppFont.caption)
+                            .foregroundStyle(AppColor.muted)
+                            .lineLimit(1)
+                    }
+                }
+                .padding(.horizontal, AppSpacing.xs).padding(.vertical, 6)
+                .background(Capsule().fill(AppColor.paper))
+                .overlay(Capsule().strokeBorder(AppColor.cardStroke, lineWidth: 1))
+            }
+            .buttonStyle(PressableStyle())
+            .disabled(session.isVoiceControlsLocked)
+            .opacity(session.isVoiceControlsLocked ? 0.58 : 1)
+
+            VoiceSpeakButton(
+                title: "念口令 +40☀️",
+                expected: prompt.expected,
+                english: prompt.english,
+                resetKey: prompt.id,
+                speechLocked: session.speechActive,
+                onBeforeListen: session.stopSpeech,
+                onListeningChanged: { session.isVoiceListening = $0 },
+                onMatched: { _ = session.claimVoiceBoost() }
+            )
+            .disabled(session.hud.phase != .playing)
+        }
     }
 
     private var enemyPreviewTag: some View {
@@ -269,10 +312,10 @@ struct AdventureScreen: View {
                         .padding(.bottom, 3.5)
                 }
             }
-            .opacity(ready ? 1 : 0.62)
+            .opacity(ready && !session.isVoiceControlsLocked ? 1 : 0.62)
         }
         .buttonStyle(PressableStyle())
-        .disabled(!ready)
+        .disabled(!ready || session.isVoiceControlsLocked)
     }
 
     private var placementPrompt: String? {

@@ -1,3 +1,4 @@
+import Combine
 import LearnCore
 import SwiftUI
 
@@ -14,6 +15,9 @@ struct WrongBookView: View {
     var speech: Speech? = nil
     var onStartReview: (() -> Void)? = nil
     @State private var filter: Filter = .all
+    @State private var playingKey: String?
+    @State private var listenTask: Task<Void, Never>?
+    @State private var speechBusy = false
 
     private var entries: [(key: String, stats: ItemStats)] {
         progress.stats
@@ -54,6 +58,16 @@ struct WrongBookView: View {
                     HStack {
                         GrowthSegmentedPicker(options: Filter.allCases, title: \.rawValue, selection: $filter)
                         Spacer()
+                        if speech != nil, !filteredEntries.isEmpty {
+                            AppButton(
+                                title: listenTask == nil ? "连播磨耳朵" : "停止连播",
+                                systemImage: listenTask == nil ? "headphones" : "stop.circle.fill",
+                                role: listenTask == nil ? .adventure : .destructive,
+                                size: .small
+                            ) {
+                                toggleListenAll()
+                            }
+                        }
                     }
                     if filteredEntries.isEmpty {
                         emptyState(
@@ -92,6 +106,9 @@ struct WrongBookView: View {
         #if os(macOS)
         .frame(minWidth: 620, idealWidth: 780, minHeight: 460, idealHeight: 620)
         #endif
+        .onChange(of: filter) { _, _ in stopListenAll() }
+        .onReceive(speech?.$isSpeaking.eraseToAnyPublisher() ?? Just(false).eraseToAnyPublisher()) { speechBusy = $0 }
+        .onDisappear { stopListenAll() }
     }
 
     private func emptyState(emoji: String, title: String, subtitle: String) -> some View {
@@ -133,14 +150,48 @@ struct WrongBookView: View {
             }
             Spacer(minLength: 0)
             if let speech, let speakable {
-                AppButton(title: "听读音", systemImage: "speaker.wave.2.fill", role: .secondary, size: .small) {
+                AppButton(title: playingKey == entry.key ? "正在读…" : "听读音",
+                          systemImage: playingKey == entry.key ? "speaker.wave.3.fill" : "speaker.wave.2.fill",
+                          role: .secondary, size: .small) {
+                    stopListenAll()
                     speech.speak(speakable, interrupt: true, channel: .preview)
                 }
+                .disabled(speechBusy || listenTask != nil)
             }
         }
         .padding(.horizontal, AppSpacing.md)
         .padding(.vertical, AppSpacing.sm)
-        .appInset(radius: AppRadius.md)
+        .appInset(radius: AppRadius.md, tint: playingKey == entry.key ? AppColor.jade : nil)
+    }
+
+    private func toggleListenAll() {
+        if listenTask != nil {
+            stopListenAll()
+            return
+        }
+        guard let speech else { return }
+        let items = filteredEntries.compactMap { entry -> (String, String)? in
+            guard let text = Self.speakableText(from: entry.stats.summary ?? entry.key) else { return nil }
+            return (entry.key, text)
+        }
+        guard !items.isEmpty else { return }
+        listenTask = Task { @MainActor in
+            for (key, text) in items {
+                guard !Task.isCancelled else { break }
+                playingKey = key
+                speech.speak(text, interrupt: true, channel: .preview)
+                // 留出跟读停顿，让小朋友听一遍、跟读一遍
+                try? await Task.sleep(for: .seconds(2.6))
+            }
+            playingKey = nil
+            listenTask = nil
+        }
+    }
+
+    private func stopListenAll() {
+        listenTask?.cancel()
+        listenTask = nil
+        playingKey = nil
     }
 
     private static func speakableText(from summary: String) -> String? {

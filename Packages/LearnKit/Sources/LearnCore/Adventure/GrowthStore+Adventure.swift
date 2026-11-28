@@ -14,6 +14,12 @@ extension GrowthStore {
                 throw AdventureError.notEnough(short: AdventureCatalog.entryCost - state.coins)
             }
             state.coins -= AdventureCatalog.entryCost
+            state.appendCoinRecord(
+                kind: .adventureEntry,
+                delta: -AdventureCatalog.entryCost,
+                title: "冒险闯关 · \(battle.level.title)",
+                detail: "\(battle.difficulty.displayName)难度入场"
+            )
             state.adventure.active = battle
         }
     }

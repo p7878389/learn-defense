@@ -108,7 +108,7 @@ public struct QuestionGenerator: Sendable {
             return [i.text]
         case .poemLine(let p, let index):
             guard index + 1 < p.lines.count else { return [] }
-            return ["\(p.lines[index])，\(p.lines[index + 1])"]
+            return [p.lines[index], "\(p.lines[index])，\(p.lines[index + 1])"]
         case .choice(let q, _):
             return [q.speech ?? q.prompt, q.answer]
         case .picture(let p):
@@ -235,7 +235,7 @@ public struct QuestionGenerator: Sendable {
         return build(
             kind: .poemNextLine, key: key, instruction: "接下一句", prompt: line, hint: poem.byline,
             correct: correct, distractors: distractors, style: .text,
-            answerSpeech: "\(line)，\(correct)", explanation: "\(line)，\(correct)。\(poem.byline)",
+            promptSpeech: line, answerSpeech: "\(line)，\(correct)", explanation: "\(line)，\(correct)。\(poem.byline)",
             card: WordCard(text: correct, detail: poem.byline), &rng)
     }
 
@@ -283,7 +283,7 @@ public struct QuestionGenerator: Sendable {
                 kind: kind, key: key, instruction: "选出正确的意思", prompt: w.word,
                 hint: settings.showHint ? w.phonetic : nil,
                 correct: w.meaning, distractors: others.map(\.meaning), style: .text,
-                answerSpeech: answerSpeech, explanation: explanation, card: card, &rng)
+                promptSpeech: w.word, answerSpeech: answerSpeech, explanation: explanation, card: card, &rng)
         case .meaningToEnglish:
             return build(
                 kind: kind, key: key, instruction: "选出正确的英文", prompt: w.meaning, hint: nil,
@@ -304,7 +304,7 @@ public struct QuestionGenerator: Sendable {
         return build(
             kind: .sentenceMeaning, key: key, instruction: "选出句子的意思", prompt: s.sentence, hint: nil,
             correct: s.meaning, distractors: others, style: .text,
-            answerSpeech: s.sentence, explanation: "\(s.sentence) \(s.meaning)",
+            promptSpeech: s.sentence, answerSpeech: s.sentence, explanation: "\(s.sentence) \(s.meaning)",
             card: WordCard(text: s.sentence, detail: s.meaning), &rng)
     }
 

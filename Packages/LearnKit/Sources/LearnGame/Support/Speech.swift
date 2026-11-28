@@ -1,12 +1,14 @@
 import AVFoundation
+import Combine
 import LearnCore
 
 /// 朗读。有预先生成的高质量语音（见 SpeechLibrary）就播放音频文件，
 /// 选择豆包时先等待对应音频下载或生成，确实不可用时才回退系统语音。
 @MainActor
-final class Speech: NSObject {
+final class Speech: NSObject, ObservableObject {
     let library: SpeechLibrary?
     enum Channel { case question, guidance, preview }
+    @Published private(set) var isSpeaking = false
     private var preferences = ReaderPreferences()
     var effectsVolume: Float { Float(preferences.effectsVolume) }
     private let synthesizer: AVSpeechSynthesizer
@@ -21,6 +23,8 @@ final class Speech: NSObject {
     /// 排队等着读的文本
     private var queue: [String] = []
     private var preparation: Task<Void, Never>?
+    private var idleHandlers: [@MainActor () -> Void] = []
+    private var watchdog: Task<Void, Never>?
 
     init(library: SpeechLibrary? = nil, synthesizer: AVSpeechSynthesizer = AVSpeechSynthesizer(),
          audioPreparationTimeout: Duration = .seconds(8),
@@ -55,6 +59,16 @@ final class Speech: NSObject {
         if interrupt { stop() }
         queue.append(text)
         if !isPlaying { playNext() }
+        refreshSpeakingState()
+    }
+
+    /// 等待当前及队列中所有语音播报完成后执行一次；当前未在播报则立刻执行。
+    func whenIdle(_ action: @escaping @MainActor () -> Void) {
+        if !isSpeaking {
+            action()
+        } else {
+            idleHandlers.append(action)
+        }
     }
 
     /// 购买反馈与题目、提示语共用相同的来源选择和等待规则。
@@ -65,31 +79,79 @@ final class Speech: NSObject {
     func stop() {
         preparation?.cancel()
         preparation = nil
+        watchdog?.cancel()
+        watchdog = nil
         queue.removeAll()
+        idleHandlers.removeAll()
         player?.stop()
         player = nil
         utterance = nil
         synthesizer.stopSpeaking(at: .immediate)
+        if isSpeaking { isSpeaking = false }
     }
 
     private var isPlaying: Bool { preparation != nil || player != nil || utterance != nil }
 
+    private func refreshSpeakingState() {
+        let active = isPlaying || !queue.isEmpty
+        if isSpeaking != active { isSpeaking = active }
+        if active {
+            armWatchdog()
+        } else {
+            watchdog?.cancel()
+            watchdog = nil
+            let handlers = idleHandlers
+            idleHandlers.removeAll()
+            handlers.forEach { $0() }
+        }
+    }
+
+    /// 兜底超时：防止极端情况下系统音频回调缺失导致界面永久等待
+    private func armWatchdog() {
+        watchdog?.cancel()
+        watchdog = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(12))
+            guard !Task.isCancelled, let self, self.isSpeaking else { return }
+            self.player?.stop()
+            self.player = nil
+            self.utterance = nil
+            self.synthesizer.stopSpeaking(at: .immediate)
+            if self.queue.isEmpty {
+                self.refreshSpeakingState()
+            } else {
+                self.playNext()
+            }
+        }
+    }
+
     private func playNext() {
-        guard !queue.isEmpty else { return }
+        guard !queue.isEmpty else {
+            refreshSpeakingState()
+            return
+        }
         let text = queue.removeFirst()
         guard preferences.source == .doubao, let library else {
             speakWithSystemVoice(text)
+            refreshSpeakingState()
             return
         }
-        if let url = library.audioFile(for: text), playAudio(url) { return }
+        if let url = library.audioFile(for: text), playAudio(url) {
+            refreshSpeakingState()
+            return
+        }
         let timeout = audioPreparationTimeout
         preparation = Task { [weak self] in
             let url = await library.audioFileWhenReady(for: text, timeout: timeout)
             guard !Task.isCancelled, let self else { return }
             self.preparation = nil
-            if let url, self.playAudio(url) { return }
+            if let url, self.playAudio(url) {
+                self.refreshSpeakingState()
+                return
+            }
             self.speakWithSystemVoice(text)
+            self.refreshSpeakingState()
         }
+        refreshSpeakingState()
     }
 
     private func playAudio(_ url: URL) -> Bool {

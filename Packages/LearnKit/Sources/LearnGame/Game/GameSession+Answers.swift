@@ -58,7 +58,13 @@ extension GameSession {
             record(questions.shownAt(for: id))
             feedback.play(correct: true, volume: speech.effectsVolume)
             typing = false
+            lastMistakeTip = nil
             scene.noteCorrectAnswer()
+            if let card = question.card {
+                scene.showCard(card, near: id)
+                recordRoundReviewCard(question, wasWrong: false)
+            }
+            speech.speak(question.answerSpeech, interrupt: true, channel: .question)
 
             questions.remove(id)
             questionIDs = questions.ids
@@ -68,11 +74,20 @@ extension GameSession {
                 if let next = makeQuestion() {
                     questions.insert(next, for: id)
                     questionIDs = questions.ids
-                    questions.markShown(id)
                     scene.setSign(id, next.question.signText)
-                    current = next.question
-                    wrongPicks = []
-                    speech.speak(next.question.promptSpeech, interrupt: false, channel: .question)
+                    if waitsForSpeechCompletion, speech.isSpeaking {
+                        current = nil
+                        wrongPicks = []
+                        runAfterSpeech { [weak self] in
+                            guard let self, self.targetID == id else { return }
+                            self.presentTargetQuestion(for: id)
+                        }
+                    } else {
+                        questions.markShown(id)
+                        current = next.question
+                        wrongPicks = []
+                        speech.speak(next.question.promptSpeech, interrupt: false, channel: .question)
+                    }
                 } else {
                     scene.fire(at: id, overwhelming: true)
                 }
@@ -92,6 +107,33 @@ extension GameSession {
 
     func replayPrompt() {
         speech.speak((ultimate ?? current)?.promptSpeech, interrupt: true, channel: .preview)
+    }
+
+    /// 孩子通过语音大声读出当前题目目标词：直接答对并触发「开口暴击」阳光奖励。
+    func answerByVoice(questionID: Question.ID? = nil) {
+        guard phase == .playing, ultimate == nil, let id = targetID, let entry = questions[id] else { return }
+        let question = entry.question
+        guard questionID == nil || questionID == question.id else { return }
+        guard scene.canAttack(id) else {
+            scene.play(FloatingTextEffect(text: "先选卡片，再点战场空位", color: Palette.hurt, fontSize: 28))
+            speech.speak(SpeechText.Line.plantFirst, interrupt: true)
+            return
+        }
+        sun += 15
+        score += 5
+        scene.play(FloatingTextEffect(text: "🎤 开口暴击！☀️+15", color: Palette.bullet, fontSize: 34))
+        if let spec = question.input {
+            answerInput(spec.blanks.map(\.answer), questionID: question.id)
+        } else {
+            answer(question.answerIndex, questionID: question.id)
+        }
+    }
+
+    /// 孩子通过大声念出咒语释放大招
+    func answerUltimateByVoice(questionID: Question.ID? = nil) {
+        guard phase == .playing, let question = ultimate else { return }
+        guard questionID == nil || questionID == question.id else { return }
+        answerUltimate(question.answerIndex, questionID: question.id)
     }
 
     // MARK: - 大招
@@ -132,6 +174,10 @@ extension GameSession {
             progress.record(item, correct: true)
             recorder?.recordAnswer(question, chosenIndex: index, ultimate: true, shownAt: ultimateShownAt)
             feedback.play(correct: true, volume: speech.effectsVolume)
+            if let card = question.card {
+                scene.showCard(card, near: nil)
+                recordRoundReviewCard(question, wasWrong: false)
+            }
             ultimate = nil
             ultimateItem = nil
             ultimateRetrying = false
@@ -163,10 +209,38 @@ extension GameSession {
             speech.speak(next.question.promptSpeech, interrupt: true, channel: .question)
         }
     }
+    /// 回合休息期跟读闪卡：每张卡首次读对奖励下一回合 +15 阳光
+    @discardableResult
+    func claimRestFlashcardBonus(cardID: String) -> Bool {
+        guard phase == .resting, spokenRestCardIDs.insert(cardID).inserted else { return false }
+        sun += 15
+        feedback.play(correct: true, volume: speech.effectsVolume)
+        return true
+    }
+
+    func recordRoundReviewCard(_ question: Question, wasWrong: Bool) {
+        guard let card = question.card else { return }
+        let audio = question.answerSpeech ?? question.promptSpeech
+        if let idx = roundReviewCards.firstIndex(where: { $0.id == question.itemKey }) {
+            if wasWrong { roundReviewCards[idx].wasWrong = true }
+        } else {
+            roundReviewCards.append(RoundReviewCard(id: question.itemKey, card: card, speech: audio, wasWrong: wasWrong))
+        }
+        roundReviewCards.sort { lhs, rhs in
+            if lhs.wasWrong != rhs.wasWrong { return lhs.wasWrong }
+            return false
+        }
+    }
 }
 
 extension GameSession.Mistake {
     init(question: Question, missed: Bool) {
-        self.init(prompt: question.prompt, answer: question.answer, explanation: question.explanation, missed: missed)
+        self.init(
+            prompt: question.prompt,
+            answer: question.answer,
+            explanation: question.explanation,
+            missed: missed,
+            speech: question.answerSpeech ?? question.promptSpeech
+        )
     }
 }

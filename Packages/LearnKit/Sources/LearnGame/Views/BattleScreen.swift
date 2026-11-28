@@ -62,6 +62,7 @@ struct BattleScreen: View {
     private static let sideTabsWidth: CGFloat = 104
 
     private var canAnswer: Bool { session.phase == .playing && session.ultimate == nil && !session.isUnleashing }
+    private var canSwitchQuestions: Bool { canAnswer && !session.isInteractionLocked }
 
     /// 场上每只僵尸一道题，点了切到那道
     private var questionTabs: some View {
@@ -112,7 +113,14 @@ struct BattleScreen: View {
                     if session.current?.id == shownQuestion?.id { session.setTyping(true) }
                 },
                 onSubmitInput: { session.answerInput($0, questionID: shownQuestion?.id) },
-                compact: !isPortrait, retrying: session.retrying)
+                compact: !isPortrait,
+                retrying: session.retrying,
+                mistakeTip: session.lastMistakeTip,
+                speechBusy: session.isSpeechBlocking,
+                voiceListening: session.isVoiceListening,
+                onBeforeListen: { session.speech.stop() },
+                onListeningChanged: { session.isVoiceListening = $0 },
+                onVoiceMatch: { session.answerByVoice(questionID: shownQuestion?.id) })
             .disabled(!canAnswer)
         }
     }
@@ -197,7 +205,7 @@ struct BattleScreen: View {
                                             HStack(spacing: AppSpacing.xs) { questionTabs }
                                         }
                                         .frame(height: 42)
-                                        .disabled(!canAnswer)
+                                        .disabled(!canSwitchQuestions)
                                         answerPanel
                                     }
                                 } else {
@@ -212,7 +220,7 @@ struct BattleScreen: View {
                                         }
                                         .frame(width: Self.sideTabsWidth)
                                         .appInset(radius: AppRadius.sm)
-                                        .disabled(!canAnswer)
+                                        .disabled(!canSwitchQuestions)
                                     }
                                 }
                             }
@@ -247,6 +255,11 @@ struct BattleScreen: View {
                     onAnswer: { session.answerUltimate($0, questionID: question.id) },
                     onReplay: session.replayPrompt,
                     onCancel: session.cancelUltimate,
+                    speechBusy: session.isSpeechBlocking,
+                    voiceListening: session.isVoiceListening,
+                    onBeforeListen: { session.speech.stop() },
+                    onListeningChanged: { session.isVoiceListening = $0 },
+                    onVoiceMatch: { session.answerUltimateByVoice(questionID: question.id) },
                     retrying: session.ultimateRetrying)
             }
 

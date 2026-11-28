@@ -21,6 +21,7 @@ struct CollectionView: View {
     @State var confirming: CosmeticKind?
     @State var equippedNotice: CosmeticKind?
     @State private var showingTools = false
+    @State private var showCoinLedger = false
     @State var storageError: String?
 
     var growth: GrowthStore { model.growth(for: profileID) }
@@ -75,6 +76,12 @@ struct CollectionView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .background(GrowthPageBackground())
+        .sheet(isPresented: $showCoinLedger) {
+            if let profile = model.profiles.first(where: { $0.id == profileID }) {
+                CoinLedgerView(profile: profile, growth: growth)
+                    .presentationDetents([.large])
+            }
+        }
         .onAppear {
             // 优先准备少量购买反馈，避免排在整套题库语音之后。
             for line in SpeechText.purchaseLines { model.speechLibrary.requestSoon(line) }
@@ -229,7 +236,11 @@ struct CollectionView: View {
     private func topBar(level: Int) -> some View {
         GrowthPageHeader(icon: "🎁", title: "收藏馆", subtitle: showingTools ? "永久道具" : "角色装扮", onClose: onClose) {
             LevelPill(level: level)
-            CoinPill(coins: growth.state.coins, size: 24)
+            Button { showCoinLedger = true } label: {
+                CoinPill(coins: growth.state.coins, size: 24)
+            }
+            .buttonStyle(PressableStyle())
+            .accessibilityLabel("查看积分记录，当前 \(growth.state.coins) 积分")
         }
     }
 

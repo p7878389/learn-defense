@@ -13,26 +13,39 @@ struct AnswerPanel: View {
     /// 横屏时答题区要矮，行距收紧，战场才能铺满宽度
     var compact = false
     var retrying = false
+    /// 答错换题时展示上一题的简短纠偏
+    var mistakeTip: String? = nil
+    /// 开口暴击：孩子大声读出目标词即可答对并额外赢阳光
+    var speechBusy = false
+    var voiceListening = false
+    var onBeforeListen: () -> Void = {}
+    var onListeningChanged: (Bool) -> Void = { _ in }
+    var onVoiceMatch: (() -> Void)? = nil
     /// 换题瞬间短暂防连点保护，防止双击慢抬手直接误判新题
     @State private var transitionLocked = false
 
     private var revealed: Bool { !wrongPicks.isEmpty }
+    private var otherControlsLocked: Bool { speechBusy || voiceListening }
 
     var body: some View {
         VStack(spacing: compact ? AppSpacing.xs : AppSpacing.sm) {
             if let q = question, let spec = q.input {
                 header(q)
                 TileAnswerView(spec: spec, wrongCount: wrongPicks.count, compact: compact, onStart: onStartInput,
-                               onSubmit: { values in guard !transitionLocked else { return }; onSubmitInput(values) })
+                               onSubmit: { values in guard !transitionLocked, !otherControlsLocked else { return }; onSubmitInput(values) })
+                    .disabled(otherControlsLocked)
+                    .opacity(otherControlsLocked ? 0.58 : 1)
                     .id(q.id)
             } else if let q = question {
                 header(q)
                 HStack(spacing: AppSpacing.sm) {
                     ForEach(q.options.indices, id: \.self) { i in
                         OptionButton(text: q.options[i], style: q.optionStyle, state: state(of: i, in: q)) {
-                            guard !transitionLocked else { return }
+                            guard !transitionLocked, !otherControlsLocked else { return }
                             onAnswer(i)
                         }
+                        .disabled(otherControlsLocked)
+                        .opacity(otherControlsLocked ? 0.6 : 1)
                     }
                 }
                 .id(q.id)
@@ -42,16 +55,35 @@ struct AnswerPanel: View {
                         .foregroundStyle(AppColor.muted)
                 }
             } else {
-                Text("僵尸马上就来，准备答题！")
+                Text(speechBusy ? "🔊 正在朗读，准备下一题…" : "僵尸马上就来，准备答题！")
                     .font(AppFont.heading)
-                    .foregroundStyle(AppColor.muted)
+                    .foregroundStyle(speechBusy ? AppColor.jadeEdge : AppColor.muted)
                     .frame(maxWidth: .infinity, minHeight: 120)
             }
+            if speechBusy, question != nil {
+                Label("正在朗读，听完再操作哦…", systemImage: "speaker.wave.2.fill")
+                    .font(AppFont.label)
+                    .foregroundStyle(AppColor.jadeEdge)
+            } else if voiceListening, question != nil {
+                Label("正在听你大声读，请说完或点按钮停止", systemImage: "mic.fill")
+                    .font(AppFont.label)
+                    .foregroundStyle(AppColor.accentEdge)
+            }
             if retrying {
-                Label("刚才答错了，已换成新题，看清再选哦", systemImage: "arrow.triangle.2.circlepath")
-                    .font(AppFont.bodyStrong)
-                    .foregroundStyle(AppColor.dangerText)
-                    .modifier(Shake(animatableData: transitionLocked ? 1 : 0))
+                HStack(spacing: AppSpacing.sm) {
+                    Label("刚才答错了，已换成新题，看清再选哦", systemImage: "arrow.triangle.2.circlepath")
+                        .font(AppFont.bodyStrong)
+                        .foregroundStyle(AppColor.dangerText)
+                    if let tip = mistakeTip {
+                        Text(tip)
+                            .font(AppFont.label)
+                            .foregroundStyle(AppColor.jadeEdge)
+                            .padding(.horizontal, AppSpacing.xs).padding(.vertical, 3)
+                            .background(Capsule().fill(AppColor.jade.opacity(0.14)))
+                            .lineLimit(1)
+                    }
+                }
+                .modifier(Shake(animatableData: transitionLocked ? 1 : 0))
             }
         }
         .onChange(of: question?.id) { oldID, newID in
@@ -88,6 +120,22 @@ struct AnswerPanel: View {
             }
             if q.promptSpeech != nil {
                 AppButton(title: "再听一遍", systemImage: "speaker.wave.2.fill", role: .secondary, size: .medium, action: onReplay)
+                    .disabled(otherControlsLocked)
+            }
+            if let target = q.speakTarget, let onVoiceMatch {
+                VoiceSpeakButton(
+                    title: "读出来 +15☀️",
+                    expected: target,
+                    english: q.isEnglishSpeaking,
+                    resetKey: q.id,
+                    speechLocked: speechBusy,
+                    onBeforeListen: onBeforeListen,
+                    onListeningChanged: onListeningChanged,
+                    onMatched: {
+                        guard !transitionLocked, !speechBusy else { return }
+                        onVoiceMatch()
+                    }
+                )
             }
         }
     }

@@ -163,6 +163,15 @@ public struct AdventureBattle: Codable, Equatable, Identifiable, Sendable {
         return events
     }
 
+    /// 冒险模式语音援军口令：大声读出复习词卡后，立刻补充阳光并给大招充能。
+    @discardableResult
+    public mutating func grantVoiceBoost(sunBonus: Int = 40, energyBonus: Int = 2) -> Bool {
+        guard phase == .playing else { return false }
+        sun += max(0, sunBonus)
+        energy = min(AdventureCatalog.ultimateEnergy, energy + max(0, energyBonus))
+        return true
+    }
+
     private mutating func step(events: inout [AdventureEvent]) {
         ticks += 1
         if ticks % 100 == 0 { sun += 25 }

@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 import LearnCore
 
@@ -15,6 +16,14 @@ final class GameSession: ObservableObject {
         let explanation: String?
         /// 没来得及答，怪物就走到了书架
         let missed: Bool
+        var speech: String? = nil
+    }
+
+    struct RoundReviewCard: Identifiable, Equatable {
+        let id: String
+        let card: WordCard
+        let speech: String?
+        var wasWrong: Bool
     }
 
     let config: GameConfig
@@ -124,6 +133,28 @@ final class GameSession: ObservableObject {
     @Published var roundAccuracy = 0.0
     @Published var restRemaining = 0
     @Published var questionIDs: [Int] = []
+    /// 本回合学过/答错的闪卡（回合休息时用于听读复盘，错题排前面）
+    @Published var roundReviewCards: [RoundReviewCard] = []
+    /// 本回合休息期已通过跟读领过阳光奖励的闪卡 ID
+    @Published var spokenRestCardIDs: Set<String> = []
+    /// 答错换题时的简短纠偏提示
+    @Published var lastMistakeTip: String?
+    /// 语音播报与跟读门控状态（播报或跟读期间暂停怪物并锁定其他操作按钮）
+    @Published var speechActive = false
+    @Published var isVoiceListening = false
+    @Published var awaitingSpeechForNextQuestion = false
+    var waitsForSpeechCompletion = !GameSession.isRunningUnderTests
+    var speechCancellable: AnyCancellable?
+    var pendingSpeechToken: UUID?
+
+    private static var isRunningUnderTests: Bool {
+        let env = ProcessInfo.processInfo.environment
+        let name = ProcessInfo.processInfo.processName
+        return env["XCTestConfigurationFilePath"] != nil
+            || env["SWIFT_TESTING_ENABLED"] != nil
+            || name.contains("xctest")
+            || name.contains("testing-helper")
+    }
     var restUntil: Date?
     var roundStartScore = 0
     var roundStartAttempted = 0
@@ -176,6 +207,7 @@ final class GameSession: ObservableObject {
         } else {
             UnitSprites.preloadCombat(defenders: plantable, enemies: spawnPlan, loadout: loadout)
         }
+        bindSpeechObservation()
     }
 
     /// 准备阶段只更换背景，战斗开始后锁定本局地图。
@@ -187,15 +219,16 @@ final class GameSession: ObservableObject {
 
     /// 能不能用道具栏里的道具
     var canUseItems: Bool {
-        phase == .playing && ultimate == nil
+        phase == .playing && ultimate == nil && !isInteractionLocked
     }
 
     var ultimateReady: Bool {
-        energy >= tuning.ultimateEnergy && phase == .playing && ultimate == nil
+        energy >= tuning.ultimateEnergy && phase == .playing && ultimate == nil && !isInteractionLocked
     }
 
     var canUseShop: Bool {
-        (phase == .preparing || phase == .playing || phase == .resting) && ultimate == nil
+        let phaseReady = phase == .preparing || phase == .resting || (phase == .playing && !isInteractionLocked)
+        return phaseReady && ultimate == nil
     }
 
     var plantedLaneCount: Int {
@@ -307,7 +340,7 @@ final class GameSession: ObservableObject {
 
     /// 铁栅门卡能不能点：战斗中、场上还没有门、有正在答题的僵尸（阳光不够时卡片变灰，由界面判断）
     var canDropBarricade: Bool {
-        tuning.barricade != nil && phase == .playing && ultimate == nil && !barricadeDown && targetID != nil
+        tuning.barricade != nil && phase == .playing && ultimate == nil && !barricadeDown && targetID != nil && !isInteractionLocked
     }
 
     /// 花阳光在正在答题的僵尸面前放一道铁栅门，同一时间场上只有一道

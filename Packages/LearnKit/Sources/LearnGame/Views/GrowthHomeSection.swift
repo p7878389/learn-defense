@@ -5,6 +5,7 @@ import SwiftUI
 struct GrowthCard: View {
     let profile: Profile
     let growth: GrowthStore
+    var onCoins: (() -> Void)? = nil
     let onEdit: () -> Void
 
     private var avatarTint: Color { AvatarTint.color(for: profile.avatar) }
@@ -65,7 +66,20 @@ struct GrowthCard: View {
             }
 
             VStack(alignment: .trailing, spacing: AppSpacing.sm) {
-                CoinPill(coins: growth.state.coins, size: 22)
+                if let onCoins {
+                    Button(action: onCoins) {
+                        HStack(spacing: 4) {
+                            CoinPill(coins: growth.state.coins, size: 22)
+                            Image(systemName: "chevron.right")
+                                .font(AppFont.rounded(12, weight: .bold))
+                                .foregroundStyle(AppColor.goldEdge)
+                        }
+                    }
+                    .buttonStyle(PressableStyle())
+                    .accessibilityLabel("查看积分记录，当前 \(growth.state.coins) 积分")
+                } else {
+                    CoinPill(coins: growth.state.coins, size: 22)
+                }
                 AppButton(title: "编辑档案", systemImage: "pencil", role: .secondary, size: .medium, minWidth: 140, action: onEdit)
             }
         }

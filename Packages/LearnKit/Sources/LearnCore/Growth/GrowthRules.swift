@@ -140,9 +140,17 @@ extension GrowthState {
         let answerAward = Int((answerCoins * rate).rounded())
         let firstAward = dailyFirstWin ? Int((Double(pacing.daily.firstWinCoins) * rate).rounded()) : 0
         let completionAward = max(0, Int((rawCoins * rate).rounded()) - answerAward - firstAward)
-        let gainedCoins = awardCoins(answerAward, source: .answers, rules: rules)
-            + awardCoins(completionAward, source: .completion, rules: rules)
-            + awardCoins(firstAward, source: .firstWin, rules: rules)
+        let answersGained = awardCoins(answerAward, source: .answers, rules: rules)
+        let suffix = reduced ? "（今日减半）" : ""
+        appendCoinRecord(kind: .answers, delta: answersGained, title: "经典答题奖励",
+                         detail: "\(report.difficulty.displayName)难度 · 首答 \(report.firstTryCorrect)/\(report.questions) 题\(suffix)", date: report.date)
+        let completionGained = awardCoins(completionAward, source: .completion, rules: rules)
+        appendCoinRecord(kind: .completion, delta: completionGained, title: "过关奖励（\(report.stars)星）",
+                         detail: "\(report.difficulty.displayName)难度通关\(suffix)", date: report.date)
+        let firstWinGained = awardCoins(firstAward, source: .firstWin, rules: rules)
+        appendCoinRecord(kind: .firstWin, delta: firstWinGained, title: "每日首胜奖励",
+                         detail: reduced ? "今日减半" : "今天第一次通关", date: report.date)
+        let gainedCoins = answersGained + completionGained + firstWinGained
 
         // 累计统计
         stats.gamesPlayed += 1
@@ -171,6 +179,8 @@ extension GrowthState {
 
         // 升级奖励：每升一级送积分；这几级解锁的外观，免费的直接拥有，收费的可以去买
         let levelCoins = awardCoins(max(0, after.level - before.level) * pacing.coins.perLevel, source: .level, rules: rules)
+        appendCoinRecord(kind: .levelUp, delta: levelCoins, title: "升到 Lv.\(after.level) 奖励",
+                         detail: "Lv.\(before.level) → Lv.\(after.level)", date: report.date)
         let newlyUnlocked = catalog.cosmetics.filter {
             !$0.isOriginal && $0.unlockLevel > before.level && $0.unlockLevel <= after.level
         }
@@ -180,7 +190,10 @@ extension GrowthState {
         var badgeCoins = 0
         for badge in catalog.badges where badges[badge.id] == nil && badge.isMet(stats: stats, level: after.level) {
             badges[badge.id] = report.date
-            badgeCoins += awardCoins(badge.coins, source: .badge, rules: rules)
+            let awarded = awardCoins(badge.coins, source: .badge, rules: rules)
+            appendCoinRecord(kind: .badge, delta: awarded, title: "获得徽章 · \(badge.name)",
+                             detail: badge.summary, date: report.date)
+            badgeCoins += awarded
             newBadges.append(badge)
         }
 
@@ -202,6 +215,12 @@ extension GrowthState {
         state.xp = min(max(0, correct) * 5, curve.totalXP(toReach: 10))
         state.coins = max(0, correct)
         state.stats.firstTryCorrect = max(0, correct)
+        state.appendCoinRecord(
+            kind: .migration,
+            delta: state.coins,
+            title: "历史答题积分补发",
+            detail: "按历史答对 \(max(0, correct)) 题补发"
+        )
         // 补发后已满足条件的徽章（比如累计答对 100 题）直接点亮，不另送积分，免得一下子拿太多
         let level = state.level(curve).level
         for badge in catalog.badges where badge.isMet(stats: state.stats, level: level) {

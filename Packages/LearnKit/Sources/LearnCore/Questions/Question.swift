@@ -70,6 +70,26 @@ public struct Question: Identifiable, Sendable {
 
     public var answer: String { options[answerIndex] }
 
+    /// 适合孩子开口朗读的目标文本（英语题读英文单词/句子，语文题读完整字词/诗句）
+    public var speakTarget: String? {
+        let raw: String?
+        switch kind {
+        case .englishToMeaning, .sentenceMeaning:
+            raw = prompt
+        case .meaningToEnglish, .listenPickEnglish, .poemNextLine, .choice:
+            raw = answer
+        case .charToPinyin, .pinyinToChar, .fillCharInWord, .pinyinToWord, .idiomFill,
+             .listenPickChar, .listenFillChar, .shapeRiddle, .pictureToWord, .listenPickPicture:
+            raw = card?.text ?? answer
+        }
+        return raw.flatMap(SpeechText.normalize)
+    }
+
+    /// 开口朗读是否应使用英语语音识别
+    public var isEnglishSpeaking: Bool {
+        speakTarget.map(SpeechText.isEnglish) ?? false
+    }
+
     public init(
         kind: QuestionKind,
         itemKey: String,

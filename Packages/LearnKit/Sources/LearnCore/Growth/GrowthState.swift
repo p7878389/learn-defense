@@ -113,6 +113,8 @@ public struct GrowthState: Codable, Sendable, Equatable {
     public var stats = GrowthStats()
     /// 冒险的星级、历史与已付费战斗快照，随成长档案备份和恢复。
     public var adventure = AdventureProgress()
+    /// 积分获取与消耗流水（最新在前），随成长档案备份和恢复。
+    public var coinLedger: [CoinRecord] = []
 
     public init() {}
 
@@ -132,6 +134,7 @@ public struct GrowthState: Codable, Sendable, Equatable {
         }
         stats = (try? c.decodeIfPresent(GrowthStats.self, forKey: .stats)) ?? GrowthStats()
         adventure = try c.decodeIfPresent(AdventureProgress.self, forKey: .adventure) ?? AdventureProgress()
+        coinLedger = (try? c.decodeIfPresent([CoinRecord].self, forKey: .coinLedger)) ?? []
     }
 
     public func level(_ curve: LevelCurve) -> LevelProgress {
@@ -197,6 +200,11 @@ public struct GrowthState: Codable, Sendable, Equatable {
         guard coins >= item.price else { return .notEnough(short: item.price - coins) }
         coins -= item.price
         owned.insert(item.id)
+        appendCoinRecord(
+            kind: .purchaseCosmetic,
+            delta: -item.price,
+            title: "购买\(item.slot.displayName) · \(item.name)"
+        )
         return .bought
     }
 

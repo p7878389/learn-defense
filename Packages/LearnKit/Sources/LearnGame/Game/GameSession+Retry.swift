@@ -21,6 +21,9 @@ extension GameSession {
     }
 
     func replaceWrongQuestion(_ entry: SessionQuestions.QuestionEntry, for id: Int) {
+        recordRoundReviewCard(entry.question, wasWrong: true)
+        let tipTarget = entry.question.explanation ?? entry.question.card?.text ?? entry.question.answer
+        lastMistakeTip = "刚才那题：\(tipTarget)"
         let next = retryQuestion(after: entry)
         questions.insert(next, for: id, isRetry: true)
         questions.markShown(id)
@@ -28,7 +31,12 @@ extension GameSession {
         typing = false
         wrongPicks = []
         current = next.question
-        speech.speak(next.question.promptSpeech, interrupt: true, channel: .question)
+        if let wrongAudio = entry.question.answerSpeech {
+            speech.speak(wrongAudio, interrupt: true, channel: .question)
+            speech.speak(next.question.promptSpeech, interrupt: false, channel: .question)
+        } else {
+            speech.speak(next.question.promptSpeech, interrupt: true, channel: .question)
+        }
     }
 }
 
